@@ -98,6 +98,14 @@
   .section-head h2{font-family:var(--display);font-size:clamp(24px,3.2vw,32px);font-weight:400;margin-top:12px;color:var(--ink)}
   .section-head p{color:var(--muted);margin-top:8px;max-width:60ch;font-size:15px}
 
+  /* 섹션 탭 */
+  .section-tabs{position:sticky;top:64px;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .section-tabs .wrap{display:flex;gap:4px;overflow-x:auto}
+  .stab{white-space:nowrap;cursor:pointer;background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:15px;font-weight:700;padding:15px 16px;border-bottom:3px solid transparent;transition:.16s}
+  .stab:hover{color:var(--ink)}
+  .stab.active{color:var(--mint-d);border-bottom-color:var(--mint)}
+  .panel>.section:first-child{border-top:none;padding-top:44px}
+
   /* 흐름 (이렇게 탐구해요) */
   .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
   .fcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:.2s;display:flex;flex-direction:column}
@@ -277,12 +285,25 @@
         <button class="btn-solid hero-cta" id="heroLoginBtn">우리 반 입장하기 →</button>
       </div>
       <figure class="ph hero-img" data-label="메인 대표">
-        <img src="./assets/hero.jpg" alt="센서로 탐구하는 과학 수업" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
+        <img src="./assets/hero.png" alt="센서로 탐구하는 과학 수업" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
         <figcaption class="cap">데이터로 탐구하는 과학 수업</figcaption>
       </figure>
     </div>
   </section>
 
+  <!-- 섹션 탭 -->
+  <nav class="section-tabs">
+    <div class="wrap">
+      <button class="stab active" data-tab="home">탐구 흐름</button>
+      <button class="stab" data-tab="today">오늘의 수업</button>
+      <button class="stab" data-tab="activities">활동</button>
+      <button class="stab" data-tab="docs">자료실</button>
+      <button class="stab" data-tab="help">안내·도움말</button>
+    </div>
+  </nav>
+
+  <main>
+  <div class="panel" id="tab-home">
   <!-- 이렇게 탐구해요 (흐름) -->
   <section class="section">
     <div class="wrap">
@@ -293,32 +314,35 @@
       </div>
       <div class="flow">
         <div class="fcard">
-          <figure class="ph" data-label="센서 소개"><img src="./assets/sections/sensors.jpg" alt="센서 알아보기" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <figure class="ph" data-label="센서 소개"><img src="./assets/sensors.png" alt="센서 알아보기" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
           <div class="fbody"><div class="fno">STEP 01</div><h3>센서 알아보기</h3><p>온도·pH·조도·힘·운동 센서로 무엇을 재는지 익혀요.</p></div>
         </div>
         <div class="fcard">
-          <figure class="ph" data-label="탐구 활동"><img src="./assets/sections/activity.jpg" alt="탐구 활동" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <figure class="ph" data-label="탐구 활동"><img src="./assets/activity.png" alt="탐구 활동" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
           <div class="fbody"><div class="fno">STEP 02</div><h3>탐구 활동</h3><p>센서로 직접 측정하며 궁금증을 실험으로 확인해요.</p></div>
         </div>
         <div class="fcard">
-          <figure class="ph" data-label="데이터 분석"><img src="./assets/sections/analysis.jpg" alt="데이터 분석" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <figure class="ph" data-label="데이터 분석"><img src="./assets/analysis.png" alt="데이터 분석" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
           <div class="fbody"><div class="fno">STEP 03</div><h3>데이터 분석</h3><p>그래프와 표로 측정값을 해석하고 규칙을 찾아요.</p></div>
         </div>
         <div class="fcard">
-          <figure class="ph" data-label="결과 정리"><img src="./assets/sections/portfolio.jpg" alt="결과 정리·공유" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <figure class="ph" data-label="결과 정리"><img src="./assets/portfolio.png" alt="결과 정리·공유" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
           <div class="fbody"><div class="fno">STEP 04</div><h3>결과 정리·공유</h3><p>보고서로 정리하고 친구·선생님과 나눠요.</p></div>
         </div>
       </div>
     </div>
   </section>
 
+  </div><!-- /tab-home -->
+
+  <div class="panel hidden" id="tab-docs">
   <!-- 학습 자료실 -->
   <!-- 자료 연결: a.doc-card 의 href 를 파일/링크로 바꾸고 aria-disabled·onclick 제거, doc-state 를 "열기"·class 에 ready 추가 -->
   <section class="section" id="docs">
     <div class="wrap">
       <div class="split">
         <figure class="ph" data-label="수업 장면">
-          <img src="./assets/photos/class-01.jpg" alt="수업 장면" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
+          <img src="./assets/class-01.png" alt="수업 장면" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
         </figure>
         <div>
           <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6"/></svg>수업 자료</span>
@@ -347,6 +371,9 @@
     </div>
   </section>
 
+  </div><!-- /tab-docs -->
+
+  <div class="panel hidden" id="tab-today">
   <!-- 나의 기록 (로그인 후 표시) -->
   <section class="section hidden" id="myRecord">
     <div class="wrap">
@@ -356,7 +383,7 @@
           <h2>나의 실험 기록</h2>
           <p>제출한 실험, 받은 배지, 성장 그래프가 여기에 모여요. (준비 중)</p>
         </div>
-        <figure class="ph" data-label="나의 기록"><img src="./assets/sections/my-record.jpg" alt="나의 실험 기록" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+        <figure class="ph" data-label="나의 기록"><img src="./assets/my-record.png" alt="나의 실험 기록" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
       </div>
     </div>
   </section>
@@ -368,7 +395,7 @@
         <span class="badge sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>오늘의 미션</span>
         <div class="section-head" style="margin:12px 0 0"><h2 style="margin:0">오늘의 수업</h2></div>
         <figure class="ph today-banner" data-label="오늘의 미션">
-          <img src="./assets/sections/mission.jpg" alt="오늘의 미션" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
+          <img src="./assets/mission.png" alt="오늘의 미션" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
           <figcaption class="cap">오늘의 탐구 미션</figcaption>
         </figure>
         <div class="grid" id="todayGrid"></div>
@@ -377,6 +404,9 @@
     </div>
   </section>
 
+  </div><!-- /tab-today -->
+
+  <div class="panel hidden" id="tab-activities">
   <!-- 활동 목록 -->
   <section class="section">
     <div class="wrap">
@@ -399,6 +429,9 @@
     </div>
   </section>
 
+  </div><!-- /tab-activities -->
+
+  <div class="panel hidden" id="tab-help">
   <!-- 사용 가이드 -->
   <section class="section">
     <div class="wrap">
@@ -418,7 +451,7 @@
   <!-- 안전 수칙 -->
   <section class="section">
     <div class="wrap split">
-      <figure class="ph" data-label="안전 수칙"><img src="./assets/sections/safety.jpg" alt="안전 수칙" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+      <figure class="ph" data-label="안전 수칙"><img src="./assets/safety.png" alt="안전 수칙" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
       <div>
         <span class="badge sky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>안전</span>
         <h2>탐구 전 확인해요</h2>
@@ -449,9 +482,12 @@
         </div>
         <div class="contact">문의 — <b>해누리중학교 조승재</b> · 이메일 <a href="mailto:chuseonjae@outlook.kr">chuseonjae@outlook.kr</a> · 인스타그램 <a href="https://instagram.com/science_is_jo" target="_blank" rel="noopener">@science_is_jo</a></div>
       </div>
-      <figure class="ph" data-label="도움말"><img src="./assets/sections/help.jpg" alt="도움말" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+      <figure class="ph" data-label="도움말"><img src="./assets/help.png" alt="도움말" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
     </div>
   </section>
+
+  </div><!-- /tab-help -->
+  </main>
 
   <footer>
     <div class="wrap">
@@ -577,12 +613,23 @@
       e.preventDefault(); loginMsg.textContent='';
       const code=$('#fCode').value.trim(), no=$('#fNo').value.trim(), pin=$('#fPin').value.trim();
       if(!hasHub){ loginMsg.textContent='Supabase 연결 전입니다. hub.js에 URL·anon key를 넣어주세요.'; return; }
-      try{ const profile = await Hub.login(code,no,pin); closeLogin(); showConnected(profile); await loadReal(); window.scrollTo({top:0,behavior:'smooth'}); }
+      try{ const profile = await Hub.login(code,no,pin); closeLogin(); showConnected(profile); await loadReal(); switchTab('today'); }
       catch(err){ loginMsg.textContent = err.message || '로그인에 실패했습니다.'; }
     });
 
     function doLogout(){ if(hasHub) Hub.logout(); showLockedPreview(); }
     logoutBtn.addEventListener('click',doLogout);
+
+    // 섹션 탭 전환
+    const secTabs=[...document.querySelectorAll('.stab')];
+    const tabsNav=document.querySelector('.section-tabs');
+    function switchTab(name){
+      secTabs.forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
+      document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('hidden',p.id!=='tab-'+name));
+      const y=tabsNav.offsetTop-64;
+      if(window.scrollY>y) window.scrollTo({top:y,behavior:'smooth'});
+    }
+    secTabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
 
     if(!hasHub) $('#demoBanner').classList.remove('hidden');
     if(hasHub && Hub.isLoggedIn()){ showConnected(Hub.getProfile()); loadReal(); }
