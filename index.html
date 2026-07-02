@@ -1,0 +1,593 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MBL센서 활용 과학 탐구 수업</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+<style>
+  :root{
+    --sky-1:#D4EDFB; --sky-2:#EAF8F0;
+    --paper:#FFFFFF; --cream:#FFFDF6;
+    --ink:#254753; --muted:#6E8A96;
+    --mint:#20B2A6; --mint-d:#14867C;
+    --sun:#FFC130; --coral:#FF8C6B; --sky:#54B4E8;
+    --line:#E4EFF1; --line-2:#D3E6EA;
+    --shadow:0 10px 28px rgba(37,71,83,.09);
+    --shadow-lg:0 18px 44px rgba(37,71,83,.14);
+    --ok:#37B58C;
+    --display:'Jua',sans-serif;
+    --sans:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
+    --wrap:1120px; --r:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-behavior:smooth}
+  body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed}
+  body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(84,180,232,.14), transparent 42%),
+      radial-gradient(circle at 88% 12%, rgba(255,193,48,.14), transparent 38%),
+      radial-gradient(circle at 78% 82%, rgba(255,140,107,.10), transparent 42%)}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
+  :focus-visible{outline:3px solid var(--mint);outline-offset:2px;border-radius:8px}
+  .hidden{display:none !important}
+
+  /* 공통 이미지 폴백 */
+  .ph{position:relative;overflow:hidden;background:linear-gradient(135deg,#DEF3EE,#E7F4FB);box-shadow:var(--shadow);border-radius:var(--r)}
+  .ph img{width:100%;height:100%;object-fit:cover;display:block}
+  .ph.noimg{display:flex;align-items:center;justify-content:center;min-height:120px}
+  .ph.noimg::after{content:attr(data-label) " 이미지 자리";color:var(--muted);font-size:13px;font-weight:600;padding:16px;text-align:center}
+
+  .badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--display);font-size:14px;color:var(--mint-d);
+    background:rgba(32,178,166,.13);padding:6px 14px;border-radius:999px}
+  .badge svg{width:16px;height:16px}
+  .badge.sun{color:#B47D00;background:rgba(255,193,48,.20)}
+  .badge.coral{color:#C96A3F;background:rgba(255,140,107,.16)}
+  .badge.sky{color:#2A7FB0;background:rgba(84,180,232,.16)}
+
+  /* 선생님 안내 바 */
+  .teacher-bar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
+    padding:10px 16px;font-size:13.5px;background:rgba(255,255,255,.72);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
+  .teacher-bar .t-msg{color:var(--muted)}
+  .teacher-bar a{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;color:#fff;
+    background:var(--mint);border-radius:999px;padding:7px 15px;box-shadow:var(--shadow);transition:.18s;white-space:nowrap}
+  .teacher-bar a:hover{background:var(--mint-d);transform:translateY(-1px)}
+  .teacher-bar a svg{width:15px;height:15px}
+
+  .demo-banner{background:rgba(255,193,48,.18);border-bottom:1px solid rgba(255,193,48,.5);
+    color:#9A6B00;font-size:13px;text-align:center;padding:9px 16px;font-weight:600}
+
+  /* 상단바 */
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .topbar .row{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
+  .brand{display:flex;flex-direction:column;line-height:1.15;min-width:0}
+  .brand b{font-family:var(--display);font-size:19px;font-weight:400;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .status{display:flex;align-items:center;gap:12px;font-size:13px;flex-shrink:0}
+  .dot{width:9px;height:9px;border-radius:50%;background:#C3D4DA}
+  .dot.live{background:var(--mint);box-shadow:0 0 0 4px rgba(32,178,166,.18)}
+  .who{color:var(--mint-d);font-weight:700}
+  .btn{font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--line-2);background:#fff;color:var(--ink);padding:9px 16px;border-radius:999px;transition:.18s}
+  .btn:hover{border-color:var(--mint);color:var(--mint-d)}
+  .btn-solid{background:var(--mint);color:#fff;border-color:var(--mint);box-shadow:var(--shadow)}
+  .btn-solid:hover{background:var(--mint-d);color:#fff}
+
+  /* 히어로 */
+  .hero{padding:60px 0 52px}
+  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
+  .hero h1{font-family:var(--display);font-size:clamp(34px,5.2vw,58px);font-weight:400;line-height:1.15;margin:18px 0 16px;color:var(--ink)}
+  .hero h1 .hl{color:var(--mint)}
+  .hero h1 .hl2{color:var(--coral)}
+  .hero .lead{font-size:17px;color:#4C6B78;max-width:44ch}
+  .chips{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+  .chip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600;box-shadow:var(--shadow)}
+  .chip svg{width:17px;height:17px}
+  .chip.c1{color:var(--mint-d)} .chip.c2{color:#2A7FB0} .chip.c3{color:#C96A3F}
+  .hero-cta{margin-top:26px;padding:14px 28px;font-size:15px;border-radius:14px}
+  .hero-img{aspect-ratio:4/3;border-radius:24px}
+  .hero-img .cap{position:absolute;left:16px;bottom:16px;background:rgba(37,71,83,.72);color:#fff;font-family:var(--display);font-size:16px;padding:8px 16px;border-radius:999px}
+  .hero-img.noimg .cap{display:none}
+
+  /* 섹션 공통 */
+  .section{padding:60px 0;border-top:1px solid var(--line)}
+  .section-head{margin-bottom:28px}
+  .section-head h2{font-family:var(--display);font-size:clamp(24px,3.2vw,32px);font-weight:400;margin-top:12px;color:var(--ink)}
+  .section-head p{color:var(--muted);margin-top:8px;max-width:60ch;font-size:15px}
+
+  /* 흐름 (이렇게 탐구해요) */
+  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .fcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:.2s;display:flex;flex-direction:column}
+  .fcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+  .fcard .ph{border-radius:0;aspect-ratio:4/3}
+  .fcard .fbody{padding:18px}
+  .fcard .fno{font-weight:800;font-size:12px;color:var(--mint)}
+  .fcard h3{font-family:var(--display);font-size:18px;font-weight:400;margin:6px 0 6px}
+  .fcard p{font-size:13.5px;color:var(--muted)}
+
+  /* 이미지+내용 2열 (자료실/안전/도움말/나의기록) */
+  .split{display:grid;grid-template-columns:.92fr 1.08fr;gap:40px;align-items:center}
+  .split.rev{grid-template-columns:1.08fr .92fr}
+  .split .ph{aspect-ratio:4/3}
+  .split h2{font-family:var(--display);font-size:clamp(24px,3.2vw,30px);font-weight:400;margin-top:12px}
+  .split p{color:var(--muted);margin:10px 0 0;font-size:15px;max-width:46ch}
+
+  /* 자료실 카드 */
+  .docs-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
+  .doc-card{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:18px;display:flex;flex-direction:column;gap:6px;transition:.2s;position:relative;min-height:132px;box-shadow:var(--shadow)}
+  .doc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
+  .doc-card[aria-disabled="true"]{opacity:.82}
+  .doc-card[aria-disabled="true"]:hover{transform:none;box-shadow:var(--shadow)}
+  .doc-ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(32,178,166,.13);color:var(--mint);margin-bottom:2px}
+  .doc-ic svg{width:20px;height:20px}
+  .doc-card h3{font-family:var(--display);font-size:16px;font-weight:400}
+  .doc-card p{font-size:13px;color:var(--muted)}
+  .doc-state{font-size:11px;font-weight:700;margin-top:auto;color:var(--coral)}
+  .doc-state.ready{color:var(--mint-d)}
+
+  /* 오늘의 수업 */
+  .today-wrap{border:1px solid rgba(255,193,48,.5);border-radius:22px;background:linear-gradient(135deg,#FFF9EA,#FFFDF6);padding:24px;box-shadow:var(--shadow)}
+  .today-banner{aspect-ratio:5/1;border-radius:14px;margin:16px 0}
+  .today-banner .cap{position:absolute;left:16px;bottom:14px;background:rgba(255,193,48,.92);color:#5A3E00;font-family:var(--display);font-size:15px;padding:6px 14px;border-radius:999px}
+  .today-banner.noimg .cap{display:none}
+
+  /* 탭 & 카드 */
+  .tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:26px;padding-bottom:2px}
+  .tab{white-space:nowrap;cursor:pointer;background:#fff;border:1.5px solid var(--line-2);color:var(--muted);font-family:var(--sans);font-size:14px;font-weight:600;padding:9px 18px;border-radius:999px;transition:.16s}
+  .tab:hover{border-color:var(--mint);color:var(--mint-d)}
+  .tab.active{background:var(--mint);border-color:var(--mint);color:#fff}
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
+  .card{position:relative;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:20px;cursor:pointer;transition:.2s;min-height:158px;display:flex;flex-direction:column;box-shadow:var(--shadow)}
+  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
+  .card-meta{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px;line-height:1.4}
+  .card-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px}
+  .pill svg{width:14px;height:14px}
+  .pill-inquiry{background:rgba(32,178,166,.14);color:var(--mint-d)}
+  .pill-simulation{background:rgba(84,180,232,.16);color:#2A7FB0}
+  .pill-video{background:rgba(255,140,107,.18);color:#D9542F}
+  .pill-quiz{background:rgba(255,193,48,.22);color:#B07E00}
+  .card h3{font-family:var(--display);font-size:18px;font-weight:400;line-height:1.4;margin-top:auto;color:var(--ink)}
+  .done{position:absolute;top:16px;right:16px;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(55,181,140,.35)}
+  .done svg{width:14px;height:14px}
+  .today-empty{color:var(--muted);font-size:14px;padding:6px 2px}
+
+  /* 잠금 오버레이 */
+  .locked-zone{position:relative}
+  .locked-zone.on .grid,.locked-zone.on .tabs{filter:blur(3px);opacity:.55;pointer-events:none;user-select:none}
+  .lock-note{display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;text-align:center}
+  .locked-zone.on .lock-note{display:flex}
+  .lock-inner{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:26px 30px;box-shadow:var(--shadow-lg)}
+  .lock-inner .lbl{font-family:var(--display);font-size:18px;color:var(--mint-d)}
+  .lock-inner p{margin:8px 0 0;color:var(--muted);font-size:14px}
+  .lock-inner .btn-solid{margin-top:16px}
+
+  /* 가이드 */
+  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+  .step{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:22px;box-shadow:var(--shadow)}
+  .step .num{width:38px;height:38px;border-radius:50%;background:rgba(32,178,166,.13);color:var(--mint-d);font-family:var(--display);font-size:18px;display:flex;align-items:center;justify-content:center}
+  .step h4{font-family:var(--display);font-size:17px;font-weight:400;margin:14px 0 6px}
+  .step p{font-size:14px;color:var(--muted)}
+
+  /* 안내 항목 */
+  .notes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .note{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;background:var(--paper);padding:14px 16px;box-shadow:var(--shadow)}
+  .note .ic{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(84,180,232,.14);color:var(--sky)}
+  .note .ic svg{width:18px;height:18px}
+  .note p{font-size:13.5px;color:var(--muted)}
+  .note b{color:var(--ink);font-weight:700;display:block;margin-bottom:2px}
+
+  /* FAQ */
+  .faq details{border:1px solid var(--line);border-radius:14px;background:var(--paper);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
+  .faq summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;color:var(--ink)}
+  .faq summary::-webkit-details-marker{display:none}
+  .faq summary .plus{color:var(--mint);font-size:20px;transition:.2s}
+  .faq details[open] summary .plus{transform:rotate(45deg)}
+  .faq .ans{padding:0 18px 16px;color:var(--muted);font-size:14px}
+  .contact{margin-top:22px;border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(32,178,166,.06);font-size:14px}
+  .contact b{color:var(--mint-d)}
+  .contact a{color:var(--mint-d);font-weight:700}
+
+  /* 교사 안내 카드 */
+  .teacher-note{border:1px dashed var(--line-2);border-radius:var(--r);background:rgba(255,255,255,.6);padding:18px 20px;margin-top:24px;font-size:14px;color:var(--muted);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
+  .teacher-note b{color:var(--ink)}
+  .teacher-note a{color:var(--mint-d);font-weight:700}
+
+  footer{border-top:1px solid var(--line);padding:32px 0;color:var(--muted)}
+  footer .row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px}
+  footer a:hover{color:var(--mint-d)}
+
+  /* 로그인 모달 */
+  .modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(37,71,83,.5);backdrop-filter:blur(5px)}
+  .modal.open{display:flex}
+  .login{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow-lg);max-width:400px;width:100%;position:relative}
+  .modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;border:none;background:#F0F5F6;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
+  .modal-close:hover{background:#E2ECEE;color:var(--ink)}
+  .login .flask{width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:rgba(32,178,166,.12);border-radius:14px;color:var(--mint);margin-bottom:14px}
+  .login .flask svg{width:26px;height:26px}
+  .login h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:3px}
+  .login p.sub{font-size:13.5px;color:var(--muted);margin-bottom:18px}
+  .field{margin-bottom:13px}
+  .field label{font-size:13px;font-weight:700;color:#5A7885;display:block;margin-bottom:6px}
+  .field input{width:100%;padding:13px 15px;font-size:15px;font-family:var(--sans);color:var(--ink);background:#F7FBFC;border:1.5px solid var(--line-2);border-radius:13px;transition:.16s}
+  .field input::placeholder{color:#A9BdC5}
+  .field input:focus{border-color:var(--mint);background:#fff;outline:none}
+  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+  .login .btn-solid{width:100%;padding:14px;font-size:15px;margin-top:6px;border-radius:14px}
+  .login-msg{min-height:18px;margin-top:10px;font-size:13px;color:#E8674F;font-weight:600}
+
+  @media(max-width:860px){
+    .hero-grid{grid-template-columns:1fr;gap:32px}
+    .flow{grid-template-columns:1fr 1fr}
+    .steps{grid-template-columns:1fr 1fr}
+    .notes{grid-template-columns:1fr}
+    .split,.split.rev{grid-template-columns:1fr}
+  }
+  @media(max-width:520px){
+    .flow{grid-template-columns:1fr}
+    .steps{grid-template-columns:1fr}
+    .field-row{grid-template-columns:1fr}
+    .docs-cards{grid-template-columns:1fr}
+    .brand b{font-size:16px}
+    .today-banner{aspect-ratio:2/1}
+  }
+  @media(prefers-reduced-motion:reduce){
+    *{transition:none !important;animation:none !important;scroll-behavior:auto}
+    .card:hover,.doc-card:hover,.fcard:hover{transform:none}
+  }
+</style>
+</head>
+<body>
+
+  <!-- 선생님용 커스터마이징 안내 (맨 위) -->
+  <div class="teacher-bar">
+    <span class="t-msg">선생님이신가요? 이 페이지를 나만의 수업 허브로 만들 수 있어요.</span>
+    <a href="manual.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>나만의 페이지로 커스터마이징하기 →</a>
+  </div>
+
+  <div class="demo-banner hidden" id="demoBanner">미리보기 모드 · Supabase 연결 전이라 예시 활동이 표시됩니다</div>
+
+  <!-- 상단바 -->
+  <header class="topbar">
+    <div class="wrap row">
+      <div class="brand"><b>MBL센서 활용 과학 탐구 수업</b></div>
+      <div class="status">
+        <span id="statusText"><span class="dot" id="statusDot"></span> <span id="statusLabel">미연결</span></span>
+        <button class="btn hidden" id="logoutBtn">로그아웃</button>
+        <button class="btn btn-solid" id="topLoginBtn">로그인</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- 히어로 -->
+  <section class="hero">
+    <div class="wrap hero-grid">
+      <div>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20M9.5 20l.4-2h4.2l.4 2"/></svg>MBL 센서 탐구 수업</span>
+        <h1>측정한 <span class="hl2">숫자</span>에<br /><span class="hl">의미</span>를 더하다</h1>
+        <p class="lead">온도·빛·소리·운동, 디지털 센서로 직접 잰 데이터를 해석하고 그래프 뒤에 숨은 과학 원리를 찾아가는 탐구 수업입니다. 숫자는 측정으로 얻고, 의미는 탐구로 채웁니다.</p>
+        <div class="chips">
+          <span class="chip c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 9v5"/></svg>온도 센서 · 반응 속도</span>
+          <span class="chip c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M19.2 4.8l-1.7 1.7M6.5 17.5l-1.7 1.7"/></svg>조도 센서 · 빛의 세기</span>
+          <span class="chip c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 17l5-6 4 4 6-8"/><path d="M4 20h16"/></svg>가속도 센서 · 물체의 운동</span>
+        </div>
+        <button class="btn-solid hero-cta" id="heroLoginBtn">우리 반 입장하기 →</button>
+      </div>
+      <figure class="ph hero-img" data-label="메인 대표">
+        <img src="./assets/hero.jpg" alt="센서로 탐구하는 과학 수업" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
+        <figcaption class="cap">데이터로 탐구하는 과학 수업</figcaption>
+      </figure>
+    </div>
+  </section>
+
+  <!-- 이렇게 탐구해요 (흐름) -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 12h16M13 5l7 7-7 7"/></svg>탐구의 흐름</span>
+        <h2>이렇게 탐구해요</h2>
+        <p>센서로 재고, 데이터를 해석하고, 결과로 정리하는 네 단계로 수업이 이어집니다.</p>
+      </div>
+      <div class="flow">
+        <div class="fcard">
+          <figure class="ph" data-label="센서 소개"><img src="./assets/sections/sensors.jpg" alt="센서 알아보기" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <div class="fbody"><div class="fno">STEP 01</div><h3>센서 알아보기</h3><p>온도·pH·조도·힘·운동 센서로 무엇을 재는지 익혀요.</p></div>
+        </div>
+        <div class="fcard">
+          <figure class="ph" data-label="탐구 활동"><img src="./assets/sections/activity.jpg" alt="탐구 활동" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <div class="fbody"><div class="fno">STEP 02</div><h3>탐구 활동</h3><p>센서로 직접 측정하며 궁금증을 실험으로 확인해요.</p></div>
+        </div>
+        <div class="fcard">
+          <figure class="ph" data-label="데이터 분석"><img src="./assets/sections/analysis.jpg" alt="데이터 분석" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <div class="fbody"><div class="fno">STEP 03</div><h3>데이터 분석</h3><p>그래프와 표로 측정값을 해석하고 규칙을 찾아요.</p></div>
+        </div>
+        <div class="fcard">
+          <figure class="ph" data-label="결과 정리"><img src="./assets/sections/portfolio.jpg" alt="결과 정리·공유" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+          <div class="fbody"><div class="fno">STEP 04</div><h3>결과 정리·공유</h3><p>보고서로 정리하고 친구·선생님과 나눠요.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 학습 자료실 -->
+  <!-- 자료 연결: a.doc-card 의 href 를 파일/링크로 바꾸고 aria-disabled·onclick 제거, doc-state 를 "열기"·class 에 ready 추가 -->
+  <section class="section" id="docs">
+    <div class="wrap">
+      <div class="split">
+        <figure class="ph" data-label="수업 장면">
+          <img src="./assets/photos/class-01.jpg" alt="수업 장면" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
+        </figure>
+        <div>
+          <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6"/></svg>수업 자료</span>
+          <h2>수업 자료실</h2>
+          <p>센서 사용법과 우리 반 약속을 미리 확인하세요. 자료는 파일이나 링크로 계속 채워집니다.</p>
+          <div class="docs-cards">
+            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
+              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
+              <h3>센서 활용 가이드</h3><p>측정 앱 사용법과 실험 팁</p><span class="doc-state">준비 중</span>
+            </a>
+            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
+              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 12a5 5 0 0 1 10 0"/><path d="M4 12a8 8 0 0 1 16 0"/><rect x="9" y="14" width="6" height="7" rx="1.5"/></svg></span>
+              <h3>센서 연결법</h3><p>기기·권한 설정 안내</p><span class="doc-state">준비 중</span>
+            </a>
+            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
+              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M15 8.5h2M15 14.5h2"/></svg></span>
+              <h3>수업 규칙</h3><p>탐구 수업 진행 규칙</p><span class="doc-state">준비 중</span>
+            </a>
+            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
+              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.2-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.8 12 20 12 20z"/></svg></span>
+              <h3>수업 약속</h3><p>서로 지킬 우리 반 약속</p><span class="doc-state">준비 중</span>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 나의 기록 (로그인 후 표시) -->
+  <section class="section hidden" id="myRecord">
+    <div class="wrap">
+      <div class="split rev">
+        <div>
+          <span class="badge coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M9 14l-2 7 5-3 5 3-2-7"/></svg>나의 기록</span>
+          <h2>나의 실험 기록</h2>
+          <p>제출한 실험, 받은 배지, 성장 그래프가 여기에 모여요. (준비 중)</p>
+        </div>
+        <figure class="ph" data-label="나의 기록"><img src="./assets/sections/my-record.jpg" alt="나의 실험 기록" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+      </div>
+    </div>
+  </section>
+
+  <!-- 오늘의 수업 -->
+  <section class="section">
+    <div class="wrap">
+      <div class="today-wrap">
+        <span class="badge sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>오늘의 미션</span>
+        <div class="section-head" style="margin:12px 0 0"><h2 style="margin:0">오늘의 수업</h2></div>
+        <figure class="ph today-banner" data-label="오늘의 미션">
+          <img src="./assets/sections/mission.jpg" alt="오늘의 미션" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
+          <figcaption class="cap">오늘의 탐구 미션</figcaption>
+        </figure>
+        <div class="grid" id="todayGrid"></div>
+        <div class="today-empty hidden" id="todayEmpty">지금 예정된 활동이 없어요. 아래 단원에서 활동을 골라도 됩니다.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 활동 목록 -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>활동</span>
+        <h2>단원별 탐구 활동</h2>
+        <p>단원을 고르면 차시 순서대로 활동이 나타나요. 마친 활동에는 완료 표시가 붙어요.</p>
+      </div>
+      <div class="locked-zone" id="lockZone">
+        <div class="tabs" id="tabs"></div>
+        <div class="grid" id="actGrid"></div>
+        <div class="lock-note">
+          <div class="lock-inner">
+            <div class="lbl">로그인이 필요해요</div>
+            <p>우리 반에 입장하면 실제 활동이 열려요.</p>
+            <button class="btn btn-solid" id="lockLoginBtn">입장하기</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 사용 가이드 -->
+  <section class="section">
+    <div class="wrap">
+      <div class="section-head">
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>사용법</span>
+        <h2>이렇게 사용해요</h2>
+      </div>
+      <div class="steps">
+        <div class="step"><div class="num">1</div><h4>입장하기</h4><p>선생님이 준 학급코드·번호·PIN으로 로그인해요.</p></div>
+        <div class="step"><div class="num">2</div><h4>오늘의 수업</h4><p>위쪽에서 오늘 할 활동을 골라요.</p></div>
+        <div class="step"><div class="num">3</div><h4>측정·탐구</h4><p>시뮬레이션을 조작하거나 센서로 직접 측정해요.</p></div>
+        <div class="step"><div class="num">4</div><h4>결과 저장</h4><p>제출하면 선생님 대시보드로 바로 전송돼요.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 안전 수칙 -->
+  <section class="section">
+    <div class="wrap split">
+      <figure class="ph" data-label="안전 수칙"><img src="./assets/sections/safety.jpg" alt="안전 수칙" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+      <div>
+        <span class="badge sky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>안전</span>
+        <h2>탐구 전 확인해요</h2>
+        <div class="notes" style="margin-top:18px">
+          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18"/></svg></span><p><b>크롬 권장</b>센서·저장이 안정적이에요.</p></div>
+          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12a7 7 0 0 1 14 0M8 12a4 4 0 0 1 8 0"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 13.5V21"/></svg></span><p><b>센서 권한 허용</b>권한 요청은 허용해요.</p></div>
+          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></span><p><b>측정 중 화면 유지</b>앱 전환은 값이 끊겨요.</p></div>
+          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><p><b>기기 공유 시 로그아웃</b>넘길 땐 꼭 로그아웃해요.</p></div>
+          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span><p><b>실험실 안전</b>고글·장갑 등 안내를 따라요.</p></div>
+          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17a4 4 0 0 1 .8-7.9A6 6 0 0 1 17.5 9 3.5 3.5 0 0 1 18 16"/><path d="M12 12v6M9.5 15.5 12 18l2.5-2.5"/></svg></span><p><b>저장 안 될 때</b>연결 확인 후 다시 제출해요.</p></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 도움말 / FAQ -->
+  <section class="section">
+    <div class="wrap split rev">
+      <div>
+        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="9"/></svg>도움말</span>
+        <h2>실험이 잘 안 될 때</h2>
+        <p style="margin-bottom:20px">막히면 아래를 확인해 보세요.</p>
+        <div class="faq">
+          <details><summary>로그인이 안 돼요<span class="plus">+</span></summary><div class="ans">학급코드·번호·PIN을 다시 확인하세요. 대소문자·하이픈까지 정확해야 합니다. 그래도 안 되면 선생님께 문의하세요.</div></details>
+          <details><summary>PIN을 잊어버렸어요<span class="plus">+</span></summary><div class="ans">선생님이 다시 알려주거나 새 PIN으로 재설정할 수 있습니다.</div></details>
+          <details><summary>측정값이 이상해요<span class="plus">+</span></summary><div class="ans">센서 권한과 측정 환경(빛·움직임)을 확인하고 다시 측정하세요.</div></details>
+          <details><summary>내 점수는 어디서 보나요<span class="plus">+</span></summary><div class="ans">활동을 마치면 카드에 완료 표시가 뜨고, 결과는 선생님이 확인합니다.</div></details>
+        </div>
+        <div class="contact">문의 — <b>해누리중학교 조승재</b> · 이메일 <a href="mailto:chuseonjae@outlook.kr">chuseonjae@outlook.kr</a> · 인스타그램 <a href="https://instagram.com/science_is_jo" target="_blank" rel="noopener">@science_is_jo</a></div>
+      </div>
+      <figure class="ph" data-label="도움말"><img src="./assets/sections/help.jpg" alt="도움말" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
+    </div>
+  </section>
+
+  <footer>
+    <div class="wrap">
+      <div class="teacher-note">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--mint)" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>
+        <span><b>선생님용 수업 관리 대시보드</b>는 별도 페이지로 준비 중입니다. 학생 진행 상황·형성평가·탐구 데이터를 한눈에 보게 됩니다.</span>
+        <a href="manual.html">커스터마이징 안내 보기 →</a>
+      </div>
+      <div class="row" style="margin-top:22px">
+        <span>© 2026 해누리중학교 조승재 · MBL 센서 과학 탐구 수업</span>
+        <span><a href="https://instagram.com/science_is_jo" target="_blank" rel="noopener">@science_is_jo</a></span>
+      </div>
+    </div>
+  </footer>
+
+  <!-- 로그인 모달 -->
+  <div class="modal" id="loginModal">
+    <div class="login">
+      <button class="modal-close" id="modalClose" aria-label="닫기">×</button>
+      <div class="flask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v5l-4.5 8.5A2 2 0 0 0 6.3 20h11.4a2 2 0 0 0 1.8-3.5L15 8V3"/><path d="M7.5 3h9M8 14h8"/><circle cx="11" cy="16" r=".8" fill="currentColor" stroke="none"/><circle cx="14" cy="17" r=".7" fill="currentColor" stroke="none"/></svg></div>
+      <h2>우리 반 입장하기</h2>
+      <p class="sub">선생님이 나눠준 학급코드·번호·PIN을 입력하세요.</p>
+      <form id="loginFormEl" autocomplete="off">
+        <div class="field"><label for="fCode">학급코드</label><input id="fCode" type="text" placeholder="예: HN1-3" required /></div>
+        <div class="field-row">
+          <div class="field"><label for="fNo">번호</label><input id="fNo" type="text" inputmode="numeric" placeholder="예: 7" required /></div>
+          <div class="field"><label for="fPin">PIN</label><input id="fPin" type="password" inputmode="numeric" placeholder="••••" required /></div>
+        </div>
+        <button type="submit" class="btn-solid">입장하기</button>
+      </form>
+      <div class="login-msg" id="loginMsg"></div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="./hub.js"></script>
+  <script>
+  (() => {
+    const hasHub = typeof Hub !== 'undefined';
+
+    const TYPES = {
+      simulation:{lbl:'시뮬', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="9" ry="4"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(60 12 12)"/></svg>'},
+      inquiry:   {lbl:'탐구', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v6l-5 8a2 2 0 0 0 1.7 3h12.6a2 2 0 0 0 1.7-3l-5-8V3"/><path d="M7 3h10"/></svg>'},
+      video:     {lbl:'영상', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>'},
+      quiz:      {lbl:'퀴즈', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>'}
+    };
+
+    const SAMPLE = [
+      {id:'s1',grade:'중1',unit:'힘과 운동',lesson_no:2,type:'inquiry',title:'가속도 센서로 운동 기록하기',is_active:true,completed:false,url:''},
+      {id:'s2',grade:'중1',unit:'힘과 운동',lesson_no:3,type:'simulation',title:'등속·등가속 운동 비교하기',is_active:true,completed:false,url:''},
+      {id:'s3',grade:'중2',unit:'빛과 파동',lesson_no:1,type:'inquiry',title:'조도 센서로 빛의 세기 측정',is_active:false,completed:true,url:''},
+      {id:'s4',grade:'중2',unit:'빛과 파동',lesson_no:2,type:'video',title:'거울 반사의 원리',is_active:false,completed:false,url:''},
+      {id:'s5',grade:'중2',unit:'빛과 파동',lesson_no:4,type:'quiz',title:'빛과 파동 형성평가',is_active:false,completed:false,url:''},
+      {id:'s6',grade:'중3',unit:'화학 반응',lesson_no:1,type:'inquiry',title:'온도 센서로 반응 속도 관찰',is_active:false,completed:false,url:''},
+      {id:'s7',grade:'중3',unit:'화학 반응',lesson_no:3,type:'simulation',title:'입자 충돌로 보는 반응 속도',is_active:false,completed:false,url:''}
+    ];
+
+    const $ = s => document.querySelector(s);
+    const statusDot=$('#statusDot'), statusLabel=$('#statusLabel');
+    const topLoginBtn=$('#topLoginBtn'), logoutBtn=$('#logoutBtn');
+    const heroLoginBtn=$('#heroLoginBtn'), lockLoginBtn=$('#lockLoginBtn');
+    const loginMsg=$('#loginMsg'), modal=$('#loginModal');
+    const tabsEl=$('#tabs'), actGrid=$('#actGrid'), lockZone=$('#lockZone');
+    const todayGrid=$('#todayGrid'), todayEmpty=$('#todayEmpty'), myRecord=$('#myRecord');
+
+    const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>';
+    const typePill = t => { const d=TYPES[t]||TYPES.inquiry; return `<span class="pill pill-${t}">${d.svg}${d.lbl}</span>`; };
+
+    function cardHTML(a){
+      const done = a.completed ? `<span class="done">${CHECK}</span>` : '';
+      const meta = [a.grade, a.unit, (a.lesson_no!=null?`${a.lesson_no}차시`:null)].filter(Boolean).join(' - ');
+      return `<div class="card" data-url="${a.url||''}" role="button" tabindex="0">
+        ${done}<div class="card-meta">${meta}</div><div class="card-top">${typePill(a.type)}</div><h3>${a.title}</h3></div>`;
+    }
+    function bindCards(container){
+      container.querySelectorAll('.card').forEach(el=>{
+        const go=()=>{ const u=el.dataset.url; if(!u) return; location.href = u + (u.includes('?')?'&':'?') + 'aid=' + encodeURIComponent(el.closest('[data-aid]')?.dataset.aid||''); };
+        el.addEventListener('click',go);
+        el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+      });
+    }
+    function render(acts){
+      const today = acts.filter(a=>a.is_active);
+      if(today.length){ todayGrid.innerHTML = today.map(a=>`<div data-aid="${a.id}">${cardHTML(a)}</div>`).join(''); todayEmpty.classList.add('hidden'); }
+      else { todayGrid.innerHTML=''; todayEmpty.classList.remove('hidden'); }
+      const units=[]; const map={};
+      acts.forEach(a=>{ const u=a.unit||'기타'; if(!map[u]){map[u]=[];units.push(u);} map[u].push(a); });
+      Object.values(map).forEach(list=>list.sort((x,y)=>(x.lesson_no??999)-(y.lesson_no??999)||(x.sort_order??0)-(y.sort_order??0)));
+      tabsEl.innerHTML = units.map((u,i)=>`<button class="tab${i===0?' active':''}" data-unit="${u}">${u}</button>`).join('');
+      const paint = u => { actGrid.innerHTML = (map[u]||[]).map(a=>`<div data-aid="${a.id}">${cardHTML(a)}</div>`).join(''); bindCards(actGrid); };
+      tabsEl.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{ tabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); paint(t.dataset.unit); }));
+      if(units.length) paint(units[0]);
+      bindCards(todayGrid);
+    }
+
+    // 모달
+    function openLogin(){ modal.classList.add('open'); setTimeout(()=>$('#fCode').focus(),50); }
+    function closeLogin(){ modal.classList.remove('open'); }
+    [topLoginBtn,heroLoginBtn,lockLoginBtn].forEach(b=>b&&b.addEventListener('click',openLogin));
+    $('#modalClose').addEventListener('click',closeLogin);
+    modal.addEventListener('click',e=>{ if(e.target===modal) closeLogin(); });
+    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLogin(); });
+
+    function showConnected(profile){
+      statusDot.classList.add('live');
+      statusLabel.innerHTML = `<span class="who">${profile?.nickname||'학생'}</span> · ${profile?.class_name||''}`;
+      topLoginBtn.classList.add('hidden'); logoutBtn.classList.remove('hidden');
+      heroLoginBtn.classList.add('hidden'); myRecord.classList.remove('hidden');
+      lockZone.classList.remove('on');
+    }
+    function showLockedPreview(){
+      statusDot.classList.remove('live'); statusLabel.textContent='미연결';
+      logoutBtn.classList.add('hidden'); topLoginBtn.classList.remove('hidden');
+      heroLoginBtn.classList.remove('hidden'); myRecord.classList.add('hidden');
+      lockZone.classList.add('on'); render(SAMPLE);
+    }
+    async function loadReal(){
+      try{ render(await Hub.getActivities() || []); }
+      catch(e){ console.warn('활동 불러오기 실패 → 예시 표시', e); $('#demoBanner').classList.remove('hidden'); render(SAMPLE); }
+    }
+
+    $('#loginFormEl').addEventListener('submit', async e=>{
+      e.preventDefault(); loginMsg.textContent='';
+      const code=$('#fCode').value.trim(), no=$('#fNo').value.trim(), pin=$('#fPin').value.trim();
+      if(!hasHub){ loginMsg.textContent='Supabase 연결 전입니다. hub.js에 URL·anon key를 넣어주세요.'; return; }
+      try{ const profile = await Hub.login(code,no,pin); closeLogin(); showConnected(profile); await loadReal(); window.scrollTo({top:0,behavior:'smooth'}); }
+      catch(err){ loginMsg.textContent = err.message || '로그인에 실패했습니다.'; }
+    });
+
+    function doLogout(){ if(hasHub) Hub.logout(); showLockedPreview(); }
+    logoutBtn.addEventListener('click',doLogout);
+
+    if(!hasHub) $('#demoBanner').classList.remove('hidden');
+    if(hasHub && Hub.isLoggedIn()){ showConnected(Hub.getProfile()); loadReal(); }
+    else { showLockedPreview(); }
+  })();
+  </script>
+</body>
+</html>
