@@ -7,100 +7,111 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link rel="preconnect" href="https://fonts.googleapis.com" />
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet" />
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <style>
   :root{
-    --bg-image: url('./assets/lab-bg.jpg');
-    --ink-0:#08131C; --ink-1:#0C1E29;
-    --glass:rgba(11,28,39,.60); --glass-2:rgba(11,28,39,.42);
-    --line:rgba(120,200,210,.20); --line-hi:rgba(120,200,210,.42);
-    --cyan:#4FD6C9; --cyan-dim:#2A8F88; --amber:#F6B73C;
-    --text:#E9F4F4; --muted:#93AEB4; --danger:#FF7A6B; --ok:#7BE0A0;
-    --mono:'JetBrains Mono',ui-monospace,monospace;
+    --sky-1:#D4EDFB; --sky-2:#EAF8F0;
+    --paper:#FFFFFF; --cream:#FFFDF6;
+    --ink:#254753; --muted:#6E8A96;
+    --mint:#20B2A6; --mint-d:#14867C;
+    --sun:#FFC130; --coral:#FF8C6B; --sky:#54B4E8;
+    --line:#E4EFF1; --line-2:#D3E6EA;
+    --shadow:0 10px 28px rgba(37,71,83,.09);
+    --shadow-lg:0 18px 44px rgba(37,71,83,.14);
+    --display:'Jua',sans-serif;
     --sans:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
-    --wrap:1120px;
+    --wrap:1120px; --r:18px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html{scroll-behavior:smooth}
-  body{font-family:var(--sans);color:var(--text);background:var(--ink-0);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden}
-  body::before{content:'';position:fixed;inset:0;z-index:-2;background-image:var(--bg-image);background-size:cover;background-position:center;background-attachment:fixed}
-  body::after{content:'';position:fixed;inset:0;z-index:-1;background:
-    linear-gradient(180deg,rgba(8,19,28,.88),rgba(8,19,28,.93)),
-    repeating-linear-gradient(0deg,transparent 0 39px,rgba(79,214,201,.03) 39px 40px),
-    repeating-linear-gradient(90deg,transparent 0 39px,rgba(79,214,201,.03) 39px 40px)}
+  body{font-family:var(--sans);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;overflow-x:hidden;
+    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed}
+  body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
+    background:
+      radial-gradient(circle at 12% 18%, rgba(84,180,232,.13), transparent 42%),
+      radial-gradient(circle at 88% 12%, rgba(255,193,48,.13), transparent 38%)}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
-  .mono{font-family:var(--mono)}
-  :focus-visible{outline:2px solid var(--cyan);outline-offset:2px;border-radius:4px}
+  :focus-visible{outline:3px solid var(--mint);outline-offset:2px;border-radius:8px}
 
   /* 상단바 */
-  .topbar{position:sticky;top:0;z-index:50;backdrop-filter:blur(10px);background:rgba(8,19,28,.7);border-bottom:1px solid var(--line)}
-  .topbar .row{display:flex;align-items:center;justify-content:space-between;height:60px}
-  .back{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:15px}
-  .back svg{width:18px;height:18px;color:var(--cyan)}
-  .back span.sub{font-family:var(--mono);font-size:10px;letter-spacing:.16em;color:var(--muted);font-weight:400}
-  .btn{font-family:var(--mono);font-size:12px;letter-spacing:.05em;border:1px solid var(--line-hi);background:transparent;color:var(--text);padding:8px 14px;border-radius:8px;transition:.16s}
-  .btn:hover{border-color:var(--cyan);color:var(--cyan)}
+  .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .topbar .row{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
+  .back{display:inline-flex;align-items:center;gap:9px;font-family:var(--display);font-size:17px;color:var(--ink);min-width:0}
+  .back svg{width:18px;height:18px;color:var(--mint);flex-shrink:0}
+  .back b{font-weight:400;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .btn{display:inline-flex;align-items:center;gap:7px;font-size:13px;font-weight:700;cursor:pointer;border:none;background:var(--mint);color:#fff;padding:9px 16px;border-radius:999px;box-shadow:var(--shadow);transition:.18s;white-space:nowrap}
+  .btn:hover{background:var(--mint-d)}
+  .btn svg{width:15px;height:15px}
 
   /* 히어로 */
-  .hero{padding:72px 0 40px}
-  .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.2em;text-transform:uppercase;color:var(--cyan)}
-  .hero h1{font-size:clamp(30px,4.5vw,50px);font-weight:900;line-height:1.1;letter-spacing:-.02em;margin:14px 0 14px}
-  .hero h1 .hl{color:var(--cyan)}
-  .hero p{font-size:17px;color:var(--muted);max-width:56ch}
+  .hero{padding:64px 0 34px}
+  .badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--display);font-size:14px;color:var(--mint-d);background:rgba(32,178,166,.13);padding:6px 14px;border-radius:999px}
+  .badge svg{width:16px;height:16px}
+  .hero h1{font-family:var(--display);font-size:clamp(30px,4.6vw,52px);font-weight:400;line-height:1.15;margin:16px 0 14px}
+  .hero h1 .hl{color:var(--mint)}
+  .hero p{font-size:17px;color:#4C6B78;max-width:56ch}
+  .hero .cta{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
+  .hero .cta a{display:inline-flex;align-items:center;gap:8px;font-weight:700;font-size:14px;padding:12px 20px;border-radius:12px}
+  .hero .cta .primary{background:var(--mint);color:#fff;box-shadow:var(--shadow)}
+  .hero .cta .primary:hover{background:var(--mint-d)}
+  .hero .cta .ghost{background:#fff;border:1.5px solid var(--line-2);color:var(--ink)}
+  .hero .cta .ghost:hover{border-color:var(--mint);color:var(--mint-d)}
+  .hero .cta svg{width:16px;height:16px}
 
   /* 본문 레이아웃 */
-  .layout{display:grid;grid-template-columns:216px 1fr;gap:52px;padding:32px 0 80px;align-items:start}
+  .layout{display:grid;grid-template-columns:216px 1fr;gap:52px;padding:24px 0 80px;align-items:start}
   .toc{position:sticky;top:84px}
-  .toc h4{font-family:var(--mono);font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--muted);margin-bottom:14px}
-  .toc a{display:block;padding:7px 0;font-size:14px;color:var(--muted);border-left:2px solid transparent;padding-left:12px;transition:.14s}
-  .toc a:hover{color:var(--text);border-left-color:var(--line-hi)}
+  .toc h4{font-size:12px;font-weight:700;letter-spacing:.04em;color:var(--muted);margin-bottom:12px}
+  .toc a{display:block;padding:8px 0 8px 14px;font-size:14px;color:var(--muted);border-left:2px solid var(--line);transition:.14s}
+  .toc a:hover{color:var(--mint-d);border-left-color:var(--mint)}
 
-  .doc section{scroll-margin-top:84px;margin-bottom:56px}
-  .doc h2{font-size:clamp(22px,3vw,28px);font-weight:800;letter-spacing:-.01em;margin-bottom:8px;display:flex;align-items:baseline;gap:12px}
-  .doc h2 .no{font-family:var(--mono);font-size:15px;color:var(--cyan);font-weight:700}
-  .doc .lead{color:var(--muted);margin-bottom:22px;max-width:64ch}
-  .doc h3{font-size:17px;font-weight:700;margin:22px 0 8px}
-  .doc p{color:#CFE0E2;margin-bottom:12px}
-  .doc p .muted{color:var(--muted)}
-  code.inline{font-family:var(--mono);font-size:.9em;background:rgba(79,214,201,.1);color:var(--cyan);padding:2px 6px;border-radius:5px}
+  .doc section{scroll-margin-top:88px;margin-bottom:52px}
+  .doc h2{font-family:var(--display);font-size:clamp(23px,3vw,29px);font-weight:400;margin-bottom:8px;display:flex;align-items:center;gap:12px}
+  .doc h2 .no{width:34px;height:34px;flex-shrink:0;border-radius:50%;background:rgba(32,178,166,.14);color:var(--mint-d);font-size:16px;display:flex;align-items:center;justify-content:center}
+  .doc .lead{color:var(--muted);margin-bottom:20px;max-width:64ch}
+  .doc h3{font-family:var(--display);font-size:17px;font-weight:400;margin:22px 0 8px}
+  .doc p{color:#3C5A66;margin-bottom:12px}
+  code.inline{font-family:ui-monospace,monospace;font-size:.88em;background:rgba(32,178,166,.1);color:var(--mint-d);padding:2px 7px;border-radius:6px}
 
-  /* 장점 카드 */
   .adv{display:grid;grid-template-columns:1fr 1fr;gap:14px}
-  .adv .item{border:1px solid var(--line);border-radius:13px;background:var(--glass-2);padding:18px 20px;backdrop-filter:blur(8px)}
-  .adv .item .ic{width:34px;height:34px;border-radius:9px;display:flex;align-items:center;justify-content:center;background:rgba(79,214,201,.12);color:var(--cyan);margin-bottom:10px}
+  .adv .item{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:18px 20px;box-shadow:var(--shadow)}
+  .adv .item .ic{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(32,178,166,.13);color:var(--mint);margin-bottom:10px}
   .adv .item .ic svg{width:18px;height:18px}
-  .adv .item b{display:block;font-size:15px;margin-bottom:4px}
+  .adv .item b{display:block;font-size:15px;margin-bottom:3px}
   .adv .item p{font-size:13.5px;color:var(--muted);margin:0}
 
-  /* 단계 리스트 */
-  .steps{counter-reset:s;border-left:2px solid var(--line);margin-left:6px;padding-left:0}
-  .steps li{list-style:none;position:relative;padding:0 0 26px 34px;margin-left:12px}
-  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:-15px;top:-2px;width:28px;height:28px;border-radius:50%;background:var(--ink-1);border:1px solid var(--cyan);color:var(--cyan);font-family:var(--mono);font-size:13px;display:flex;align-items:center;justify-content:center}
-  .steps li h3{margin:2px 0 6px;font-size:16px}
-  .steps li p{font-size:14.5px;color:var(--muted);margin:0}
-  .steps li:last-child{padding-bottom:0}
+  .steps{counter-reset:s;list-style:none}
+  .steps li{position:relative;padding:0 0 24px 46px;margin-left:6px;border-left:2px solid var(--line)}
+  .steps li:last-child{border-left-color:transparent;padding-bottom:0}
+  .steps li::before{counter-increment:s;content:counter(s);position:absolute;left:-16px;top:-4px;width:30px;height:30px;border-radius:50%;background:#fff;border:2px solid var(--mint);color:var(--mint-d);font-family:var(--display);font-size:14px;display:flex;align-items:center;justify-content:center}
+  .steps li h3{margin:0 0 6px;font-size:16px}
+  .steps li p{font-size:14.5px;color:#3C5A66;margin:0}
 
-  /* 코드블록 */
-  pre{background:rgba(4,12,18,.7);border:1px solid var(--line);border-radius:11px;padding:15px 17px;overflow-x:auto;margin:12px 0}
-  pre code{font-family:var(--mono);font-size:13px;color:#BFEFE8;line-height:1.7;white-space:pre}
+  pre{background:#F1F8F9;border:1px solid var(--line);border-radius:12px;padding:15px 17px;overflow-x:auto;margin:12px 0}
+  pre code{font-family:ui-monospace,monospace;font-size:13px;color:#2A5561;line-height:1.7;white-space:pre}
 
-  /* 콜아웃 */
-  .callout{border:1px solid var(--line-hi);border-radius:11px;padding:14px 17px;margin:16px 0;background:rgba(79,214,201,.06);font-size:14px;display:flex;gap:12px}
-  .callout.warn{background:rgba(246,183,60,.08);border-color:rgba(246,183,60,.4)}
-  .callout .ic{flex-shrink:0;color:var(--cyan)}
-  .callout.warn .ic{color:var(--amber)}
+  table.files{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.5px;background:var(--paper);border-radius:12px;overflow:hidden;box-shadow:var(--shadow)}
+  table.files th,table.files td{text-align:left;padding:9px 14px;border-bottom:1px solid var(--line)}
+  table.files th{background:rgba(32,178,166,.08);color:var(--mint-d);font-weight:700}
+  table.files td code{font-family:ui-monospace,monospace;font-size:12.5px;color:var(--ink)}
+  table.files tr:last-child td{border-bottom:none}
+
+  .callout{border:1px solid var(--line);border-radius:12px;padding:14px 17px;margin:16px 0;background:rgba(32,178,166,.06);font-size:14px;display:flex;gap:12px}
+  .callout.warn{background:rgba(255,140,107,.09);border-color:rgba(255,140,107,.35)}
+  .callout .ic{flex-shrink:0;color:var(--mint)}
+  .callout.warn .ic{color:var(--coral)}
   .callout .ic svg{width:19px;height:19px}
-  .callout b{color:var(--text)}
+  .callout b{color:var(--ink)}
 
-  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted);font-family:var(--mono);font-size:12px}
-  footer .row{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap}
+  footer{border-top:1px solid var(--line);padding:30px 0;color:var(--muted)}
+  footer .row{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:13px;align-items:center}
+  footer a{color:var(--mint-d);font-weight:700}
 
   @media(max-width:860px){
     .layout{grid-template-columns:1fr;gap:0}
-    .toc{position:static;margin-bottom:34px;border:1px solid var(--line);border-radius:12px;padding:16px 18px;background:var(--glass-2)}
+    .toc{position:static;margin-bottom:32px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--paper);box-shadow:var(--shadow)}
     .toc a{border-left:none;padding-left:0}
-    body::before{background-attachment:scroll}
   }
   @media(max-width:520px){.adv{grid-template-columns:1fr}}
   @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
@@ -112,22 +123,24 @@
     <div class="wrap row">
       <a class="back" href="index.html">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M15 5l-7 7 7 7"/></svg>
-        <span>MBL센서 활용 과학 탐구 수업<br /><span class="sub">CUSTOMIZE MANUAL</span></span>
+        <b>MBL센서 활용 과학 탐구 수업</b>
       </a>
-      <a class="btn" href="index.html">허브 미리보기</a>
+      <a class="btn" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>허브로 가기</a>
     </div>
   </header>
 
   <section class="hero">
     <div class="wrap">
-      <span class="kicker">FOR TEACHERS</span>
+      <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>선생님용 가이드</span>
       <h1>이 허브를<br /><span class="hl">나만의 수업 페이지</span>로</h1>
       <p>학생 로그인, 활동 카드, 데이터 자동 수집까지 갖춘 이 페이지를 선생님 수업에 맞게 복제해 쓰실 수 있습니다. GitHub Pages와 Supabase만 있으면 서버 없이 무료로 운영됩니다.</p>
+      <div class="cta">
+        <a class="primary" href="index.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 11l9-8 9 8"/><path d="M5 10v10h14V10"/></svg>허브 미리보기</a>
+      </div>
     </div>
   </section>
 
   <div class="wrap layout">
-    <!-- 목차 -->
     <nav class="toc">
       <h4>목차</h4>
       <a href="#about">이 허브란</a>
@@ -143,7 +156,7 @@
       <section id="about">
         <h2><span class="no">A</span>이 허브란</h2>
         <p class="lead">MBL 센서 탐구 수업을 한 곳에 모으는 학생용 진입 페이지입니다.</p>
-        <p>학생은 학급코드·번호·PIN으로 로그인해 <b>오늘의 활동</b>(시뮬레이션·센서 탐구·영상·퀴즈)에 접근하고, 측정한 데이터와 형성평가 점수는 자동으로 기록됩니다. 선생님은 활동을 카드로 추가하고, 모인 데이터를 대시보드로 확인합니다. 화면 구성은 <b>정적 웹페이지(GitHub Pages)</b>가 담당하고, 로그인·저장·집계는 <b>Supabase</b>가 맡습니다.</p>
+        <p>학생은 학급코드·번호·PIN으로 로그인해 <b>오늘의 활동</b>(시뮬레이션·센서 탐구·영상·퀴즈)에 접근하고, 측정한 데이터와 형성평가 점수는 자동으로 기록됩니다. 화면은 상단 <b>탭</b>으로 전환돼요 — 탐구 흐름·오늘의 수업·활동·자료실·안내로 나뉘어, 길게 스크롤하지 않고 필요한 곳만 봅니다. 페이지 구성은 <b>GitHub Pages</b>가, 로그인·저장·집계는 <b>Supabase</b>가 맡습니다.</p>
       </section>
 
       <!-- 장점 -->
@@ -152,11 +165,11 @@
         <p class="lead">흩어진 자료와 활동을 하나로 묶고, 관리 부담은 낮춥니다.</p>
         <div class="adv">
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="7" height="7" rx="1.5"/><rect x="14" y="4" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="6" rx="1.5"/><rect x="14" y="14" width="7" height="6" rx="1.5"/></svg></span><b>한 곳에 모으기</b><p>흩어진 앱·자료·평가를 단일 진입점으로 묶습니다.</p></div>
-          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18l5-6 4 4 6-8"/><path d="M4 20h16"/></svg></span><b>데이터 자동 수집</b><p>탐구 결과와 형성평가가 자동 저장돼 대시보드로 분석됩니다.</p></div>
-          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 2v20M5 6h9a3 3 0 0 1 0 6H5M5 12h11a3 3 0 0 1 0 6H5"/></svg></span><b>무료·무서버</b><p>GitHub Pages와 Supabase 무료 티어로 운영합니다.</p></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18l5-6 4 4 6-8"/><path d="M4 20h16"/></svg></span><b>데이터 자동 수집</b><p>탐구 결과·형성평가가 자동 저장돼 대시보드로 분석됩니다.</p></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><b>탭으로 깔끔하게</b><p>스크롤 대신 탭 전환이라 학생이 필요한 화면만 봅니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h10M4 17h16"/></svg></span><b>관리가 쉬움</b><p>활동은 코드가 아니라 DB 행으로 추가돼 페이지가 길어지지 않습니다.</p></div>
-          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l2.5 5 5.5.8-4 3.9.9 5.5L12 21l-4.9 2.6.9-5.5-4-3.9 5.5-.8z" transform="scale(0.9) translate(1.3 -0.5)"/></svg></span><b>내 수업에 맞춤</b><p>제목·배경·자료·활동을 자유롭게 바꿉니다.</p></div>
-          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span><b>확장 가능</b><p>반별 과제, 파일 업로드, 데이터 분석 도구까지 이어붙일 수 있습니다.</p></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><b>무료·무서버</b><p>GitHub Pages와 Supabase 무료 티어로 운영합니다.</p></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span><b>확장 가능</b><p>반별 과제, 파일 업로드, 데이터 분석까지 이어붙일 수 있습니다.</p></div>
         </div>
       </section>
 
@@ -165,42 +178,55 @@
         <h2><span class="no">C</span>준비물</h2>
         <p class="lead">모두 무료이고, 계정 두 개면 시작할 수 있습니다.</p>
         <p><b>1. GitHub 계정</b> — 페이지를 올리고 공개할 곳입니다.<br />
-           <b>2. Supabase 계정</b> — 로그인·데이터 저장을 맡는 DB입니다.<br />
-           <b>3. 파일 세트</b> — <code class="inline">index.html</code>, <code class="inline">hub.js</code>, <code class="inline">schema.sql</code> (이미 받으신 파일).<br />
-           <b>4. (선택) 이미지</b> — 배경·수업 사진.</p>
+           <b>2. Supabase 계정</b> — 로그인·데이터 저장을 맡는 DB입니다. 기존에 쓰던 프로젝트가 있어도, 이 허브의 테이블은 모두 <code class="inline">hub_</code> 로 시작해 겹치지 않습니다.<br />
+           <b>3. 파일 세트</b> — <code class="inline">index.html</code>, <code class="inline">hub.js</code>, <code class="inline">manual.html</code>, <code class="inline">schema.sql</code>.<br />
+           <b>4. 이미지</b> — 배경이 아니라 <b>섹션 사진 10장</b>(선택, 없어도 자리 안내가 표시됨).</p>
       </section>
 
       <!-- 커스터마이징 -->
       <section id="custom">
         <h2><span class="no">D</span>나만의 페이지 만들기</h2>
-        <p class="lead">파일을 올리고, 이름·배경·활동만 내 수업으로 바꾸면 됩니다.</p>
+        <p class="lead">파일을 올리고, 이름·이미지·활동만 내 수업으로 바꾸면 됩니다.</p>
         <ol class="steps">
           <li>
             <h3>저장소 준비</h3>
-            <p>GitHub에서 새 저장소를 만듭니다. 개인 페이지로 쓰려면 이름을 <code class="inline">아이디.github.io</code> 로 만드세요. 그런 다음 <code class="inline">index.html</code>·<code class="inline">hub.js</code>·<code class="inline">assets/</code> 를 올립니다. 처음이라면 저장소의 <code class="inline">Add file → Upload files</code> 로 드래그해 올리는 게 가장 쉽습니다.</p>
+            <p>GitHub 저장소에 <code class="inline">index.html</code>·<code class="inline">hub.js</code>·<code class="inline">manual.html</code>·<code class="inline">assets/</code> 를 올립니다. <b>index.html 과 hub.js 는 반드시 같은 폴더에 나란히</b> 두세요(index 가 <code class="inline">./hub.js</code> 로 불러옵니다). 처음이면 <code class="inline">Add file → Upload files</code> 로 드래그해 올리는 게 가장 쉽습니다.</p>
           </li>
           <li>
             <h3>제목·이름 바꾸기</h3>
-            <p><code class="inline">index.html</code> 상단의 <code class="inline">&lt;title&gt;</code> 과 상단바 <code class="inline">&lt;div class="brand"&gt;</code> 안의 이름을 내 수업 이름으로 바꿉니다. 푸터의 이름도 함께 바꾸면 깔끔합니다.</p>
+            <p><code class="inline">index.html</code> 의 <code class="inline">&lt;title&gt;</code>, 상단바 <code class="inline">&lt;div class="brand"&gt;</code>, 푸터의 이름을 내 수업 이름으로 바꿉니다. 문의처(이메일·인스타)도 푸터 근처에서 수정하면 됩니다.</p>
           </li>
           <li>
-            <h3>배경·사진 넣기</h3>
-            <p>배경 이미지를 <code class="inline">assets/lab-bg.jpg</code> 로, 수업 사진을 <code class="inline">assets/photos/</code> 에 올립니다. 배경 경로는 CSS 맨 위 <code class="inline">--bg-image</code> 한 줄에서 바꿀 수 있어요. 사진이 없어도 페이지는 어두운 배경으로 정상 표시됩니다.</p>
+            <h3>이미지 넣기</h3>
+            <p>사진은 <b><code class="inline">assets/</code> 폴더 하나</b>에 아래 이름 그대로 넣습니다(확장자 <code class="inline">.png</code>). 없는 사진은 "○○ 이미지 자리" 안내가 뜨고 레이아웃은 그대로 유지됩니다.</p>
+            <table class="files">
+              <tr><th>파일명</th><th>쓰이는 곳</th></tr>
+              <tr><td><code>hero.png</code></td><td>메인 히어로 대표 이미지</td></tr>
+              <tr><td><code>sensors.png</code></td><td>센서 알아보기 (흐름)</td></tr>
+              <tr><td><code>activity.png</code></td><td>탐구 활동 (흐름)</td></tr>
+              <tr><td><code>analysis.png</code></td><td>데이터 분석 (흐름)</td></tr>
+              <tr><td><code>portfolio.png</code></td><td>결과 정리·공유 (흐름)</td></tr>
+              <tr><td><code>mission.png</code></td><td>오늘의 미션 배너</td></tr>
+              <tr><td><code>my-record.png</code></td><td>나의 기록 (로그인 후)</td></tr>
+              <tr><td><code>safety.png</code></td><td>안전 수칙</td></tr>
+              <tr><td><code>help.png</code></td><td>도움말</td></tr>
+              <tr><td><code>class-01.png</code></td><td>자료실 수업 사진</td></tr>
+            </table>
           </li>
           <li>
             <h3>자료 연결</h3>
-            <p>센서 가이드·수업 규칙 같은 자료는 <code class="inline">guides/</code> 폴더에 PDF나 HTML로 올리고, 자료실 카드의 <code class="inline">href</code> 를 그 파일로 연결합니다(해당 카드 위 주석 참고).</p>
+            <p>센서 가이드·수업 규칙 같은 자료는 저장소에 파일로 올리고, 자료실 카드의 <code class="inline">href</code> 를 그 파일로 연결합니다(해당 카드 위 주석 참고). 연결하면 "준비 중" 표시를 "열기"로 바꿔 주세요.</p>
           </li>
           <li>
             <h3>활동 등록</h3>
-            <p>각 활동 앱(단일 HTML)을 <code class="inline">activities/</code> 폴더나 별도 저장소에 배포한 뒤, Supabase <code class="inline">activities</code> 테이블에 행을 추가합니다(제목·유형·단원·차시·URL). 활동을 늘려도 <code class="inline">index.html</code> 은 그대로예요 — 페이지가 테이블을 읽어 카드를 그립니다.</p>
+            <p>각 활동 앱(단일 HTML)을 배포한 뒤, Supabase <code class="inline">hub_activities</code> 테이블에 행을 추가합니다 — 제목·유형(<code class="inline">simulation/inquiry/video/quiz</code>)·<b>학년(grade)</b>·단원(unit)·차시(lesson_no)·URL. 활동을 늘려도 <code class="inline">index.html</code> 은 그대로예요. 카드의 "중1 - 빛과 파동 - 2차시" 표시가 이 값들에서 자동으로 채워집니다.</p>
           </li>
           <li>
             <h3>배포</h3>
-            <p>저장소 <code class="inline">Settings → Pages</code> 에서 배포를 켭니다. 잠시 뒤 <code class="inline">아이디.github.io</code> 주소로 페이지가 공개됩니다.</p>
+            <p>저장소 <code class="inline">Settings → Pages</code> 에서 배포를 켭니다. 잠시 뒤 <code class="inline">아이디.github.io/저장소이름/</code> 주소로 공개됩니다(예: <code class="inline">scienceisjo.github.io/mblclasshub/</code>).</p>
           </li>
         </ol>
-        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div>큰 사진·영상·데이터셋은 저장소에 다 넣지 마세요. 파일 하나는 100MB, 저장소는 1GB 이하가 권장이라, 용량이 크면 Supabase Storage나 외부 링크로 빼는 게 좋습니다.</div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div>큰 사진·영상·데이터셋은 저장소에 다 넣지 마세요. 파일 하나 100MB, 저장소 1GB 이하가 권장이라, 용량이 크면 Supabase Storage 나 외부 링크로 빼는 게 좋습니다.</div></div>
       </section>
 
       <!-- Supabase -->
@@ -210,46 +236,46 @@
         <ol class="steps">
           <li>
             <h3>가입 · 프로젝트 생성</h3>
-            <p><code class="inline">supabase.com</code> 에 가입해 <code class="inline">New Project</code> 를 만듭니다. 지역(Region)은 가까운 곳을 고르고, 데이터베이스 비밀번호는 잘 보관하세요.</p>
+            <p><code class="inline">supabase.com</code> 에 가입해 <code class="inline">New Project</code> 를 만듭니다. 지역은 가까운 곳을 고르고, DB 비밀번호는 잘 보관하세요.</p>
           </li>
           <li>
             <h3>스키마 실행</h3>
-            <p>왼쪽 <code class="inline">SQL Editor</code> 를 열고 <code class="inline">schema.sql</code> 전체를 붙여넣은 뒤 <code class="inline">Run</code> 합니다. 테이블·보안 정책(RLS)·로그인 함수가 한 번에 생성됩니다.</p>
+            <p>왼쪽 <code class="inline">SQL Editor</code> 에 <code class="inline">schema.sql</code> 전체를 붙여넣고 <code class="inline">Run</code> 합니다. <code class="inline">hub_classes·hub_students·hub_activities·hub_submissions·hub_scores</code> 다섯 테이블과 보안 정책(RLS)·로그인 함수가 한 번에 생성됩니다. 모두 <code class="inline">hub_</code> 로 시작해 기존 테이블과 충돌하지 않습니다.</p>
           </li>
           <li>
             <h3>키 연결</h3>
             <p><code class="inline">Settings → API</code> 에서 <b>Project URL</b> 과 <b>anon key</b> 를 복사해 <code class="inline">hub.js</code> 맨 위 두 줄에 넣습니다.</p>
             <pre><code>const SUPABASE_URL      = 'https://xxxx.supabase.co';
 const SUPABASE_ANON_KEY = 'eyJhbGciOi...';</code></pre>
-            <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><div>anon key는 화면에 노출돼도 안전합니다. 모든 접근이 RLS 정책으로 보호되기 때문입니다.</div></div>
+            <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><div>anon key 는 공개돼도 안전합니다(RLS 보호). 반면 <b>service_role key 는 절대 코드·저장소에 넣지 마세요</b> — RLS 를 무시하는 관리자 키입니다.</div></div>
           </li>
           <li>
             <h3>교사 계정 만들기</h3>
-            <p><code class="inline">Authentication → Users</code> 에서 내 이메일로 계정을 하나 만듭니다. 이 계정이 학급·활동의 소유자(<code class="inline">teacher_id</code>)이자 대시보드 로그인 계정이 됩니다.</p>
+            <p><code class="inline">Authentication → Users</code> 에서 내 이메일로 계정을 만듭니다. 이 계정이 학급·활동의 소유자(<code class="inline">teacher_id</code>)이자 대시보드 로그인 계정이 됩니다.</p>
           </li>
           <li>
             <h3>데이터 등록</h3>
-            <p><code class="inline">Table Editor</code> 에서 세 가지를 입력합니다. <code class="inline">classes</code> 에 학급(학급코드 지정), <code class="inline">students</code> 에 학생(번호·닉네임·PIN), <code class="inline">activities</code> 에 활동(제목·유형·단원·차시·URL). 이때 <code class="inline">teacher_id</code> 는 방금 만든 내 계정의 UID를 넣습니다.</p>
+            <p><code class="inline">Table Editor</code> 에서 <code class="inline">hub_classes</code> 에 학급(학급코드 지정), <code class="inline">hub_students</code> 에 학생(번호·닉네임·PIN), <code class="inline">hub_activities</code> 에 활동을 입력합니다. <code class="inline">teacher_id</code> 는 내 계정의 UID 를 넣으세요.</p>
           </li>
           <li>
             <h3>동작 확인</h3>
-            <p>허브 페이지에서 학급코드·번호·PIN으로 로그인해 봅니다. 활동 카드가 뜨면 성공입니다. 안 되면 키 입력, RLS 실행 여부, PIN을 순서대로 확인하세요.</p>
+            <p>허브에서 학급코드·번호·PIN 으로 로그인해 봅니다. 활동 카드가 뜨면 성공입니다.</p>
           </li>
         </ol>
-        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div>PIN은 학급 안에서 겹치지 않게 배정하세요. 번호와 PIN을 함께 쓰기 때문에 도용이 어렵지만, 형성평가용 저부담 인증이라는 점을 전제로 사용하는 게 맞습니다.</div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div>PIN 은 학급 안에서 겹치지 않게 배정하세요. 번호와 PIN 을 함께 쓰기 때문에 도용이 어렵지만, 형성평가용 저부담 인증이라는 전제로 사용하는 게 맞습니다.</div></div>
       </section>
 
       <!-- 막히면 -->
       <section id="next">
         <h2><span class="no">F</span>막히면</h2>
-        <p>대부분의 문제는 세 가지 중 하나입니다. <b>키가 안 맞거나</b>(hub.js의 URL·anon key), <b>스키마를 안 돌렸거나</b>(SQL Editor에서 Run), <b>PIN이 다른</b> 경우예요. 순서대로 확인하면 거의 해결됩니다. 반별 과제·파일 업로드·데이터 분석 같은 확장은 스키마를 한 겹 더 얹으면 되니, 기본이 도는 걸 먼저 확인하고 진행하세요.</p>
+        <p>대부분의 문제는 셋 중 하나예요. <b>키가 안 맞거나</b>(hub.js 의 URL·anon key), <b>스키마를 안 돌렸거나</b>(SQL Editor 에서 Run), <b>PIN 이 다른</b> 경우입니다. 순서대로 확인하면 거의 해결됩니다. 반별 과제·파일 업로드·데이터 분석 같은 확장은 스키마를 한 겹 더 얹으면 되니, 기본이 도는 걸 먼저 확인하고 진행하세요.</p>
       </section>
     </div>
   </div>
 
   <footer>
     <div class="wrap row">
-      <span>© 2026 해누리중학교 조승재 · MBL SCIENCE INQUIRY</span>
+      <span>© 2026 해누리중학교 조승재 · MBL 센서 과학 탐구 수업</span>
       <span><a href="index.html">← 허브로 돌아가기</a></span>
     </div>
   </footer>
