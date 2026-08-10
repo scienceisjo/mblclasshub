@@ -1,0 +1,1124 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MBL 수업허브 · 교사용</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./lab-data.js"></script>
+<script src="./config.js"></script>
+<script src="./hub.js"></script>
+<style>
+  :root{
+    --sky-1:#D4EDFB; --sky-2:#EAF8F0;
+    --paper:#FFFFFF; --cream:#FFFDF6;
+    --ink:#254753; --muted:#6E8A96;
+    --mint:#20B2A6; --mint-d:#14867C;
+    --sun:#FFC130; --coral:#FF8C6B; --sky:#54B4E8;
+    --line:#E4EFF1; --line-2:#D3E6EA;
+    --shadow:0 10px 28px rgba(37,71,83,.09);
+    --shadow-lg:0 18px 44px rgba(37,71,83,.14);
+    --ok:#37B58C; --warn:#E8873C; --bad:#E05A5A;
+    --g1:#20B2A6; --g2:#54B4E8; --g3:#FFC130; --g4:#FF8C6B; --g5:#8B7FD4; --g6:#4FB477; --g7:#E88FB5;
+    --display:'Jua',sans-serif;
+    --sans:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
+    --wrap:1120px; --r:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;
+    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed;min-height:100vh}
+  a{color:inherit;text-decoration:none}
+  .wrap{max-width:var(--wrap);margin:0 auto;padding:0 18px}
+  .hidden{display:none !important}
+  :focus-visible{outline:3px solid var(--mint);outline-offset:2px;border-radius:8px}
+
+  .offbar{background:rgba(255,193,48,.25);border-bottom:1px solid rgba(255,193,48,.6);color:#8A5B00;
+    font-size:13.5px;font-weight:700;text-align:center;padding:9px 14px}
+
+  .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:8px 0;flex-wrap:wrap}
+  .brand b{font-family:var(--display);font-size:20px;font-weight:400}
+  .brand span{display:block;font-size:12.5px;color:var(--muted)}
+  .topright{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+
+  .btn{font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid var(--line-2);
+    background:#fff;color:var(--ink);padding:10px 18px;border-radius:999px;transition:.16s}
+  .btn:hover{border-color:var(--mint);color:var(--mint-d)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
+  .btn-solid{background:var(--mint);color:#fff;border-color:var(--mint);box-shadow:var(--shadow)}
+  .btn-solid:hover{background:var(--mint-d);color:#fff}
+  .btn-sm{padding:7px 13px;font-size:13px}
+  .btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
+
+  .box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin:16px 0}
+  .box h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:4px}
+  .box h3{font-family:var(--display);font-size:17px;font-weight:400;margin:18px 0 8px}
+  .muted{color:var(--muted);font-size:14px}
+  .two{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:14px}
+  @media (max-width:760px){ .two{grid-template-columns:1fr} }
+
+  input[type=text],input[type=number],textarea,select{font-family:var(--sans);font-size:15px;color:var(--ink);
+    border:1.5px solid var(--line-2);border-radius:12px;padding:11px 13px;background:#fff;width:100%}
+  input:focus,textarea:focus,select:focus{border-color:var(--mint);outline:none}
+  textarea{resize:vertical;min-height:110px;line-height:1.6}
+  label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--muted);margin:14px 0 6px}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;
+    background:rgba(32,178,166,.14);color:var(--mint-d)}
+  .pill.sun{background:rgba(255,193,48,.24);color:#9A6B00}
+  .pill.coral{background:rgba(255,140,107,.2);color:#C9542F}
+  .pill.sky{background:rgba(84,180,232,.18);color:#2A7FB0}
+  .pill.bad{background:rgba(224,90,90,.16);color:var(--bad)}
+
+  /* 실험 고르기 */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+  .filters select,.filters input{width:auto;min-width:140px;flex:0 1 210px}
+  .explist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;max-height:460px;overflow:auto;padding:4px}
+  .exp{border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:14px;cursor:pointer;transition:.16s;box-shadow:var(--shadow)}
+  .exp:hover{transform:translateY(-2px);border-color:var(--mint)}
+  .exp.on{border-color:var(--mint);box-shadow:0 0 0 3px rgba(32,178,166,.18)}
+  .exp b{display:block;font-family:var(--display);font-size:16px;font-weight:400;margin:6px 0 4px;line-height:1.35}
+  .exp .m{font-size:12px;color:var(--muted);font-weight:700}
+
+  /* 코드 표시 */
+  .codecard{border:2px dashed var(--mint);border-radius:20px;background:var(--cream);padding:22px;text-align:center}
+  .codecard .big{font-family:var(--display);font-size:clamp(44px,9vw,84px);letter-spacing:.12em;color:var(--mint-d);line-height:1.1}
+  .codecard .lbl{font-size:13.5px;color:var(--muted);font-weight:700}
+  .admincode{font-family:var(--display);font-size:22px;letter-spacing:.08em;color:var(--ink);
+    background:#fff;border:1px solid var(--line-2);border-radius:12px;padding:8px 14px;display:inline-block}
+
+  /* 단계 */
+  .phases{display:flex;gap:8px;flex-wrap:wrap}
+  .ph{cursor:pointer;border:1.5px solid var(--line-2);background:#fff;color:var(--muted);font-family:var(--sans);
+    font-size:14px;font-weight:700;padding:10px 18px;border-radius:999px;transition:.16s}
+  .ph.on{background:var(--mint);border-color:var(--mint);color:#fff}
+
+  /* 모둠 현황 */
+  .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
+  .gcard{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+  .gcard .gh{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:10px 14px;color:#fff;font-family:var(--display);font-size:16px}
+  .gcard .gb{padding:12px 14px;font-size:13.5px}
+  .gcard .st{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .chartbox{width:100%;overflow-x:auto}
+  .chartbox svg{display:block;max-width:100%;height:auto}
+  .ans{font-size:13px;color:var(--muted);border-top:1px dashed var(--line);margin-top:8px;padding-top:8px}
+  .ans p{margin-bottom:5px}
+
+  .list{list-style:none}
+  .list li{display:flex;align-items:center;justify-content:space-between;gap:10px;border:1px solid var(--line);
+    border-radius:14px;padding:12px 14px;margin-bottom:8px;background:#fff;flex-wrap:wrap}
+  .list li b{font-family:var(--display);font-weight:400;font-size:16px}
+  .list li .m{font-size:12.5px;color:var(--muted)}
+  .err{color:var(--bad);font-size:14px;font-weight:700;min-height:20px;margin-top:8px}
+  .ok{color:var(--ok);font-size:14px;font-weight:700}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:24px 10px}
+
+  /* 모둠 비밀번호(PIN) */
+  .toolrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
+  .pincard{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;
+    background:#fff;padding:10px 12px;box-shadow:var(--shadow)}
+  .pincard .no{width:34px;height:34px;flex:0 0 auto;border-radius:10px;color:#fff;font-family:var(--display);
+    font-size:15px;display:flex;align-items:center;justify-content:center}
+  .pincard .v{flex:1;min-width:0}
+  .pincard .v b{display:block;font-family:var(--display);font-weight:400;font-size:21px;letter-spacing:.16em;line-height:1.2}
+  .pincard .v span{display:block;font-size:12px;color:var(--muted)}
+
+  /* 칠판에 크게 띄우기 */
+  .bigwrap{position:fixed;inset:0;z-index:900;background:#0E2B33;color:#fff;overflow:auto;padding:24px}
+  .bighead{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:18px}
+  .bighead .lb{font-size:14px;font-weight:700;opacity:.75}
+  .bigjoin{font-family:var(--display);font-size:clamp(26px,5vw,48px);letter-spacing:.12em;line-height:1.15}
+  .biggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
+  .bigcell{border-radius:22px;background:rgba(255,255,255,.08);border:3px solid rgba(255,255,255,.2);padding:16px;text-align:center}
+  .bigcell .bno{font-family:var(--display);font-size:clamp(18px,2.4vw,30px);opacity:.9}
+  .bigcell .bpin{font-family:var(--display);font-size:clamp(54px,8vw,116px);letter-spacing:.14em;line-height:1.15}
+
+  /* 보관 기한 */
+  .keepbar{font-size:15px;font-weight:700}
+  .keepbar.warn{color:var(--warn)}
+  .btn.danger{border-color:var(--bad);color:var(--bad)}
+  .btn.danger:hover{border-color:var(--bad);color:var(--bad);background:#FFF3F3}
+  .delbox{margin-top:12px;border:1.5px solid var(--bad);border-radius:14px;padding:14px;background:#FFF6F6}
+
+  /* 모둠 쪽지 인쇄 (평소에는 화면에 보이지 않습니다) */
+  #printArea{display:none}
+  .slips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+  .slip{border:1.5px dashed #999;border-radius:12px;padding:14px 16px;break-inside:avoid;page-break-inside:avoid}
+  @media print{
+    body.print-pins{background:#fff}
+    body.print-pins > *{display:none !important}
+    body.print-pins > #printArea{display:block !important}
+  }
+
+  /* 연결 설정 안내 카드 — 오프라인 배너와 겹치지 않게 따로 씁니다 */
+  .setup{border:2px solid var(--coral);background:#FFF6F2;border-radius:var(--r);
+    box-shadow:var(--shadow);padding:18px 20px;margin:16px 0}
+  .setup h3{font-family:var(--display);font-size:19px;font-weight:400;color:#C9542F;margin:0 0 8px}
+  .setup p{font-size:14px;color:#7A4B36;margin:0 0 5px;line-height:1.6}
+  .setup code{font-family:ui-monospace,SFMono-Regular,Consolas,monospace;font-size:13px;
+    background:rgba(37,71,83,.07);border-radius:6px;padding:1px 6px}
+  .setup a.lnk{text-decoration:underline;font-weight:800;color:#C9542F}
+  .setup.ok{border-color:var(--ok);background:#F1FBF7}
+  .setup.ok h3{color:#1C8A66}
+  .setup.ok p{color:#2E6B57}
+  .setup.ok a.lnk{color:#1C8A66}
+</style>
+</head>
+<body>
+
+<div id="offbar" class="offbar hidden">임시 저장 중 — 인터넷이 돌아오면 자동으로 다시 보냅니다.</div>
+
+<header class="top">
+  <div class="wrap row">
+    <div class="brand">
+      <b>MBL 수업허브 · 교사용</b>
+      <span id="topSub">수업을 만들고 학생 화면을 지휘합니다</span>
+    </div>
+    <div class="topright">
+      <button id="btnDiag" class="btn btn-sm" type="button">연결 확인</button>
+      <a class="btn btn-sm" href="./manual.html" target="_blank" rel="noopener">사용 설명서</a>
+      <button id="btnHome" class="btn btn-sm hidden" type="button">처음으로</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- 연결 설정 안내 (필요할 때만 나타납니다) -->
+  <div id="setupCard" class="setup hidden" role="status"></div>
+
+  <!-- ① 시작 화면 -->
+  <section id="scHome">
+    <div class="two">
+      <div class="box">
+        <img src="./assets/mission.webp" alt="" width="1200" height="900" decoding="async"
+             onerror="this.remove()"
+             style="display:block;width:100%;max-width:260px;height:auto;margin:0 auto 8px" />
+        <h2>새 수업 만들기</h2>
+        <p class="muted">실험을 고르면 데이터 입력표와 보고서 질문이 자동으로 채워집니다. 만들면 참여코드 6자리가 나옵니다.</p>
+        <button id="btnNew" class="btn btn-solid" style="margin-top:14px" type="button">실험 고르기</button>
+      </div>
+      <div class="box">
+        <h2>관리코드로 이어가기</h2>
+        <p class="muted">지난 수업을 다시 열려면 관리코드 10자리를 입력하세요.</p>
+        <label class="fl" for="inAdmin">관리코드</label>
+        <input id="inAdmin" type="text" maxlength="10" placeholder="예) K7Q2MDX9RT" autocomplete="off" />
+        <div id="adminErr" class="err"></div>
+        <button id="btnOpenAdmin" class="btn btn-solid" type="button">대시보드 열기</button>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>이 브라우저에 저장된 수업</h2>
+      <p class="muted">관리코드는 이 기기에만 보관됩니다. 다른 기기에서 열려면 코드를 적어 두세요.</p>
+      <ul id="recent" class="list" style="margin-top:14px"></ul>
+    </div>
+  </section>
+
+  <!-- ② 수업 만들기 -->
+  <section id="scNew" class="hidden">
+    <div class="box">
+      <h2>1단계 · 실험 고르기</h2>
+      <div class="filters">
+        <select id="fGrade">
+          <option value="">모든 학년</option>
+          <option value="1">중1</option><option value="2">중2</option><option value="3">중3</option>
+        </select>
+        <select id="fUnit"><option value="">모든 단원</option></select>
+        <input id="fSearch" type="text" placeholder="제목·센서로 찾기" />
+        <span id="expCount" class="pill"></span>
+      </div>
+      <div id="explist" class="explist"></div>
+    </div>
+
+    <div class="box">
+      <h2>2단계 · 수업 정보</h2>
+      <div class="two">
+        <div>
+          <label class="fl" for="inTitle">수업 제목</label>
+          <input id="inTitle" type="text" maxlength="60" placeholder="실험을 고르면 자동으로 채워집니다" />
+          <label class="fl" for="inClass">학급</label>
+          <input id="inClass" type="text" maxlength="30" placeholder="예) 2학년 3반" />
+        </div>
+        <div>
+          <label class="fl" for="inTeacher">교사 이름</label>
+          <input id="inTeacher" type="text" maxlength="20" placeholder="예) 조승재" />
+          <label class="fl" for="inGroups">모둠 수</label>
+          <input id="inGroups" type="number" min="1" max="20" value="7" />
+        </div>
+      </div>
+      <label class="fl" for="inQ">보고서 질문 (한 줄에 하나. 줄 끝에 <b>*</b> 를 붙이면 긴 답)</label>
+      <textarea id="inQ" placeholder="예) 이 실험에서 조작변인은 무엇인가요?"></textarea>
+      <div id="newErr" class="err"></div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button id="btnCreate" class="btn btn-solid" type="button">수업 만들기</button>
+        <button id="btnCancelNew" class="btn" type="button">취소</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- ③ 대시보드 -->
+  <section id="scDash" class="hidden">
+    <div class="box">
+      <div class="two" style="align-items:center">
+        <div class="codecard">
+          <div class="lbl">학생 참여코드</div>
+          <div id="dJoin" class="big">------</div>
+          <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">
+            <button id="btnCopyJoin" class="btn btn-sm" type="button">코드 복사</button>
+            <a id="lnkStudent" class="btn btn-sm" href="./index.html" target="_blank" rel="noopener">학생 화면</a>
+            <a id="lnkPresent" class="btn btn-sm btn-solid" href="./present.html" target="_blank" rel="noopener">발표 화면</a>
+          </div>
+        </div>
+        <div>
+          <h2 id="dTitle">수업</h2>
+          <p class="muted" id="dSub"></p>
+          <p style="margin-top:12px"><span class="lbl muted">관리코드</span><br>
+            <span id="dAdmin" class="admincode">----------</span>
+            <button id="btnCopyAdmin" class="btn btn-sm" type="button">복사</button>
+          </p>
+          <p class="muted" style="margin-top:8px">관리코드는 이 수업을 여는 열쇠입니다. 학생에게 보여 주지 마세요.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- 보관 기한이 얼마 남지 않았을 때만 나타납니다 -->
+    <div id="dExpireWarn" class="setup hidden" role="status">
+      <h3 id="dExpireWarnTitle">보관 기간이 얼마 남지 않았습니다</h3>
+      <p id="dExpireWarnMsg"></p>
+      <button id="btnExtendTop" class="btn btn-sm" type="button">30일 연장</button>
+    </div>
+
+    <div class="box">
+      <h2>모둠 비밀번호</h2>
+      <p class="muted">모둠마다 4자리 숫자입니다. 학생은 자기 모둠 비밀번호를 넣어야 자료를 저장할 수 있습니다.
+        같은 반 다른 모둠 것은 알려 주지 마세요.</p>
+      <div class="toolrow">
+        <button id="btnPinShow"   class="btn btn-sm" type="button">보이기</button>
+        <button id="btnPinBig"    class="btn btn-sm btn-solid" type="button">칠판에 크게 띄우기</button>
+        <button id="btnPinPrint"  class="btn btn-sm" type="button">모둠 쪽지 인쇄</button>
+        <button id="btnPinReload" class="btn btn-sm btn-ghost" type="button">새로 불러오기</button>
+        <span id="pinMsg" class="muted"></span>
+      </div>
+      <div id="dPins" class="pins"></div>
+    </div>
+
+    <div class="box">
+      <h2>수업 단계</h2>
+      <p class="muted">단계를 바꾸면 학생 화면과 발표 화면이 곧바로 따라옵니다.</p>
+      <div class="phases" style="margin-top:12px">
+        <button class="ph" data-phase="collect" type="button">① 데이터 수집</button>
+        <button class="ph" data-phase="share"   type="button">② 모둠 공유</button>
+        <button class="ph" data-phase="present" type="button">③ 발표</button>
+        <button class="ph" data-phase="done"    type="button">④ 마무리</button>
+      </div>
+      <div class="three" style="margin-top:16px">
+        <div>
+          <label class="fl" for="selPresenter">발표 모둠</label>
+          <select id="selPresenter"><option value="">— 없음 —</option></select>
+        </div>
+        <div>
+          <label class="fl">발표 화면 장</label>
+          <div style="display:flex;gap:8px;align-items:center">
+            <button id="btnSlidePrev" class="btn btn-sm" type="button">◀ 이전</button>
+            <span id="slideNow" class="pill sky">1 / 3</span>
+            <button id="btnSlideNext" class="btn btn-sm" type="button">다음 ▶</button>
+          </div>
+        </div>
+        <div>
+          <label class="fl">현황</label>
+          <div id="dStat" class="muted">—</div>
+        </div>
+      </div>
+      <div id="dashMsg" class="ok" style="min-height:20px;margin-top:10px"></div>
+    </div>
+
+    <div class="box">
+      <h2>모둠 현황</h2>
+      <div id="dGroups" class="gcards" style="margin-top:12px"></div>
+    </div>
+
+    <div class="box">
+      <h2>보고서 질문 고치기</h2>
+      <p class="muted">한 줄에 질문 하나. 줄 끝에 <b>*</b> 를 붙이면 긴 답 칸이 됩니다. 저장하면 학생 화면이 바로 바뀝니다.</p>
+      <textarea id="dQ"></textarea>
+      <button id="btnSaveForm" class="btn btn-solid" style="margin-top:10px" type="button">질문 저장</button>
+    </div>
+
+    <div class="box">
+      <h2>수업 보관</h2>
+      <p class="muted">학생 이름이 오래 남지 않도록 수업은 기한이 지나면 지워집니다. 더 쓰시려면 연장하세요.</p>
+      <div id="dKeep" class="keepbar" style="margin-top:10px">—</div>
+      <div class="toolrow">
+        <button id="btnExtend" class="btn btn-sm" type="button">30일 연장</button>
+        <button id="btnDelAsk" class="btn btn-sm danger" type="button">지금 삭제</button>
+      </div>
+      <div id="delBox" class="delbox hidden">
+        <p style="font-size:14px;font-weight:800;color:var(--bad)">되돌릴 수 없습니다. 모둠·데이터·보고서·별점이 모두 사라집니다.</p>
+        <p class="muted" id="delHint" style="margin-top:4px"></p>
+        <label class="fl" for="inDelTitle">수업 제목</label>
+        <input id="inDelTitle" type="text" placeholder="수업 제목을 그대로 입력" autocomplete="off" />
+        <div class="toolrow">
+          <button id="btnDelGo" class="btn btn-sm danger" type="button" disabled>정말 삭제</button>
+          <button id="btnDelCancel" class="btn btn-sm btn-ghost" type="button">취소</button>
+        </div>
+      </div>
+      <div id="keepMsg" class="ok" style="min-height:20px;margin-top:8px"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- 칠판용 큰 화면 -->
+<div id="pinBig" class="bigwrap hidden" role="dialog" aria-label="모둠 비밀번호 크게 보기" aria-modal="true">
+  <div class="bighead">
+    <div>
+      <div class="lb">학생 참여코드</div>
+      <div id="bigJoin" class="bigjoin">------</div>
+    </div>
+    <button id="btnBigClose" class="btn btn-sm" type="button">닫기</button>
+  </div>
+  <div id="bigGrid" class="biggrid"></div>
+  <p style="margin-top:18px;opacity:.8;font-size:15px">우리 모둠 번호 아래의 네 자리 숫자를 입력하세요.</p>
+</div>
+
+<!-- 모둠에 나눠 줄 쪽지 (인쇄할 때만 보입니다) -->
+<div id="printArea" aria-hidden="true"></div>
+
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-07-06</span></footer>
+
+<script>
+(function(){
+  'use strict';
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const $ = id => document.getElementById(id);
+  const SERIES_COLORS = ['var(--mint)','var(--coral)','var(--sky)','var(--sun)','var(--g5)','var(--g6)','var(--g7)'];
+  const SLIDE_NAMES = ['모둠 그래프', '보고서', '별점 모아 보기'];
+
+  let adminCode = '';
+  let lesson    = null;
+  let board     = null;
+  let unwatch   = null;
+  let picked    = null;   // 고른 실험 (LAB)
+  let pins      = [];     // [{group_id, group_no, group_name, pin}] — 교사만 봅니다
+  let pinsShown = false;  // 표에서 PIN 을 드러낼지 (평소에는 ●●●● 로 가려 둡니다)
+  let pinsCode  = '';     // 지금 들고 있는 PIN 표가 어느 관리코드의 것인지
+  let bigOpen   = false;  // 칠판용 큰 화면이 열려 있는지
+
+  const groupColor = no => 'var(--g' + (((Number(no) - 1) % 7) + 1) + ')';
+  const groupLabel = g => (g && g.group_name) ? g.group_name : ((Number(g && g.group_no) || 0) + '모둠');
+
+  // ── 인라인 SVG 그래프 ──────────────────────────────────────────
+  function chartSVG(sp, rows, opt){
+    opt = opt || {};
+    const W = opt.w || 520, H = opt.h || 240;
+    const P = { l: 46, r: 12, t: 14, b: 36 };
+    const series = (sp && sp.series) || [];
+    const kind = (sp && sp.chart) || 'line';
+    const pts = [];
+    (rows || []).forEach(function(r){
+      if (!Array.isArray(r)) return;
+      const x = Number(r[0]);
+      const ys = series.map((_, i) => { const v = Number(r[i+1]); return isFinite(v) ? v : null; });
+      if (ys.every(v => v === null)) return;
+      pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
+    });
+    if (!pts.length) return '<div class="empty">아직 자료가 없습니다.</div>';
+    const numericX = pts.every(p => p.x !== null) && kind !== 'bar';
+    const xs = numericX ? pts.map(p => p.x) : pts.map((p, i) => i);
+    const allY = []; pts.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
+    let y0 = Math.min.apply(null, allY), y1 = Math.max.apply(null, allY);
+    if (y0 === y1){ y0 -= 1; y1 += 1; }
+    const pad = (y1 - y0) * .12; y0 -= pad; y1 += pad;
+    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    if (x0 === x1){ x0 -= .5; x1 += .5; }
+    const px = v => P.l + (v - x0) / (x1 - x0) * (W - P.l - P.r);
+    const py = v => H - P.b - (v - y0) / (y1 - y0) * (H - P.t - P.b);
+
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="모둠 그래프" style="min-width:300px">';
+    for (let i = 0; i <= 4; i++){
+      const v = y0 + (y1 - y0) * i / 4, y = py(v);
+      s += '<line x1="' + P.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)"/>';
+      s += '<text x="' + (P.l - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' +
+           esc(v.toFixed(Math.abs(y1 - y0) < 5 ? 1 : 0)) + '</text>';
+    }
+    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    pts.forEach(function(p, i){
+      if (pts.length > 10 && i % Math.ceil(pts.length / 8) !== 0) return;
+      const X = px(numericX ? p.x : i);
+      const lb = (p.raw === '' || p.raw === undefined || p.raw === null) ? (i + 1) : p.raw;
+      s += '<text x="' + X.toFixed(1) + '" y="' + (H - P.b + 15) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' + esc(lb) + '</text>';
+    });
+    series.forEach(function(se, si){
+      const col = SERIES_COLORS[si % SERIES_COLORS.length];
+      const list = pts.map((p, i) => ({ X: px(numericX ? p.x : i), Y: p.ys[si] === null ? null : py(p.ys[si]) }));
+      if (kind === 'bar'){
+        const bw = Math.max(3, (W - P.l - P.r) / Math.max(pts.length, 1) / (series.length + 1));
+        list.forEach(function(pt, i){
+          if (pt.Y === null) return;
+          const bx = pt.X - (series.length * bw) / 2 + si * bw;
+          s += '<rect x="' + bx.toFixed(1) + '" y="' + pt.Y.toFixed(1) + '" width="' + bw.toFixed(1) +
+               '" height="' + Math.max(0, H - P.b - pt.Y).toFixed(1) + '" fill="' + col + '" opacity=".85" rx="2"/>';
+        });
+      } else {
+        if (kind !== 'scatter'){
+          let d = '', pen = false;
+          list.forEach(function(pt){
+            if (pt.Y === null){ pen = false; return; }
+            d += (pen ? 'L' : 'M') + pt.X.toFixed(1) + ' ' + pt.Y.toFixed(1) + ' '; pen = true;
+          });
+          if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.2" stroke-linejoin="round"/>';
+        }
+        list.forEach(function(pt){
+          if (pt.Y === null) return;
+          s += '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="3" fill="' + col + '"/>';
+        });
+      }
+    });
+    s += '</svg>';
+    let lg = '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;font-size:12px;color:var(--muted)">';
+    series.forEach(function(se, si){
+      lg += '<span style="display:inline-flex;align-items:center;gap:4px"><i style="width:10px;height:10px;border-radius:3px;background:' +
+            SERIES_COLORS[si % SERIES_COLORS.length] + ';display:inline-block"></i>' + esc(se.label || ('계열' + (si + 1))) + '</span>';
+    });
+    return s + lg + '</div>';
+  }
+
+  // ── 질문 텍스트 ↔ 배열 ─────────────────────────────────────────
+  function textToQuestions(t){
+    return String(t || '').split(/\n+/).map(s => s.trim()).filter(Boolean).map(function(line){
+      const long = /\*$/.test(line);
+      return { q: line.replace(/\s*\*$/, ''), type: long ? 'long' : 'short' };
+    });
+  }
+  function questionsToText(list){
+    return (list || []).map(q => (q.q || '') + (q.type === 'long' ? ' *' : '')).join('\n');
+  }
+
+  Hub.onStatus(function(st){ $('offbar').classList.toggle('hidden', !st.offline); });
+
+  // ── 연결 진단 ──────────────────────────────────────────────────
+  const MANUAL_SUPABASE = './manual.html#supabase';
+
+  function setupCard(html, ok){
+    const el = $('setupCard');
+    el.className = 'setup' + (ok ? ' ok' : '');
+    el.innerHTML = html;
+  }
+  function hideSetup(){ $('setupCard').className = 'setup hidden'; }
+  function manualLink(){
+    return '<p><a class="lnk" href="' + MANUAL_SUPABASE + '" target="_blank" rel="noopener">' +
+           '사용 설명서 · Supabase 준비하기 열기</a></p>';
+  }
+  function htmlNotConfigured(){
+    return '<h3>config.js 에 우리 학교 Supabase 정보를 넣어 주세요</h3>' +
+           '<p>이 폴더의 <code>config.js</code> 를 메모장으로 열어 <code>SUPABASE_URL</code> 과 ' +
+           '<code>SUPABASE_ANON_KEY</code> 두 줄만 채우면 됩니다.</p>' +
+           '<p>두 값은 <b>supabase.com → 내 프로젝트 → Settings → API</b> 에 있습니다. ' +
+           '<b>Project URL</b> 과 <b>Project API keys 의 anon / public</b> 을 그대로 복사해 넣으세요.</p>' +
+           manualLink();
+  }
+  function htmlNoSchema(){
+    return '<h3>Supabase SQL Editor 에서 schema.sql 을 한 번 실행해 주세요</h3>' +
+           '<p>① supabase.com 에서 내 프로젝트를 열고 왼쪽 메뉴 <b>SQL Editor → New query</b> 를 누릅니다.</p>' +
+           '<p>② 이 폴더의 <code>schema.sql</code> 전체를 붙여넣고 <b>Run</b> 을 누릅니다.</p>' +
+           '<p>③ 이 화면을 새로고침합니다. schema.sql 은 여러 번 실행해도 자료가 지워지지 않습니다.</p>' +
+           manualLink();
+  }
+
+  //  checkSetup(loud) — loud 가 true 면 정상일 때도 결과를 보여 줍니다([연결 확인] 버튼용).
+  function checkSetup(loud){
+    if (typeof Hub.isConfigured === 'function' && !Hub.isConfigured()){
+      setupCard(htmlNotConfigured(), false);
+      return Promise.resolve(false);
+    }
+    if (typeof Hub.diagnose !== 'function'){
+      if (loud) setupCard('<h3>자동 점검을 할 수 없습니다</h3>' +
+                          '<p>이 화면에서는 연결 상태를 스스로 확인하지 못합니다. 수업을 하나 만들어 보고 ' +
+                          '오류가 나면 사용 설명서를 확인해 주세요.</p>' + manualLink(), true);
+      else hideSetup();
+      return Promise.resolve(true);
+    }
+    return Promise.resolve(Hub.diagnose()).then(function(d){
+      d = d || {};
+      if (!d.configured){ setupCard(htmlNotConfigured(), false); return false; }
+      if (!d.reachable){
+        setupCard('<h3>Supabase 에 연결하지 못했습니다</h3><p>' +
+                  esc(d.message || '인터넷 연결과 config.js 의 주소를 확인해 주세요.') + '</p>' + manualLink(), false);
+        return false;
+      }
+      if (!d.schemaOk){ setupCard(htmlNoSchema(), false); return false; }
+      if (loud){
+        const who = [ (window.MBL_CONFIG && window.MBL_CONFIG.SCHOOL) || '',
+                      (window.MBL_CONFIG && window.MBL_CONFIG.TEACHER) || '' ].filter(Boolean).join(' · ');
+        setupCard('<h3>연결 정상입니다</h3>' +
+                  '<p>Supabase 에 잘 닿고 schema.sql 도 실행돼 있습니다. 수업을 만들 수 있습니다.</p>' +
+                  (who ? '<p>연결된 곳 · ' + esc(who) + '</p>' : ''), true);
+      } else hideSetup();
+      return true;
+    }, function(err){
+      setupCard('<h3>연결 확인에 실패했습니다</h3><p>' +
+                esc((err && err.message) || '알 수 없는 오류입니다.') + '</p>' + manualLink(), false);
+      return false;
+    });
+  }
+
+  $('btnDiag').addEventListener('click', function(){
+    const b = this;
+    b.disabled = true; b.textContent = '확인 중…';
+    Promise.resolve(checkSetup(true)).then(function(){
+      b.disabled = false; b.textContent = '연결 확인';
+      const el = $('setupCard');
+      if (!el.classList.contains('hidden')) el.scrollIntoView({ behavior:'smooth', block:'nearest' });
+    });
+  });
+
+  function show(which){
+    $('scHome').classList.toggle('hidden', which !== 'home');
+    $('scNew').classList.toggle('hidden',  which !== 'new');
+    $('scDash').classList.toggle('hidden', which !== 'dash');
+    $('btnHome').classList.toggle('hidden', which === 'home');
+    window.scrollTo(0, 0);
+  }
+  $('btnHome').addEventListener('click', function(){
+    if (unwatch){ unwatch(); unwatch = null; }
+    renderRecent(); show('home');
+  });
+
+  // ── 최근 수업 목록 (이 브라우저의 mbl_admin_codes 만 사용) ──────
+  function renderRecent(){
+    const list = Hub.myAdminCodes();
+    if (!list.length){
+      $('recent').innerHTML = '<li><span class="m">아직 만든 수업이 없습니다.</span></li>';
+      return;
+    }
+    $('recent').innerHTML = list.map(function(x){
+      const when = x.createdAt ? new Date(x.createdAt).toLocaleString('ko-KR', { month:'numeric', day:'numeric', hour:'2-digit', minute:'2-digit' }) : '';
+      return '<li><span><b>' + esc(x.title || '이름 없는 수업') + '</b><br>' +
+             '<span class="m">' + esc(x.classLabel || '') + ' · 참여코드 ' + esc(x.joinCode || '-') + ' · ' + esc(when) + '</span></span>' +
+             '<span style="display:flex;gap:6px"><button class="btn btn-sm btn-solid" type="button" data-open="' + esc(x.adminCode) + '">열기</button>' +
+             '<button class="btn btn-sm btn-ghost" type="button" data-forget="' + esc(x.adminCode) + '">지우기</button></span></li>';
+    }).join('');
+    Array.prototype.forEach.call($('recent').querySelectorAll('[data-open]'), function(b){
+      b.addEventListener('click', function(){ openDash(b.dataset.open); });
+    });
+    Array.prototype.forEach.call($('recent').querySelectorAll('[data-forget]'), function(b){
+      b.addEventListener('click', function(){
+        if (!confirm('이 목록에서만 지웁니다. 수업 자료는 그대로 남습니다. 계속할까요?')) return;
+        Hub.forgetAdmin(b.dataset.forget); renderRecent();
+      });
+    });
+  }
+
+  // ── 실험 고르기 ────────────────────────────────────────────────
+  function fillUnits(){
+    const g = $('fGrade').value;
+    const units = (window.LAB ? LAB.unitList(g === '' ? null : Number(g)) : []);
+    $('fUnit').innerHTML = '<option value="">모든 단원</option>' +
+      units.map(u => '<option value="' + esc(u.title) + '">' + esc(u.title) + '</option>').join('');
+  }
+  function renderExpList(){
+    if (!window.LAB){ $('explist').innerHTML = '<div class="empty">lab-data.js 를 읽지 못했습니다.</div>'; return; }
+    const g = $('fGrade').value, u = $('fUnit').value, q = $('fSearch').value.trim();
+    let list = q ? LAB.search(q) : LAB.experiments.slice();
+    if (g) list = list.filter(e => Number(e.grade) === Number(g));
+    if (u) list = list.filter(e => e.unit === u);
+    $('expCount').textContent = list.length + '건';
+    if (!list.length){ $('explist').innerHTML = '<div class="empty">조건에 맞는 실험이 없습니다.</div>'; return; }
+    $('explist').innerHTML = list.map(function(e){
+      const sensors = (e.sensors || []).map(s => LAB.sensorName(s.key) + ' ' + s.n).join(' · ');
+      return '<div class="exp' + (picked && picked.id === e.id ? ' on' : '') + '" data-id="' + esc(e.id) + '" tabindex="0" role="button">' +
+             '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+             '<b>' + esc(e.title) + '</b>' +
+             '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div></div>';
+    }).join('');
+    Array.prototype.forEach.call($('explist').querySelectorAll('.exp'), function(el){
+      const choose = function(){ pickExp(el.dataset.id); };
+      el.addEventListener('click', choose);
+      el.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); choose(); } });
+    });
+  }
+  function pickExp(id){
+    picked = LAB.byId(id);
+    if (!picked) return;
+    $('inTitle').value = picked.title;
+    $('inQ').value = questionsToText(picked.questions);
+    renderExpList();
+    $('inTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  ['fGrade','fUnit','fSearch'].forEach(function(id){
+    $(id).addEventListener('input', function(){ if (id === 'fGrade') fillUnits(); renderExpList(); });
+  });
+
+  $('btnNew').addEventListener('click', function(){
+    picked = null;
+    fillUnits(); renderExpList();
+    $('inTeacher').value = Hub.loadLocal('teacher_name', '') || '';
+    $('inClass').value = '';
+    show('new');
+  });
+  $('btnCancelNew').addEventListener('click', function(){ show('home'); });
+
+  // ── 수업 만들기 ────────────────────────────────────────────────
+  $('btnCreate').addEventListener('click', function(){
+    const title = $('inTitle').value.trim();
+    if (!title){ $('newErr').textContent = '수업 제목을 적어 주세요.'; return; }
+    const qs = textToQuestions($('inQ').value);
+    const spec = (picked && picked.dataSpec) ||
+                 { x:{label:'회차',unit:''}, series:[{label:'측정값',unit:''}], rows:8, chart:'line' };
+    $('newErr').textContent = '';
+    this.disabled = true; this.textContent = '만드는 중…';
+    Hub.saveLocal('teacher_name', $('inTeacher').value.trim());
+    Hub.createLesson({
+      title      : title,
+      expId      : picked ? picked.id : null,
+      expTitle   : picked ? picked.title : null,
+      classLabel : $('inClass').value.trim(),
+      teacherName: $('inTeacher').value.trim(),
+      form       : { questions: qs },
+      dataSpec   : spec,
+      groupCount : Number($('inGroups').value) || 7
+    }).then(function(r){
+      // 만든 즉시 모둠 비밀번호를 받아 둡니다(교사가 바로 칠판에 적을 수 있게 드러내 둡니다).
+      pins      = Array.isArray(r.pins) ? r.pins : [];
+      pinsCode  = Hub.norm(r.adminCode);
+      pinsShown = pins.length > 0;
+      openDash(r.adminCode);
+    }, function(err){
+      $('newErr').textContent = (err && err.message) || '수업을 만들지 못했습니다. 인터넷 연결을 확인해 주세요.';
+    }).then(function(){
+      $('btnCreate').disabled = false; $('btnCreate').textContent = '수업 만들기';
+    });
+  });
+
+  // ── 대시보드 ───────────────────────────────────────────────────
+  $('inAdmin').addEventListener('input', function(){
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
+  });
+  $('btnOpenAdmin').addEventListener('click', function(){
+    const c = Hub.norm($('inAdmin').value);
+    if (c.length < 6){ $('adminErr').textContent = '관리코드 10자리를 입력하세요.'; return; }
+    $('adminErr').textContent = '';
+    openDash(c);
+  });
+
+  function openDash(code){
+    adminCode = Hub.norm(code);
+    $('adminErr').textContent = '';
+    // 다른 수업을 여는 것이면 앞 수업의 PIN 표는 버립니다(남의 화면에 남지 않게).
+    if (pinsCode !== adminCode){ pins = []; pinsShown = false; }
+    syncPinBtn(); renderPins(); $('pinMsg').textContent = '';
+    Hub.adminLoad(adminCode).then(function(b){
+      board = b; lesson = b.lesson;
+      show('dash');
+      paintHeader();
+      paintDash();
+      loadPins(false);
+      if (unwatch) unwatch();
+      unwatch = Hub.watch(lesson.join_code, function(nb){
+        if (nb && nb.lesson){ board = nb; lesson = nb.lesson; paintDash(); }
+      });
+      // 교사 화면은 수집 단계에서도 모둠 현황을 봐야 하므로 조금 더 자주 확인합니다.
+      // (바뀐 것이 있을 때만 실제 자료를 받아 오므로 전송량은 거의 늘지 않습니다.)
+      if (typeof Hub.setWatchPace === 'function') Hub.setWatchPace(lesson.join_code, 5000);
+    }, function(err){
+      // 관리코드 경로는 보관 기간이 지나도 열리도록 만들어져 있습니다.
+      // 그래도 막혔다면 서버 쪽 문제이므로 무엇을 하면 되는지 알려 줍니다.
+      if (err && err.expired){
+        setupCard('<h3>보관 기간이 지났지만 관리코드로는 열 수 있습니다</h3>' +
+                  '<p>관리코드로 여는 길은 기한이 지나도 막히지 않게 되어 있습니다. ' +
+                  '지금처럼 막힌다면 <code>schema.sql</code> 이 예전 것입니다.</p>' +
+                  '<p>Supabase → SQL Editor 에서 이 폴더의 <code>schema.sql</code> 을 한 번 더 Run 한 뒤 ' +
+                  '다시 열어 보세요. 자료는 지워지지 않습니다.</p>' + manualLink(), false);
+        try { console.warn('[MBL] 관리코드 경로가 만료로 막혔습니다 — schema.sql 확인 필요', err); } catch (e) {}
+      }
+      $('adminErr').textContent = (err && err.message) || '관리코드를 확인해 주세요.';
+      show('home');
+    });
+  }
+
+  function paintHeader(){
+    $('dJoin').textContent  = lesson.join_code || '------';
+    $('dAdmin').textContent = adminCode;
+    $('dTitle').textContent = lesson.title || '수업';
+    $('dSub').textContent   = [lesson.class_label, lesson.exp_title, lesson.teacher_name ? lesson.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ');
+    $('lnkStudent').href = './index.html?code=' + encodeURIComponent(lesson.join_code);
+    $('lnkPresent').href = './present.html?code=' + encodeURIComponent(lesson.join_code);
+    $('dQ').value = questionsToText(lesson.form && lesson.form.questions);
+    $('topSub').textContent = '참여코드 ' + lesson.join_code;
+  }
+
+  function paintDash(){
+    // 단계
+    Array.prototype.forEach.call(document.querySelectorAll('.ph'), function(b){
+      b.classList.toggle('on', b.dataset.phase === lesson.phase);
+    });
+    // 발표 모둠 선택
+    const sel = $('selPresenter');
+    const cur = lesson.presenter_group || '';
+    sel.innerHTML = '<option value="">— 없음 —</option>' + (board.groups || []).map(function(g){
+      return '<option value="' + esc(g.id) + '"' + (g.id === cur ? ' selected' : '') + '>' +
+             esc(g.group_name || (g.group_no + '모둠')) + '</option>';
+    }).join('');
+    const si = Math.max(0, Math.min(SLIDE_NAMES.length - 1, Number(lesson.slide_idx) || 0));
+    $('slideNow').textContent = (si + 1) + ' / ' + SLIDE_NAMES.length + ' · ' + SLIDE_NAMES[si];
+
+    const dataBy = {}, repBy = {}, fbTo = {};
+    (board.data || []).forEach(d => { dataBy[d.group_id] = d; });
+    (board.reports || []).forEach(r => { repBy[r.group_id] = r; });
+    (board.feedback || []).forEach(f => {
+      fbTo[f.to_group] = fbTo[f.to_group] || { n: 0, sum: 0, comments: [] };
+      fbTo[f.to_group].n++; fbTo[f.to_group].sum += Number(f.stars) || 0;
+      if (f.comment) fbTo[f.to_group].comments.push(f.comment);
+    });
+
+    const nData = (board.data || []).length;
+    const nDone = (board.reports || []).filter(r => r.status === 'done').length;
+    $('dStat').innerHTML = '모둠 ' + (board.groups || []).length + ' · 데이터 <b>' + nData + '</b> · 제출 <b>' + nDone + '</b>';
+
+    const spec = lesson.data_spec && lesson.data_spec.series ? lesson.data_spec
+               : { x:{label:'x',unit:''}, series:[{label:'값',unit:''}], rows:8, chart:'line' };
+
+    $('dGroups').innerHTML = (board.groups || []).map(function(g){
+      const col = 'var(--g' + (((Number(g.group_no) - 1) % 7) + 1) + ')';
+      const d = dataBy[g.id], r = repBy[g.id], f = fbTo[g.id];
+      let h = '<div class="gcard"' + (lesson.presenter_group === g.id ? ' style="outline:3px solid var(--coral)"' : '') + '>';
+      h += '<div class="gh" style="background:' + col + '"><span>' + esc(g.group_name || (g.group_no + '모둠')) + '</span>' +
+           '<button class="btn btn-sm" type="button" data-present="' + esc(g.id) + '" style="padding:4px 10px;font-size:12px">발표</button></div>';
+      h += '<div class="gb"><div class="st">' +
+           '<span class="pill' + (d ? '' : ' bad') + '">' + (d ? '데이터 ' + ((d.rows || []).length) + '줄' : '데이터 없음') + '</span>' +
+           '<span class="pill' + (r && r.status === 'done' ? ' sun' : ' bad') + '">' +
+             (r ? (r.status === 'done' ? '보고서 제출' : '작성 중') : '보고서 없음') + '</span>' +
+           (f ? '<span class="pill coral">별점 ' + (f.sum / f.n).toFixed(1) + ' (' + f.n + ')</span>' : '') +
+           '</div>';
+      if ((g.members || []).length) h += '<p class="muted" style="font-size:12.5px">' + (g.members || []).map(esc).join(', ') + '</p>';
+      h += '<div class="chartbox">' + (d ? chartSVG(spec, d.rows) : '<div class="empty">아직 자료가 없습니다.</div>') + '</div>';
+      if (d && d.note) h += '<p class="muted" style="font-size:12.5px">메모 · ' + esc(d.note) + '</p>';
+      if (r && r.answers){
+        h += '<div class="ans">' + Object.keys(r.answers).map(function(k){
+          return '<p><b>' + esc(k) + '</b> ' + esc(r.answers[k]) + '</p>';
+        }).join('') + '</div>';
+      }
+      h += '</div></div>';
+      return h;
+    }).join('') || '<div class="empty">아직 들어온 모둠이 없습니다.</div>';
+
+    Array.prototype.forEach.call($('dGroups').querySelectorAll('[data-present]'), function(b){
+      b.addEventListener('click', function(){ setDash({ presenterGroup: b.dataset.present, phase: 'present' }); });
+    });
+
+    paintKeep();
+  }
+
+  function setDash(patch){
+    $('dashMsg').textContent = '바꾸는 중…';
+    Hub.adminSet(adminCode, patch).then(function(l){
+      lesson = l;
+      $('dashMsg').textContent = '학생·발표 화면에 반영했습니다.';
+      paintDash();
+      setTimeout(function(){ $('dashMsg').textContent = ''; }, 2200);
+    }, function(err){
+      $('dashMsg').textContent = (err && err.message) || '바꾸지 못했습니다.';
+    });
+  }
+
+  Array.prototype.forEach.call(document.querySelectorAll('.ph'), function(b){
+    b.addEventListener('click', function(){ setDash({ phase: b.dataset.phase }); });
+  });
+  $('selPresenter').addEventListener('change', function(){
+    setDash({ presenterGroup: this.value || '' });
+  });
+  $('btnSlidePrev').addEventListener('click', function(){
+    setDash({ slideIdx: Math.max(0, (Number(lesson.slide_idx) || 0) - 1) });
+  });
+  $('btnSlideNext').addEventListener('click', function(){
+    setDash({ slideIdx: Math.min(SLIDE_NAMES.length - 1, (Number(lesson.slide_idx) || 0) + 1) });
+  });
+  $('btnSaveForm').addEventListener('click', function(){
+    setDash({ form: { questions: textToQuestions($('dQ').value) } });
+  });
+
+  function copy(text, btn){
+    const done = function(){ const t = btn.textContent; btn.textContent = '복사됨'; setTimeout(function(){ btn.textContent = t; }, 1200); };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(done, function(){ prompt('아래 코드를 복사하세요', text); });
+    } else { prompt('아래 코드를 복사하세요', text); }
+  }
+  $('btnCopyJoin').addEventListener('click', function(){ copy(lesson.join_code, this); });
+  $('btnCopyAdmin').addEventListener('click', function(){ copy(adminCode, this); });
+
+  // ── 모둠 비밀번호(PIN) ─────────────────────────────────────────
+  //  학생은 자기 모둠 PIN 이 있어야 자료를 저장할 수 있습니다.
+  //  PIN 은 교사 화면에서만 보입니다(학생용 보드에는 들어 있지 않습니다).
+  function pinMsg(text, keep){
+    $('pinMsg').textContent = text || '';
+    if (text && !keep) setTimeout(function(){
+      if ($('pinMsg').textContent === text) $('pinMsg').textContent = '';
+    }, 2600);
+  }
+  function syncPinBtn(){
+    $('btnPinShow').textContent = pinsShown ? '가리기' : '보이기';
+    $('btnPinShow').disabled = !pins.length;
+  }
+
+  function renderPins(){
+    const box = $('dPins');
+    if (!pins.length){
+      box.innerHTML = '<div class="empty">모둠 비밀번호를 아직 불러오지 못했습니다. [새로 불러오기] 를 눌러 주세요.</div>';
+      syncPinBtn();
+      return;
+    }
+    box.innerHTML = pins.map(function(p){
+      const no = Number(p.group_no) || 0;
+      return '<div class="pincard">' +
+             '<span class="no" style="background:' + groupColor(no) + '">' + esc(no) + '</span>' +
+             '<span class="v"><b>' + (pinsShown ? esc(p.pin || '----') : '••••') + '</b>' +
+             '<span>' + esc(groupLabel(p)) + '</span></span>' +
+             '<button class="btn btn-sm btn-ghost" type="button" data-reset="' + esc(p.group_id) + '">초기화</button>' +
+             '</div>';
+    }).join('');
+    Array.prototype.forEach.call(box.querySelectorAll('[data-reset]'), function(b){
+      b.addEventListener('click', function(){ resetPin(b.dataset.reset, b); });
+    });
+    syncPinBtn();
+  }
+
+  //  loadPins(loud) — loud 가 true 면 결과를 문구로도 알려 줍니다.
+  function loadPins(loud){
+    if (!adminCode) return Promise.resolve([]);
+    if (typeof Hub.adminPins !== 'function'){
+      pinMsg('이 화면에서는 모둠 비밀번호를 불러올 수 없습니다. hub.js 를 최신 것으로 바꿔 주세요.', true);
+      return Promise.resolve([]);
+    }
+    const code = adminCode;
+    if (loud) pinMsg('불러오는 중…', true);
+    return Hub.adminPins(code).then(function(rows){
+      if (code !== adminCode) return pins;          // 그 사이 다른 수업을 열었으면 버립니다
+      pins = Array.isArray(rows) ? rows : [];
+      pinsCode = code;
+      renderPins();
+      if (bigOpen) fillBig();
+      if (loud) pinMsg('모둠 ' + pins.length + '개를 불러왔습니다.');
+      else $('pinMsg').textContent = '';
+      return pins;
+    }, function(err){
+      pinMsg((err && err.message) || '모둠 비밀번호를 불러오지 못했습니다.', true);
+      return pins;
+    });
+  }
+
+  function resetPin(groupId, btn){
+    if (typeof Hub.adminResetPin !== 'function'){
+      pinMsg('이 화면에서는 비밀번호를 다시 발급할 수 없습니다. hub.js 를 확인해 주세요.', true);
+      return;
+    }
+    if (!confirm('이 모둠의 비밀번호를 새로 만들까요?\n학생 기기에 저장된 옛 비밀번호는 쓸 수 없게 됩니다.')) return;
+    const old = btn.textContent;
+    btn.disabled = true; btn.textContent = '발급 중…';
+    Hub.adminResetPin(adminCode, groupId).then(function(r){
+      const np = r && r.pin;
+      let label = '';
+      pins = pins.map(function(p){
+        if (String(p.group_id) !== String(groupId)) return p;
+        label = groupLabel(p);
+        return { group_id: p.group_id, group_no: p.group_no, group_name: p.group_name, pin: np };
+      });
+      pinsShown = true;
+      renderPins();
+      if (bigOpen) fillBig();
+      pinMsg(label + ' 비밀번호를 새로 발급했습니다. 그 모둠에 알려 주세요.');
+    }, function(err){
+      btn.disabled = false; btn.textContent = old;
+      pinMsg((err && err.message) || '비밀번호를 다시 발급하지 못했습니다.', true);
+    });
+  }
+
+  $('btnPinShow').addEventListener('click', function(){
+    pinsShown = !pinsShown; renderPins();
+  });
+  $('btnPinReload').addEventListener('click', function(){ loadPins(true); });
+
+  // 칠판에 크게 띄우기
+  function fillBig(){
+    $('bigJoin').textContent = (lesson && lesson.join_code) || '------';
+    $('bigGrid').innerHTML = pins.length
+      ? pins.map(function(p){
+          return '<div class="bigcell"><div class="bno">' + esc(groupLabel(p)) + '</div>' +
+                 '<div class="bpin">' + esc(p.pin || '----') + '</div></div>';
+        }).join('')
+      : '<div class="bigcell"><div class="bno">모둠 비밀번호를 불러오지 못했습니다.</div></div>';
+  }
+  function openBig(){
+    Promise.resolve(pins.length ? pins : loadPins(false)).then(function(){
+      fillBig();
+      bigOpen = true;
+      $('pinBig').classList.remove('hidden');
+      $('btnBigClose').focus();
+    });
+  }
+  function closeBig(){
+    bigOpen = false;
+    $('pinBig').classList.add('hidden');
+  }
+  $('btnPinBig').addEventListener('click', openBig);
+  $('btnBigClose').addEventListener('click', closeBig);
+  $('pinBig').addEventListener('click', function(ev){ if (ev.target === this) closeBig(); });
+  document.addEventListener('keydown', function(ev){
+    if (ev.key === 'Escape' && bigOpen) closeBig();
+  });
+
+  // 모둠에 나눠 줄 쪽지 인쇄
+  function printPins(){
+    Promise.resolve(pins.length ? pins : loadPins(false)).then(function(){
+      if (!pins.length){ pinMsg('인쇄할 모둠 비밀번호가 없습니다.', true); return; }
+      const join  = (lesson && lesson.join_code) || '------';
+      const head  = [lesson && lesson.title, lesson && lesson.class_label].filter(Boolean).map(esc).join(' · ');
+      $('printArea').innerHTML =
+        '<p style="font-size:15px;font-weight:800;margin-bottom:2px">' + head + '</p>' +
+        '<p style="font-size:12.5px;margin-bottom:10px">잘라서 모둠에 한 장씩 나눠 주세요. 다른 모둠 것은 보이지 않게 합니다.</p>' +
+        '<div class="slips">' + pins.map(function(p){
+          return '<div class="slip">' +
+                 '<div style="font-size:16px;font-weight:800">' + esc(groupLabel(p)) + '</div>' +
+                 '<div style="font-size:12px;margin-top:8px">참여코드</div>' +
+                 '<div style="font-size:26px;font-weight:800;letter-spacing:.12em">' + esc(join) + '</div>' +
+                 '<div style="font-size:12px;margin-top:8px">우리 모둠 비밀번호</div>' +
+                 '<div style="font-size:36px;font-weight:800;letter-spacing:.18em">' + esc(p.pin || '----') + '</div>' +
+                 '<div style="font-size:11px;margin-top:8px">다른 모둠에는 알려 주지 마세요.</div>' +
+                 '</div>';
+        }).join('') + '</div>';
+      const done = function(){ document.body.classList.remove('print-pins'); };
+      window.addEventListener('afterprint', done, { once: true });
+      document.body.classList.add('print-pins');
+      window.print();
+      setTimeout(done, 1500);
+    });
+  }
+  $('btnPinPrint').addEventListener('click', printPins);
+
+  // ── 보관 기한 ─────────────────────────────────────────────────
+  function fmtDate(v){
+    const d = v ? new Date(v) : null;
+    if (!d || isNaN(d.getTime())) return '';
+    const p2 = n => (n < 10 ? '0' : '') + n;
+    return d.getFullYear() + '-' + p2(d.getMonth() + 1) + '-' + p2(d.getDate());
+  }
+  function daysLeft(v){
+    const d = v ? new Date(v) : null;
+    if (!d || isNaN(d.getTime())) return null;
+    return Math.ceil((d.getTime() - Date.now()) / 86400000);
+  }
+  function paintKeep(){
+    const iso  = lesson && lesson.expires_at;
+    const day  = fmtDate(iso);
+    const left = daysLeft(iso);
+    if (!day){
+      $('dKeep').textContent = '보관 기한을 읽지 못했습니다. schema.sql 을 한 번 더 Run 해 주세요.';
+      $('dKeep').classList.remove('warn');
+      $('dExpireWarn').classList.add('hidden');
+      return;
+    }
+    const over = (left !== null && left < 0);
+    const soon = over || (left !== null && left <= 7);
+    $('dKeep').innerHTML = '이 수업은 <b>' + esc(day) + '</b> 까지 보관됩니다 ' +
+      (over ? '<span class="pill bad">기한 지남</span>'
+            : '<span class="pill' + (soon ? ' bad' : '') + '">D-' + esc(left) + '</span>');
+    $('dKeep').classList.toggle('warn', soon);
+    $('dExpireWarn').classList.toggle('hidden', !soon);
+    if (soon){
+      $('dExpireWarnTitle').textContent = over ? '보관 기간이 지났습니다' : '보관 기간이 얼마 남지 않았습니다';
+      $('dExpireWarnMsg').textContent = over
+        ? day + ' 로 기한이 지났습니다. 학생은 참여코드로 들어올 수 없습니다. 연장하면 다시 열립니다.'
+        : day + ' 까지 보관됩니다(D-' + left + '). 더 쓰시려면 연장해 주세요. 기한이 지나면 자료가 함께 지워집니다.';
+    }
+    $('delHint').textContent = '삭제하려면 아래 칸에 수업 제목 “' + ((lesson && lesson.title) || '') + '” 을 그대로 입력하세요.';
+  }
+
+  function doExtend(btn){
+    if (typeof Hub.adminExtend !== 'function'){
+      $('keepMsg').textContent = '이 화면에서는 연장할 수 없습니다. hub.js 를 확인해 주세요.';
+      return;
+    }
+    const old = btn ? btn.textContent : '';
+    if (btn){ btn.disabled = true; btn.textContent = '연장 중…'; }
+    $('keepMsg').textContent = '';
+    Hub.adminExtend(adminCode, 30).then(function(l){
+      if (l){ lesson = l; if (board) board.lesson = l; }
+      paintKeep();
+      $('keepMsg').textContent = '30일 연장했습니다. ' + fmtDate(lesson && lesson.expires_at) + ' 까지 보관됩니다.';
+      setTimeout(function(){ $('keepMsg').textContent = ''; }, 3200);
+    }, function(err){
+      $('keepMsg').textContent = (err && err.message) || '연장하지 못했습니다.';
+    }).then(function(){
+      if (btn){ btn.disabled = false; btn.textContent = old; }
+    });
+  }
+  $('btnExtend').addEventListener('click',    function(){ doExtend(this); });
+  $('btnExtendTop').addEventListener('click', function(){ doExtend(this); });
+
+  // 삭제 — 되돌릴 수 없으므로 수업 제목을 그대로 입력해야 눌립니다.
+  function delTitleOk(){
+    const want = String((lesson && lesson.title) || '').trim();
+    return want !== '' && $('inDelTitle').value.trim() === want;
+  }
+  $('btnDelAsk').addEventListener('click', function(){
+    $('delBox').classList.remove('hidden');
+    $('inDelTitle').value = '';
+    $('btnDelGo').disabled = true;
+    $('keepMsg').textContent = '';
+    $('inDelTitle').focus();
+  });
+  $('btnDelCancel').addEventListener('click', function(){
+    $('delBox').classList.add('hidden');
+    $('inDelTitle').value = '';
+    $('btnDelGo').disabled = true;
+  });
+  $('inDelTitle').addEventListener('input', function(){
+    $('btnDelGo').disabled = !delTitleOk();
+  });
+  $('btnDelGo').addEventListener('click', function(){
+    if (!delTitleOk()) return;
+    if (typeof Hub.adminDelete !== 'function'){
+      $('keepMsg').textContent = '이 화면에서는 삭제할 수 없습니다. hub.js 를 확인해 주세요.';
+      return;
+    }
+    if (!confirm('정말 지울까요?\n모둠·데이터·보고서·별점이 모두 사라지며 되돌릴 수 없습니다.')) return;
+    const btn  = this;
+    const code = adminCode;
+    const name = (lesson && lesson.title) || '수업';
+    btn.disabled = true; btn.textContent = '지우는 중…';
+    Hub.adminDelete(code).then(function(){
+      if (unwatch){ unwatch(); unwatch = null; }
+      if (typeof Hub.forgetAdmin === 'function') Hub.forgetAdmin(code);
+      closeBig();
+      adminCode = ''; lesson = null; board = null;
+      pins = []; pinsCode = ''; pinsShown = false;
+      renderPins();
+      $('delBox').classList.add('hidden');
+      $('inDelTitle').value = '';
+      $('keepMsg').textContent = '';
+      renderRecent();
+      show('home');
+      alert('“' + name + '” 수업을 지웠습니다.');
+    }, function(err){
+      $('keepMsg').textContent = (err && err.message) || '지우지 못했습니다.';
+    }).then(function(){
+      btn.disabled = !delTitleOk(); btn.textContent = '정말 삭제';
+    });
+  });
+
+  // ── 시작 ───────────────────────────────────────────────────────
+  checkSetup(false);
+  renderRecent();
+  renderPins();
+  const q = new URLSearchParams(location.search).get('admin');
+  if (q) openDash(q); else show('home');
+
+})();
+</script>
+</body>
+</html>

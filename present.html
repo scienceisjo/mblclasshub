@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>MBL 수업허브 · 발표 모드</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./lab-data.js"></script>
+<script src="./config.js"></script>
+<script src="./hub.js"></script>
+<style>
+  :root{
+    --sky-1:#D4EDFB; --sky-2:#EAF8F0;
+    --paper:#FFFFFF; --cream:#FFFDF6;
+    --ink:#254753; --muted:#6E8A96;
+    --mint:#20B2A6; --mint-d:#14867C;
+    --sun:#FFC130; --coral:#FF8C6B; --sky:#54B4E8;
+    --line:#E4EFF1; --line-2:#D3E6EA;
+    --shadow:0 10px 28px rgba(37,71,83,.09);
+    --shadow-lg:0 18px 44px rgba(37,71,83,.14);
+    --ok:#37B58C; --warn:#E8873C; --bad:#E05A5A;
+    --g1:#20B2A6; --g2:#54B4E8; --g3:#FFC130; --g4:#FF8C6B; --g5:#8B7FD4; --g6:#4FB477; --g7:#E88FB5;
+    --display:'Jua',sans-serif;
+    --sans:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
+    --wrap:1120px; --r:18px;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);color:var(--ink);line-height:1.6;-webkit-font-smoothing:antialiased;
+    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed;min-height:100vh}
+  .hidden{display:none !important}
+  .wrap{max-width:1840px;margin:0 auto;padding:0 28px}
+
+  .offbar{background:rgba(255,193,48,.3);border-bottom:2px solid rgba(255,193,48,.7);color:#8A5B00;
+    font-size:20px;font-weight:800;text-align:center;padding:10px}
+
+  /* 연결 설정 안내 — 오프라인 배너와 색을 다르게 씁니다 */
+  .setupbar{background:#FFF0EA;border-bottom:3px solid var(--coral);color:#A8421C;
+    font-size:20px;font-weight:800;text-align:center;padding:12px}
+
+  /* 전자칠판용 큰 머리글 */
+  .phead{display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;
+    padding:18px 0;border-bottom:2px solid var(--line-2)}
+  .phead h1{font-family:var(--display);font-size:clamp(28px,3.2vw,52px);font-weight:400;line-height:1.15}
+  .phead .sub{font-size:clamp(15px,1.2vw,22px);color:var(--muted);font-weight:600}
+  .codebox{text-align:center;background:var(--cream);border:3px dashed var(--mint);border-radius:20px;padding:10px 26px}
+  .codebox .lbl{font-size:15px;color:var(--muted);font-weight:700}
+  .codebox .big{font-family:var(--display);font-size:clamp(34px,4vw,64px);letter-spacing:.12em;color:var(--mint-d);line-height:1.1}
+
+  .phase{display:inline-flex;align-items:center;gap:10px;font-family:var(--display);
+    font-size:clamp(18px,1.8vw,30px);padding:8px 22px;border-radius:999px;background:rgba(32,178,166,.16);color:var(--mint-d)}
+  .phase.share{background:rgba(84,180,232,.2);color:#2A7FB0}
+  .phase.present{background:rgba(255,140,107,.22);color:#C9542F}
+  .phase.done{background:rgba(255,193,48,.26);color:#9A6B00}
+
+  /* 모둠 현황 띠 */
+  .strip{display:flex;gap:12px;flex-wrap:wrap;padding:18px 0}
+  .gchip{display:flex;align-items:center;gap:10px;border-radius:999px;padding:10px 20px;color:#fff;
+    font-family:var(--display);font-size:clamp(16px,1.5vw,26px);box-shadow:var(--shadow)}
+  .gchip small{font-family:var(--sans);font-size:14px;font-weight:700;background:rgba(255,255,255,.28);border-radius:999px;padding:2px 10px}
+  .gchip.off{background:#CFDDE2 !important;color:#6E8A96}
+
+  /* 본문 */
+  .stage{padding:14px 0 40px}
+  .bigcard{background:var(--paper);border:1px solid var(--line);border-radius:26px;box-shadow:var(--shadow-lg);padding:26px 30px;margin-bottom:20px}
+  .bigcard h2{font-family:var(--display);font-size:clamp(24px,2.6vw,42px);font-weight:400;margin-bottom:6px}
+  .bigcard .meta{color:var(--muted);font-size:clamp(14px,1.1vw,20px);font-weight:700;margin-bottom:12px}
+  .chartbox{width:100%;overflow-x:auto}
+  .chartbox svg{display:block;max-width:100%;height:auto}
+
+  .grid2{display:grid;grid-template-columns:repeat(auto-fit,minmax(440px,1fr));gap:20px}
+  .qa{border-left:8px solid var(--mint);background:#F7FDFC;border-radius:0 18px 18px 0;padding:16px 22px;margin-bottom:14px}
+  .qa b{display:block;font-size:clamp(17px,1.4vw,26px);margin-bottom:6px}
+  .qa p{font-size:clamp(16px,1.3vw,24px);color:#3C6070;white-space:pre-wrap}
+
+  .rank{list-style:none}
+  .rank li{display:flex;align-items:center;gap:16px;border-bottom:1px solid var(--line);padding:14px 4px;
+    font-size:clamp(17px,1.5vw,28px)}
+  .rank .nm{font-family:var(--display);flex:1}
+  .rank .st{color:var(--sun);font-size:clamp(20px,1.8vw,32px);letter-spacing:2px}
+  .rank .cm{color:var(--muted);font-size:clamp(13px,1vw,18px);flex:1.4;text-align:right}
+
+  .empty{color:var(--muted);font-size:clamp(16px,1.4vw,26px);text-align:center;padding:60px 20px}
+
+  /* 코드 입력 */
+  .askcode{max-width:560px;margin:70px auto;background:var(--paper);border:1px solid var(--line);
+    border-radius:24px;box-shadow:var(--shadow-lg);padding:34px;text-align:center}
+  .askcode h2{font-family:var(--display);font-size:30px;font-weight:400;margin-bottom:8px}
+  .askcode input{width:100%;font-family:var(--display);font-size:44px;letter-spacing:.16em;text-align:center;
+    padding:16px;border:2px solid var(--line-2);border-radius:16px;background:var(--cream);color:var(--ink);text-transform:uppercase}
+  .askcode input:focus{border-color:var(--mint);outline:none}
+  .btn{font-family:var(--sans);font-size:17px;font-weight:700;cursor:pointer;border:1.5px solid var(--mint);
+    background:var(--mint);color:#fff;padding:13px 26px;border-radius:999px;margin-top:14px;box-shadow:var(--shadow)}
+  .btn:hover{background:var(--mint-d)}
+  .err{color:var(--bad);font-weight:700;min-height:22px;margin-top:10px}
+  .live{font-size:14px;color:var(--muted);font-weight:700}
+</style>
+</head>
+<body>
+
+<div id="offbar" class="offbar hidden">연결이 끊겨 마지막으로 받은 화면을 보여 주고 있습니다.</div>
+<div id="setupbar" class="setupbar hidden"></div>
+
+<!-- 코드 입력 -->
+<section id="ask" class="askcode">
+  <h2>발표 모드</h2>
+  <p style="color:var(--muted)">이 수업의 참여코드 6자리를 입력하세요.</p>
+  <input id="inCode" type="text" maxlength="6" placeholder="ABC234" autocomplete="off" aria-label="참여코드" />
+  <div id="askErr" class="err"></div>
+  <button id="btnGo" class="btn" type="button">발표 화면 열기</button>
+</section>
+
+<!-- 발표 화면 -->
+<div id="screen" class="hidden">
+  <div class="wrap">
+    <div class="phead">
+      <div>
+        <h1 id="pTitle">수업</h1>
+        <div class="sub" id="pSub"></div>
+      </div>
+      <div style="display:flex;align-items:center;gap:20px;flex-wrap:wrap">
+        <span id="pPhase" class="phase">데이터 수집 중</span>
+        <div class="codebox">
+          <div class="lbl">참여코드</div>
+          <div id="pCode" class="big">------</div>
+        </div>
+      </div>
+    </div>
+    <div id="pStrip" class="strip"></div>
+  </div>
+  <div class="wrap stage">
+    <div id="pStage"></div>
+    <div class="live" id="pLive"></div>
+  </div>
+</div>
+
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-07-06</span></footer>
+
+<script>
+(function(){
+  'use strict';
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const $ = id => document.getElementById(id);
+  const SERIES_COLORS = ['var(--mint)','var(--coral)','var(--sky)','var(--sun)','var(--g5)','var(--g6)','var(--g7)'];
+  const PHASE_TEXT = { collect:'① 데이터 수집 중', share:'② 모둠 공유 중', present:'③ 발표 중', done:'④ 마무리' };
+  const SLIDES = ['모둠 그래프', '보고서', '별점 모아 보기'];
+
+  let joinCode = '';
+  let board    = null;
+  let unwatch  = null;
+
+  // ── 전자칠판용 큰 인라인 SVG 그래프 ────────────────────────────
+  function chartSVG(sp, rows, opt){
+    opt = opt || {};
+    const W = opt.w || 1000, H = opt.h || 520;
+    const F = opt.font || 20;
+    const P = { l: 86, r: 30, t: 26, b: 74 };
+    const series = (sp && sp.series) || [];
+    const kind = (sp && sp.chart) || 'line';
+    const xLab = (sp && sp.x && sp.x.label) || 'x';
+    const xUnit= (sp && sp.x && sp.x.unit)  || '';
+    const pts = [];
+    (rows || []).forEach(function(r){
+      if (!Array.isArray(r)) return;
+      const x = Number(r[0]);
+      const ys = series.map((_, i) => { const v = Number(r[i+1]); return isFinite(v) ? v : null; });
+      if (ys.every(v => v === null)) return;
+      pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
+    });
+    if (!pts.length) return '<div class="empty">아직 입력된 값이 없습니다.</div>';
+    const numericX = pts.every(p => p.x !== null) && kind !== 'bar';
+    const xs = numericX ? pts.map(p => p.x) : pts.map((p, i) => i);
+    const allY = []; pts.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
+    let y0 = Math.min.apply(null, allY), y1 = Math.max.apply(null, allY);
+    if (y0 === y1){ y0 -= 1; y1 += 1; }
+    const pad = (y1 - y0) * .12; y0 -= pad; y1 += pad;
+    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    if (x0 === x1){ x0 -= .5; x1 += .5; }
+    const px = v => P.l + (v - x0) / (x1 - x0) * (W - P.l - P.r);
+    const py = v => H - P.b - (v - y0) / (y1 - y0) * (H - P.t - P.b);
+
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' + esc(xLab) + ' 그래프" style="min-width:640px">';
+    for (let i = 0; i <= 4; i++){
+      const v = y0 + (y1 - y0) * i / 4, y = py(v);
+      s += '<line x1="' + P.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)" stroke-width="1.5"/>';
+      s += '<text x="' + (P.l - 12) + '" y="' + (y + F / 3).toFixed(1) + '" text-anchor="end" font-size="' + F + '" fill="var(--muted)">' +
+           esc(v.toFixed(Math.abs(y1 - y0) < 5 ? 1 : 0)) + '</text>';
+    }
+    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="2.5"/>';
+    pts.forEach(function(p, i){
+      if (pts.length > 14 && i % Math.ceil(pts.length / 12) !== 0) return;
+      const X = px(numericX ? p.x : i);
+      const lb = (p.raw === '' || p.raw === undefined || p.raw === null) ? (i + 1) : p.raw;
+      s += '<text x="' + X.toFixed(1) + '" y="' + (H - P.b + F + 10) + '" text-anchor="middle" font-size="' + F + '" fill="var(--muted)">' + esc(lb) + '</text>';
+    });
+    s += '<text x="' + (W - P.r) + '" y="' + (H - 14) + '" text-anchor="end" font-size="' + (F + 2) + '" fill="var(--muted)">' +
+         esc(xLab + (xUnit ? ' (' + xUnit + ')' : '')) + '</text>';
+
+    series.forEach(function(se, si){
+      const col = SERIES_COLORS[si % SERIES_COLORS.length];
+      const list = pts.map((p, i) => ({ X: px(numericX ? p.x : i), Y: p.ys[si] === null ? null : py(p.ys[si]) }));
+      if (kind === 'bar'){
+        const bw = Math.max(8, (W - P.l - P.r) / Math.max(pts.length, 1) / (series.length + 1));
+        list.forEach(function(pt, i){
+          if (pt.Y === null) return;
+          const bx = pt.X - (series.length * bw) / 2 + si * bw;
+          s += '<rect x="' + bx.toFixed(1) + '" y="' + pt.Y.toFixed(1) + '" width="' + bw.toFixed(1) +
+               '" height="' + Math.max(0, H - P.b - pt.Y).toFixed(1) + '" fill="' + col + '" opacity=".88" rx="4"/>';
+        });
+      } else {
+        if (kind !== 'scatter'){
+          let d = '', pen = false;
+          list.forEach(function(pt){
+            if (pt.Y === null){ pen = false; return; }
+            d += (pen ? 'L' : 'M') + pt.X.toFixed(1) + ' ' + pt.Y.toFixed(1) + ' '; pen = true;
+          });
+          if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="5" stroke-linejoin="round" stroke-linecap="round"/>';
+        }
+        list.forEach(function(pt){
+          if (pt.Y === null) return;
+          s += '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="7" fill="' + col + '"/>';
+        });
+      }
+    });
+    s += '</svg>';
+    let lg = '<div style="display:flex;flex-wrap:wrap;gap:22px;margin-top:8px;font-size:' + (F + 2) + 'px;color:var(--ink);font-weight:700">';
+    series.forEach(function(se, si){
+      lg += '<span style="display:inline-flex;align-items:center;gap:8px"><i style="width:20px;height:20px;border-radius:6px;background:' +
+            SERIES_COLORS[si % SERIES_COLORS.length] + ';display:inline-block"></i>' +
+            esc(se.label || ('계열' + (si + 1))) + (se.unit ? ' (' + esc(se.unit) + ')' : '') + '</span>';
+    });
+    return s + lg + '</div>';
+  }
+
+  Hub.onStatus(function(st){ $('offbar').classList.toggle('hidden', !st.offline); });
+
+  // ── 연결 설정 안내 (전자칠판이라 한 줄만) ──────────────────────
+  (function checkSetup(){
+    const bar = $('setupbar');
+    function tell(msg){ bar.textContent = msg; bar.classList.remove('hidden'); }
+    const NO_CONF = 'config.js 에 우리 학교 Supabase 정보가 아직 없습니다. 선생님께 알려 주세요.';
+    const NO_SQL  = 'Supabase SQL Editor 에서 schema.sql 을 한 번 실행해 주세요. 선생님께 알려 주세요.';
+
+    if (typeof Hub.isConfigured === 'function' && !Hub.isConfigured()){ tell(NO_CONF); return; }
+    if (typeof Hub.diagnose !== 'function') return;
+    Promise.resolve(Hub.diagnose()).then(function(d){
+      if (!d) return;
+      if (!d.configured) tell(NO_CONF);
+      else if (d.reachable && !d.schemaOk) tell(NO_SQL);
+      // 연결만 안 되는 경우는 위쪽 오프라인 배너가 알려 줍니다.
+    }, function(){});
+  })();
+
+  // ── 화면 그리기 ────────────────────────────────────────────────
+  function gname(g){ return g ? (g.group_name || (g.group_no + '모둠')) : ''; }
+  function gcolor(g){ return 'var(--g' + (((Number(g.group_no) - 1) % 7) + 1) + ')'; }
+
+  function render(b, info){
+    board = b || { lesson:null, groups:[], data:[], reports:[], feedback:[] };
+    $('ask').classList.add('hidden');
+    $('screen').classList.remove('hidden');
+
+    const l = board.lesson;
+    if (!l){
+      $('pTitle').textContent = '수업 정보를 기다리는 중';
+      $('pSub').textContent   = '참여코드 ' + joinCode;
+      $('pCode').textContent  = joinCode || '------';
+      $('pStrip').innerHTML   = '';
+      $('pStage').innerHTML   = '<div class="bigcard"><div class="empty">인터넷 연결을 확인해 주세요. 연결되면 이 화면이 저절로 채워집니다.</div></div>';
+      return;
+    }
+
+    $('pTitle').textContent = l.title || '수업';
+    $('pSub').textContent   = [l.class_label, l.exp_title, l.teacher_name ? l.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ');
+    $('pCode').textContent  = l.join_code || joinCode;
+    const ph = $('pPhase');
+    ph.className = 'phase ' + (l.phase || 'collect');
+    ph.textContent = PHASE_TEXT[l.phase] || '수업 중';
+    // 단계에 따라 확인 간격이 달라집니다(발표 3초 · 공유 8초 · 그 밖 15초).
+    $('pLive').textContent = (info && info.mode === 'cache' ? '저장해 둔 화면' : '자동으로 새로 고치는 중') +
+                             ' · 마지막 갱신 ' + new Date().toLocaleTimeString('ko-KR');
+
+    const dataBy = {}, repBy = {};
+    (board.data || []).forEach(d => { dataBy[d.group_id] = d; });
+    (board.reports || []).forEach(r => { repBy[r.group_id] = r; });
+
+    // 모둠 현황 띠
+    $('pStrip').innerHTML = (board.groups || []).map(function(g){
+      const d = dataBy[g.id], r = repBy[g.id];
+      const on = !!d || !!r;
+      return '<span class="gchip' + (on ? '' : ' off') + '" style="background:' + gcolor(g) + '">' +
+             esc(gname(g)) + '<small>' + (d ? ((d.rows || []).length + '줄') : '대기') +
+             (r && r.status === 'done' ? ' · 제출' : '') + '</small></span>';
+    }).join('') || '<span class="gchip off">아직 들어온 모둠이 없습니다</span>';
+
+    const spec = (l.data_spec && l.data_spec.series) ? l.data_spec
+               : (labSpec(l) || { x:{label:'x',unit:''}, series:[{label:'값',unit:''}], rows:8, chart:'line' });
+    const presenter = (board.groups || []).filter(g => g.id === l.presenter_group)[0] || null;
+    const slide = Math.max(0, Math.min(SLIDES.length - 1, Number(l.slide_idx) || 0));
+
+    // 발표 모둠이 정해지지 않았거나 수집 단계면 전체 보기
+    if (!presenter || l.phase === 'collect'){
+      $('pStage').innerHTML = allGroupsHTML(spec, dataBy, repBy);
+      return;
+    }
+    if (slide === 0)      $('pStage').innerHTML = presentChartHTML(spec, presenter, dataBy);
+    else if (slide === 1) $('pStage').innerHTML = presentReportHTML(l, presenter, repBy);
+    else                  $('pStage').innerHTML = feedbackHTML();
+  }
+
+  function labSpec(l){
+    try { return (window.LAB && l.exp_id && LAB.byId(l.exp_id)) ? LAB.byId(l.exp_id).dataSpec : null; }
+    catch (e) { return null; }
+  }
+
+  function allGroupsHTML(spec, dataBy, repBy){
+    const cards = (board.groups || []).map(function(g){
+      const d = dataBy[g.id], r = repBy[g.id];
+      return '<div class="bigcard"><h2 style="color:' + gcolor(g) + '">' + esc(gname(g)) + '</h2>' +
+             '<div class="meta">' + (d ? '데이터 ' + ((d.rows || []).length) + '줄' : '데이터 없음') +
+             (r ? ' · ' + (r.status === 'done' ? '보고서 제출' : '보고서 작성 중') : '') +
+             (d && d.note ? ' · ' + esc(d.note) : '') + '</div>' +
+             '<div class="chartbox">' + (d ? chartSVG(spec, d.rows, { w: 900, h: 400, font: 17 }) :
+               '<div class="empty">아직 자료가 없습니다.</div>') + '</div></div>';
+    }).join('');
+    return '<div class="grid2">' + (cards || '<div class="bigcard"><div class="empty">모둠이 데이터를 저장하면 여기에 그래프가 나타납니다.</div></div>') + '</div>';
+  }
+
+  function presentChartHTML(spec, g, dataBy){
+    const d = dataBy[g.id];
+    return '<div class="bigcard"><h2 style="color:' + gcolor(g) + '">' + esc(gname(g)) + ' · 측정 결과</h2>' +
+           '<div class="meta">' + (d && d.note ? '메모 · ' + esc(d.note) : '지금 발표하는 모둠입니다') + '</div>' +
+           '<div class="chartbox">' + (d ? chartSVG(spec, d.rows) : '<div class="empty">아직 자료가 없습니다.</div>') + '</div></div>';
+  }
+
+  function presentReportHTML(l, g, repBy){
+    const r = repBy[g.id];
+    const qs = (l.form && Array.isArray(l.form.questions)) ? l.form.questions : [];
+    let h = '<div class="bigcard"><h2 style="color:' + gcolor(g) + '">' + esc(gname(g)) + ' · 보고서</h2>';
+    if (!r || !r.answers || !Object.keys(r.answers).length){
+      h += '<div class="empty">아직 제출한 내용이 없습니다.</div></div>';
+      return h;
+    }
+    const keys = Object.keys(r.answers).sort(function(a, b){
+      return (parseInt(a.replace(/\D/g, ''), 10) || 0) - (parseInt(b.replace(/\D/g, ''), 10) || 0);
+    });
+    keys.forEach(function(k, i){
+      const idx = (parseInt(k.replace(/\D/g, ''), 10) || (i + 1)) - 1;
+      const q = qs[idx] ? qs[idx].q : ('질문 ' + (idx + 1));
+      const a = r.answers[k];
+      if (a === '' || a === null || a === undefined) return;
+      h += '<div class="qa"><b>' + esc(q) + '</b><p>' + esc(a) + '</p></div>';
+    });
+    return h + '</div>';
+  }
+
+  function feedbackHTML(){
+    const sum = {};
+    (board.feedback || []).forEach(function(f){
+      sum[f.to_group] = sum[f.to_group] || { n:0, s:0, cm:[] };
+      sum[f.to_group].n++; sum[f.to_group].s += Number(f.stars) || 0;
+      if (f.comment) sum[f.to_group].cm.push(f.comment);
+    });
+    const rows = (board.groups || []).map(function(g){
+      const v = sum[g.id];
+      return { g: g, avg: v ? v.s / v.n : 0, n: v ? v.n : 0, cm: v ? v.cm : [] };
+    }).sort((a, b) => b.avg - a.avg);
+    if (!rows.length || !rows[0].n){
+      return '<div class="bigcard"><h2>모둠 별점</h2><div class="empty">아직 별점이 들어오지 않았습니다.</div></div>';
+    }
+    let h = '<div class="bigcard"><h2>모둠 별점 모아 보기</h2><ul class="rank">';
+    rows.forEach(function(r){
+      const full = Math.round(r.avg);
+      h += '<li><span class="nm" style="color:' + gcolor(r.g) + '">' + esc(gname(r.g)) + '</span>' +
+           '<span class="st">' + '★'.repeat(full) + '☆'.repeat(Math.max(0, 5 - full)) + '</span>' +
+           '<span class="cm">' + (r.n ? r.avg.toFixed(1) + '점 · ' + r.n + '표' : '아직 없음') +
+           (r.cm.length ? '<br>“' + esc(r.cm[r.cm.length - 1]) + '”' : '') + '</span></li>';
+    });
+    return h + '</ul></div>';
+  }
+
+  // ── 시작 ───────────────────────────────────────────────────────
+  function start(code){
+    joinCode = Hub.norm(code);
+    if (joinCode.length !== 6){ $('askErr').textContent = '참여코드 6자리를 입력하세요.'; return; }
+    $('askErr').textContent = '';
+    Hub.saveLocal('last_present', joinCode);
+    if (unwatch) unwatch();
+    // 첫 화면은 캐시로 즉시 띄우고, 그 뒤 실시간으로 갱신합니다.
+    const cached = Hub.loadLocal('board_' + joinCode, null);
+    if (cached) render(cached, { mode: 'cache' });
+    unwatch = Hub.watch(joinCode, function(b, info){ render(b, info); });
+  }
+
+  $('inCode').addEventListener('input', function(){
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  });
+  $('inCode').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('btnGo').click(); });
+  $('btnGo').addEventListener('click', function(){ start($('inCode').value); });
+
+  const q = new URLSearchParams(location.search).get('code') || Hub.loadLocal('last_present', '');
+  if (q && Hub.norm(q).length === 6){ $('inCode').value = Hub.norm(q); start(q); }
+
+})();
+</script>
+</body>
+</html>

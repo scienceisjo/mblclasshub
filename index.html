@@ -3,11 +3,13 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>MBL센서 활용 과학 탐구 수업</title>
+<title>MBL 수업허브 · 학생용</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
-<link rel="preconnect" href="https://fonts.googleapis.com" />
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="./lab-data.js"></script>
+<script src="./config.js"></script>
+<script src="./hub.js"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -18,624 +20,1360 @@
     --line:#E4EFF1; --line-2:#D3E6EA;
     --shadow:0 10px 28px rgba(37,71,83,.09);
     --shadow-lg:0 18px 44px rgba(37,71,83,.14);
-    --ok:#37B58C;
+    --ok:#37B58C; --warn:#E8873C; --bad:#E05A5A;
+    --g1:#20B2A6; --g2:#54B4E8; --g3:#FFC130; --g4:#FF8C6B; --g5:#8B7FD4; --g6:#4FB477; --g7:#E88FB5;
     --display:'Jua',sans-serif;
     --sans:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
     --wrap:1120px; --r:18px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
-  html{scroll-behavior:smooth}
-  body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;overflow-x:hidden;
-    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed}
-  body::before{content:'';position:fixed;inset:0;z-index:-1;pointer-events:none;
-    background:
-      radial-gradient(circle at 12% 18%, rgba(84,180,232,.14), transparent 42%),
-      radial-gradient(circle at 88% 12%, rgba(255,193,48,.14), transparent 38%),
-      radial-gradient(circle at 78% 82%, rgba(255,140,107,.10), transparent 42%)}
+  body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;
+    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed;min-height:100vh}
   a{color:inherit;text-decoration:none}
-  .wrap{max-width:var(--wrap);margin:0 auto;padding:0 24px}
-  :focus-visible{outline:3px solid var(--mint);outline-offset:2px;border-radius:8px}
+  .wrap{max-width:var(--wrap);margin:0 auto;padding:0 16px}
   .hidden{display:none !important}
+  :focus-visible{outline:3px solid var(--mint);outline-offset:2px;border-radius:8px}
 
-  /* 공통 이미지 폴백 */
-  .ph{position:relative;overflow:hidden;background:linear-gradient(135deg,#DEF3EE,#E7F4FB);box-shadow:var(--shadow);border-radius:var(--r)}
-  .ph img{width:100%;height:100%;object-fit:cover;display:block}
-  .ph.noimg{display:flex;align-items:center;justify-content:center;min-height:120px}
-  .ph.noimg::after{content:attr(data-label) " 이미지 자리";color:var(--muted);font-size:13px;font-weight:600;padding:16px;text-align:center}
+  /* 오프라인 배너 */
+  .offbar{background:rgba(255,193,48,.25);border-bottom:1px solid rgba(255,193,48,.6);color:#8A5B00;
+    font-size:13.5px;font-weight:700;text-align:center;padding:9px 14px}
 
-  .badge{display:inline-flex;align-items:center;gap:7px;font-family:var(--display);font-size:14px;color:var(--mint-d);
-    background:rgba(32,178,166,.13);padding:6px 14px;border-radius:999px}
-  .badge svg{width:16px;height:16px}
-  .badge.sun{color:#B47D00;background:rgba(255,193,48,.20)}
-  .badge.coral{color:#C96A3F;background:rgba(255,140,107,.16)}
-  .badge.sky{color:#2A7FB0;background:rgba(84,180,232,.16)}
-
-  /* 선생님 안내 바 */
-  .teacher-bar{display:flex;align-items:center;justify-content:center;gap:14px;flex-wrap:wrap;
-    padding:10px 16px;font-size:13.5px;background:rgba(255,255,255,.72);backdrop-filter:blur(8px);border-bottom:1px solid var(--line)}
-  .teacher-bar .t-msg{color:var(--muted)}
-  .teacher-bar a{display:inline-flex;align-items:center;gap:7px;font-weight:700;font-size:13px;color:#fff;
-    background:var(--mint);border-radius:999px;padding:7px 15px;box-shadow:var(--shadow);transition:.18s;white-space:nowrap}
-  .teacher-bar a:hover{background:var(--mint-d);transform:translateY(-1px)}
-  .teacher-bar a svg{width:15px;height:15px}
-
-  .demo-banner{background:rgba(255,193,48,.18);border-bottom:1px solid rgba(255,193,48,.5);
-    color:#9A6B00;font-size:13px;text-align:center;padding:9px 16px;font-weight:600}
+  /* 연결 설정 안내 — 오프라인 배너와 구분되도록 색을 다르게 씁니다 */
+  .setupbar{background:#FFF0EA;border-bottom:2px solid var(--coral);color:#A8421C;
+    font-size:14px;font-weight:700;text-align:center;padding:11px 14px}
 
   /* 상단바 */
-  .topbar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.82);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .topbar .row{display:flex;align-items:center;justify-content:space-between;height:64px;gap:12px}
-  .brand{display:flex;flex-direction:column;line-height:1.15;min-width:0}
-  .brand b{font-family:var(--display);font-size:19px;font-weight:400;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .status{display:flex;align-items:center;gap:12px;font-size:13px;flex-shrink:0}
-  .dot{width:9px;height:9px;border-radius:50%;background:#C3D4DA}
-  .dot.live{background:var(--mint);box-shadow:0 0 0 4px rgba(32,178,166,.18)}
-  .who{color:var(--mint-d);font-weight:700}
-  .btn{font-size:13px;font-weight:600;cursor:pointer;border:1.5px solid var(--line-2);background:#fff;color:var(--ink);padding:9px 16px;border-radius:999px;transition:.18s}
+  .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:62px;padding:8px 0}
+  .brand{display:flex;flex-direction:column;line-height:1.2;min-width:0}
+  .brand b{font-family:var(--display);font-size:19px;font-weight:400}
+  .brand span{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .topright{display:flex;align-items:center;gap:8px;flex-shrink:0}
+
+  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:6px 12px;border-radius:999px;
+    background:rgba(32,178,166,.14);color:var(--mint-d);white-space:nowrap}
+  .pill.sun{background:rgba(255,193,48,.24);color:#9A6B00}
+  .pill.coral{background:rgba(255,140,107,.2);color:#C9542F}
+  .pill.sky{background:rgba(84,180,232,.18);color:#2A7FB0}
+
+  .btn{font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid var(--line-2);
+    background:#fff;color:var(--ink);padding:10px 18px;border-radius:999px;transition:.16s}
   .btn:hover{border-color:var(--mint);color:var(--mint-d)}
+  .btn:disabled{opacity:.5;cursor:not-allowed}
   .btn-solid{background:var(--mint);color:#fff;border-color:var(--mint);box-shadow:var(--shadow)}
   .btn-solid:hover{background:var(--mint-d);color:#fff}
+  .btn-sun{background:var(--sun);border-color:var(--sun);color:#5A3E00}
+  .btn-sm{padding:7px 13px;font-size:13px}
 
-  /* 히어로 */
-  .hero{padding:60px 0 52px}
-  .hero-grid{display:grid;grid-template-columns:1.05fr .95fr;gap:48px;align-items:center}
-  .hero h1{font-family:var(--display);font-size:clamp(34px,5.2vw,58px);font-weight:400;line-height:1.15;margin:18px 0 16px;color:var(--ink)}
-  .hero h1 .hl{color:var(--mint)}
-  .hero h1 .hl2{color:var(--coral)}
-  .hero .lead{font-size:17px;color:#4C6B78;max-width:44ch}
-  .chips{margin-top:22px;display:flex;gap:10px;flex-wrap:wrap}
-  .chip{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--line);border-radius:999px;padding:9px 16px;font-size:14px;font-weight:600;box-shadow:var(--shadow)}
-  .chip svg{width:17px;height:17px}
-  .chip.c1{color:var(--mint-d)} .chip.c2{color:#2A7FB0} .chip.c3{color:#C96A3F}
-  .hero-cta{margin-top:26px;padding:14px 28px;font-size:15px;border-radius:14px}
-  .hero-img{aspect-ratio:4/3;border-radius:24px}
-  .hero-img .cap{position:absolute;left:16px;bottom:16px;background:rgba(37,71,83,.72);color:#fff;font-family:var(--display);font-size:16px;padding:8px 16px;border-radius:999px}
-  .hero-img.noimg .cap{display:none}
+  .box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin:16px 0}
+  .box h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:6px}
+  .box h3{font-family:var(--display);font-size:18px;font-weight:400;margin:18px 0 8px}
+  .muted{color:var(--muted);font-size:14px}
+  .lead{color:#4C6B78;font-size:15px}
 
-  /* 섹션 공통 */
-  .section{padding:60px 0;border-top:1px solid var(--line)}
-  .section-head{margin-bottom:28px}
-  .section-head h2{font-family:var(--display);font-size:clamp(24px,3.2vw,32px);font-weight:400;margin-top:12px;color:var(--ink)}
-  .section-head p{color:var(--muted);margin-top:8px;max-width:60ch;font-size:15px}
+  /* 참여코드 입력 */
+  .join{max-width:520px;margin:38px auto}
+  .join .code-in{width:100%;font-family:var(--display);font-size:38px;letter-spacing:.16em;text-align:center;
+    padding:16px 12px;border:2px solid var(--line-2);border-radius:16px;background:var(--cream);color:var(--ink);text-transform:uppercase}
+  .join .code-in:focus{border-color:var(--mint);outline:none}
+  .err{color:var(--bad);font-size:14px;font-weight:700;margin-top:10px;min-height:20px}
 
-  /* 섹션 탭 */
-  .section-tabs{position:sticky;top:64px;z-index:40;background:rgba(255,255,255,.92);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
-  .section-tabs .wrap{display:flex;gap:4px;overflow-x:auto}
-  .stab{white-space:nowrap;cursor:pointer;background:none;border:none;color:var(--muted);font-family:var(--sans);font-size:15px;font-weight:700;padding:15px 16px;border-bottom:3px solid transparent;transition:.16s}
-  .stab:hover{color:var(--ink)}
-  .stab.active{color:var(--mint-d);border-bottom-color:var(--mint)}
-  .panel>.section:first-child{border-top:none;padding-top:44px}
+  /* 모둠 고르기 */
+  .gsel{display:grid;grid-template-columns:repeat(auto-fill,minmax(96px,1fr));gap:10px;margin:14px 0}
+  .gbtn{cursor:pointer;border:2px solid var(--line-2);background:#fff;border-radius:14px;padding:14px 8px;
+    font-family:var(--display);font-size:19px;color:var(--ink);transition:.16s;position:relative}
+  .gbtn small{display:block;font-family:var(--sans);font-size:11.5px;color:var(--muted);font-weight:600;margin-top:2px}
+  .gbtn:hover{transform:translateY(-2px);box-shadow:var(--shadow)}
+  .gbtn.on{color:#fff;border-color:transparent;box-shadow:var(--shadow-lg)}
+  .gbtn.on small{color:rgba(255,255,255,.85)}
 
-  /* 흐름 (이렇게 탐구해요) */
-  .flow{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  .fcard{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);overflow:hidden;box-shadow:var(--shadow);transition:.2s;display:flex;flex-direction:column}
-  .fcard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-  .fcard .ph{border-radius:0;aspect-ratio:4/3}
-  .fcard .fbody{padding:18px}
-  .fcard .fno{font-weight:800;font-size:12px;color:var(--mint)}
-  .fcard h3{font-family:var(--display);font-size:18px;font-weight:400;margin:6px 0 6px}
-  .fcard p{font-size:13.5px;color:var(--muted)}
+  input[type=text],input[type=number],textarea,select{font-family:var(--sans);font-size:15px;color:var(--ink);
+    border:1.5px solid var(--line-2);border-radius:12px;padding:11px 13px;background:#fff;width:100%}
+  input:focus,textarea:focus,select:focus{border-color:var(--mint);outline:none}
+  textarea{resize:vertical;min-height:84px;line-height:1.6}
+  label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--muted);margin:14px 0 6px}
 
-  /* 이미지+내용 2열 (자료실/안전/도움말/나의기록) */
-  .split{display:grid;grid-template-columns:.92fr 1.08fr;gap:40px;align-items:center}
-  .split.rev{grid-template-columns:1.08fr .92fr}
-  .split .ph{aspect-ratio:4/3}
-  .split h2{font-family:var(--display);font-size:clamp(24px,3.2vw,30px);font-weight:400;margin-top:12px}
-  .split p{color:var(--muted);margin:10px 0 0;font-size:15px;max-width:46ch}
+  /* 탭 */
+  .tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 4px;padding-bottom:2px}
+  .tab{white-space:nowrap;cursor:pointer;background:#fff;border:1.5px solid var(--line-2);color:var(--muted);
+    font-family:var(--sans);font-size:14px;font-weight:700;padding:9px 16px;border-radius:999px;transition:.16s}
+  .tab.on{background:var(--mint);border-color:var(--mint);color:#fff}
+  .tab:disabled{opacity:.45;cursor:not-allowed}
 
-  /* 자료실 카드 */
-  .docs-cards{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:20px}
-  .doc-card{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:18px;display:flex;flex-direction:column;gap:6px;transition:.2s;position:relative;min-height:132px;box-shadow:var(--shadow)}
-  .doc-card:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg)}
-  .doc-card[aria-disabled="true"]{opacity:.82}
-  .doc-card[aria-disabled="true"]:hover{transform:none;box-shadow:var(--shadow)}
-  .doc-ic{width:38px;height:38px;border-radius:11px;display:flex;align-items:center;justify-content:center;background:rgba(32,178,166,.13);color:var(--mint);margin-bottom:2px}
-  .doc-ic svg{width:20px;height:20px}
-  .doc-card h3{font-family:var(--display);font-size:16px;font-weight:400}
-  .doc-card p{font-size:13px;color:var(--muted)}
-  .doc-state{font-size:11px;font-weight:700;margin-top:auto;color:var(--coral)}
-  .doc-state.ready{color:var(--mint-d)}
+  /* 실험 안내 */
+  .steps-ol{margin:8px 0 0 20px;font-size:14.5px}
+  .steps-ol li{margin-bottom:8px}
+  .taglist{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
+  .note{border-left:4px solid var(--sun);background:#FFFBF0;border-radius:0 12px 12px 0;padding:12px 14px;margin:8px 0;font-size:14px}
+  .note.warn{border-color:var(--bad);background:#FFF4F4}
 
-  /* 오늘의 수업 */
-  .today-wrap{border:1px solid rgba(255,193,48,.5);border-radius:22px;background:linear-gradient(135deg,#FFF9EA,#FFFDF6);padding:24px;box-shadow:var(--shadow)}
-  .today-banner{aspect-ratio:5/1;border-radius:14px;margin:16px 0}
-  .today-banner .cap{position:absolute;left:16px;bottom:14px;background:rgba(255,193,48,.92);color:#5A3E00;font-family:var(--display);font-size:15px;padding:6px 14px;border-radius:999px}
-  .today-banner.noimg .cap{display:none}
+  /* 데이터 표 */
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  table{border-collapse:collapse;width:100%;min-width:420px;background:#fff}
+  th,td{border-bottom:1px solid var(--line);padding:0;text-align:center;font-size:14px}
+  thead th{background:#F3FAFB;font-size:13px;font-weight:800;color:var(--mint-d);padding:10px 8px}
+  td input{border:none;border-radius:0;text-align:center;padding:10px 6px;font-size:15px}
+  td input:focus{background:#F0FBFA;outline:2px solid var(--mint);outline-offset:-2px}
+  td.rowno{width:44px;color:var(--muted);font-weight:700;font-size:12.5px;background:#FAFDFD;padding:8px 0}
 
-  /* 탭 & 카드 */
-  .tabs{display:flex;gap:8px;overflow-x:auto;margin-bottom:26px;padding-bottom:2px}
-  .tab{white-space:nowrap;cursor:pointer;background:#fff;border:1.5px solid var(--line-2);color:var(--muted);font-family:var(--sans);font-size:14px;font-weight:600;padding:9px 18px;border-radius:999px;transition:.16s}
-  .tab:hover{border-color:var(--mint);color:var(--mint-d)}
-  .tab.active{background:var(--mint);border-color:var(--mint);color:#fff}
-  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:16px}
-  .card{position:relative;border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:20px;cursor:pointer;transition:.2s;min-height:158px;display:flex;flex-direction:column;box-shadow:var(--shadow)}
-  .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lg)}
-  .card-meta{font-size:12px;color:var(--muted);font-weight:600;margin-bottom:12px;line-height:1.4}
-  .card-top{display:flex;align-items:center;gap:8px;margin-bottom:12px}
-  .pill{display:inline-flex;align-items:center;gap:6px;font-size:12px;font-weight:700;padding:6px 12px;border-radius:999px}
-  .pill svg{width:14px;height:14px}
-  .pill-inquiry{background:rgba(32,178,166,.14);color:var(--mint-d)}
-  .pill-simulation{background:rgba(84,180,232,.16);color:#2A7FB0}
-  .pill-video{background:rgba(255,140,107,.18);color:#D9542F}
-  .pill-quiz{background:rgba(255,193,48,.22);color:#B07E00}
-  .card h3{font-family:var(--display);font-size:18px;font-weight:400;line-height:1.4;margin-top:auto;color:var(--ink)}
-  .done{position:absolute;top:16px;right:16px;width:26px;height:26px;border-radius:50%;background:var(--ok);color:#fff;display:flex;align-items:center;justify-content:center;box-shadow:0 3px 8px rgba(55,181,140,.35)}
-  .done svg{width:14px;height:14px}
-  .today-empty{color:var(--muted);font-size:14px;padding:6px 2px}
+  .savebar{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-top:14px}
+  .savemsg{font-size:13.5px;font-weight:700;color:var(--ok)}
+  .savemsg.warn{color:var(--warn)}
 
-  /* 잠금 오버레이 */
-  .locked-zone{position:relative}
-  .locked-zone.on .grid,.locked-zone.on .tabs{filter:blur(3px);opacity:.55;pointer-events:none;user-select:none}
-  .lock-note{display:none;position:absolute;inset:0;z-index:5;align-items:center;justify-content:center;text-align:center}
-  .locked-zone.on .lock-note{display:flex}
-  .lock-inner{background:var(--paper);border:1px solid var(--line);border-radius:20px;padding:26px 30px;box-shadow:var(--shadow-lg)}
-  .lock-inner .lbl{font-family:var(--display);font-size:18px;color:var(--mint-d)}
-  .lock-inner p{margin:8px 0 0;color:var(--muted);font-size:14px}
-  .lock-inner .btn-solid{margin-top:16px}
+  /* 보고서 */
+  .q{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;background:#fff}
+  .q b{display:block;font-size:15px;margin-bottom:8px}
+  .q .qno{color:var(--mint);font-weight:800;margin-right:6px}
 
-  /* 가이드 */
-  .steps{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
-  .step{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:22px;box-shadow:var(--shadow)}
-  .step .num{width:38px;height:38px;border-radius:50%;background:rgba(32,178,166,.13);color:var(--mint-d);font-family:var(--display);font-size:18px;display:flex;align-items:center;justify-content:center}
-  .step h4{font-family:var(--display);font-size:17px;font-weight:400;margin:14px 0 6px}
-  .step p{font-size:14px;color:var(--muted)}
+  /* 공유 보드 */
+  .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px}
+  .gcard{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
+  .gcard .gh{display:flex;align-items:center;gap:8px;padding:12px 14px;color:#fff;font-family:var(--display);font-size:17px}
+  .gcard .gb{padding:12px 14px}
+  .gcard .gb .st{font-size:12.5px;color:var(--muted);font-weight:700;margin-bottom:6px}
+  .chartbox{width:100%;overflow-x:auto}
+  .chartbox svg{display:block;max-width:100%;height:auto}
+  .stars{display:inline-flex;gap:2px;cursor:pointer}
+  .star{font-size:22px;line-height:1;color:#DCE7EA;background:none;border:none;cursor:pointer;padding:0 1px}
+  .star.on{color:var(--sun)}
+  .fbrow{display:flex;gap:8px;align-items:center;margin-top:8px}
+  .fbrow input{flex:1}
 
-  /* 안내 항목 */
-  .notes{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .note{display:flex;gap:12px;align-items:flex-start;border:1px solid var(--line);border-radius:14px;background:var(--paper);padding:14px 16px;box-shadow:var(--shadow)}
-  .note .ic{flex-shrink:0;width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;background:rgba(84,180,232,.14);color:var(--sky)}
-  .note .ic svg{width:18px;height:18px}
-  .note p{font-size:13.5px;color:var(--muted)}
-  .note b{color:var(--ink);font-weight:700;display:block;margin-bottom:2px}
+  .empty{color:var(--muted);font-size:14px;text-align:center;padding:26px 10px}
 
-  /* FAQ */
-  .faq details{border:1px solid var(--line);border-radius:14px;background:var(--paper);margin-bottom:10px;overflow:hidden;box-shadow:var(--shadow)}
-  .faq summary{list-style:none;cursor:pointer;padding:16px 18px;font-weight:700;font-size:15px;display:flex;justify-content:space-between;align-items:center;color:var(--ink)}
-  .faq summary::-webkit-details-marker{display:none}
-  .faq summary .plus{color:var(--mint);font-size:20px;transition:.2s}
-  .faq details[open] summary .plus{transform:rotate(45deg)}
-  .faq .ans{padding:0 18px 16px;color:var(--muted);font-size:14px}
-  .contact{margin-top:22px;border:1px solid var(--line);border-radius:14px;padding:18px;background:rgba(32,178,166,.06);font-size:14px}
-  .contact b{color:var(--mint-d)}
-  .contact a{color:var(--mint-d);font-weight:700}
+  /* 안내 그림 — 장식용이므로 alt 는 비우고 화면낭독기에서 건너뜁니다 */
+  .illus{display:block;width:100%;height:auto;max-width:300px;margin:0 auto 10px}
+  .illus-sm{float:right;width:96px;height:auto;margin:-4px -4px 6px 12px;opacity:.92}
+  @media (max-width:520px){ .illus{max-width:220px} .illus-sm{width:68px} }
 
-  /* 교사 안내 카드 */
-  .teacher-note{border:1px dashed var(--line-2);border-radius:var(--r);background:rgba(255,255,255,.6);padding:18px 20px;margin-top:24px;font-size:14px;color:var(--muted);display:flex;gap:12px;align-items:center;flex-wrap:wrap}
-  .teacher-note b{color:var(--ink)}
-  .teacher-note a{color:var(--mint-d);font-weight:700}
+  /* 실험 도감 */
+  .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+  .filters select,.filters input{width:auto;min-width:150px;flex:1 1 190px}
+  .atlaslist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:4px}
+  .exp{border:1.5px solid var(--line);border-radius:14px;background:var(--paper);padding:14px;min-height:44px;
+    cursor:pointer;transition:.16s;box-shadow:var(--shadow)}
+  .exp:hover{transform:translateY(-2px);border-color:var(--mint)}
+  .exp.on{border-color:var(--mint);background:var(--cream);box-shadow:var(--shadow-lg)}
+  .exp b{display:block;font-family:var(--display);font-size:16px;font-weight:400;margin:6px 0 4px;line-height:1.35}
+  .exp .m{font-size:12px;color:var(--muted);font-weight:700}
+  .dtquote{border-left:4px solid var(--mint);background:var(--cream);border-radius:0 12px 12px 0;
+    padding:12px 14px;margin:12px 0 4px;font-size:15px}
+  .dtul{margin:8px 0 0 20px;font-size:14.5px}
+  .dtul li{margin-bottom:5px}
+  .note.plus{border-color:var(--mint);background:var(--cream)}
+  .stdrow{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;font-size:14px}
+  .stdrow .pill{flex:none}
+  @media (min-width:761px){ .atlaslist{max-height:520px;overflow:auto} }
 
-  footer{border-top:1px solid var(--line);padding:32px 0;color:var(--muted)}
-  footer .row{display:flex;justify-content:space-between;align-items:center;gap:16px;flex-wrap:wrap;font-size:13px}
-  footer a:hover{color:var(--mint-d)}
-
-  /* 로그인 모달 */
-  .modal{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;padding:20px;background:rgba(37,71,83,.5);backdrop-filter:blur(5px)}
-  .modal.open{display:flex}
-  .login{background:var(--paper);border:1px solid var(--line);border-radius:24px;padding:28px;box-shadow:var(--shadow-lg);max-width:400px;width:100%;position:relative}
-  .modal-close{position:absolute;top:16px;right:16px;width:34px;height:34px;border-radius:50%;border:none;background:#F0F5F6;color:var(--muted);cursor:pointer;font-size:18px;line-height:1}
-  .modal-close:hover{background:#E2ECEE;color:var(--ink)}
-  .login .flask{width:46px;height:46px;display:flex;align-items:center;justify-content:center;background:rgba(32,178,166,.12);border-radius:14px;color:var(--mint);margin-bottom:14px}
-  .login .flask svg{width:26px;height:26px}
-  .login h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:3px}
-  .login p.sub{font-size:13.5px;color:var(--muted);margin-bottom:18px}
-  .field{margin-bottom:13px}
-  .field label{font-size:13px;font-weight:700;color:#5A7885;display:block;margin-bottom:6px}
-  .field input{width:100%;padding:13px 15px;font-size:15px;font-family:var(--sans);color:var(--ink);background:#F7FBFC;border:1.5px solid var(--line-2);border-radius:13px;transition:.16s}
-  .field input::placeholder{color:#A9BdC5}
-  .field input:focus{border-color:var(--mint);background:#fff;outline:none}
-  .field-row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
-  .login .btn-solid{width:100%;padding:14px;font-size:15px;margin-top:6px;border-radius:14px}
-  .login-msg{min-height:18px;margin-top:10px;font-size:13px;color:#E8674F;font-weight:600}
-
-  @media(max-width:860px){
-    .hero-grid{grid-template-columns:1fr;gap:32px}
-    .flow{grid-template-columns:1fr 1fr}
-    .steps{grid-template-columns:1fr 1fr}
-    .notes{grid-template-columns:1fr}
-    .split,.split.rev{grid-template-columns:1fr}
+  /* 모둠 비밀번호(PIN) 4칸 */
+  .pinstep{margin-top:16px;border:1.5px dashed var(--line-2);border-radius:14px;padding:14px 12px;background:var(--cream)}
+  .pinstep .pintitle{font-family:var(--display);font-size:17px;text-align:center}
+  .pinpad{display:flex;gap:10px;justify-content:center;margin:10px 0 2px}
+  .pinpad input.pinbox{width:58px;height:66px;flex:none;text-align:center;font-family:var(--display);
+    font-size:30px;border:2px solid var(--line-2);border-radius:14px;background:#fff;color:var(--ink);padding:0}
+  .pinpad input.pinbox:focus{border-color:var(--mint);background:#F0FBFA;outline:none}
+  .pinpad.bad input.pinbox{border-color:var(--bad)}
+  .pinpad.shake{animation:pinshake .4s}
+  @keyframes pinshake{
+    0%,100%{transform:translateX(0)} 18%{transform:translateX(-9px)} 38%{transform:translateX(9px)}
+    58%{transform:translateX(-6px)} 78%{transform:translateX(6px)}
   }
-  @media(max-width:520px){
-    .flow{grid-template-columns:1fr}
-    .steps{grid-template-columns:1fr}
-    .field-row{grid-template-columns:1fr}
-    .docs-cards{grid-template-columns:1fr}
-    .brand b{font-size:16px}
-    .today-banner{aspect-ratio:2/1}
-  }
-  @media(prefers-reduced-motion:reduce){
-    *{transition:none !important;animation:none !important;scroll-behavior:auto}
-    .card:hover,.doc-card:hover,.fcard:hover{transform:none}
+
+  /* 모달 (비밀번호 다시 묻기) */
+  .modal{position:fixed;inset:0;z-index:200;background:rgba(37,71,83,.46);
+    display:flex;align-items:center;justify-content:center;padding:16px}
+  .modalbox{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow-lg);
+    padding:22px;width:100%;max-width:420px}
+  .modalbox h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:6px}
+
+  /* 보관 기간이 끝난 수업 */
+  .box.gone{border:2px solid var(--bad);background:#FFF6F6}
+  .box.gone h2{color:var(--bad);font-size:26px}
+
+  @media (max-width:640px){
+    .box{padding:16px}
+    .join{margin:22px auto}
+    .join .code-in{font-size:30px}
+    .pinpad{gap:8px}
+    .pinpad input.pinbox{width:52px;height:60px;font-size:26px}
   }
 </style>
 </head>
 <body>
 
-  <!-- 선생님용 커스터마이징 안내 (맨 위) -->
-  <div class="teacher-bar">
-    <span class="t-msg">선생님이신가요? 이 페이지를 나만의 수업 허브로 만들 수 있어요.</span>
-    <a href="manual.html"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 20h4L18 10l-4-4L4 16z"/><path d="M13.5 6.5l4 4"/></svg>나만의 페이지로 커스터마이징하기 →</a>
-  </div>
+<div id="offbar" class="offbar hidden">임시 저장 중 — 인터넷이 돌아오면 자동으로 다시 보냅니다.</div>
+<div id="setupbar" class="setupbar hidden"></div>
 
-  <div class="demo-banner hidden" id="demoBanner">미리보기 모드 · Supabase 연결 전이라 예시 활동이 표시됩니다</div>
-
-  <!-- 상단바 -->
-  <header class="topbar">
-    <div class="wrap row">
-      <div class="brand"><b>MBL센서 활용 과학 탐구 수업</b></div>
-      <div class="status">
-        <span id="statusText"><span class="dot" id="statusDot"></span> <span id="statusLabel">미연결</span></span>
-        <button class="btn hidden" id="logoutBtn">로그아웃</button>
-        <button class="btn btn-solid" id="topLoginBtn">로그인</button>
-      </div>
+<header class="top">
+  <div class="wrap row">
+    <div class="brand">
+      <b>MBL 수업허브</b>
+      <span id="topSub">참여코드를 입력하고 들어오세요</span>
     </div>
-  </header>
-
-  <!-- 히어로 -->
-  <section class="hero">
-    <div class="wrap hero-grid">
-      <div>
-        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="4" y="5" width="16" height="11" rx="1.5"/><path d="M2 20h20M9.5 20l.4-2h4.2l.4 2"/></svg>MBL 센서 탐구 수업</span>
-        <h1>측정한 <span class="hl2">숫자</span>에<br /><span class="hl">의미</span>를 더하다</h1>
-        <p class="lead">온도·빛·소리·운동, 디지털 센서로 직접 잰 데이터를 해석하고 그래프 뒤에 숨은 과학 원리를 찾아가는 탐구 수업입니다. 숫자는 측정으로 얻고, 의미는 탐구로 채웁니다.</p>
-        <div class="chips">
-          <span class="chip c1"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M14 14.8V5a2 2 0 1 0-4 0v9.8a4 4 0 1 0 4 0z"/><path d="M12 9v5"/></svg>온도 센서 · 반응 속도</span>
-          <span class="chip c2"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4"/><path d="M12 2v2.5M12 19.5V22M2 12h2.5M19.5 12H22M4.8 4.8l1.7 1.7M17.5 17.5l1.7 1.7M19.2 4.8l-1.7 1.7M6.5 17.5l-1.7 1.7"/></svg>조도 센서 · 빛의 세기</span>
-          <span class="chip c3"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 17l5-6 4 4 6-8"/><path d="M4 20h16"/></svg>가속도 센서 · 물체의 운동</span>
-        </div>
-        <button class="btn-solid hero-cta" id="heroLoginBtn">우리 반 입장하기 →</button>
-      </div>
-      <figure class="ph hero-img" data-label="메인 대표">
-        <img src="./assets/hero.png" alt="센서로 탐구하는 과학 수업" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
-        <figcaption class="cap">데이터로 탐구하는 과학 수업</figcaption>
-      </figure>
-    </div>
-  </section>
-
-  <!-- 섹션 탭 -->
-  <nav class="section-tabs">
-    <div class="wrap">
-      <button class="stab active" data-tab="home">탐구 흐름</button>
-      <button class="stab" data-tab="today">오늘의 수업</button>
-      <button class="stab" data-tab="activities">활동</button>
-      <button class="stab" data-tab="docs">자료실</button>
-      <button class="stab" data-tab="help">안내·도움말</button>
-    </div>
-  </nav>
-
-  <main>
-  <div class="panel" id="tab-home">
-  <!-- 이렇게 탐구해요 (흐름) -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M4 12h16M13 5l7 7-7 7"/></svg>탐구의 흐름</span>
-        <h2>이렇게 탐구해요</h2>
-        <p>센서로 재고, 데이터를 해석하고, 결과로 정리하는 네 단계로 수업이 이어집니다.</p>
-      </div>
-      <div class="flow">
-        <div class="fcard">
-          <figure class="ph" data-label="센서 소개"><img src="./assets/sensors.png" alt="센서 알아보기" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
-          <div class="fbody"><div class="fno">STEP 01</div><h3>센서 알아보기</h3><p>온도·pH·조도·힘·운동 센서로 무엇을 재는지 익혀요.</p></div>
-        </div>
-        <div class="fcard">
-          <figure class="ph" data-label="탐구 활동"><img src="./assets/activity.png" alt="탐구 활동" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
-          <div class="fbody"><div class="fno">STEP 02</div><h3>탐구 활동</h3><p>센서로 직접 측정하며 궁금증을 실험으로 확인해요.</p></div>
-        </div>
-        <div class="fcard">
-          <figure class="ph" data-label="데이터 분석"><img src="./assets/analysis.png" alt="데이터 분석" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
-          <div class="fbody"><div class="fno">STEP 03</div><h3>데이터 분석</h3><p>그래프와 표로 측정값을 해석하고 규칙을 찾아요.</p></div>
-        </div>
-        <div class="fcard">
-          <figure class="ph" data-label="결과 정리"><img src="./assets/portfolio.png" alt="결과 정리·공유" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
-          <div class="fbody"><div class="fno">STEP 04</div><h3>결과 정리·공유</h3><p>보고서로 정리하고 친구·선생님과 나눠요.</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  </div><!-- /tab-home -->
-
-  <div class="panel hidden" id="tab-docs">
-  <!-- 학습 자료실 -->
-  <!-- 자료 연결: a.doc-card 의 href 를 파일/링크로 바꾸고 aria-disabled·onclick 제거, doc-state 를 "열기"·class 에 ready 추가 -->
-  <section class="section" id="docs">
-    <div class="wrap">
-      <div class="split">
-        <figure class="ph" data-label="수업 장면">
-          <img src="./assets/class-01.png" alt="수업 장면" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
-        </figure>
-        <div>
-          <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6"/></svg>수업 자료</span>
-          <h2>수업 자료실</h2>
-          <p>센서 사용법과 우리 반 약속을 미리 확인하세요. 자료는 파일이나 링크로 계속 채워집니다.</p>
-          <div class="docs-cards">
-            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
-              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 4h11l3 3v13H5z"/><path d="M9 9h6M9 13h6M9 17h3"/></svg></span>
-              <h3>센서 활용 가이드</h3><p>측정 앱 사용법과 실험 팁</p><span class="doc-state">준비 중</span>
-            </a>
-            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
-              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M7 12a5 5 0 0 1 10 0"/><path d="M4 12a8 8 0 0 1 16 0"/><rect x="9" y="14" width="6" height="7" rx="1.5"/></svg></span>
-              <h3>센서 연결법</h3><p>기기·권한 설정 안내</p><span class="doc-state">준비 중</span>
-            </a>
-            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
-              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8l1.5 1.5L12 7M8 14l1.5 1.5L12 13M15 8.5h2M15 14.5h2"/></svg></span>
-              <h3>수업 규칙</h3><p>탐구 수업 진행 규칙</p><span class="doc-state">준비 중</span>
-            </a>
-            <a class="doc-card" href="#" aria-disabled="true" onclick="return false">
-              <span class="doc-ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 20s-7-4.2-7-9.3A3.7 3.7 0 0 1 12 8a3.7 3.7 0 0 1 7 2.7C19 15.8 12 20 12 20z"/></svg></span>
-              <h3>수업 약속</h3><p>서로 지킬 우리 반 약속</p><span class="doc-state">준비 중</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  </div><!-- /tab-docs -->
-
-  <div class="panel hidden" id="tab-today">
-  <!-- 나의 기록 (로그인 후 표시) -->
-  <section class="section hidden" id="myRecord">
-    <div class="wrap">
-      <div class="split rev">
-        <div>
-          <span class="badge coral"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 15a4 4 0 1 0 0-8 4 4 0 0 0 0 8z"/><path d="M9 14l-2 7 5-3 5 3-2-7"/></svg>나의 기록</span>
-          <h2>나의 실험 기록</h2>
-          <p>제출한 실험, 받은 배지, 성장 그래프가 여기에 모여요. (준비 중)</p>
-        </div>
-        <figure class="ph" data-label="나의 기록"><img src="./assets/my-record.png" alt="나의 실험 기록" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
-      </div>
-    </div>
-  </section>
-
-  <!-- 오늘의 수업 -->
-  <section class="section">
-    <div class="wrap">
-      <div class="today-wrap">
-        <span class="badge sun"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="4.5"/><path d="M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M19 5l-2 2M7 17l-2 2"/></svg>오늘의 미션</span>
-        <div class="section-head" style="margin:12px 0 0"><h2 style="margin:0">오늘의 수업</h2></div>
-        <figure class="ph today-banner" data-label="오늘의 미션">
-          <img src="./assets/mission.png" alt="오늘의 미션" onerror="this.closest('.ph').classList.add('noimg');this.remove()" />
-          <figcaption class="cap">오늘의 탐구 미션</figcaption>
-        </figure>
-        <div class="grid" id="todayGrid"></div>
-        <div class="today-empty hidden" id="todayEmpty">지금 예정된 활동이 없어요. 아래 단원에서 활동을 골라도 됩니다.</div>
-      </div>
-    </div>
-  </section>
-
-  </div><!-- /tab-today -->
-
-  <div class="panel hidden" id="tab-activities">
-  <!-- 활동 목록 -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>활동</span>
-        <h2>단원별 탐구 활동</h2>
-        <p>단원을 고르면 차시 순서대로 활동이 나타나요. 마친 활동에는 완료 표시가 붙어요.</p>
-      </div>
-      <div class="locked-zone" id="lockZone">
-        <div class="tabs" id="tabs"></div>
-        <div class="grid" id="actGrid"></div>
-        <div class="lock-note">
-          <div class="lock-inner">
-            <div class="lbl">로그인이 필요해요</div>
-            <p>우리 반에 입장하면 실제 활동이 열려요.</p>
-            <button class="btn btn-solid" id="lockLoginBtn">입장하기</button>
-          </div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  </div><!-- /tab-activities -->
-
-  <div class="panel hidden" id="tab-help">
-  <!-- 사용 가이드 -->
-  <section class="section">
-    <div class="wrap">
-      <div class="section-head">
-        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="12" cy="12" r="9"/><path d="M12 8v4l3 2"/></svg>사용법</span>
-        <h2>이렇게 사용해요</h2>
-      </div>
-      <div class="steps">
-        <div class="step"><div class="num">1</div><h4>입장하기</h4><p>선생님이 준 학급코드·번호·PIN으로 로그인해요.</p></div>
-        <div class="step"><div class="num">2</div><h4>오늘의 수업</h4><p>위쪽에서 오늘 할 활동을 골라요.</p></div>
-        <div class="step"><div class="num">3</div><h4>측정·탐구</h4><p>시뮬레이션을 조작하거나 센서로 직접 측정해요.</p></div>
-        <div class="step"><div class="num">4</div><h4>결과 저장</h4><p>제출하면 선생님 대시보드로 바로 전송돼요.</p></div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 안전 수칙 -->
-  <section class="section">
-    <div class="wrap split">
-      <figure class="ph" data-label="안전 수칙"><img src="./assets/safety.png" alt="안전 수칙" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
-      <div>
-        <span class="badge sky"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg>안전</span>
-        <h2>탐구 전 확인해요</h2>
-        <div class="notes" style="margin-top:18px">
-          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c2.5 2.5 2.5 15.5 0 18M12 3c-2.5 2.5-2.5 15.5 0 18"/></svg></span><p><b>크롬 권장</b>센서·저장이 안정적이에요.</p></div>
-          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12a7 7 0 0 1 14 0M8 12a4 4 0 0 1 8 0"/><circle cx="12" cy="12" r="1.4" fill="currentColor" stroke="none"/><path d="M12 13.5V21"/></svg></span><p><b>센서 권한 허용</b>권한 요청은 허용해요.</p></div>
-          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="13" r="8"/><path d="M12 9v4l2.5 2M9 2h6"/></svg></span><p><b>측정 중 화면 유지</b>앱 전환은 값이 끊겨요.</p></div>
-          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 0 1 8 0v3"/></svg></span><p><b>기기 공유 시 로그아웃</b>넘길 땐 꼭 로그아웃해요.</p></div>
-          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v5c0 4.5-3 8-7 10-4-2-7-5.5-7-10V6z"/><path d="M9 12l2 2 4-4"/></svg></span><p><b>실험실 안전</b>고글·장갑 등 안내를 따라요.</p></div>
-          <div class="note"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 17a4 4 0 0 1 .8-7.9A6 6 0 0 1 17.5 9 3.5 3.5 0 0 1 18 16"/><path d="M12 12v6M9.5 15.5 12 18l2.5-2.5"/></svg></span><p><b>저장 안 될 때</b>연결 확인 후 다시 제출해요.</p></div>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <!-- 도움말 / FAQ -->
-  <section class="section">
-    <div class="wrap split rev">
-      <div>
-        <span class="badge"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/><circle cx="12" cy="12" r="9"/></svg>도움말</span>
-        <h2>실험이 잘 안 될 때</h2>
-        <p style="margin-bottom:20px">막히면 아래를 확인해 보세요.</p>
-        <div class="faq">
-          <details><summary>로그인이 안 돼요<span class="plus">+</span></summary><div class="ans">학급코드·번호·PIN을 다시 확인하세요. 대소문자·하이픈까지 정확해야 합니다. 그래도 안 되면 선생님께 문의하세요.</div></details>
-          <details><summary>PIN을 잊어버렸어요<span class="plus">+</span></summary><div class="ans">선생님이 다시 알려주거나 새 PIN으로 재설정할 수 있습니다.</div></details>
-          <details><summary>측정값이 이상해요<span class="plus">+</span></summary><div class="ans">센서 권한과 측정 환경(빛·움직임)을 확인하고 다시 측정하세요.</div></details>
-          <details><summary>내 점수는 어디서 보나요<span class="plus">+</span></summary><div class="ans">활동을 마치면 카드에 완료 표시가 뜨고, 결과는 선생님이 확인합니다.</div></details>
-        </div>
-        <div class="contact">문의 — <b>해누리중학교 조승재</b> · 이메일 <a href="mailto:chuseonjae@outlook.kr">chuseonjae@outlook.kr</a> · 인스타그램 <a href="https://instagram.com/science_is_jo" target="_blank" rel="noopener">@science_is_jo</a></div>
-      </div>
-      <figure class="ph" data-label="도움말"><img src="./assets/help.png" alt="도움말" onerror="this.closest('.ph').classList.add('noimg');this.remove()" /></figure>
-    </div>
-  </section>
-
-  </div><!-- /tab-help -->
-  </main>
-
-  <footer>
-    <div class="wrap">
-      <div class="teacher-note">
-        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="var(--mint)" stroke-width="1.9"><rect x="3" y="4" width="18" height="13" rx="2"/><path d="M8 20h8M12 17v3"/></svg>
-        <span><b>선생님용 수업 관리 대시보드</b>는 별도 페이지로 준비 중입니다. 학생 진행 상황·형성평가·탐구 데이터를 한눈에 보게 됩니다.</span>
-        <a href="manual.html">커스터마이징 안내 보기 →</a>
-      </div>
-      <div class="row" style="margin-top:22px">
-        <span>© 2026 해누리중학교 조승재 · MBL 센서 과학 탐구 수업</span>
-        <span><a href="https://instagram.com/science_is_jo" target="_blank" rel="noopener">@science_is_jo</a></span>
-      </div>
-    </div>
-  </footer>
-
-  <!-- 로그인 모달 -->
-  <div class="modal" id="loginModal">
-    <div class="login">
-      <button class="modal-close" id="modalClose" aria-label="닫기">×</button>
-      <div class="flask"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v5l-4.5 8.5A2 2 0 0 0 6.3 20h11.4a2 2 0 0 0 1.8-3.5L15 8V3"/><path d="M7.5 3h9M8 14h8"/><circle cx="11" cy="16" r=".8" fill="currentColor" stroke="none"/><circle cx="14" cy="17" r=".7" fill="currentColor" stroke="none"/></svg></div>
-      <h2>우리 반 입장하기</h2>
-      <p class="sub">선생님이 나눠준 학급코드·번호·PIN을 입력하세요.</p>
-      <form id="loginFormEl" autocomplete="off">
-        <div class="field"><label for="fCode">학급코드</label><input id="fCode" type="text" placeholder="예: HN1-3" required /></div>
-        <div class="field-row">
-          <div class="field"><label for="fNo">번호</label><input id="fNo" type="text" inputmode="numeric" placeholder="예: 7" required /></div>
-          <div class="field"><label for="fPin">PIN</label><input id="fPin" type="password" inputmode="numeric" placeholder="••••" required /></div>
-        </div>
-        <button type="submit" class="btn-solid">입장하기</button>
-      </form>
-      <div class="login-msg" id="loginMsg"></div>
+    <div class="topright">
+      <span id="phasePill" class="pill hidden"></span>
+      <button id="btnSwitch" class="btn btn-sm hidden" type="button">다른 모둠으로</button>
+      <button id="btnLeave" class="btn btn-sm hidden" type="button">나가기</button>
     </div>
   </div>
+</header>
 
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="./hub.js"></script>
-  <script>
-  (() => {
-    const hasHub = typeof Hub !== 'undefined';
+<main class="wrap">
 
-    const TYPES = {
-      simulation:{lbl:'시뮬', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="2.5"/><ellipse cx="12" cy="12" rx="9" ry="4"/><ellipse cx="12" cy="12" rx="9" ry="4" transform="rotate(60 12 12)"/></svg>'},
-      inquiry:   {lbl:'탐구', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9 3v6l-5 8a2 2 0 0 0 1.7 3h12.6a2 2 0 0 0 1.7-3l-5-8V3"/><path d="M7 3h10"/></svg>'},
-      video:     {lbl:'영상', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M10 9l5 3-5 3z" fill="currentColor"/></svg>'},
-      quiz:      {lbl:'퀴즈', svg:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M9.5 9a2.5 2.5 0 1 1 3.5 2.3c-.8.4-1 .9-1 1.7"/><circle cx="12" cy="17" r="1" fill="currentColor" stroke="none"/><rect x="4" y="3" width="16" height="18" rx="2"/></svg>'}
-    };
+  <!-- ① 참여코드 -->
+  <section id="scJoin" class="join">
+    <div class="box">
+      <img class="illus" src="./assets/hero.webp" alt="" width="1000" height="750"
+           decoding="async" onerror="this.remove()" />
+      <h2>참여코드 6자리</h2>
+      <p class="muted">선생님이 칠판에 적어 주신 코드를 그대로 입력하세요.</p>
+      <div style="margin-top:14px">
+        <input id="inCode" class="code-in" type="text" inputmode="latin" autocomplete="off"
+               maxlength="6" placeholder="ABC234" aria-label="참여코드 6자리" />
+      </div>
+      <div id="joinErr" class="err"></div>
+      <button id="btnJoin" class="btn btn-solid" style="width:100%;margin-top:6px" type="button">들어가기</button>
+      <button id="btnAtlas" class="btn" style="width:100%;margin-top:10px" type="button">참여 없이 실험 도감 보기</button>
+      <p class="muted" style="margin-top:14px">O·0·I·1·L 은 코드에 쓰이지 않습니다. 헷갈릴 일이 없어요.</p>
+      <p class="muted">코드가 없어도 실험 도감은 볼 수 있습니다.</p>
+    </div>
+  </section>
 
-    const SAMPLE = [
-      {id:'s1',grade:'중1',unit:'힘과 운동',lesson_no:2,type:'inquiry',title:'가속도 센서로 운동 기록하기',is_active:true,completed:false,url:''},
-      {id:'s2',grade:'중1',unit:'힘과 운동',lesson_no:3,type:'simulation',title:'등속·등가속 운동 비교하기',is_active:true,completed:false,url:''},
-      {id:'s3',grade:'중2',unit:'빛과 파동',lesson_no:1,type:'inquiry',title:'조도 센서로 빛의 세기 측정',is_active:false,completed:true,url:''},
-      {id:'s4',grade:'중2',unit:'빛과 파동',lesson_no:2,type:'video',title:'거울 반사의 원리',is_active:false,completed:false,url:''},
-      {id:'s5',grade:'중2',unit:'빛과 파동',lesson_no:4,type:'quiz',title:'빛과 파동 형성평가',is_active:false,completed:false,url:''},
-      {id:'s6',grade:'중3',unit:'화학 반응',lesson_no:1,type:'inquiry',title:'온도 센서로 반응 속도 관찰',is_active:false,completed:false,url:''},
-      {id:'s7',grade:'중3',unit:'화학 반응',lesson_no:3,type:'simulation',title:'입자 충돌로 보는 반응 속도',is_active:false,completed:false,url:''}
-    ];
+  <!-- ② 모둠 고르기 -->
+  <section id="scGroup" class="hidden">
+    <div class="box">
+      <h2 id="gLessonTitle">수업</h2>
+      <p class="muted" id="gLessonSub"></p>
+      <h3>우리 모둠을 고르세요</h3>
+      <div id="gsel" class="gsel"></div>
+      <label class="fl" for="inGroupName">모둠 이름 (선택)</label>
+      <input id="inGroupName" type="text" placeholder="예) 3모둠 열정파" maxlength="30" />
+      <label class="fl" for="inMembers">모둠원 (번호나 별명, 쉼표로 구분, 선택)</label>
+      <input id="inMembers" type="text" placeholder="예) 3, 11, 17" maxlength="120"
+             aria-describedby="membersHelp" />
+      <p id="membersHelp" class="muted" style="margin-top:6px">이름을 그대로 적지 않아도 됩니다. 번호만으로 충분해요.</p>
 
-    const $ = s => document.querySelector(s);
-    const statusDot=$('#statusDot'), statusLabel=$('#statusLabel');
-    const topLoginBtn=$('#topLoginBtn'), logoutBtn=$('#logoutBtn');
-    const heroLoginBtn=$('#heroLoginBtn'), lockLoginBtn=$('#lockLoginBtn');
-    const loginMsg=$('#loginMsg'), modal=$('#loginModal');
-    const tabsEl=$('#tabs'), actGrid=$('#actGrid'), lockZone=$('#lockZone');
-    const todayGrid=$('#todayGrid'), todayEmpty=$('#todayEmpty'), myRecord=$('#myRecord');
+      <div id="pinStep" class="pinstep hidden">
+        <div class="pintitle" id="pinStepTitle">우리 모둠 비밀번호</div>
+        <div id="pinPad" class="pinpad"></div>
+        <p class="muted" style="text-align:center;margin-top:6px">우리 모둠 비밀번호 4자리를 입력하세요. 선생님이 알려 주십니다.</p>
+      </div>
 
-    const CHECK='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6"><path d="M4 12l5 5L20 6"/></svg>';
-    const typePill = t => { const d=TYPES[t]||TYPES.inquiry; return `<span class="pill pill-${t}">${d.svg}${d.lbl}</span>`; };
+      <div id="groupErr" class="err"></div>
+      <button id="btnEnter" class="btn btn-solid" style="width:100%" type="button" disabled>이 모둠으로 들어가기</button>
+      <button id="btnBackCode" class="btn btn-sm" style="width:100%;margin-top:10px" type="button">참여코드 다시 입력</button>
+    </div>
+  </section>
 
-    function cardHTML(a){
-      const done = a.completed ? `<span class="done">${CHECK}</span>` : '';
-      const meta = [a.grade, a.unit, (a.lesson_no!=null?`${a.lesson_no}차시`:null)].filter(Boolean).join(' - ');
-      return `<div class="card" data-url="${a.url||''}" role="button" tabindex="0">
-        ${done}<div class="card-meta">${meta}</div><div class="card-top">${typePill(a.type)}</div><h3>${a.title}</h3></div>`;
+  <!-- ③ 작업 화면 -->
+  <section id="scWork" class="hidden">
+    <div class="tabs" role="tablist">
+      <button class="tab on" data-tab="guide" type="button">실험 안내</button>
+      <button class="tab" data-tab="data" type="button">데이터 입력</button>
+      <button class="tab" data-tab="report" type="button">보고서</button>
+      <button class="tab" data-tab="share" type="button">모둠 공유</button>
+      <button class="tab" data-tab="atlas" type="button">실험 도감</button>
+    </div>
+
+    <div id="pnGuide" class="panel"></div>
+
+    <div id="pnData" class="panel hidden">
+      <div class="box">
+        <h2 id="dataTitle">데이터 입력표</h2>
+        <p class="muted" id="dataSub"></p>
+        <div id="dataTbl" class="tblwrap" style="margin-top:14px"></div>
+        <label class="fl" for="inNote">측정 조건 메모 (선택)</label>
+        <input id="inNote" type="text" placeholder="예) 핫플레이트 3단, 물 200mL" maxlength="120" />
+        <div class="savebar">
+          <button id="btnSaveData" class="btn btn-solid" type="button">데이터 저장</button>
+          <span id="dataMsg" class="savemsg"></span>
+        </div>
+      </div>
+      <div class="box">
+        <h3>우리 모둠 그래프</h3>
+        <div id="myChart" class="chartbox"></div>
+      </div>
+    </div>
+
+    <div id="pnReport" class="panel hidden">
+      <div class="box">
+        <h2>모둠 보고서</h2>
+        <p class="muted">저장은 여러 번 해도 됩니다. 다 쓰면 <b>제출하기</b>를 누르세요.</p>
+        <div id="qlist" style="margin-top:14px"></div>
+        <div class="savebar">
+          <button id="btnDraftReport" class="btn" type="button">임시 저장</button>
+          <button id="btnDoneReport" class="btn btn-solid" type="button">제출하기</button>
+          <span id="reportMsg" class="savemsg"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="pnShare" class="panel hidden">
+      <div class="box">
+        <h2>다른 모둠 결과 보기</h2>
+        <p class="muted" id="shareSub">선생님이 ‘모둠 공유’ 단계를 열면 다른 모둠의 그래프가 나타납니다.</p>
+      </div>
+      <div id="shareCards" class="gcards"></div>
+    </div>
+
+    <div id="pnAtlas" class="panel hidden">
+      <div id="atlasLock" class="box hidden">
+        <h2>코드 없이 둘러보는 중</h2>
+        <p class="lead">실험 도감은 참여코드 없이도 볼 수 있습니다. 데이터 입력·보고서·모둠 공유 탭은 수업에 들어와야 열립니다.</p>
+        <button id="btnAtlasJoin" class="btn btn-solid" style="margin-top:12px" type="button">참여코드 입력하러 가기</button>
+      </div>
+      <div class="box">
+        <h2>실험 도감</h2>
+        <p class="muted">교과서 단원별 센서 실험을 모아 두었습니다. 카드를 누르면 준비물과 순서가 나옵니다.</p>
+        <div class="filters">
+          <select id="aGrade" aria-label="학년 고르기">
+            <option value="">모든 학년</option>
+            <option value="1">중1</option><option value="2">중2</option><option value="3">중3</option>
+          </select>
+          <select id="aUnit" aria-label="단원 고르기"><option value="">모든 단원</option></select>
+          <input id="aSearch" type="text" placeholder="제목·센서로 찾기" aria-label="실험 찾기" />
+          <span id="aCount" class="pill" aria-live="polite"></span>
+        </div>
+        <div id="atlasList" class="atlaslist"></div>
+      </div>
+      <div id="atlasDetail"></div>
+    </div>
+  </section>
+
+  <!-- ④ 보관 기간이 끝난 수업 -->
+  <section id="scExpired" class="join hidden">
+    <div class="box gone">
+      <h2>이 수업은 보관 기간이 끝났습니다</h2>
+      <p class="lead" style="margin-top:8px">선생님께 문의해 주세요. 자료는 선생님만 열 수 있습니다.</p>
+      <button id="btnGoneCode" class="btn btn-solid" style="width:100%;margin-top:16px" type="button">다른 참여코드 입력</button>
+      <button id="btnGoneAtlas" class="btn" style="width:100%;margin-top:10px" type="button">실험 도감 보기</button>
+    </div>
+  </section>
+
+</main>
+
+<!-- 비밀번호 다시 묻기 -->
+<div id="pinModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="pinModalTitle">
+  <div class="modalbox">
+    <h2 id="pinModalTitle">모둠 비밀번호</h2>
+    <p class="muted" id="pinModalSub">우리 모둠 비밀번호 4자리를 입력하세요. 선생님이 알려 주십니다.</p>
+    <div id="pinPadModal" class="pinpad" style="margin-top:14px"></div>
+    <div id="pinModalErr" class="err" style="text-align:center"></div>
+    <button id="btnPinOk" class="btn btn-solid" style="width:100%" type="button">확인</button>
+    <button id="btnPinCancel" class="btn btn-sm" style="width:100%;margin-top:10px" type="button">취소</button>
+  </div>
+</div>
+
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-07-06</span></footer>
+
+<script>
+(function(){
+  'use strict';
+
+  const esc = s => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+  const $  = id => document.getElementById(id);
+  const SERIES_COLORS = ['var(--mint)','var(--coral)','var(--sky)','var(--sun)','var(--g5)','var(--g6)','var(--g7)'];
+  const PHASE_TEXT = { collect:'데이터 수집 중', share:'모둠 공유 중', present:'발표 중', done:'마무리' };
+
+  // ── 상태 ───────────────────────────────────────────────────────
+  let joinCode = '';
+  let lesson   = null;
+  let group    = null;
+  let spec     = null;      // dataSpec
+  let questions= [];
+  let unwatch  = null;
+  let board    = null;
+  let pickedNo = 0;
+  let curTab   = 'guide';   // 지금 열려 있는 탭
+  let phaseTimer = null;    // 수집 단계에서 쓰는 가벼운 단계 확인
+  let atlasReady = false;   // 도감을 한 번이라도 그렸는지
+  let atlasPick  = '';      // 펼쳐 놓은 실험 id
+  let atlasOnly  = false;   // 참여코드 없이 도감만 보는 중
+  let expired    = false;   // 보관 기간이 끝난 수업을 안내하는 중
+
+  // ── 인라인 SVG 그래프 (차트 라이브러리 없이 직접 그립니다) ────────
+  function chartSVG(sp, rows, opt){
+    opt = opt || {};
+    const W = opt.w || 560, H = opt.h || 300;
+    const P = { l: 52, r: 16, t: 18, b: 44 };
+    const series = (sp && sp.series) || [];
+    const kind = (sp && sp.chart) || 'line';
+    const xLab = (sp && sp.x && sp.x.label) || 'x';
+    const xUnit= (sp && sp.x && sp.x.unit)  || '';
+    const pts = [];   // [{x, ys:[]}]
+    (rows || []).forEach(function(r){
+      if (!Array.isArray(r)) return;
+      const x = Number(r[0]);
+      const ys = series.map((_, i) => { const v = Number(r[i+1]); return isFinite(v) ? v : null; });
+      if (ys.every(v => v === null)) return;
+      pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
+    });
+    if (!pts.length){
+      return '<div class="empty">아직 입력된 값이 없습니다.</div>';
     }
-    function bindCards(container){
-      container.querySelectorAll('.card').forEach(el=>{
-        const go=()=>{ const u=el.dataset.url; if(!u) return; location.href = u + (u.includes('?')?'&':'?') + 'aid=' + encodeURIComponent(el.closest('[data-aid]')?.dataset.aid||''); };
-        el.addEventListener('click',go);
-        el.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go();}});
+    const numericX = pts.every(p => p.x !== null) && kind !== 'bar';
+    const xs  = numericX ? pts.map(p => p.x) : pts.map((p, i) => i);
+    const allY = [];
+    pts.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
+    let y0 = Math.min.apply(null, allY), y1 = Math.max.apply(null, allY);
+    if (y0 === y1) { y0 -= 1; y1 += 1; }
+    const pad = (y1 - y0) * 0.12; y0 -= pad; y1 += pad;
+    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    if (x0 === x1) { x0 -= .5; x1 += .5; }
+    const px = v => P.l + (v - x0) / (x1 - x0) * (W - P.l - P.r);
+    const py = v => H - P.b - (v - y0) / (y1 - y0) * (H - P.t - P.b);
+
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' + esc(xLab) + ' 그래프" style="min-width:340px">';
+    // 격자 + y 눈금
+    for (let i = 0; i <= 4; i++){
+      const v = y0 + (y1 - y0) * i / 4, y = py(v);
+      s += '<line x1="' + P.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)" stroke-width="1"/>';
+      s += '<text x="' + (P.l - 8) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + esc(v.toFixed(Math.abs(y1 - y0) < 5 ? 1 : 0)) + '</text>';
+    }
+    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    // x 눈금
+    pts.forEach(function(p, i){
+      const X = px(numericX ? p.x : i);
+      const lb = (p.raw === '' || p.raw === undefined || p.raw === null) ? (i + 1) : p.raw;
+      if (pts.length <= 12 || i % Math.ceil(pts.length / 10) === 0)
+        s += '<text x="' + X.toFixed(1) + '" y="' + (H - P.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + esc(lb) + '</text>';
+    });
+    s += '<text x="' + (W - P.r) + '" y="' + (H - 8) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' + esc(xLab + (xUnit ? ' (' + xUnit + ')' : '')) + '</text>';
+
+    // 계열
+    series.forEach(function(se, si){
+      const col = SERIES_COLORS[si % SERIES_COLORS.length];
+      const list = pts.map((p, i) => ({ X: px(numericX ? p.x : i), Y: p.ys[si] === null ? null : py(p.ys[si]) }));
+      if (kind === 'bar'){
+        const bw = Math.max(4, (W - P.l - P.r) / Math.max(pts.length, 1) / (series.length + 1));
+        list.forEach(function(pt, i){
+          if (pt.Y === null) return;
+          const bx = pt.X - (series.length * bw) / 2 + si * bw;
+          s += '<rect x="' + bx.toFixed(1) + '" y="' + pt.Y.toFixed(1) + '" width="' + bw.toFixed(1) +
+               '" height="' + Math.max(0, (H - P.b - pt.Y)).toFixed(1) + '" fill="' + col + '" opacity=".85" rx="2"/>';
+        });
+      } else {
+        if (kind !== 'scatter'){
+          let d = '', pen = false;
+          list.forEach(function(pt){
+            if (pt.Y === null) { pen = false; return; }
+            d += (pen ? 'L' : 'M') + pt.X.toFixed(1) + ' ' + pt.Y.toFixed(1) + ' ';
+            pen = true;
+          });
+          if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.4" stroke-linejoin="round" stroke-linecap="round"/>';
+        }
+        list.forEach(function(pt){
+          if (pt.Y === null) return;
+          s += '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="3.4" fill="' + col + '"/>';
+        });
+      }
+    });
+    s += '</svg>';
+
+    // 범례
+    let lg = '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:12.5px;color:var(--muted)">';
+    series.forEach(function(se, si){
+      lg += '<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:' +
+            SERIES_COLORS[si % SERIES_COLORS.length] + ';display:inline-block"></i>' +
+            esc(se.label || ('계열' + (si + 1))) + (se.unit ? ' (' + esc(se.unit) + ')' : '') + '</span>';
+    });
+    return s + lg + '</div>';
+  }
+
+  // ── 모둠 비밀번호(PIN) 4칸 ─────────────────────────────────────
+  //  숫자만 · 한 칸씩 자동 이동 · 붙여넣기 · 마지막 칸을 채우면 자동 제출
+  const PIN_ASK  = '우리 모둠 비밀번호 4자리를 입력하세요. 선생님이 알려 주십니다.';
+  const PIN_WRONG = '비밀번호가 맞지 않아요. 선생님께 확인해 주세요.';
+
+  function makePinPad(host, onFull){
+    const boxes = [];
+    host.innerHTML = '';
+    for (let i = 0; i < 4; i++){
+      const el = document.createElement('input');
+      el.type = 'text'; el.className = 'pinbox'; el.maxLength = 1;
+      el.setAttribute('inputmode', 'numeric');
+      el.setAttribute('autocomplete', 'off');
+      el.setAttribute('aria-label', '비밀번호 ' + (i + 1) + '번째 자리');
+      host.appendChild(el);
+      boxes.push(el);
+    }
+    const val = () => boxes.map(b => b.value).join('');
+    function done(){ if (onFull && val().length === 4) onFull(val()); }
+    function spread(digits, from){
+      let k = from;
+      for (let j = 0; j < digits.length && k < 4; j++, k++) boxes[k].value = digits[j];
+      boxes[Math.min(k, 3)].focus();
+      done();
+    }
+    boxes.forEach(function(el, i){
+      el.addEventListener('focus', function(){ setTimeout(function(){ try{ el.select(); }catch(e){} }, 0); });
+      el.addEventListener('input', function(){
+        host.classList.remove('bad');
+        const d = el.value.replace(/[^0-9]/g, '');
+        if (d.length > 1){ el.value = ''; spread(d, i); return; }
+        el.value = d;
+        if (d && i < 3) boxes[i + 1].focus();
+        done();
+      });
+      el.addEventListener('keydown', function(e){
+        if (e.key === 'Backspace' && !el.value && i > 0){ e.preventDefault(); boxes[i-1].value = ''; boxes[i-1].focus(); }
+        else if (e.key === 'ArrowLeft'  && i > 0){ e.preventDefault(); boxes[i-1].focus(); }
+        else if (e.key === 'ArrowRight' && i < 3){ e.preventDefault(); boxes[i+1].focus(); }
+        else if (e.key === 'Enter') done();
+      });
+      el.addEventListener('paste', function(e){
+        const cb = e.clipboardData || window.clipboardData;
+        const d = cb ? String(cb.getData('text') || '').replace(/[^0-9]/g, '') : '';
+        if (!d) return;
+        e.preventDefault();
+        spread(d, i);
+      });
+    });
+    return {
+      value : val,
+      clear : function(){ boxes.forEach(b => { b.value = ''; }); host.classList.remove('bad'); },
+      focus : function(){ try { boxes[0].focus(); } catch(e){} },
+      shake : function(){
+        host.classList.add('bad');
+        host.classList.remove('shake');
+        void host.offsetWidth;          // 애니메이션 다시 걸기
+        host.classList.add('shake');
+      }
+    };
+  }
+
+  const padGroup = makePinPad($('pinPad'),      function(){ if (!$('btnEnter').disabled) $('btnEnter').click(); });
+  const padModal = makePinPad($('pinPadModal'), function(){ okPinModal(); });
+
+  // 이 기기에 그 모둠 비밀번호가 남아 있는가 (hub.js 는 모둠 번호를 'no3' 꼴로 보관합니다)
+  function hasStoredPin(no){
+    if (typeof Hub.getPin !== 'function' || !joinCode || !no) return false;
+    return !!Hub.getPin(joinCode, 'no' + Number(no));
+  }
+  function showPinStep(need){
+    $('pinStep').classList.toggle('hidden', !need);
+    padGroup.clear();
+    if (need) setTimeout(function(){ padGroup.focus(); }, 30);
+  }
+
+  // ── 비밀번호 다시 묻기 모달 ────────────────────────────────────
+  //  openPinModal() → 4자리를 입력하면 resolve, 취소하면 err.cancelled 로 reject
+  let pinWait = null;
+  function openPinModal(msg){
+    return new Promise(function(resolve, reject){
+      closePinModal(null);                       // 열려 있던 것이 있으면 먼저 정리
+      pinWait = { resolve: resolve, reject: reject };
+      $('pinModalSub').textContent = (group ? (group.group_name || (group.group_no + '모둠')) + ' — ' : '') + PIN_ASK;
+      $('pinModalErr').textContent = msg || '';
+      padModal.clear();
+      $('pinModal').classList.remove('hidden');
+      if (msg) padModal.shake();
+      setTimeout(function(){ padModal.focus(); }, 40);
+    });
+  }
+  function closePinModal(pin){
+    $('pinModal').classList.add('hidden');
+    const w = pinWait; pinWait = null;
+    if (!w) return;
+    if (pin) w.resolve(pin);
+    else { const e = new Error('취소했습니다.'); e.cancelled = true; w.reject(e); }
+  }
+  function okPinModal(){
+    const v = padModal.value();
+    if (v.length !== 4){ $('pinModalErr').textContent = '숫자 4자리를 입력하세요.'; padModal.shake(); padModal.focus(); return; }
+    closePinModal(v);
+  }
+  $('btnPinOk').addEventListener('click', okPinModal);
+  $('btnPinCancel').addEventListener('click', function(){ closePinModal(null); });
+  $('pinModal').addEventListener('click', function(e){ if (e.target === $('pinModal')) closePinModal(null); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && !$('pinModal').classList.contains('hidden')) closePinModal(null);
+  });
+
+  // 저장·보내기를 감싸 줍니다. 비밀번호가 틀리면 다시 물어보고 하던 일을 이어서 합니다.
+  //   writeWithPin(pin => Hub.saveData(..., pin))
+  function writeWithPin(run){
+    function attempt(pin, msg){
+      return Promise.resolve().then(function(){ return run(pin); }).then(function(res){
+        // 새로 입력해 통과한 비밀번호는 모둠 번호로도 기억해 둡니다(다시 묻지 않기 위해서).
+        if (pin && group && !(res && res.offline) && typeof Hub.rememberPin === 'function'){
+          Hub.rememberPin(joinCode, group.id, pin);
+          if (group.group_no != null) Hub.rememberPin(joinCode, 'no' + Number(group.group_no), pin);
+        }
+        return res;
+      }, function(err){
+        if (err && err.expired){ showExpired(); throw err; }
+        if (!err || !err.pinError) throw err;
+        return openPinModal(msg || PIN_WRONG).then(function(p){
+          return attempt(p, '비밀번호가 맞지 않아요. 다시 확인해 주세요.');
+        });
       });
     }
-    function render(acts){
-      const today = acts.filter(a=>a.is_active);
-      if(today.length){ todayGrid.innerHTML = today.map(a=>`<div data-aid="${a.id}">${cardHTML(a)}</div>`).join(''); todayEmpty.classList.add('hidden'); }
-      else { todayGrid.innerHTML=''; todayEmpty.classList.remove('hidden'); }
-      const units=[]; const map={};
-      acts.forEach(a=>{ const u=a.unit||'기타'; if(!map[u]){map[u]=[];units.push(u);} map[u].push(a); });
-      Object.values(map).forEach(list=>list.sort((x,y)=>(x.lesson_no??999)-(y.lesson_no??999)||(x.sort_order??0)-(y.sort_order??0)));
-      tabsEl.innerHTML = units.map((u,i)=>`<button class="tab${i===0?' active':''}" data-unit="${u}">${u}</button>`).join('');
-      const paint = u => { actGrid.innerHTML = (map[u]||[]).map(a=>`<div data-aid="${a.id}">${cardHTML(a)}</div>`).join(''); bindCards(actGrid); };
-      tabsEl.querySelectorAll('.tab').forEach(t=>t.addEventListener('click',()=>{ tabsEl.querySelectorAll('.tab').forEach(x=>x.classList.remove('active')); t.classList.add('active'); paint(t.dataset.unit); }));
-      if(units.length) paint(units[0]);
-      bindCards(todayGrid);
-    }
+    return attempt('');
+  }
+  // 저장 실패 문구 — 비밀번호를 묻다가 취소하면 자료는 그대로 두고 알려만 줍니다.
+  function writeErrText(err){
+    if (err && err.cancelled) return '비밀번호를 넣어야 저장됩니다.';
+    if (err && err.expired)   return '보관 기간이 끝난 수업입니다.';
+    return (err && err.message) || '저장하지 못했습니다.';
+  }
 
-    // 모달
-    function openLogin(){ modal.classList.add('open'); setTimeout(()=>$('#fCode').focus(),50); }
-    function closeLogin(){ modal.classList.remove('open'); }
-    [topLoginBtn,heroLoginBtn,lockLoginBtn].forEach(b=>b&&b.addEventListener('click',openLogin));
-    $('#modalClose').addEventListener('click',closeLogin);
-    modal.addEventListener('click',e=>{ if(e.target===modal) closeLogin(); });
-    document.addEventListener('keydown',e=>{ if(e.key==='Escape') closeLogin(); });
+  // ── 보관 기간이 끝났을 때 ──────────────────────────────────────
+  function showExpired(){
+    if (expired) return;
+    expired = true;
+    closePinModal(null);
+    if (unwatch){ unwatch(); unwatch = null; }
+    stopPhaseTimer();
+    group = null;                       // 더는 저장할 수 없습니다(도감은 그대로 볼 수 있습니다)
+    $('phasePill').classList.add('hidden');
+    $('topSub').textContent = '보관 기간이 끝난 수업입니다';
+    show('expired');
+    window.scrollTo(0, 0);
+  }
+  $('btnGoneCode').addEventListener('click', function(){ backToJoin(); });
+  $('btnGoneAtlas').addEventListener('click', function(){ openAtlas(true); });
 
-    function showConnected(profile){
-      statusDot.classList.add('live');
-      statusLabel.innerHTML = `<span class="who">${profile?.nickname||'학생'}</span> · ${profile?.class_name||''}`;
-      topLoginBtn.classList.add('hidden'); logoutBtn.classList.remove('hidden');
-      heroLoginBtn.classList.add('hidden'); myRecord.classList.remove('hidden');
-      lockZone.classList.remove('on');
-    }
-    function showLockedPreview(){
-      statusDot.classList.remove('live'); statusLabel.textContent='미연결';
-      logoutBtn.classList.add('hidden'); topLoginBtn.classList.remove('hidden');
-      heroLoginBtn.classList.remove('hidden'); myRecord.classList.add('hidden');
-      lockZone.classList.add('on'); render(SAMPLE);
-    }
-    async function loadReal(){
-      try{ render(await Hub.getActivities() || []); }
-      catch(e){ console.warn('활동 불러오기 실패 → 예시 표시', e); $('#demoBanner').classList.remove('hidden'); render(SAMPLE); }
-    }
+  // ── 오프라인 배너 ──────────────────────────────────────────────
+  Hub.onStatus(function(st){
+    const on = st.offline || Hub.pendingCount(joinCode) > 0;
+    $('offbar').classList.toggle('hidden', !on);
+  });
 
-    $('#loginFormEl').addEventListener('submit', async e=>{
-      e.preventDefault(); loginMsg.textContent='';
-      const code=$('#fCode').value.trim(), no=$('#fNo').value.trim(), pin=$('#fPin').value.trim();
-      if(!hasHub){ loginMsg.textContent='Supabase 연결 전입니다. hub.js에 URL·anon key를 넣어주세요.'; return; }
-      try{ const profile = await Hub.login(code,no,pin); closeLogin(); showConnected(profile); await loadReal(); switchTab('today'); }
-      catch(err){ loginMsg.textContent = err.message || '로그인에 실패했습니다.'; }
+  // ── 연결 설정 안내 (학생 화면이라 한 줄만) ─────────────────────
+  (function checkSetup(){
+    const bar = $('setupbar');
+    function tell(msg){ bar.textContent = msg; bar.classList.remove('hidden'); }
+    const NO_CONF = '선생님, 서버 연결 정보가 아직 없어요. (config.js) 선생님께 알려 주세요.';
+    const NO_SQL  = '선생님, 서버 준비가 아직 끝나지 않았어요. (schema.sql) 선생님께 알려 주세요.';
+
+    if (typeof Hub.isConfigured === 'function' && !Hub.isConfigured()){ tell(NO_CONF); return; }
+    if (typeof Hub.diagnose !== 'function') return;
+    Promise.resolve(Hub.diagnose()).then(function(d){
+      if (!d) return;
+      if (!d.configured) tell(NO_CONF);
+      else if (d.reachable && !d.schemaOk) tell(NO_SQL);
+      // 연결이 안 될 뿐이라면 오프라인 배너가 알려 주므로 여기서는 조용히 넘어갑니다.
+    }, function(){});
+  })();
+
+  // ── 화면 전환 ──────────────────────────────────────────────────
+  function show(which){
+    $('scJoin').classList.toggle('hidden',    which !== 'join');
+    $('scGroup').classList.toggle('hidden',   which !== 'group');
+    $('scWork').classList.toggle('hidden',    which !== 'work');
+    $('scExpired').classList.toggle('hidden', which !== 'expired');
+    $('btnLeave').classList.toggle('hidden',  which === 'join' || which === 'expired');
+    // [다른 모둠으로] 는 모둠에 들어가 있을 때만 보입니다.
+    $('btnSwitch').classList.toggle('hidden', !(which === 'work' && group && !atlasOnly));
+  }
+  function setPhase(ph){
+    const el = $('phasePill');
+    el.classList.remove('hidden', 'sun', 'coral', 'sky');
+    if (ph === 'share')   el.classList.add('sky');
+    if (ph === 'present') el.classList.add('coral');
+    if (ph === 'done')    el.classList.add('sun');
+    el.textContent = PHASE_TEXT[ph] || '수업 중';
+  }
+
+  // ── ① 참여코드 ─────────────────────────────────────────────────
+  $('inCode').addEventListener('input', function(){
+    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+  });
+  $('inCode').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('btnJoin').click(); });
+
+  $('btnJoin').addEventListener('click', function(){
+    const code = Hub.norm($('inCode').value);
+    if (code.length !== 6) { $('joinErr').textContent = '참여코드 6자리를 정확히 입력하세요.'; return; }
+    $('joinErr').textContent = '';
+    this.disabled = true; this.textContent = '확인하는 중…';
+    Hub.getLesson(code).then(function(l){
+      joinCode = code; lesson = l;
+      Hub.saveLocal('last_join', code);
+      openGroupPicker();
+    }, function(err){
+      if (err && err.expired){ joinCode = code; showExpired(); return; }
+      $('joinErr').textContent = (err && err.message) || '수업을 찾지 못했습니다.';
+    }).then(function(){
+      $('btnJoin').disabled = false; $('btnJoin').textContent = '들어가기';
+    });
+  });
+
+  // ── ② 모둠 고르기 ──────────────────────────────────────────────
+  function openGroupPicker(){
+    show('group');
+    setPhase(lesson.phase);
+    $('groupErr').textContent = '';
+    showPinStep(false);
+    $('gLessonTitle').textContent = lesson.title || '수업';
+    $('gLessonSub').textContent =
+      [lesson.class_label, lesson.exp_title, lesson.teacher_name ? lesson.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ');
+    $('topSub').textContent = '참여코드 ' + joinCode;
+
+    const n = Math.max(1, Math.min(20, Number(lesson.group_count) || 7));
+    let h = '';
+    for (let i = 1; i <= n; i++){
+      h += '<button class="gbtn" type="button" data-no="' + i + '">' + i + '모둠<small>여기 눌러요</small></button>';
+    }
+    $('gsel').innerHTML = h;
+    Array.prototype.forEach.call($('gsel').querySelectorAll('.gbtn'), function(b){
+      b.addEventListener('click', function(){
+        pickedNo = Number(b.dataset.no);
+        Array.prototype.forEach.call($('gsel').querySelectorAll('.gbtn'), function(x){
+          x.classList.remove('on'); x.style.background = '';
+        });
+        b.classList.add('on');
+        b.style.background = 'var(--g' + (((pickedNo - 1) % 7) + 1) + ')';
+        $('btnEnter').disabled = false;
+        if (!$('inGroupName').value) $('inGroupName').value = pickedNo + '모둠';
+        $('groupErr').textContent = '';
+        // 이 기기에 그 모둠 비밀번호가 남아 있으면 다시 묻지 않습니다.
+        showPinStep(!hasStoredPin(pickedNo));
+      });
     });
 
-    function doLogout(){ if(hasHub) Hub.logout(); showLockedPreview(); }
-    logoutBtn.addEventListener('click',doLogout);
-
-    // 섹션 탭 전환
-    const secTabs=[...document.querySelectorAll('.stab')];
-    const tabsNav=document.querySelector('.section-tabs');
-    function switchTab(name){
-      secTabs.forEach(t=>t.classList.toggle('active',t.dataset.tab===name));
-      document.querySelectorAll('.panel').forEach(p=>p.classList.toggle('hidden',p.id!=='tab-'+name));
-      const y=tabsNav.offsetTop-64;
-      if(window.scrollY>y) window.scrollTo({top:y,behavior:'smooth'});
+    // 같은 기기에서 이미 들어갔던 모둠이 있으면 되살립니다.
+    const cached = Hub.loadLocal('group_' + joinCode, null);
+    if (cached && cached.lesson_id === lesson.id){
+      const b = $('gsel').querySelector('[data-no="' + cached.group_no + '"]');
+      if (b) b.click();
+      $('inGroupName').value = cached.group_name || '';
+      $('inMembers').value = (cached.members || []).join(', ');
+      // 비밀번호가 기억되어 있으면 묻지 않고 바로 들어갑니다.
+      if (b && hasStoredPin(cached.group_no)) enterGroup();
     }
-    secTabs.forEach(t=>t.addEventListener('click',()=>switchTab(t.dataset.tab)));
+  }
 
-    if(!hasHub) $('#demoBanner').classList.remove('hidden');
-    if(hasHub && Hub.isLoggedIn()){ showConnected(Hub.getProfile()); loadReal(); }
-    else { showLockedPreview(); }
+  //  모둠 입장 — 기억된 비밀번호가 없으면 4칸에 적은 값을 씁니다.
+  function enterGroup(){
+    if (!pickedNo || expired) return;
+    const needPin = !hasStoredPin(pickedNo);
+    const pin = needPin ? padGroup.value() : '';
+    if (needPin && pin.length !== 4){
+      showPinStep(true);
+      $('groupErr').textContent = '비밀번호 4자리를 모두 입력하세요.';
+      padGroup.shake(); padGroup.focus();
+      return;
+    }
+    const members = $('inMembers').value.split(',').map(s => s.trim()).filter(Boolean);
+    $('groupErr').textContent = '';
+    $('btnEnter').disabled = true; $('btnEnter').textContent = '들어가는 중…';
+    Hub.joinGroup(joinCode, pickedNo, $('inGroupName').value.trim() || (pickedNo + '모둠'), members, pin)
+      .then(function(g){ group = g; startWork(); },
+            function(err){
+              if (err && err.expired){ showExpired(); return; }
+              if (err && err.pinError){
+                showPinStep(true);
+                $('groupErr').textContent = PIN_WRONG;
+                padGroup.shake(); padGroup.focus();
+                return;
+              }
+              $('groupErr').textContent = (err && err.message) || '모둠 입장에 실패했습니다.';
+            })
+      .then(function(){ $('btnEnter').disabled = false; $('btnEnter').textContent = '이 모둠으로 들어가기'; });
+  }
+
+  $('btnEnter').addEventListener('click', function(){ enterGroup(); });
+
+  $('btnBackCode').addEventListener('click', function(){ showPinStep(false); show('join'); });
+
+  // 다른 모둠으로 — 이 기기에 기억해 둔 비밀번호를 잊고 모둠을 다시 고릅니다.
+  $('btnSwitch').addEventListener('click', function(){
+    if (!joinCode || !lesson) return;
+    if (typeof Hub.forgetPin === 'function'){
+      if (group){
+        Hub.forgetPin(joinCode, group.id);
+        if (group.group_no != null) Hub.forgetPin(joinCode, 'no' + Number(group.group_no));
+      } else {
+        Hub.forgetPin(joinCode);
+      }
+    }
+    if (unwatch){ unwatch(); unwatch = null; }
+    stopPhaseTimer();
+    Hub.dropLocal('group_' + joinCode);
+    group = null; pickedNo = 0;
+    $('btnEnter').disabled = true;
+    $('inGroupName').value = ''; $('inMembers').value = '';
+    $('topSub').textContent = '참여코드 ' + joinCode;
+    openGroupPicker();
+    window.scrollTo(0, 0);
+  });
+
+  $('btnLeave').addEventListener('click', function(){
+    if (atlasOnly) { backToJoin(); return; }
+    if (!confirm('이 기기에서 나갈까요? 저장한 데이터는 그대로 남아 있습니다.')) return;
+    if (unwatch) { unwatch(); unwatch = null; }
+    stopPhaseTimer();
+    group = null; lesson = null; joinCode = '';
+    $('phasePill').classList.add('hidden');
+    $('topSub').textContent = '참여코드를 입력하고 들어오세요';
+    show('join');
+  });
+
+  // ── ③ 작업 화면 ────────────────────────────────────────────────
+  function startWork(){
+    atlasOnly = false;
+    expired = false;
+    showPinStep(false);
+    show('work');
+    spec = (lesson.data_spec && lesson.data_spec.series) ? lesson.data_spec
+         : (labExp() && labExp().dataSpec) || { x:{label:'회차',unit:''}, series:[{label:'측정값',unit:''}], rows:8, chart:'line' };
+    questions = (lesson.form && Array.isArray(lesson.form.questions) && lesson.form.questions.length)
+              ? lesson.form.questions
+              : ((labExp() && labExp().questions) || []);
+    $('topSub').textContent = '참여코드 ' + joinCode + ' · ' + (group.group_name || (group.group_no + '모둠'));
+    renderGuide();
+    renderDataTable();
+    renderReport();
+    restoreLocal();
+    setPhase(lesson.phase);
+    Hub.flushOffline(joinCode);
+    atlasOnly = false;
+    lockTabsForAtlas(false);
+    if (unwatch){ unwatch(); unwatch = null; }
+    stopPhaseTimer();
+    selectTab('guide');
+    applyWatch();
+  }
+
+  // ── 얼마나 자주 서버를 볼지 정하기 ─────────────────────────────
+  //  수집 단계에서는 남의 모둠 자료가 필요 없습니다. 그래서 '모둠 공유' 탭을
+  //  열지 않은 동안에는 보드를 아예 받지 않고, 단계가 바뀌었는지만 가볍게
+  //  확인합니다. (전송량을 크게 줄여 주는 부분입니다.)
+  function needWatch(){
+    if (!joinCode || !group || atlasOnly) return false;
+    const ph = (lesson && lesson.phase) || 'collect';
+    if (ph !== 'collect') return true;
+    return curTab === 'share';
+  }
+
+  function onBoard(b){
+    board = b;
+    if (b && b.lesson){
+      const prev = lesson ? lesson.phase : null;
+      lesson = b.lesson;
+      setPhase(lesson.phase);
+      if (prev !== lesson.phase && (lesson.phase === 'share' || lesson.phase === 'present')) selectTab('share');
+    }
+    renderShare();
+    applyWatch();
+  }
+
+  function applyWatch(){
+    if (needWatch()){
+      stopPhaseTimer();
+      if (!unwatch) unwatch = Hub.watch(joinCode, onBoard);
+    } else {
+      if (unwatch){ unwatch(); unwatch = null; }
+      startPhaseTimer();
+    }
+  }
+
+  function startPhaseTimer(){
+    if (phaseTimer || !joinCode || !group) return;
+    phaseTimer = setInterval(checkPhase, 15000);
+  }
+  function stopPhaseTimer(){
+    if (phaseTimer){ clearInterval(phaseTimer); phaseTimer = null; }
+  }
+
+  // 단계만 확인합니다. 작은 신호(mbl_sig)를 쓸 수 있으면 그것을,
+  // 없으면 수업 정보 한 줄(getLesson)을 받습니다. 어느 쪽이든 보드(24KB)보다 훨씬 가볍습니다.
+  function checkPhase(){
+    if (!joinCode || !lesson) return;
+    if (typeof document !== 'undefined' && document.hidden) return;
+    const p = (typeof Hub.sig === 'function') ? Hub.sig(joinCode) : Hub.getLesson(joinCode);
+    Promise.resolve(p).then(function(s){
+      if (!s || !lesson) return;
+      const prev = lesson.phase;
+      if (s.id) lesson = s;                       // getLesson 결과(수업 전체)
+      else {
+        if (s.phase) lesson.phase = s.phase;
+        if ('presenter_group' in s) lesson.presenter_group = s.presenter_group;
+        if ('slide_idx' in s)       lesson.slide_idx = s.slide_idx;
+      }
+      if (lesson.phase === prev) return;
+      setPhase(lesson.phase);
+      if (lesson.phase === 'share' || lesson.phase === 'present') selectTab('share');
+      applyWatch();
+    }, function(err){
+      if (err && err.expired) showExpired();
+      /* 그 밖에는 잠깐 못 읽어도 다음 차례에 다시 봅니다 */
+    });
+  }
+
+  if (typeof document !== 'undefined'){
+    document.addEventListener('visibilitychange', function(){
+      if (!document.hidden && phaseTimer) checkPhase();
+    });
+  }
+
+  function labExp(){
+    try { return (window.LAB && lesson && lesson.exp_id) ? LAB.byId(lesson.exp_id) : null; }
+    catch (e) { return null; }
+  }
+
+  // 탭
+  function selectTab(name){
+    curTab = name;
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
+      t.classList.toggle('on', t.dataset.tab === name);
+    });
+    $('pnGuide').classList.toggle('hidden',  name !== 'guide');
+    $('pnData').classList.toggle('hidden',   name !== 'data');
+    $('pnReport').classList.toggle('hidden', name !== 'report');
+    $('pnShare').classList.toggle('hidden',  name !== 'share');
+    $('pnAtlas').classList.toggle('hidden',  name !== 'atlas');
+    if (name === 'share') renderShare();
+    if (name === 'data')  renderMyChart();
+    if (name === 'atlas') ensureAtlas();
+    applyWatch();   // '모둠 공유' 탭을 열고 닫을 때만 서버를 봅니다
+  }
+  Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
+    t.addEventListener('click', function(){ selectTab(t.dataset.tab); });
+  });
+
+  // 실험 안내
+  function renderGuide(){
+    const e = labExp();
+    let h = '<div class="box"><h2>' + esc(lesson.title || '오늘의 실험') + '</h2>' +
+            '<p class="muted">' + esc([lesson.class_label, lesson.exp_title].filter(Boolean).join(' · ')) + '</p>';
+    if (!e){
+      h += '<p class="lead" style="margin-top:12px">선생님이 안내하는 순서대로 실험하고, <b>데이터 입력</b> 탭에 측정값을 적으세요.</p></div>';
+      $('pnGuide').innerHTML = h;
+      return;
+    }
+    h += '<div class="taglist">' +
+         '<span class="pill">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+         '<span class="pill sky">' + esc(e.minutes) + '분</span>' +
+         '<span class="pill sun">준비 난이도 ' + esc(e.level) + '</span>' +
+         (e.sensors || []).map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) + ' ' + esc(s.n) + '개</span>').join('') +
+         '</div>';
+    h += '<p class="lead" style="margin-top:6px">' + esc(e.why) + '</p></div>';
+
+    h += '<div class="box">' + illus('activity') + '<h2>실험 순서</h2><ol class="steps-ol">' +
+         (e.steps || []).map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
+    if (e.prep && e.prep.length){
+      h += '<h3>준비물</h3><p class="muted">' + (e.prep || []).map(esc).join(' · ') + '</p>';
+    }
+    h += '</div>';
+
+    h += '<div class="box">' + illus('analysis') + '<h2>결과를 이렇게 읽어요</h2><p class="lead">' + esc(e.read) + '</p>';
+    (e.tips || []).forEach(t => { h += '<div class="note">' + esc(t) + '</div>'; });
+    h += '</div>';
+
+    if ((e.caution || []).length){
+      h += '<div class="box">' + illus('safety') + '<h2>안전하게 하려면</h2>';
+      (e.caution || []).forEach(t => { h += '<div class="note warn">주의 · ' + esc(t) + '</div>'; });
+      h += '</div>';
+    }
+    $('pnGuide').innerHTML = h;
+  }
+
+  // 안내 그림 한 장 (없으면 조용히 사라집니다)
+  function illus(name){
+    return '<img class="illus-sm" src="./assets/' + name + '.webp" alt="" width="800" height="600" ' +
+           'loading="lazy" decoding="async" onerror="this.remove()" />';
+  }
+
+  // 데이터 입력표
+  function renderDataTable(){
+    const nRows = Math.max(1, Math.min(60, Number(spec.rows) || 8));
+    const ser = spec.series || [];
+    $('dataTitle').textContent = '데이터 입력표';
+    $('dataSub').textContent = '가로줄 ' + nRows + '칸. 숫자만 적으면 아래 그래프가 바로 그려집니다.';
+    let h = '<table><thead><tr><th></th><th>' +
+            esc((spec.x && spec.x.label) || 'x') + (spec.x && spec.x.unit ? ' (' + esc(spec.x.unit) + ')' : '') + '</th>' +
+            ser.map(s => '<th>' + esc(s.label || '') + (s.unit ? ' (' + esc(s.unit) + ')' : '') + '</th>').join('') +
+            '</tr></thead><tbody>';
+    for (let r = 0; r < nRows; r++){
+      h += '<tr><td class="rowno">' + (r + 1) + '</td>' +
+           '<td><input type="text" inputmode="decimal" data-r="' + r + '" data-c="0" aria-label="' + (r+1) + '행 x"/></td>' +
+           ser.map((s, i) => '<td><input type="text" inputmode="decimal" data-r="' + r + '" data-c="' + (i + 1) +
+                             '" aria-label="' + (r+1) + '행 ' + esc(s.label || '') + '"/></td>').join('') + '</tr>';
+    }
+    $('dataTbl').innerHTML = h + '</tbody></table>';
+    Array.prototype.forEach.call($('dataTbl').querySelectorAll('input'), function(inp){
+      inp.addEventListener('input', function(){ renderMyChart(); saveDataLocal(); });
+    });
+  }
+
+  function collectRows(){
+    const nRows = Math.max(1, Math.min(60, Number(spec.rows) || 8));
+    const cols  = (spec.series || []).length + 1;
+    const out = [];
+    for (let r = 0; r < nRows; r++){
+      const row = [];
+      let any = false;
+      for (let c = 0; c < cols; c++){
+        const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
+        const v = el ? el.value.trim() : '';
+        if (v !== '') any = true;
+        row.push(v === '' ? null : (isFinite(Number(v)) ? Number(v) : v));
+      }
+      if (any) out.push(row);
+    }
+    return out;
+  }
+  function fillRows(rows){
+    (rows || []).forEach(function(row, r){
+      (row || []).forEach(function(v, c){
+        const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
+        if (el && v !== null && v !== undefined) el.value = v;
+      });
+    });
+    renderMyChart();
+  }
+  function renderMyChart(){
+    $('myChart').innerHTML = chartSVG(spec, collectRows());
+  }
+  function saveDataLocal(){
+    if (!group) return;
+    Hub.saveLocal('draft_data_' + joinCode + '_' + group.id, { rows: collectRows(), note: $('inNote').value });
+  }
+
+  $('inNote').addEventListener('input', saveDataLocal);
+
+  $('btnSaveData').addEventListener('click', function(){
+    if (!group || expired) return;
+    const rows = collectRows();
+    const note = $('inNote').value.trim();
+    const msg = $('dataMsg');
+    msg.className = 'savemsg'; msg.textContent = '저장 중…';
+    this.disabled = true;
+    // 비밀번호가 틀리면 다시 물어본 뒤 이 저장을 그대로 이어서 합니다.
+    writeWithPin(function(pin){
+      return Hub.saveData(joinCode, group.id, rows, note, pin);
+    }).then(function(res){
+      if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다. 연결되면 자동으로 보냅니다.'; }
+      else { msg.textContent = '저장했습니다 (' + rows.length + '줄)'; }
+    }, function(err){
+      msg.className = 'savemsg warn'; msg.textContent = writeErrText(err);
+    }).then(function(){ $('btnSaveData').disabled = false; });
+  });
+
+  // 보고서
+  function renderReport(){
+    if (!questions.length){
+      $('qlist').innerHTML = '<p class="muted">선생님이 아직 질문을 올리지 않았습니다. 실험 결과를 정리해 두세요.</p>';
+      return;
+    }
+    $('qlist').innerHTML = questions.map(function(q, i){
+      const long = (q.type === 'long');
+      return '<div class="q"><b><span class="qno">' + (i + 1) + '.</span>' + esc(q.q || '') + '</b>' +
+             (long ? '<textarea data-q="' + i + '" placeholder="문장으로 답해 보세요"></textarea>'
+                   : '<input type="text" data-q="' + i + '" placeholder="짧게 답해 보세요" />') + '</div>';
+    }).join('');
+    Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q]'), function(el){
+      el.addEventListener('input', function(){
+        if (!group) return;
+        Hub.saveLocal('draft_report_' + joinCode + '_' + group.id, collectAnswers());
+      });
+    });
+  }
+  function collectAnswers(){
+    const a = {};
+    Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q]'), function(el){
+      a['q' + (Number(el.dataset.q) + 1)] = el.value;
+    });
+    return a;
+  }
+  function fillAnswers(ans){
+    if (!ans) return;
+    Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q]'), function(el){
+      const v = ans['q' + (Number(el.dataset.q) + 1)];
+      if (v !== undefined && v !== null) el.value = v;
+    });
+  }
+  function submitReport(status){
+    if (!group || expired) return;
+    const msg = $('reportMsg');
+    const answers = collectAnswers();
+    msg.className = 'savemsg'; msg.textContent = '저장 중…';
+    writeWithPin(function(pin){
+      return Hub.saveReport(joinCode, group.id, answers, status, pin);
+    }).then(function(res){
+      if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다. 연결되면 자동으로 보냅니다.'; }
+      else { msg.textContent = (status === 'done') ? '제출했습니다. 고칠 수 있어요.' : '임시 저장했습니다.'; }
+    }, function(err){
+      msg.className = 'savemsg warn'; msg.textContent = writeErrText(err);
+    });
+  }
+  $('btnDraftReport').addEventListener('click', function(){ submitReport('draft'); });
+  $('btnDoneReport').addEventListener('click', function(){ submitReport('done'); });
+
+  function restoreLocal(){
+    const d = Hub.loadLocal('data_' + joinCode + '_' + group.id, null) ||
+              Hub.loadLocal('draft_data_' + joinCode + '_' + group.id, null);
+    if (d){ fillRows(d.rows); if (d.note) $('inNote').value = d.note; }
+    const r = Hub.loadLocal('report_' + joinCode + '_' + group.id, null);
+    fillAnswers(r ? r.answers : Hub.loadLocal('draft_report_' + joinCode + '_' + group.id, null));
+    renderMyChart();
+  }
+
+  // 모둠 공유 · 피드백
+  function renderShare(){
+    if (!board || !group) return;
+    const open = lesson && (lesson.phase === 'share' || lesson.phase === 'present' || lesson.phase === 'done');
+    $('shareSub').textContent = open
+      ? '별점과 한 줄 칭찬을 남겨 주세요. 우리 모둠에게는 줄 수 없습니다.'
+      : '선생님이 ‘모둠 공유’ 단계를 열면 다른 모둠의 그래프가 나타납니다.';
+    if (!open){ $('shareCards').innerHTML = ''; return; }
+
+    const dataBy = {}, repBy = {};
+    (board.data || []).forEach(d => { dataBy[d.group_id] = d; });
+    (board.reports || []).forEach(r => { repBy[r.group_id] = r; });
+    const mine = {};
+    (board.feedback || []).forEach(f => { if (f.from_group === group.id) mine[f.to_group] = f; });
+
+    const cards = (board.groups || []).filter(g => g.id !== group.id).map(function(g){
+      const col = 'var(--g' + (((Number(g.group_no) - 1) % 7) + 1) + ')';
+      const d = dataBy[g.id], r = repBy[g.id], f = mine[g.id];
+      const isPresenter = lesson.presenter_group === g.id;
+      let h = '<div class="gcard"' + (isPresenter ? ' style="outline:3px solid var(--coral)"' : '') + '>';
+      h += '<div class="gh" style="background:' + col + '">' + esc(g.group_name || (g.group_no + '모둠')) +
+           (isPresenter ? ' <span style="font-size:12px;background:rgba(255,255,255,.28);border-radius:999px;padding:2px 8px">발표 중</span>' : '') + '</div>';
+      h += '<div class="gb">';
+      h += '<div class="st">' + (d ? '데이터 ' + ((d.rows || []).length) + '줄' : '데이터 없음') +
+           ' · ' + (r ? (r.status === 'done' ? '보고서 제출' : '보고서 작성 중') : '보고서 없음') + '</div>';
+      h += '<div class="chartbox">' + (d ? chartSVG(spec, d.rows, {}) : '<div class="empty">아직 자료가 없습니다.</div>') + '</div>';
+      if (d && d.note) h += '<p class="muted" style="margin-top:6px">메모 · ' + esc(d.note) + '</p>';
+      h += '<div class="stars" data-to="' + esc(g.id) + '">' +
+           [1,2,3,4,5].map(n => '<button class="star' + (f && f.stars >= n ? ' on' : '') + '" type="button" data-n="' + n +
+                                '" aria-label="별 ' + n + '점">★</button>').join('') + '</div>';
+      h += '<div class="fbrow"><input type="text" maxlength="60" placeholder="한 줄 칭찬" data-cm="' + esc(g.id) + '" value="' +
+           esc(f && f.comment ? f.comment : '') + '"/>' +
+           '<button class="btn btn-sm btn-solid" type="button" data-send="' + esc(g.id) + '">보내기</button></div>';
+      h += '</div></div>';
+      return h;
+    }).join('');
+
+    $('shareCards').innerHTML = cards || '<div class="empty">아직 다른 모둠이 들어오지 않았습니다.</div>';
+
+    Array.prototype.forEach.call($('shareCards').querySelectorAll('.stars'), function(box){
+      Array.prototype.forEach.call(box.querySelectorAll('.star'), function(b){
+        b.addEventListener('click', function(){
+          const n = Number(b.dataset.n);
+          Array.prototype.forEach.call(box.querySelectorAll('.star'), function(x, i){ x.classList.toggle('on', i < n); });
+          box.dataset.stars = n;
+        });
+      });
+    });
+    Array.prototype.forEach.call($('shareCards').querySelectorAll('[data-send]'), function(btn){
+      btn.addEventListener('click', function(){
+        const to  = btn.dataset.send;
+        const box = $('shareCards').querySelector('.stars[data-to="' + to + '"]');
+        const stars = Number(box && box.dataset.stars) || box.querySelectorAll('.star.on').length || 5;
+        const cm  = $('shareCards').querySelector('[data-cm="' + to + '"]');
+        const comment = cm ? cm.value : '';
+        if (expired) return;
+        btn.disabled = true; btn.textContent = '보내는 중';
+        writeWithPin(function(pin){
+          return Hub.sendFeedback(joinCode, group.id, to, stars, comment, pin);
+        }).then(function(){
+          btn.textContent = '보냈어요';
+          setTimeout(function(){ btn.disabled = false; btn.textContent = '보내기'; }, 1200);
+        }, function(err){
+          btn.disabled = false; btn.textContent = '보내기';
+          if (err && err.expired) return;                                  // 안내 화면이 이미 떴습니다
+          if (err && err.cancelled) { alert('비밀번호를 넣어야 보낼 수 있습니다.'); return; }
+          alert((err && err.message) || '보내지 못했습니다.');
+        });
+      });
+    });
+  }
+
+  // ── 실험 도감 ──────────────────────────────────────────────────
+  const SRC_NAME  = { seoul:'서울시교육청 자료집', ez:'이지메이커 사례집' };
+  const LEVEL_TXT = { 1:'쉬움', 2:'보통', 3:'어려움' };
+
+  // 참여코드 없이 도감만 볼 때는 나머지 탭을 잠그고 까닭을 알려 줍니다.
+  function lockTabsForAtlas(lock){
+    Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
+      if (t.dataset.tab === 'atlas') return;
+      t.disabled = !!lock;
+      t.setAttribute('aria-disabled', lock ? 'true' : 'false');
+    });
+    $('atlasLock').classList.toggle('hidden', !lock);
+    $('btnLeave').textContent = lock ? '참여코드 입력' : '나가기';
+  }
+
+  function backToJoin(){
+    atlasOnly = false;
+    expired   = false;
+    group = null; pickedNo = 0;
+    if (unwatch){ unwatch(); unwatch = null; }
+    stopPhaseTimer();
+    lockTabsForAtlas(false);
+    $('phasePill').classList.add('hidden');
+    $('topSub').textContent = '참여코드를 입력하고 들어오세요';
+    show('join');
+    window.scrollTo(0, 0);
+    $('inCode').focus();
+  }
+
+  function openAtlas(alone){
+    atlasOnly = !!alone;
+    show('work');
+    lockTabsForAtlas(atlasOnly);
+    selectTab('atlas');
+    if (atlasOnly) $('topSub').textContent = '실험 도감 — 코드 없이 둘러보는 중';
+    window.scrollTo(0, 0);
+  }
+
+  function ensureAtlas(){
+    if (atlasReady) return;
+    atlasReady = true;
+    if (!window.LAB){
+      $('atlasList').innerHTML = '<div class="empty">실험 자료를 읽지 못했습니다. 새로고침해 주세요.</div>';
+      return;
+    }
+    atlasFillUnits();
+    renderAtlasList();
+    ['aGrade','aUnit','aSearch'].forEach(function(id){
+      $(id).addEventListener('input', function(){
+        if (id === 'aGrade') atlasFillUnits();
+        renderAtlasList();
+      });
+    });
+  }
+
+  function atlasFillUnits(){
+    const g = $('aGrade').value;
+    const units = LAB.unitList(g === '' ? null : Number(g));
+    $('aUnit').innerHTML = '<option value="">모든 단원</option>' +
+      units.map(u => '<option value="' + esc(u.title) + '">' + esc(u.title) + '</option>').join('');
+  }
+
+  function renderAtlasList(){
+    if (!window.LAB) return;
+    const g = $('aGrade').value, u = $('aUnit').value, q = $('aSearch').value.trim();
+    let list = q ? LAB.search(q) : LAB.experiments.slice();
+    if (g) list = list.filter(e => Number(e.grade) === Number(g));
+    if (u) list = list.filter(e => e.unit === u);
+    $('aCount').textContent = list.length + '건';
+
+    // 걸러낸 결과에서 사라진 실험은 펼침을 접습니다.
+    if (atlasPick && !list.some(e => e.id === atlasPick)){ atlasPick = ''; renderAtlasDetail(); }
+
+    if (!list.length){
+      $('atlasList').innerHTML = '<div class="empty">조건에 맞는 실험이 없습니다.</div>';
+      return;
+    }
+    $('atlasList').innerHTML = list.map(function(e){
+      const sensors = (e.sensors || []).map(s => LAB.sensorName(s.key) + ' ' + s.n + '개').join(' · ');
+      const open = (atlasPick === e.id);
+      return '<div class="exp' + (open ? ' on' : '') + '" data-id="' + esc(e.id) + '" tabindex="0" role="button"' +
+             ' aria-expanded="' + (open ? 'true' : 'false') + '"' +
+             ' aria-label="' + esc('중' + e.grade + ' ' + e.unit + ' · ' + e.title + ' 자세히 보기') + '">' +
+             '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+             '<b>' + esc(e.title) + '</b>' +
+             '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div></div>';
+    }).join('');
+
+    Array.prototype.forEach.call($('atlasList').querySelectorAll('.exp'), function(el){
+      const open = function(){ pickAtlas(el.dataset.id); };
+      el.addEventListener('click', open);
+      el.addEventListener('keydown', function(ev){
+        if (ev.key === 'Enter' || ev.key === ' ' || ev.key === 'Spacebar'){ ev.preventDefault(); open(); }
+      });
+    });
+  }
+
+  function pickAtlas(id){
+    const opening = (atlasPick !== id);
+    atlasPick = opening ? id : '';
+    renderAtlasList();
+    renderAtlasDetail();
+    if (opening){
+      const dbox = $('atlasDetailBox');
+      if (dbox){ dbox.scrollIntoView({ behavior:'smooth', block:'start' }); dbox.focus(); }
+    } else {
+      const card = $('atlasList').querySelector('.exp[data-id="' + id + '"]');
+      if (card) card.focus();
+    }
+  }
+  function pickAtlasById(id){
+    if (window.LAB && LAB.byId(id) && atlasPick !== id) pickAtlas(id);
+  }
+
+  function renderAtlasDetail(){
+    const boxEl = $('atlasDetail');
+    const e = atlasPick && window.LAB ? LAB.byId(atlasPick) : null;
+    if (!e){ boxEl.innerHTML = ''; return; }
+    boxEl.innerHTML = atlasDetailHTML(e);
+    const closeBtn = $('btnAtlasClose');
+    if (closeBtn) closeBtn.addEventListener('click', function(){ pickAtlas(e.id); });
+  }
+
+  function atlasDetailHTML(e){
+    const srcs = [e.src, e.altSrc].filter(Boolean)
+      .map(k => '<span class="pill sun">' + esc(SRC_NAME[k] || k) + '</span>').join('');
+
+    let h = '<div class="box" id="atlasDetailBox" tabindex="-1" role="region" aria-label="실험 자세히 보기">';
+    h += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
+         '<h2 style="flex:1 1 220px">' + esc(e.title) + '</h2>' +
+         '<button id="btnAtlasClose" class="btn" type="button">닫기</button></div>';
+    h += '<div class="taglist">' +
+         '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+         '<span class="pill">' + esc(e.minutes) + '분</span>' +
+         '<span class="pill coral">준비 난이도 ' + esc(e.level) +
+           (LEVEL_TXT[e.level] ? ' · ' + esc(LEVEL_TXT[e.level]) : '') + '</span>' +
+         srcs + '</div>';
+    if (e.why) h += '<div class="dtquote">' + esc(e.why) + '</div>';
+
+    if ((e.sensors || []).length){
+      h += '<h3>필요한 센서</h3><div class="taglist">' +
+           e.sensors.map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) +
+                              ' ' + esc(s.n) + '개</span>').join('') + '</div>';
+    }
+    if ((e.prep || []).length){
+      h += '<h3>준비물</h3><ul class="dtul">' + e.prep.map(p => '<li>' + esc(p) + '</li>').join('') + '</ul>';
+    }
+    if ((e.steps || []).length){
+      h += '<h3>실험 순서</h3><ol class="steps-ol">' + e.steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
+    }
+    if (e.read) h += '<h3>결과를 이렇게 읽어요</h3><p class="lead">' + esc(e.read) + '</p>';
+    if ((e.tips || []).length){
+      h += '<h3>도움말</h3>' + e.tips.map(t => '<div class="note">💡 ' + esc(t) + '</div>').join('');
+    }
+    if ((e.caution || []).length){
+      h += '<h3>안전 주의</h3>' + e.caution.map(t => '<div class="note warn">⚠️ ' + esc(t) + '</div>').join('');
+    }
+    if ((e.extend || []).length){
+      h += '<h3>더 해 보기</h3>' + e.extend.map(t => '<div class="note plus">➕ ' + esc(t) + '</div>').join('');
+    }
+    if ((e.std || []).length){
+      h += '<h3>성취기준</h3>' + e.std.map(function(c){
+        return '<div class="stdrow"><span class="pill">' + esc(c) + '</span>' +
+               '<span>' + esc(LAB.stdText(c)) + '</span></div>';
+      }).join('');
+    }
+    if (e.textbook) h += '<h3>교과서</h3><p class="muted">' + esc(e.textbook) + '</p>';
+    h += '</div>';
+    return h;
+  }
+
+  $('btnAtlas').addEventListener('click', function(){ openAtlas(true); });
+  $('btnAtlasJoin').addEventListener('click', backToJoin);
+
+  // ── 시작할 때: 지난번 코드 되살리기 ────────────────────────────
+  (function init(){
+    const sp = new URLSearchParams(location.search);
+    const q = sp.get('code');
+    const last = q || Hub.loadLocal('last_join', '');
+    if (last) $('inCode').value = Hub.norm(last).slice(0, 6);
+    show('join');
+    if (q && Hub.norm(q).length === 6) { $('btnJoin').click(); return; }
+    // 코드 없이 도감으로 바로 들어오는 주소: ?atlas=1 · ?exp=sm-01
+    const wantExp = sp.get('exp');
+    if (wantExp || sp.get('atlas') === '1'){
+      openAtlas(true);
+      if (wantExp) pickAtlasById(wantExp);
+    }
   })();
-  </script>
-<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-07-02</span></footer>
+
+})();
+</script>
 </body>
 </html>
