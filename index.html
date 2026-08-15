@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./lab-data.js"></script>
+<script src="./diagrams.js"></script>
+<script src="./graphs.js"></script>
 <script src="./config.js"></script>
 <script src="./hub.js"></script>
 <style>
@@ -105,6 +107,21 @@
   .steps-ol li{margin-bottom:8px}
   .taglist{display:flex;flex-wrap:wrap;gap:7px;margin:10px 0}
   .note{border-left:4px solid var(--sun);background:#FFFBF0;border-radius:0 12px 12px 0;padding:12px 14px;margin:8px 0;font-size:14px}
+
+  /* 그림(연결도·결과 그래프 예시) — 그림이 없으면 이 상자 자체를 그리지 않습니다 */
+  .fig{margin:14px 0 4px;clear:both}
+  .figbox{border:1.5px solid var(--line);border-radius:14px;background:var(--paper);
+    padding:10px;overflow-x:auto;-webkit-overflow-scrolling:touch}
+  .figbox svg{display:block;width:100%;height:auto;min-width:300px;max-width:520px;margin:0 auto}
+  .figcap{font-size:13.5px;color:var(--muted);font-weight:700;margin-top:7px;line-height:1.5}
+
+  /* 업체(이지메이커·사이언스큐브) 표시 */
+  .vbar{margin:8px 0 2px}
+  .pill.vez{background:rgba(84,180,232,.18);color:#2A7FB0}
+  .pill.vsc{background:rgba(139,127,212,.2);color:#5B4FB0}
+  .vtag{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin:4px 4px 0 0}
+  .vtag.ez{background:rgba(84,180,232,.18);color:#2A7FB0}
+  .vtag.sc{background:rgba(139,127,212,.2);color:#5B4FB0}
   .note.warn{border-color:var(--bad);background:#FFF4F4}
 
   /* 데이터 표 */
@@ -524,6 +541,10 @@
             <option value="1">중1</option><option value="2">중2</option><option value="3">중3</option>
           </select>
           <select id="aUnit" aria-label="단원 고르기"><option value="">모든 단원</option></select>
+          <select id="aVendor" aria-label="업체 고르기">
+            <option value="">모든 업체</option>
+            <option value="ez">이지메이커</option><option value="sc">사이언스큐브</option>
+          </select>
           <input id="aSearch" type="text" placeholder="제목·센서로 찾기" aria-label="실험 찾기" />
           <span id="aCount" class="pill" aria-live="polite"></span>
         </div>
@@ -1357,6 +1378,7 @@
   // 실험 안내
   function renderGuide(){
     const e = labExp();
+    const vk = lessonVendor();               // 선생님이 고른 업체('' 면 기본 절차)
     let h = '<div class="box"><h2>' + esc(lesson.title || '오늘의 실험') + '</h2>' +
             '<p class="muted">' + esc([lesson.class_label, lesson.exp_title].filter(Boolean).join(' · ')) + '</p>';
     if (!e){
@@ -1370,17 +1392,23 @@
          '<span class="pill sun">준비 난이도 ' + esc(e.level) + '</span>' +
          (e.sensors || []).map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) + ' ' + esc(s.n) + '개</span>').join('') +
          '</div>';
+    h += vendorBadge(vk);
     h += '<p class="lead" style="margin-top:6px">' + esc(e.why) + '</p></div>';
 
-    h += '<div class="box">' + illus('activity') + '<h2>실험 순서</h2><ol class="steps-ol">' +
-         (e.steps || []).map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
-    if (e.prep && e.prep.length){
-      h += '<h3>준비물</h3><p class="muted">' + (e.prep || []).map(esc).join(' · ') + '</p>';
+    const steps = stepsOf(e, vk), prep = prepOf(e, vk);
+    const vi = vendorInfo(vk);
+    h += '<div class="box">' + illus('activity') +
+         '<h2>실험 순서' + (vi ? ' · ' + esc(vi.name) : '') + '</h2>' +
+         '<ol class="steps-ol">' + steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
+    if (prep.length){
+      h += '<h3>준비물</h3><p class="muted">' + prep.map(esc).join(' · ') + '</p>';
     }
+    h += figDiagram(e);
     h += '</div>';
 
     h += '<div class="box">' + illus('analysis') + '<h2>결과를 이렇게 읽어요</h2><p class="lead">' + esc(e.read) + '</p>';
     (e.tips || []).forEach(t => { h += '<div class="note">' + esc(t) + '</div>'; });
+    h += figGraph(e);
     h += '</div>';
 
     if ((e.caution || []).length){
@@ -1395,6 +1423,86 @@
   function illus(name){
     return '<img class="illus-sm" src="./assets/' + name + '.webp" alt="" width="800" height="600" ' +
            'loading="lazy" decoding="async" onerror="this.remove()" />';
+  }
+
+  // ── 업체(이지메이커·사이언스큐브) ──────────────────────────────
+  //  lesson.form.vendor 에 'ez' · 'sc' 가 들어 있으면 그 업체의 절차·준비물을 씁니다.
+  //  값이 없거나 모르는 값이면 지금까지처럼 기본 절차(exp.steps)를 그대로 씁니다.
+  function vendorInfo(key){
+    const list = (window.LAB && LAB.VENDORS) || [];
+    for (let i = 0; i < list.length; i++) if (list[i].key === key) return list[i];
+    return null;
+  }
+  function lessonVendor(){
+    const v = lesson && lesson.form && lesson.form.vendor;
+    return vendorInfo(v) ? v : '';
+  }
+  //  업체·소프트웨어 이름 뱃지 (업체를 안 골랐으면 아무것도 안 나옵니다)
+  function vendorBadge(key){
+    const v = vendorInfo(key);
+    if (!v) return '';
+    return '<div class="taglist vbar">' +
+           '<span class="pill ' + (key === 'sc' ? 'vsc' : 'vez') + '">' + esc(v.name) + '</span>' +
+           '<span class="pill">소프트웨어 · ' + esc(v.sw) + '</span></div>';
+  }
+  //  그 실험을 할 수 있는 업체 작은 뱃지 (도감 카드용)
+  function vendorTags(e){
+    if (!window.LAB || !LAB.vendorOk) return '';
+    let h = '';
+    if (LAB.vendorOk(e, 'ez')) h += '<span class="vtag ez">이지메이커</span>';
+    if (LAB.vendorOk(e, 'sc')) h += '<span class="vtag sc">사이언스큐브</span>';
+    return h;
+  }
+  //  절차·준비물 고르기 — 선생님이 직접 쓴 것 → 업체별 → 기본 순
+  function stepsOf(e, vendor){
+    if (lesson && lesson.form && Array.isArray(lesson.form.steps) && lesson.form.steps.length) return lesson.form.steps;
+    if (window.LAB && LAB.stepsFor) return LAB.stepsFor(e, vendor);
+    return (e && e.steps) || [];
+  }
+  function prepOf(e, vendor){
+    if (lesson && lesson.form && Array.isArray(lesson.form.prep) && lesson.form.prep.length) return lesson.form.prep;
+    if (window.LAB && LAB.prepFor) return LAB.prepFor(e, vendor);
+    return (e && e.prep) || [];
+  }
+
+  // ── 실험 그림 ─────────────────────────────────────────────────
+  //  실험 id 로 diagrams.js · graphs.js 의 그림을 찾습니다.
+  //  짝이 없는 실험은 아무것도 그리지 않습니다(빈 자리를 남기지 않습니다).
+  const FIG_DIAGRAM = {
+    'sm-08':'ohm',   'ez-22':'ohm',                    // 옴의 법칙 · 저항과 전류
+    'sm-05':'boyle', 'ez-25':'boyle', 'ez-26':'boyle', // 주사기 기체 압력
+    'sm-06':'photo', 'sm-07':'photo',                  // 광합성
+    'sm-09':'lux',                                     // 거리에 따른 빛의 세기
+    'sm-01':'heat',                                    // 물과 식용유의 비열
+    'ez-16':'layer',                                   // 수권의 층상 구조
+    'sm-10':'cloud'                                    // 감압 용기 속 구름
+  };
+  const FIG_GRAPH = {
+    'sm-02':'freeze', 'ez-06':'freeze',                // 냉각 곡선
+    'sm-06':'photoV', 'sm-07':'photoV',                // 광합성 V자
+    'ez-12':'radeq',                                   // 복사 평형
+    'sm-09':'inv2'                                     // 거리 제곱에 반비례
+  };
+  const GRAPH_CAP = {
+    freeze: '이런 모양이 나오면 잘 된 것입니다 — 얼기 시작하면 온도가 0 ℃ 부근에서 한동안 평평하게 멈춰 있습니다.',
+    photoV: '이런 모양이 나오면 잘 된 것입니다 — 빛을 비추는 동안 이산화 탄소가 줄고, 빛을 가리면 다시 늘어 V자가 됩니다.',
+    radeq : '이런 모양이 나오면 잘 된 것입니다 — 처음에는 빠르게 오르다가 어느 온도부터 더 오르지 않고 평평해집니다.',
+    inv2  : '이런 모양이 나오면 잘 된 것입니다 — 거리가 멀수록 가파르게 떨어지고, 가로축을 1/거리²로 바꾸면 직선이 됩니다.'
+  };
+  //  그림 파일을 못 읽었어도 화면이 깨지지 않게 매번 확인하고 넣습니다.
+  function figDiagram(e){
+    const k = e && FIG_DIAGRAM[e.id];
+    const svg = k && window.DIAGRAMS && window.DIAGRAMS[k];
+    if (!svg) return '';
+    return '<div class="fig"><h3>연결·배치 그림</h3><div class="figbox">' + svg + '</div>' +
+           '<p class="figcap">센서를 어디에 어떻게 다는지 그림과 맞춰 보세요.</p></div>';
+  }
+  function figGraph(e){
+    const k = e && FIG_GRAPH[e.id];
+    const svg = k && window.GRAPHS && window.GRAPHS[k];
+    if (!svg) return '';
+    return '<div class="fig"><h3>결과 그래프 예시</h3><div class="figbox">' + svg + '</div>' +
+           '<p class="figcap">' + esc(GRAPH_CAP[k] || '이런 모양이 나오면 잘 된 것입니다.') + '</p></div>';
   }
 
   // 데이터 입력표
@@ -3718,14 +3826,26 @@
       $('atlasList').innerHTML = '<div class="empty">실험 자료를 읽지 못했습니다. 새로고침해 주세요.</div>';
       return;
     }
+    //  업체 고르기는 LAB 에 업체 함수가 있을 때만 보여 줍니다(없으면 조용히 숨습니다).
+    const vsel = $('aVendor');
+    if (vsel && !(LAB.VENDORS && LAB.vendorOk)) vsel.classList.add('hidden');
     atlasFillUnits();
     renderAtlasList();
-    ['aGrade','aUnit','aSearch'].forEach(function(id){
-      $(id).addEventListener('input', function(){
+    ['aGrade','aUnit','aVendor','aSearch'].forEach(function(id){
+      const el = $(id);
+      if (!el) return;
+      el.addEventListener('input', function(){
         if (id === 'aGrade') atlasFillUnits();
         renderAtlasList();
+        if (id === 'aVendor') renderAtlasDetail();   // 펼쳐 둔 실험의 절차도 그 업체로 바꿉니다
       });
     });
+  }
+
+  //  도감에서 고른 업체('' 면 모든 업체 — 기본 절차를 씁니다)
+  function atlasVendor(){
+    const el = $('aVendor');
+    return (el && vendorInfo(el.value)) ? el.value : '';
   }
 
   function atlasFillUnits(){
@@ -3738,9 +3858,11 @@
   function renderAtlasList(){
     if (!window.LAB) return;
     const g = $('aGrade').value, u = $('aUnit').value, q = $('aSearch').value.trim();
+    const v = atlasVendor();
     let list = q ? LAB.search(q) : LAB.experiments.slice();
     if (g) list = list.filter(e => Number(e.grade) === Number(g));
     if (u) list = list.filter(e => e.unit === u);
+    if (v && LAB.vendorOk) list = list.filter(e => LAB.vendorOk(e, v));
     $('aCount').textContent = list.length + '건';
 
     // 걸러낸 결과에서 사라진 실험은 펼침을 접습니다.
@@ -3758,7 +3880,8 @@
              ' aria-label="' + esc('중' + e.grade + ' ' + e.unit + ' · ' + e.title + ' 자세히 보기') + '">' +
              '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
              '<b>' + esc(e.title) + '</b>' +
-             '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div></div>';
+             '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div>' +
+             vendorTags(e) + '</div>';
     }).join('');
 
     Array.prototype.forEach.call($('atlasList').querySelectorAll('.exp'), function(el){
@@ -3799,6 +3922,10 @@
   function atlasDetailHTML(e){
     const srcs = [e.src, e.altSrc].filter(Boolean)
       .map(k => '<span class="pill sun">' + esc(SRC_NAME[k] || k) + '</span>').join('');
+    //  도감은 수업과 무관하므로 선생님이 고친 절차가 아니라 자료집 절차를 그대로 보여 줍니다.
+    const av  = atlasVendor(), avi = vendorInfo(av);
+    const asteps = (window.LAB && LAB.stepsFor) ? LAB.stepsFor(e, av) : (e.steps || []);
+    const aprep  = (window.LAB && LAB.prepFor)  ? LAB.prepFor(e, av)  : (e.prep  || []);
 
     let h = '<div class="box" id="atlasDetailBox" tabindex="-1" role="region" aria-label="실험 자세히 보기">';
     h += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
@@ -3810,6 +3937,9 @@
          '<span class="pill coral">준비 난이도 ' + esc(e.level) +
            (LEVEL_TXT[e.level] ? ' · ' + esc(LEVEL_TXT[e.level]) : '') + '</span>' +
          srcs + '</div>';
+    const vt = vendorTags(e);
+    if (vt) h += '<p class="muted" style="font-size:13px">이 실험을 할 수 있는 장비 · ' + vt + '</p>';
+    h += vendorBadge(av);
     if (e.why) h += '<div class="dtquote">' + esc(e.why) + '</div>';
 
     if ((e.sensors || []).length){
@@ -3817,13 +3947,16 @@
            e.sensors.map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) +
                               ' ' + esc(s.n) + '개</span>').join('') + '</div>';
     }
-    if ((e.prep || []).length){
-      h += '<h3>준비물</h3><ul class="dtul">' + e.prep.map(p => '<li>' + esc(p) + '</li>').join('') + '</ul>';
+    if (aprep.length){
+      h += '<h3>준비물</h3><ul class="dtul">' + aprep.map(p => '<li>' + esc(p) + '</li>').join('') + '</ul>';
     }
-    if ((e.steps || []).length){
-      h += '<h3>실험 순서</h3><ol class="steps-ol">' + e.steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
+    if (asteps.length){
+      h += '<h3>실험 순서' + (avi ? ' · ' + esc(avi.name) : '') + '</h3>' +
+           '<ol class="steps-ol">' + asteps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
     }
+    h += figDiagram(e);
     if (e.read) h += '<h3>결과를 이렇게 읽어요</h3><p class="lead">' + esc(e.read) + '</p>';
+    h += figGraph(e);
     if ((e.tips || []).length){
       h += '<h3>도움말</h3>' + e.tips.map(t => '<div class="note">💡 ' + esc(t) + '</div>').join('');
     }

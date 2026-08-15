@@ -111,6 +111,23 @@
   .callout .ic svg{width:19px;height:19px}
   .callout b{color:var(--ink)}
 
+  /* 스크린샷 자리 — assets/ 에 파일이 없으면 onerror 로 통째로 사라집니다 */
+  figure.shot{margin:16px 0;border:1px solid var(--line);border-radius:14px;background:var(--paper);padding:10px 10px 2px;box-shadow:var(--shadow)}
+  figure.shot img{display:block;width:100%;height:auto;border-radius:10px;border:1px solid var(--line-2)}
+  figure.shot figcaption{font-size:13px;color:var(--muted);padding:9px 8px 10px;text-align:center;line-height:1.6}
+  figure.shot figcaption b{color:var(--ink)}
+
+  .vendhead{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+  .vendhead .v{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);padding:16px 18px;box-shadow:var(--shadow)}
+  .vendhead .v .tag{display:inline-block;font-family:var(--display);font-size:14px;padding:4px 12px;border-radius:999px;margin-bottom:8px}
+  .vendhead .v.ez .tag{background:rgba(84,180,232,.18);color:#2A7FB0}
+  .vendhead .v.sc .tag{background:rgba(32,178,166,.16);color:var(--mint-d)}
+  .vendhead .v p{font-size:13.5px;color:var(--muted);margin:0}
+  .vendhead .v p b{color:var(--ink)}
+
+  .shotguide{border:1px dashed var(--line-2);border-radius:14px;background:rgba(255,255,255,.6);padding:20px 22px;margin:34px 0 0}
+  .shotguide h3{margin-top:0}
+
   .endnote{border-top:1px solid var(--line);padding:30px 0 10px;color:var(--muted)}
   .endnote .row{display:flex;justify-content:space-between;gap:14px;flex-wrap:wrap;font-size:13px;align-items:center}
   .endnote a{color:var(--mint-d);font-weight:700}
@@ -120,7 +137,7 @@
     .toc{position:static;margin-bottom:32px;border:1px solid var(--line);border-radius:14px;padding:16px 18px;background:var(--paper);box-shadow:var(--shadow)}
     .toc a{border-left:none;padding-left:0}
   }
-  @media(max-width:520px){.adv{grid-template-columns:1fr}}
+  @media(max-width:520px){.adv,.vendhead{grid-template-columns:1fr}}
   @media(prefers-reduced-motion:reduce){*{transition:none!important;scroll-behavior:auto}}
 </style>
 </head>
@@ -155,6 +172,8 @@
       <a href="#files">파일 세트</a>
       <a href="#flow">수업 진행 순서</a>
       <a href="#time" style="padding-left:28px;font-size:13px">└ 45분 시간표</a>
+      <a href="#vendor" style="padding-left:28px;font-size:13px">└ 업체별 절차</a>
+      <a href="#figures" style="padding-left:28px;font-size:13px">└ 그림과 그래프 예시</a>
       <a href="#predict" style="padding-left:28px;font-size:13px">└ 예상 그래프</a>
       <a href="#csv" style="padding-left:28px;font-size:13px">└ CSV 불러오기</a>
       <a href="#lab" style="padding-left:28px;font-size:13px">└ 데이터 실험실</a>
@@ -209,7 +228,8 @@
             <tr><td><code>schema.sql</code></td><td>Supabase 테이블·보안 정책·RPC 전체. 처음 한 번 실행합니다(여러 번 해도 안전)</td></tr>
           </table>
         </div>
-        <p><code class="inline">assets/</code> 폴더의 사진 10장은 있으면 쓰고, 없으면 자리 안내만 보이도록 되어 있어 지워도 화면이 깨지지 않습니다.</p>
+        <p><code class="inline">assets/</code> 폴더의 사진 10장은 있으면 쓰고, 없으면 자리 안내만 보이도록 되어 있어 지워도 화면이 깨지지 않습니다. 이 설명서에 넣을 화면 사진도 같은 폴더에 두면 됩니다(맨 아래 <b>스크린샷 넣는 법</b>).</p>
+        <p>실험별 <b>장치 연결 다이어그램</b>과 <b>결과 그래프 예시</b>는 <code class="inline">diagrams.js</code> · <code class="inline">graphs.js</code> 에 들어 있습니다. 두 파일이 없어도 나머지는 그대로 동작하고, 그림 자리만 나오지 않습니다.</p>
         <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><div><b>불러오는 순서가 중요합니다.</b> 세 화면 모두 <code class="inline">supabase-js</code> → <code class="inline">lab-data.js</code> → <code class="inline">config.js</code> → <code class="inline">hub.js</code> 순서로 읽습니다. <code class="inline">config.js</code> 가 <code class="inline">hub.js</code> 보다 뒤에 있으면 연결 정보를 못 읽고, <code class="inline">lab-data.js</code> 가 뒤에 있으면 실험 도감이 비어 보입니다.</div></div>
       </section>
 
@@ -229,6 +249,8 @@
             <p><code class="inline">teacher.html</code> → <b>실험 고르기</b>. 학년·단원·검색으로 실험을 찾아 누르면 제목·데이터 입력표·보고서 질문이 자동으로 채워집니다. 학급 이름과 모둠 수(기본 7)를 정하고 <b>수업 만들기</b> 를 누르세요.</p>
             <p>화면에 <b>참여코드 6자리</b>와 <b>관리코드 10자리</b>가 나옵니다. 참여코드는 칠판에 크게 적고, 관리코드는 교사만 보관합니다. 관리코드는 이 브라우저의 <code class="inline">mbl_admin_codes</code> 에 자동으로 저장되어, 다음에 열 때는 목록에서 고르기만 하면 됩니다.</p>
             <p>이때 <b>모둠 비밀번호 4자리</b>도 모둠마다 함께 발급됩니다. 대시보드의 <b>모둠 비밀번호</b> 표에서 확인할 수 있습니다.</p>
+            <!-- 스크린샷: assets/shot-code.png (수업을 만든 직후 참여코드·관리코드가 나온 화면) -->
+            <figure class="shot"><img src="assets/shot-code.png" alt="수업을 만든 뒤 참여코드 6자리와 관리코드 10자리가 나온 교사 화면" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption>수업을 만들면 나오는 <b>참여코드 6자리</b>와 <b>관리코드 10자리</b>. 칠판에 적는 것은 참여코드뿐입니다.</figcaption></figure>
           </li>
           <li>
             <h3>모둠 비밀번호 알려 주기 (도입 2분)</h3>
@@ -238,6 +260,8 @@
             <h3>모둠 입장 (학생)</h3>
             <p>학생은 <code class="inline">index.html</code> 에 참여코드를 넣고, 자기 모둠 번호를 고른 뒤 <b>비밀번호 4자리</b>를 넣습니다. 맞으면 바로 들어옵니다. 모둠 이름과 모둠원 칸은 선택입니다. 모둠원은 <b>이름 대신 번호나 별명</b>을 적도록 안내되어 있습니다(<a href="#privacy" style="color:var(--mint-d);font-weight:700">E. 개인정보와 안전</a>). 같은 모둠 학생이 여러 명 들어와도 됩니다 — 같은 모둠 칸을 함께 씁니다.</p>
             <p>한 번 맞게 넣은 비밀번호는 그 기기에 남습니다. <b>같은 기기에서는 다시 묻지 않습니다.</b></p>
+            <!-- 스크린샷: assets/shot-join.png (학생이 처음 만나는 참여코드 입력 화면) -->
+            <figure class="shot"><img src="assets/shot-join.png" alt="학생용 첫 화면 — 참여코드 6자리를 넣는 칸과 실험 도감 보기 단추" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption>학생이 처음 만나는 화면. 참여코드를 넣고 모둠을 고른 뒤 <b>우리 모둠 4자리</b>를 넣습니다.</figcaption></figure>
           </li>
           <li>
             <h3>예상 그래프 먼저 그리기 (도입 3분)</h3>
@@ -261,6 +285,8 @@
             <h3>③ 발표</h3>
             <p>전자칠판에서 <code class="inline">present.html</code> 을 열어 두세요(교사 화면의 <b>발표 화면</b> 단추). 대시보드의 모둠 카드에서 <b>발표</b> 를 누르면 그 모둠이 칠판 가득 뜹니다. <b>이전/다음</b> 으로 <b>그래프 → 보고서 → 별점</b> 세 장을 넘깁니다.</p>
             <p>발표하는 모둠이 <b>예상을 그렸다면</b> 발표 화면에 <b>[📈 예상 vs 실제 보기]</b> 단추가 함께 나옵니다. 누르면 실제 그래프 위에 예상이 점선으로 겹쳐지고, <b>가장 크게 빗나간 곳</b>이 큰 동그라미로 표시됩니다. 예상을 그리지 않은 모둠에서는 이 단추도 이 장도 나오지 않아, 넘기는 장 수가 달라지지 않습니다.</p>
+            <!-- 스크린샷: assets/shot-present.png (전자칠판 발표 화면) -->
+            <figure class="shot"><img src="assets/shot-present.png" alt="전자칠판 발표 화면 — 발표 모둠의 그래프가 화면 가득 떠 있는 모습" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption>③ 발표 단계의 전자칠판 화면. 발표 모둠의 그래프가 칠판 가득 뜨고, <b>이전/다음</b> 으로 보고서·별점까지 넘깁니다.</figcaption></figure>
             <p>자료를 낸 모둠이 <b>둘 이상이면</b> <b>[👥 반 전체 속 우리 모둠]</b> 단추도 나옵니다. 반 전체 점 위에 <b>발표 모둠만 크게</b> 찍어, 반 전체 추세선과 그 모둠 추세선을 나란히 보여 줍니다(<a href="#classall" style="color:var(--mint-d);font-weight:700">아래 반 전체로 보기</a>).</p>
           </li>
           <li>
@@ -292,6 +318,53 @@
           </table>
         </div>
 
+        <!-- 업체별 절차 -->
+        <h3 id="vendor" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">업체별 절차 — 이지메이커와 사이언스큐브</h3>
+        <p><b>같은 실험이라도 장비를 다루는 법이 완전히 다릅니다.</b> 이지메이커는 <b>보드에 센서를 꽂아</b> 쓰고, 사이언스큐브는 <b>센서 자체가 블루투스</b>라 보드가 없습니다. 그래서 “센서를 연결한다” 한 줄로는 어느 쪽도 따라 할 수 없어, 실험마다 <b>업체별 절차를 따로</b> 적어 두었습니다.</p>
+        <div class="vendhead">
+          <div class="v ez"><span class="tag">이지메이커</span><p>보드(메인·미니·나노)에 센서를 연결합니다. <b>유선은 블록코딩</b>으로 포트를 지정해 보드에 올려 두어야 하고, <b>무선 나노보드는 보드 1개에 센서 1개</b>라 코딩이 필요 없습니다. 소프트웨어는 <b>ezon.ai</b>.</p></div>
+          <div class="v sc"><span class="tag">사이언스큐브</span><p>보드도 코딩도 없습니다. 센서 <b>전원을 짧게 한 번 눌러 켜고</b>, 소프트웨어에서 <b>센서 몸통의 번호</b>를 찾아 짝지으면 끝입니다. 소프트웨어는 <b>사이언스#</b>.</p></div>
+        </div>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>무엇이 다른가</th><th>이지메이커</th><th>사이언스큐브</th></tr>
+            <tr><td><b>보드가 필요한가</b></td><td>필요합니다. 유선은 메인보드·미니보드에 <code>D0~D4 · A0 · A1 · I2C · UART</code> 로 센서를 연결하고, 무선은 <b>나노보드 1개에 센서 1개</b> + 배터리</td><td><b>필요 없습니다.</b> 무선 센서 자체가 블루투스라 인터페이스도 보드도 없이 바로 연결됩니다(유선 라인만 인터페이스가 필요할 수 있습니다)</td></tr>
+            <tr><td><b>블록코딩</b></td><td><b>유선은 필요합니다</b> — 어느 포트에 무슨 센서를 꽂았는지 블록으로 지정해 보드에 업로드합니다. <b>교사가 미리 짜서 조별 보드에 올려 두는 것</b>을 권합니다. 무선 나노보드는 필요 없습니다</td><td><b>없습니다.</b> 코딩 단계가 아예 나오지 않습니다</td></tr>
+            <tr><td><b>소프트웨어</b></td><td><b>ezon.ai</b> (웹앱, 설치 불필요)<br />접속 → 프로젝트 만들기 → 보드 연결 → 연결한 센서 고르기 → 수집 주기 설정(<code>1000ms</code> = 1초) → <b>[수집 시작]</b> → <b>[수집 중지]</b> → CSV 내려받기·구글 시트 전송</td><td><b>사이언스#</b><br /><b>[연결]</b> → 블루투스 인터페이스 추가 → 장치 추가 → 모든 장치 표시 → <b>센서 번호로 짝짓기(페어링)</b> → 수집 시간·주기 설정 → <b>[시작]</b> → <b>[정지]</b></td></tr>
+            <tr><td><b>켜기 · 영점 잡기</b></td><td>보드에 배터리나 케이블을 연결하면 켜집니다. 영점은 소프트웨어에서 잡습니다</td><td>전원 버튼 <b>짧게 1번 = 켜기</b>, <b>2번 연속 = 영점(0점)</b>. 힘·압력처럼 기준을 맞춰야 하는 실험은 재기 직전에 두 번 누릅니다</td></tr>
+            <tr><td><b>수동 수집</b></td><td><b>수동 모드</b> — 부피·거리·저항처럼 센서가 모르는 값을 학생이 직접 넣으면서 한 점씩 측정합니다</td><td><b>수동 수집 모드</b> — X축 값을 학생이 직접 넣습니다</td></tr>
+            <tr><td><b>그 밖에</b></td><td>메인보드 + SD카드 + 배터리면 <b>노트북 없이 독립 기록</b>이 됩니다(감압 용기처럼 케이블을 뺄 수 없는 곳)</td><td>데이터 변환·추세선·<b>결정계수(R²)</b>·영역을 골라 회귀하기 같은 <b>분석 기능이 강합니다</b></td></tr>
+          </table>
+        </div>
+        <p>보일 법칙(부피)·거리별 조도(거리)·저항별 전류(저항)처럼 <b>가로축 값을 사람이 정하는 실험</b>은 두 업체 모두 <b>수동 수집</b>으로 잡아 두었습니다. 자동으로 초 단위 기록을 남기면 가로축이 시간이 되어 버려 원하는 그래프가 나오지 않기 때문입니다.</p>
+
+        <h3>수업을 만들 때 업체를 고릅니다</h3>
+        <p>교사 대시보드 <b>1단계 · 실험 고르기</b> 맨 위에 <b>쓰는 센서</b> 칸이 있습니다. 여기서 업체를 고르면 그 아래 <b>실험 절차와 준비물</b>이 <b>그 업체 것으로 바뀝니다</b>. 이지메이커를 골랐으면 “보드 <code class="inline">D0</code> 포트에 …를 연결한다”, “(교사 준비) 블록코딩을 미리 업로드해 둔다” 처럼 나오고, 사이언스큐브를 골랐으면 “전원을 짧게 한 번 눌러 켠다”, “사이언스#에서 센서 번호를 확인해 짝짓는다” 처럼 나옵니다. 이 절차가 학생 화면의 <b>실험 안내</b>에 그대로 갑니다.</p>
+        <p>준비물도 마찬가지입니다. 공통 준비물은 그대로 두고, <b>그 업체에만 필요한 것</b>(메인보드 1대와 연결 케이블 2개 / 무선 온도 센서 2개 — 보드 불필요)이 <b>덧붙어</b> 나옵니다.</p>
+        <p>고른 업체는 <b>이 브라우저에 기억되어</b> 다음에 수업을 만들 때도 그대로 쓰입니다. 학교 장비는 한 번 정하면 바뀌지 않으니, 처음 한 번만 고르면 됩니다. 아직 업체별 절차가 적히지 않은 실험에서는 <b>업체를 가리지 않는 기본 절차</b>가 대신 나오므로 비어 보이는 일은 없습니다.</p>
+
+        <h3>센서가 없어 못 하는 실험이 있습니다</h3>
+        <p>업체마다 파는 센서가 다릅니다. 실험에 쓰이는 센서가 <b>하나라도 없으면</b> 그 실험은 그 업체 장비로 할 수 없습니다. 실험 38건 가운데 <b>이지메이커로 34건</b>, <b>사이언스큐브로 36건</b>, <b>둘 다 되는 것이 32건</b>입니다.</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>없는 센서</th><th>어느 쪽에 없나</th><th>그래서 이 실험은</th></tr>
+            <tr><td><b>힘 · 가속도</b></td><td>이지메이커에 <b>없습니다</b></td><td><b>마찰력은 무엇에 따라 달라질까</b> — 사이언스큐브로만 할 수 있습니다</td></tr>
+            <tr><td><b>무게 · 질량</b></td><td>사이언스큐브에 <b>없습니다</b></td><td><b>손소독제는 어디로 사라졌을까</b>, <b>철 솜을 태우면 무거워질까</b> — 이지메이커로만 할 수 있습니다</td></tr>
+            <tr><td>포토게이트 · 심박 · 염도</td><td>이지메이커에 없습니다</td><td><b>자유 낙하하는 쇠구슬의 순간 속력</b>, <b>운동을 하면 심장은 얼마나 빨리 뛸까</b>, <b>바닷물의 염분 차이</b> — 사이언스큐브로만</td></tr>
+            <tr><td>용존산소 · 산소 · 자외선 · 방사선</td><td>이지메이커에 없습니다</td><td>지금 도감에 이 센서만 쓰는 실험은 없지만, 실험을 새로 넣을 때는 확인이 필요합니다</td></tr>
+          </table>
+        </div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>가능 여부는 센서 가격표에서 자동으로 판정합니다.</b> <code class="inline">lab-data.js</code> 의 센서마다 업체별 가격(<code class="inline">ezw · ezn · scw · scl</code>)이 적혀 있고, 그 업체 가격이 하나도 없으면 “취급하지 않음”으로 봅니다. 콘솔에서 <code class="inline">LAB.vendorOk('sm-04','ez')</code> 로 한 실험을, <code class="inline">LAB.byVendor('sc')</code> 로 그 업체로 가능한 실험 전부를 확인할 수 있습니다.</div></div>
+
+        <h3>절차는 교사가 고칠 수 있습니다</h3>
+        <p>학교 사정에 따라 절차가 달라질 수 있습니다 — 보드가 모자라 두 모둠이 한 대를 쓰거나, 블록코딩을 학생이 직접 짜 보게 하거나, 실험 장소가 다르거나. 수업을 만들 때는 <b>실험 절차와 준비물</b> 칸에서, 수업 도중에는 대시보드의 <b>실험 절차 고치기</b> 칸에서 <b>단계 하나가 카드 한 장</b>으로 나옵니다. 글을 고치고 <b>▲ ▼</b> 로 순서를 바꾼 뒤 저장하면 학생 화면이 곧바로 바뀝니다. 비어 있는 단계는 저장할 때 저절로 빠지고, <b>[되돌리기]</b> 를 누르면 그 업체의 원래 절차가 다시 들어옵니다. 보고서 질문을 고치는 것과 같은 방식입니다.</p>
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><div><b>고친 절차는 그 수업 한 건에만 적용됩니다.</b> 실험 도감(<code class="inline">lab-data.js</code>)의 원래 절차는 손대지 않고, 그 수업의 양식에만 따로 저장합니다. 그래서 다음 반에서 같은 실험으로 수업을 새로 만들면 <b>원래 절차가 다시 나옵니다</b>. 모든 반에 계속 쓸 절차라면 <a href="#data" style="color:var(--mint-d);font-weight:700">F. 실험 도감 고치기</a> 처럼 <code class="inline">lab-data.js</code> 자체를 고치세요.</div></div>
+
+        <!-- 그림 -->
+        <h3 id="figures" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">그림 — 연결도와 결과 그래프 예시</h3>
+        <p>말로만 “전류 센서는 직렬로, 전압 센서는 병렬로” 하면 교실에서 반드시 한두 모둠이 거꾸로 답니다. 그래서 실험에 따라 <b>장치 연결 다이어그램</b>과 <b>이런 모양이 나옵니다</b> 하는 <b>결과 그래프 예시</b>를 그림으로 넣었습니다. 학생 화면의 <b>실험 안내</b> 탭과 <b>실험 도감</b> 상세에 절차와 함께 나옵니다.</p>
+        <p>연결도는 어느 자리에 무엇을 대는지(옴의 법칙 회로, 보일 법칙 주사기, 광합성 수조, 거리와 빛의 세기 자 배치 등)를, 그래프 예시는 측정이 잘 됐을 때 어떤 곡선이 나오는지를 보여 줍니다. <b>그림이 준비된 실험에서만 나오고, 없는 실험에서는 자리도 생기지 않습니다.</b> 그림은 모두 이 앱이 직접 그린 것이라 외부에서 불러오지 않고, 인터넷이 느려도 바로 뜹니다.</p>
+
         <!-- 예상 그래프 -->
         <h3 id="predict" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">예상 그래프 먼저 그리기</h3>
         <p><b>왜 넣었나요.</b> 결과를 먼저 예상하고 나서 측정하면, 그래프가 “그냥 나온 그림”이 아니라 <b>맞혀 볼 대상</b>이 됩니다. 예상과 어긋난 자리가 곧 그 시간에 배울 지점입니다.</p>
@@ -318,6 +391,8 @@
             <tr><td><b>광합성량</b></td><td>그래프에서 <b>구간을 드래그</b>해 고릅니다</td><td>그 구간만의 기울기 = <b>그 조건에서의 광합성률</b></td></tr>
           </table>
         </div>
+        <!-- 스크린샷: assets/shot-lab.png (데이터 실험실 — 변환을 걸기 전과 건 뒤) -->
+        <figure class="shot"><img src="assets/shot-lab.png" alt="데이터 실험실 — 변환을 걸기 전 휘어 있던 그래프가 변환 뒤 직선이 되고 R²가 올라간 모습" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption>데이터 실험실의 <b>변환 전후</b>. 휘어 있던 그래프가 직선이 되면서 R² 가 <code>0.72 → 0.99</code> 로 올라갑니다.</figcaption></figure>
         <p><b>쓰는 법.</b> 가로축 하나와 세로축(여러 개 가능)을 고르고, 축마다 변환을 겁니다 — <code class="inline">그대로 · 1/값 · 값² · √값 · log 값 · 1/값² · 값−최솟값</code>. <b>파생열 만들기</b> 에서는 두 열을 <code class="inline">× ÷ + −</code> 로 묶어 새 열을 만들고 이름을 붙일 수 있습니다(만든 열도 축으로 씁니다). 그래프를 <b>드래그하면 그 구간만</b>의 기울기·절편·R² 가 나오고, <b>[구간 해제]</b> 로 풀립니다. 점/선 보기와 <b>추세선</b>을 켜고 끌 수 있습니다.</p>
         <p><b>무엇을 보여 주나요.</b> <b>기울기 · 절편 · R²</b> 를 단위와 함께 적어 줍니다(예: 기울기 <code class="inline">1200 lx·cm²</code>). 그리고 <b>변환 전후의 R² 를 나란히</b> 보여 줍니다 — <code class="inline">0.72 → 0.99</code> 처럼 바뀌는 그 순간이 학습 지점입니다. 결과 아래에는 질문 카드 세 개(<b>모양이 어떻게 달라졌나 · 기울기는 무엇을 뜻하나 · 벗어난 점은 왜 생겼나</b>)가 있어, 답을 적어 두면 분석과 함께 저장됩니다.</p>
         <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><div><b>원본 표는 절대 바뀌지 않습니다.</b> 실험실에서 하는 일은 모두 <b>보기</b>일 뿐이라, 데이터 입력표의 값은 그대로 남습니다. 센서 프로그램에서는 변환을 걸면 원본으로 되돌릴 수 없어 자료집도 이를 경고하지만, 이 앱에서는 <b>[원래대로]</b> 한 번이면 처음 상태로 돌아옵니다. 마음 놓고 이것저것 걸어 보게 하세요.</div></div>
@@ -375,6 +450,8 @@
 
         <h3>수업 시작할 때</h3>
         <p>비밀번호는 <b>수업을 만들 때 모둠마다 자동으로 발급</b>됩니다. 교사가 정하거나 입력할 것은 없습니다. 교사 대시보드의 <b>모둠 비밀번호</b> 표에서 <b>[칠판에 크게 띄우기]</b> 를 누르면 모둠 번호와 4자리가 큰 글씨로 뜹니다. 각 모둠이 <b>자기 것만</b> 적게 하고 창을 닫으면 됩니다.</p>
+        <!-- 스크린샷: assets/shot-pin.png ([칠판에 크게 띄우기] 를 누른 화면) -->
+        <figure class="shot"><img src="assets/shot-pin.png" alt="모둠 비밀번호를 칠판에 크게 띄운 화면 — 모둠 번호와 네 자리 숫자가 큰 글씨로 나열된 모습" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption><b>[칠판에 크게 띄우기]</b> 를 누른 화면. 각 모둠이 <b>자기 것만</b> 적고 나면 창을 닫습니다.</figcaption></figure>
         <p><code class="inline">0417</code> 처럼 0 으로 시작하거나 <code class="inline">0000</code> 인 번호도 정상입니다. 보이는 그대로 네 자리를 적으세요.</p>
         <p>표는 평소 <code class="inline">●●●●</code> 로 가려져 있어 <b>[보이기]</b> 를 눌러야 드러납니다. 칠판에 띄우는 대신 <b>[모둠 쪽지 인쇄]</b> 로 모둠별 쪽지를 뽑아 책상에 나눠 주면, 옆 모둠 번호를 볼 일이 아예 없습니다.</p>
 
@@ -418,10 +495,14 @@
               </table>
             </div>
             <p>표 이름이 모두 <code class="inline">mbl_</code> 로 시작하므로, 이미 쓰고 있는 다른 프로젝트의 표와 겹치지 않습니다.</p>
+            <!-- 스크린샷: assets/shot-sql.png (SQL Editor 에 붙여넣고 Run 을 누르는 화면) -->
+            <figure class="shot"><img src="assets/shot-sql.png" alt="Supabase SQL Editor 에 schema.sql 을 붙여넣고 Run 을 누르는 화면" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption>Supabase <b>SQL Editor → New query</b> 에 <code>schema.sql</code> 전체를 붙여넣고 <b>Run</b>. 여러 번 눌러도 안전합니다.</figcaption></figure>
           </li>
           <li>
             <h3>config.js 두 줄 채우기</h3>
             <p><code class="inline">Settings → API</code> 에서 <b>Project URL</b> 과 <b>anon / public key</b> 를 복사해, 이 폴더의 <code class="inline">config.js</code> 두 줄에 붙여넣습니다. <b>고치는 파일은 이 하나뿐</b>입니다.</p>
+            <!-- 스크린샷: assets/shot-api.png (Settings → API 에서 URL 과 anon key 를 복사하는 화면) -->
+            <figure class="shot"><img src="assets/shot-api.png" alt="Supabase Settings → API 화면 — Project URL 과 anon public key 가 보이는 모습" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption><b>Settings → API</b> 화면. 위쪽 <b>Project URL</b> 과 <b>anon / public</b> 두 개만 복사합니다 — 아래쪽 <b>service_role</b> 은 절대 복사하지 마세요.</figcaption></figure>
             <pre><code>window.MBL_CONFIG = {
   SUPABASE_URL     : 'https://xxxxxxxx.supabase.co',
   SUPABASE_ANON_KEY: 'eyJhbGciOi...',
@@ -535,12 +616,17 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
   sensors:[{key:'temp', n:2, label:'수중 온도 센서'}],
   board:'main', mode:'auto', minutes:45, level:1,
   why:'...', prep:[...], steps:[...], read:'...',
+  // 업체별 절차 — 그 업체로 불가능한 실험이면 그 키를 아예 넣지 않습니다
+  stepsBy:{ ez:['1단계…','2단계…'], sc:['1단계…','2단계…'] },
+  setupBy:{ ez:['이지메이커 메인보드 1대','센서 연결 케이블 2개'],
+            sc:['무선 온도 센서 2개 (보드 불필요)'] },
   dataSpec:{ x:{label:'시간',unit:'초'},
              series:[{label:'물',unit:'℃'},{label:'식용유',unit:'℃'}],
              rows:8, chart:'line' },
   questions:[{q:'조작변인은 무엇인가요?', type:'short'}]
 }</code></pre>
-        <p>브라우저 개발자 도구 콘솔에서 <code class="inline">LAB.meta.counts</code> 를 치면 학년별 실험 수가 바로 보입니다. <code class="inline">LAB.byGrade(2)</code>, <code class="inline">LAB.byUnit('열')</code>, <code class="inline">LAB.search('광합성')</code>, <code class="inline">LAB.sensorCost('sm-01','ezw')</code> 같은 함수도 함께 씁니다.</p>
+        <p><b>업체별 절차를 넣을 때</b>는 <code class="inline">stepsBy</code> 와 <code class="inline">setupBy</code> 두 칸을 씁니다. 기존 <code class="inline">steps</code> · <code class="inline">prep</code> 은 <b>지우지 마세요</b> — 업체를 고르지 않았을 때 쓰는 기본값입니다. <code class="inline">setupBy</code> 는 <code class="inline">prep</code> 을 대신하는 것이 아니라 <b>거기에 덧붙는</b> 업체 전용 준비물입니다. 그 업체가 안 파는 센서를 쓰는 실험이면 <b>그 업체 키를 아예 넣지 마세요</b>(가능 여부는 센서 가격표에서 자동으로 판정하므로, 절차만 남겨 두면 앞뒤가 맞지 않습니다).</p>
+        <p>브라우저 개발자 도구 콘솔에서 <code class="inline">LAB.meta.counts</code> 를 치면 학년별 실험 수와 업체별 가능 건수(<code class="inline">ezOk · scOk · bothOk</code>)가 바로 보입니다. <code class="inline">LAB.byGrade(2)</code>, <code class="inline">LAB.byUnit('열')</code>, <code class="inline">LAB.search('광합성')</code>, <code class="inline">LAB.sensorCost('sm-01','ezw')</code> 와, 업체별로는 <code class="inline">LAB.stepsFor('sm-01','sc')</code>, <code class="inline">LAB.prepFor('sm-01','ez')</code>, <code class="inline">LAB.vendorOk('sm-04','ez')</code>, <code class="inline">LAB.byVendor('sc')</code>, <code class="inline">LAB.sensorHas('force','ez')</code> 를 씁니다.</p>
         <p>보고서 질문은 <b>수업 중에도</b> 바꿀 수 있습니다. 교사 대시보드 맨 아래 <b>보고서 질문 고치기</b> 칸에 한 줄에 하나씩 적고 저장하면, 학생 화면이 곧바로 바뀝니다. 줄 끝에 <code class="inline">*</code> 를 붙이면 긴 답 칸이 됩니다.</p>
       </section>
 
@@ -551,12 +637,14 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
         <ol class="steps">
           <li>
             <h3>파일 올리기</h3>
-            <p>저장소에 <code class="inline">config.js · index.html · teacher.html · present.html · manual.html · hub.js · lab-data.js · schema.sql</code> 과 <code class="inline">assets/</code> 를 올립니다. 처음이라면 <code class="inline">Add file → Upload files</code> 로 끌어다 놓는 것이 가장 쉽습니다.</p>
+            <p>저장소에 <code class="inline">config.js · index.html · teacher.html · present.html · manual.html · hub.js · lab-data.js · diagrams.js · graphs.js · schema.sql</code> 과 <code class="inline">assets/</code> 를 올립니다. 처음이라면 <code class="inline">Add file → Upload files</code> 로 끌어다 놓는 것이 가장 쉽습니다.</p>
             <p><code class="inline">config.js</code> 를 빠뜨리면 화면이 열리기는 해도 “Supabase 연결 정보를 넣어 주세요” 안내만 뜹니다.</p>
           </li>
           <li>
             <h3>Pages 켜기</h3>
             <p>저장소 <code class="inline">Settings → Pages</code> 에서 배포를 켭니다. 잠시 뒤 <code class="inline">아이디.github.io/저장소이름/</code> 으로 열립니다(예: <code class="inline">scienceisjo.github.io/mblclasshub/</code>).</p>
+            <!-- 스크린샷: assets/shot-pages.png (GitHub 저장소 Settings → Pages 설정 화면) -->
+            <figure class="shot"><img src="assets/shot-pages.png" alt="GitHub 저장소의 Settings → Pages 화면 — 배포 브랜치를 고르는 모습" loading="lazy" onerror="this.closest('figure').remove()" /><figcaption>GitHub 저장소 <b>Settings → Pages</b>. 브랜치를 고르고 저장하면 몇 분 안에 주소가 살아납니다.</figcaption></figure>
           </li>
           <li>
             <h3>주소 알려 주기</h3>
@@ -616,6 +704,9 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
             <tr><td>전송량이 걱정된다</td><td>Supabase 대시보드 <code>Settings → Usage</code> 에서 이번 달 사용량을 볼 수 있습니다. 한 차시 10MB 안팎이니 5GB 한도까지는 여유가 큽니다.</td></tr>
             <tr><td>CSV 를 놓았는데 표가 안 채워진다</td><td>미리보기에 숫자 열이 잡혔는지 봅니다. 열 이름이 실험과 달라 자동으로 못 짝지었으면 <b>드롭다운으로 열을 직접 고르면</b> 됩니다. 그래도 비어 있으면 그 파일에 숫자 열이 없는 것입니다(설명만 있는 머리글 파일인지 확인).</td></tr>
             <tr><td>표가 수백 줄이 되어 버렸다</td><td><b>행 솎아내기</b>가 꺼져 있었던 경우입니다. 다시 불러오면서 솎아내기를 켜세요(<a href="#csv" style="color:var(--mint-d);font-weight:700">C. CSV 불러오기</a>).</td></tr>
+            <tr><td>실험 안내의 절차가 <b>우리 장비와 다르다</b></td><td>수업을 만들 때 <b>업체</b>를 골랐는지 봅니다. 고르지 않으면 업체를 가리지 않는 기본 절차가 나옵니다. 그래도 우리 교실과 다르면 대시보드에서 <b>실험 절차 고치기</b> 로 한 줄에 한 단계씩 다시 적으세요(<a href="#vendor" style="color:var(--mint-d);font-weight:700">C. 업체별 절차</a>).</td></tr>
+            <tr><td>하려던 실험이 <b>흐리게 나와 눌리지 않는다</b></td><td>그 실험에 쓰이는 센서를 <b>지금 고른 업체가 팔지 않는</b> 경우입니다. 목록에서 감추지 않고 흐리게 두면서 <b>어느 센서가 없어서인지</b> 카드에 적어 줍니다. 힘 센서는 이지메이커에, 무게 센서는 사이언스큐브에 없습니다(<a href="#vendor" style="color:var(--mint-d);font-weight:700">C. 업체별 절차</a>).</td></tr>
+            <tr><td>연결 다이어그램·그래프 예시가 안 보인다</td><td>그 실험에 아직 그림이 없거나, <code>diagrams.js</code> · <code>graphs.js</code> 를 저장소에 올리지 않은 것입니다. 그림이 없으면 <b>자리도 생기지 않습니다</b>.</td></tr>
             <tr><td>학생 화면에 <b>개념 확인</b> 이 안 보인다</td><td>교사가 문항을 아직 만들지 않은 것입니다. 문항이 없으면 그 영역은 <b>일부러 나타나지 않습니다</b>.</td></tr>
             <tr><td>발표 화면에 <b>예상 vs 실제</b> 장이 없다</td><td>그 발표 모둠이 예상을 그리지 않았거나 저장하지 않았습니다. 예상이 없으면 그 장은 건너뛰고 세 장 그대로 넘어갑니다.</td></tr>
           </table>
@@ -660,6 +751,26 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
         <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span><div><b>출처 표기나 저작권에 문제가 있다면 알려 주세요.</b> 확인하고 바로 고치거나 내리겠습니다. 실험 내용에 오류가 있을 때도 마찬가지입니다.<br />연락처 · <a href="mailto:chuseonjae@outlook.kr">chuseonjae@outlook.kr</a> (해누리중학교 조승재)</div></div>
       </section>
 
+      <!-- 스크린샷 안내 -->
+      <div class="shotguide">
+        <h3 style="font-size:19px">스크린샷 넣는 법</h3>
+        <p>이 설명서 곳곳에는 <b>화면 사진이 들어갈 자리</b>가 미리 잡혀 있습니다. 지금은 파일이 없어 <b>자리째 보이지 않을 뿐</b>이고, <code class="inline">assets/</code> 폴더에 아래 이름 그대로 저장하면 <b>고친 곳 없이 자동으로 나타납니다.</b> 필요한 것만 넣어도 되고, 넣지 않은 자리는 계속 보이지 않습니다.</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>파일 이름</th><th>무엇을 찍나</th><th>어디에 나오나</th></tr>
+            <tr><td><code>assets/shot-code.png</code></td><td>수업을 만든 직후 <b>참여코드·관리코드</b>가 나온 교사 화면</td><td>C. 수업 만들기</td></tr>
+            <tr><td><code>assets/shot-pin.png</code></td><td><b>[칠판에 크게 띄우기]</b> 를 누른 모둠 비밀번호 화면</td><td>C. 모둠 비밀번호</td></tr>
+            <tr><td><code>assets/shot-join.png</code></td><td>학생이 처음 만나는 <b>참여코드 입력 화면</b></td><td>C. 모둠 입장</td></tr>
+            <tr><td><code>assets/shot-lab.png</code></td><td><b>데이터 실험실</b> — 변환을 걸기 전과 건 뒤</td><td>C. 데이터 실험실</td></tr>
+            <tr><td><code>assets/shot-present.png</code></td><td>전자칠판 <b>발표 화면</b></td><td>C. ③ 발표</td></tr>
+            <tr><td><code>assets/shot-sql.png</code></td><td>Supabase <b>SQL Editor</b> 에서 <b>Run</b> 을 누르는 화면</td><td>D. schema.sql 실행</td></tr>
+            <tr><td><code>assets/shot-api.png</code></td><td>Supabase <b>Settings → API</b> 화면</td><td>D. config.js 채우기</td></tr>
+            <tr><td><code>assets/shot-pages.png</code></td><td>GitHub 저장소 <b>Settings → Pages</b> 화면</td><td>G. 배포</td></tr>
+          </table>
+        </div>
+        <p><b>찍을 때.</b> 가로로 넓게(1200px 안팎) 찍고 <code class="inline">.png</code> 로 저장하면 충분합니다. 화면에 <b>실제 참여코드·관리코드·학생 이름</b>이 들어가지 않도록, 연습용으로 만든 수업에서 찍거나 가린 뒤 저장하세요. Supabase 화면을 찍을 때는 <b>키 값이 그대로 보이지 않게</b> 가려 주세요.</p>
+      </div>
+
       <div class="endnote">
         <div class="row">
           <span>MBL 수업허브 · 참여코드 6자리로 여는 센서 탐구 수업</span>
@@ -670,7 +781,7 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
     </div>
   </div>
 
-<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-15</span></footer>
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-16</span></footer>
 
 </body>
 </html>

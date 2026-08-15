@@ -82,6 +82,14 @@
   .exp.on{border-color:var(--mint);box-shadow:0 0 0 3px rgba(32,178,166,.18)}
   .exp b{display:block;font-family:var(--display);font-size:16px;font-weight:400;margin:6px 0 4px;line-height:1.35}
   .exp .m{font-size:12px;color:var(--muted);font-weight:700}
+  /* 고른 업체로 못 하는 실험 — 숨기지 않고 흐리게 두고 까닭을 보여 줍니다 */
+  .exp.off{opacity:.6;cursor:not-allowed;background:var(--cream);box-shadow:none}
+  .exp.off:hover{transform:none;border-color:var(--line)}
+  .exp .no{margin-top:8px;font-size:12px;font-weight:700;line-height:1.5;color:var(--bad)}
+  /* 쓰는 센서(업체) 고르기 */
+  .vrow{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:12px}
+  .vrow select{width:auto;min-width:170px;min-height:44px}
+  .vrow .fl{margin:0}
 
   /* 코드 표시 */
   .codecard{border:2px dashed var(--mint);border-radius:20px;background:var(--cream);padding:22px;text-align:center}
@@ -148,10 +156,13 @@
   #printArea{display:none}
   .slips{display:grid;grid-template-columns:1fr 1fr;gap:10px}
   .slip{border:1.5px dashed #999;border-radius:12px;padding:14px 16px;break-inside:avoid;page-break-inside:avoid}
+  #printArea h3{font-family:var(--display);font-weight:400;font-size:16px;margin:14px 0 6px}
+  #printArea ol,#printArea ul{margin:0 0 10px 22px}
+  #printArea li{font-size:13.5px;line-height:1.75;margin-bottom:5px;break-inside:avoid;page-break-inside:avoid}
   @media print{
-    body.print-pins{background:#fff}
-    body.print-pins > *{display:none !important}
-    body.print-pins > #printArea{display:block !important}
+    body.print-pins,body.print-doc{background:#fff}
+    body.print-pins > *,body.print-doc > *{display:none !important}
+    body.print-pins > #printArea,body.print-doc > #printArea{display:block !important}
   }
 
   /* 개념 확인 출제 · 결과 · 예상 비교 (뒤에 더한 기능) */
@@ -278,6 +289,13 @@
   <section id="scNew" class="hidden">
     <div class="box">
       <h2>1단계 · 실험 고르기</h2>
+      <!-- 쓰는 센서(업체) — 두 업체는 조작 방법이 다르고, 없는 센서도 서로 다릅니다 -->
+      <div class="vrow hidden" id="vendorRow">
+        <label class="fl" for="fVendor">쓰는 센서</label>
+        <select id="fVendor"></select>
+        <span class="muted" id="vendorSW"></span>
+      </div>
+      <p class="muted hidden" id="vendorMsg" style="margin:-4px 0 10px;font-weight:700"></p>
       <div class="filters">
         <select id="fGrade">
           <option value="">모든 학년</option>
@@ -288,6 +306,21 @@
         <span id="expCount" class="pill"></span>
       </div>
       <div id="explist" class="explist"></div>
+    </div>
+
+    <!-- 실험을 골랐을 때만 나타납니다. 고른 업체의 절차·준비물을 그대로 고칠 수 있습니다. -->
+    <div class="box hidden" id="procNew">
+      <h2>실험 절차와 준비물</h2>
+      <p class="muted" id="procNewSub"></p>
+      <label class="fl" style="margin-top:10px">준비물</label>
+      <div id="inPrepBox" class="qedit"></div>
+      <label class="fl" style="margin-top:14px">실험 절차</label>
+      <p class="muted" style="margin:-2px 0 4px">단계 하나가 카드 한 장입니다. <b>▲ ▼</b> 로 순서를 바꾸고,
+        비어 있는 단계는 저장할 때 저절로 빠집니다.</p>
+      <div id="inStepBox" class="qedit"></div>
+      <div class="toolrow">
+        <button id="btnProcPrintNew" class="btn btn-sm" type="button">준비물·절차 인쇄</button>
+      </div>
     </div>
 
     <div class="box">
@@ -426,6 +459,29 @@
         <button id="btnSaveForm"  class="btn btn-solid tap" type="button">질문 저장</button>
         <button id="btnFormReset" class="btn btn-sm btn-ghost tap" type="button">저장된 질문 다시 불러오기</button>
         <span id="formMsg" class="ok"></span>
+      </div>
+    </div>
+
+    <!-- 실험 절차 고치기 — 실험이 붙어 있거나 저장된 절차가 있을 때만 나타납니다 -->
+    <div class="box hidden" id="dProcBox">
+      <h2>실험 절차 고치기</h2>
+      <p class="muted">수업 도중에도 고칠 수 있습니다. 저장하면 학생 화면이 곧 따라옵니다.
+        업체를 바꾸면 그 업체의 절차를 다시 불러옵니다 — 저장해야 학생에게 갑니다.</p>
+      <div class="vrow" style="margin-top:12px">
+        <label class="fl" for="dVendor">쓰는 센서</label>
+        <select id="dVendor"></select>
+        <span class="muted" id="dVendorSW"></span>
+      </div>
+      <label class="fl">준비물</label>
+      <div id="dPrepBox" class="qedit"></div>
+      <label class="fl" style="margin-top:14px">실험 절차</label>
+      <div id="dStepBox" class="qedit"></div>
+      <div id="procErr" class="err"></div>
+      <div class="toolrow">
+        <button id="btnSaveProc"  class="btn btn-solid tap" type="button">절차 저장</button>
+        <button id="btnProcReset" class="btn btn-sm btn-ghost tap" type="button">저장된 절차 다시 불러오기</button>
+        <button id="btnProcPrint" class="btn btn-sm" type="button">준비물·절차 인쇄</button>
+        <span id="procMsg" class="ok"></span>
       </div>
     </div>
 
@@ -723,39 +779,53 @@
     });
   }
 
-  //  makeQEditor({boxId, suggest, onChange}) → {set, get, size, redraw}
-  //   · suggest()  : 이 자리에서 불러올 추천 질문 배열 (없으면 버튼이 숨습니다)
+  //  받침이 있으면 앞엣것(을·이), 없으면 뒤엣것(를·가)
+  function josa(word, withB, withoutB){
+    const s = String(word == null ? '' : word);
+    const c = s.charCodeAt(s.length - 1);
+    const has = (c >= 0xAC00 && c <= 0xD7A3) ? ((c - 0xAC00) % 28 !== 0) : true;
+    return s + (has ? withB : withoutB);
+  }
+
+  //  makeListEditor(o) → {set, get, size, redraw}
+  //   카드 한 장씩 고치는 편집기의 뼈대입니다. 보고서 질문 편집기와 실험 절차·준비물
+  //   편집기가 이것 하나를 함께 씁니다(자동 높이 textarea · ▲ ▼ · 삭제 · 추가 · 불러오기).
+  //   · noun       : 카드 이름 ('질문' · '단계' · '준비물')
+  //   · norm(arr)  : 들어온 값을 카드 배열로 (빈 카드도 그대로 둡니다)
+  //   · textOf/setText/blank/out/keep : 카드 한 장의 속을 다루는 법
+  //   · head(it,i) · bindHead(box,list,touched) : 카드 머리에 더 붙일 조각(질문 유형 고르기)
+  //   · suggest()  : 이 자리에서 불러올 값 (없으면 버튼이 숨습니다)
   //   · onChange() : 교사가 손댈 때마다 부릅니다 (대시보드는 이때 '고치는 중' 표시를 켭니다)
-  function makeQEditor(o){
-    const box = $(o.boxId);
+  function makeListEditor(o){
+    const box  = $(o.boxId);
+    const noun = o.noun || '항목';
     let list = [];
     let focusSel = null, focusAlt = null;   // 다시 그린 뒤 커서를 둘 곳 (앞엣것이 막혀 있으면 뒤엣것)
 
     function touched(){ if (o.onChange) o.onChange(); }
+    function textOf(x){ return String(o.textOf(x) || ''); }
     function suggestions(){
       const s = (o.suggest && o.suggest()) || [];
-      return normQuestions(s).filter(x => x.q.trim());
+      return o.norm(s).filter(x => textOf(x).trim());
     }
-    function hasText(){ return list.some(x => String(x.q || '').trim()); }
+    function hasText(){ return list.some(x => textOf(x).trim()); }
 
     function cardHTML(it, i){
-      const n = i + 1;
+      const n  = i + 1;
+      const nm = esc(noun + ' ' + n);
       let h = '<div class="qcard" data-i="' + i + '">';
-      h += '<div class="qtop"><b>질문 ' + n + '</b>';
-      h += '<select class="tap" data-k="type" data-i="' + i + '" aria-label="질문 ' + n + ' 유형">' +
-           Q_TYPES.map(function(t){
-             return '<option value="' + t.v + '"' + (qType(it.type) === t.v ? ' selected' : '') + '>' + t.label + '</option>';
-           }).join('') + '</select>';
+      h += '<div class="qtop"><b>' + nm + '</b>';
+      h += (o.head ? o.head(it, i) : '');
       h += '<span class="sp"></span>';
       h += '<button class="btn btn-sm qmove" type="button" data-up="' + i + '" title="위로 옮기기" ' +
-           'aria-label="질문 ' + n + ' 위로 옮기기"' + (i === 0 ? ' disabled' : '') + '>▲</button>';
+           'aria-label="' + nm + ' 위로 옮기기"' + (i === 0 ? ' disabled' : '') + '>▲</button>';
       h += '<button class="btn btn-sm qmove" type="button" data-down="' + i + '" title="아래로 옮기기" ' +
-           'aria-label="질문 ' + n + ' 아래로 옮기기"' + (i === list.length - 1 ? ' disabled' : '') + '>▼</button>';
+           'aria-label="' + nm + ' 아래로 옮기기"' + (i === list.length - 1 ? ' disabled' : '') + '>▼</button>';
       h += '<button class="btn btn-sm btn-ghost tap" type="button" data-del="' + i + '" ' +
-           'aria-label="질문 ' + n + ' 삭제">삭제</button>';
+           'aria-label="' + nm + ' 삭제">삭제</button>';
       h += '</div>';
-      h += '<textarea data-k="q" data-i="' + i + '" maxlength="300" aria-label="질문 ' + n + ' 내용" ' +
-           'placeholder="예) 이 실험에서 조작변인은 무엇인가요?">' + esc(it.q || '') + '</textarea>';
+      h += '<textarea data-k="q" data-i="' + i + '" maxlength="' + (o.maxlen || 300) + '" aria-label="' + nm + ' 내용" ' +
+           'placeholder="' + esc(o.placeholder || '') + '">' + esc(textOf(it)) + '</textarea>';
       return h + '</div>';
     }
 
@@ -767,15 +837,15 @@
     function render(){
       const sg = suggestions();
       let h = list.length ? list.map(cardHTML).join('')
-            : '<div class="empty">아직 질문이 없습니다. [+ 질문 추가] 를 누르거나 추천 질문을 불러오세요.</div>';
+            : '<div class="empty">' + esc(o.emptyText || '') + '</div>';
       h += '<div class="toolrow">' +
-           '<button class="btn btn-sm tap" type="button" data-add="1">+ 질문 추가</button>' +
-           (sg.length ? '<button class="btn btn-sm tap" type="button" data-fill="1">추천 질문 불러오기</button>' : '') +
+           '<button class="btn btn-sm tap" type="button" data-add="1">' + esc(o.addLabel || ('+ ' + noun + ' 추가')) + '</button>' +
+           (sg.length ? '<button class="btn btn-sm tap" type="button" data-fill="1">' + esc(o.fillLabel || '불러오기') + '</button>' : '') +
            '<span class="muted" data-count="1"></span></div>';
       box.innerHTML = h;
       bind();
       const c = box.querySelector('[data-count]');
-      if (c) c.textContent = list.length ? ('질문 ' + list.length + '개') : '';
+      if (c) c.textContent = list.length ? (noun + ' ' + list.length + '개') : '';
       if (focusSel || focusAlt){
         let el = focusSel ? box.querySelector(focusSel) : null;
         if (!el || el.disabled) el = focusAlt ? box.querySelector(focusAlt) : null;
@@ -798,16 +868,10 @@
         el.addEventListener('input', function(){
           const it = list[Number(el.dataset.i)];
           if (!it) return;
-          it.q = el.value; grow(el); touched();
+          o.setText(it, el.value); grow(el); touched();
         });
       });
-      Array.prototype.forEach.call(box.querySelectorAll('select[data-k="type"]'), function(el){
-        el.addEventListener('change', function(){
-          const it = list[Number(el.dataset.i)];
-          if (!it) return;
-          it.type = qType(el.value); touched();
-        });
-      });
+      if (o.bindHead) o.bindHead(box, list, touched);
       Array.prototype.forEach.call(box.querySelectorAll('[data-up]'), function(el){
         el.addEventListener('click', function(){ const i = Number(el.dataset.up); move(i, i - 1); });
       });
@@ -818,7 +882,7 @@
         el.addEventListener('click', function(){
           const i = Number(el.dataset.del);
           if (!list[i]) return;
-          if (String(list[i].q || '').trim() && !confirm('이 질문을 지울까요?')) return;
+          if (textOf(list[i]).trim() && !confirm('이 ' + josa(noun, '을', '를') + ' 지울까요?')) return;
           list.splice(i, 1);
           focusSel = list.length ? ('.qcard[data-i="' + Math.min(i, list.length - 1) + '"] textarea') : '[data-add]';
           focusAlt = null;
@@ -827,7 +891,7 @@
       });
       const add = box.querySelector('[data-add]');
       if (add) add.addEventListener('click', function(){
-        list.push({ q:'', type:'short' });
+        list.push(o.blank());
         focusSel = '.qcard[data-i="' + (list.length - 1) + '"] textarea';
         focusAlt = null;
         touched(); render();
@@ -836,7 +900,7 @@
       if (fill) fill.addEventListener('click', function(){
         const sg = suggestions();
         if (!sg.length) return;
-        if (hasText() && !confirm('지금 질문을 지우고 추천 질문을 불러올까요?')) return;
+        if (hasText() && !confirm(o.fillConfirm || '지금 것을 지우고 다시 불러올까요?')) return;
         list = sg;
         focusSel = null; focusAlt = null;
         touched(); render();
@@ -844,21 +908,131 @@
     }
 
     return {
-      set: function(arr){ list = normQuestions(arr); focusSel = null; focusAlt = null; render(); },
-      //  빈 질문은 여기에서 걸러집니다 — 저장하는 쪽은 이 결과만 씁니다.
-      get: function(){
-        return list.map(function(x){ return { q: String(x.q || '').trim(), type: qType(x.type) }; })
-                   .filter(function(x){ return !!x.q; });
-      },
+      set: function(arr){ list = o.norm(arr); focusSel = null; focusAlt = null; render(); },
+      //  빈 카드는 여기에서 걸러집니다 — 저장하는 쪽은 이 결과만 씁니다.
+      get: function(){ return list.map(o.out).filter(o.keep); },
       size  : function(){ return list.length; },
       redraw: function(){ render(); }
     };
+  }
+
+  //  보고서 질문 편집기 — 카드 머리에 '유형 고르기' 를 한 칸 더 답니다.
+  function makeQEditor(o){
+    return makeListEditor({
+      boxId  : o.boxId,
+      suggest: o.suggest,
+      onChange: o.onChange,
+      noun   : '질문',
+      maxlen : 300,
+      addLabel   : '+ 질문 추가',
+      fillLabel  : '추천 질문 불러오기',
+      fillConfirm: '지금 질문을 지우고 추천 질문을 불러올까요?',
+      emptyText  : '아직 질문이 없습니다. [+ 질문 추가] 를 누르거나 추천 질문을 불러오세요.',
+      placeholder: '예) 이 실험에서 조작변인은 무엇인가요?',
+      norm   : normQuestions,
+      textOf : function(x){ return x.q; },
+      setText: function(x, v){ x.q = v; },
+      blank  : function(){ return { q:'', type:'short' }; },
+      out    : function(x){ return { q: String(x.q || '').trim(), type: qType(x.type) }; },
+      keep   : function(x){ return !!x.q; },
+      head   : function(it, i){
+        const n = i + 1;
+        return '<select class="tap" data-k="type" data-i="' + i + '" aria-label="질문 ' + n + ' 유형">' +
+               Q_TYPES.map(function(t){
+                 return '<option value="' + t.v + '"' + (qType(it.type) === t.v ? ' selected' : '') + '>' + t.label + '</option>';
+               }).join('') + '</select>';
+      },
+      bindHead: function(box, list, touched){
+        Array.prototype.forEach.call(box.querySelectorAll('select[data-k="type"]'), function(el){
+          el.addEventListener('change', function(){
+            const it = list[Number(el.dataset.i)];
+            if (!it) return;
+            it.type = qType(el.value); touched();
+          });
+        });
+      }
+    });
+  }
+
+  //  줄글 목록 편집기 — 실험 절차·준비물처럼 글자 한 줄이 카드 한 장인 것들.
+  function normLines(arr){
+    return (Array.isArray(arr) ? arr : []).map(function(x){
+      const t = (x && typeof x === 'object') ? (x.t || x.text || x.q || '') : x;
+      return { t: String(t == null ? '' : t) };
+    });
+  }
+  function makeLineEditor(o){
+    return makeListEditor({
+      boxId  : o.boxId,
+      suggest: o.suggest,
+      onChange: o.onChange,
+      noun   : o.noun,
+      maxlen : o.maxlen || 400,
+      addLabel   : '+ ' + o.noun + ' 추가',
+      fillLabel  : o.fillLabel,
+      fillConfirm: o.fillConfirm,
+      emptyText  : o.emptyText,
+      placeholder: o.placeholder,
+      norm   : normLines,
+      textOf : function(x){ return x.t; },
+      setText: function(x, v){ x.t = v; },
+      blank  : function(){ return { t:'' }; },
+      out    : function(x){ return String(x.t || '').trim(); },
+      keep   : function(x){ return !!x; }
+    });
+  }
+
+  // ════════════════════════════════════════════════════════════════
+  //  쓰는 센서(업체) — 이지메이커와 사이언스큐브는 조작 방법이 아주 다릅니다.
+  //   이지메이커: 보드에 센서를 꽂고 유선이면 블록코딩을 올려 둡니다 · 소프트웨어 ezon.ai
+  //   사이언스큐브: 무선 센서가 그 자체로 블루투스입니다(보드 없음) · 소프트웨어 사이언스#
+  //   업체마다 없는 센서가 있어서, 그 센서를 쓰는 실험은 그 업체로 아예 못 합니다.
+  //   판정은 lab-data.js 가 합니다(LAB.vendorOk · LAB.sensorHas). 여기에서 다시 세지 않습니다.
+  // ════════════════════════════════════════════════════════════════
+  const VENDORS    = (window.LAB && Array.isArray(LAB.VENDORS)) ? LAB.VENDORS : [];
+  const VENDOR_KEY = 'vendor';                       // 이 브라우저가 마지막에 고른 업체
+  function vendorInfo(v){
+    for (let i = 0; i < VENDORS.length; i++) if (VENDORS[i].key === v) return VENDORS[i];
+    return null;
+  }
+  function vendorName(v){ const x = vendorInfo(v); return x ? x.name : ''; }
+  function vendorSW(v){   const x = vendorInfo(v); return x ? x.sw   : ''; }
+  //  기본값은 이 브라우저에서 마지막에 고른 업체, 없으면 첫 업체(이지메이커)입니다.
+  function lastVendor(){
+    const v = Hub.loadLocal(VENDOR_KEY, '');
+    return vendorInfo(v) ? v : (VENDORS[0] ? VENDORS[0].key : '');
+  }
+  function fillVendorSelect(el, cur){
+    if (!el) return;
+    el.innerHTML = VENDORS.map(function(v){
+      return '<option value="' + esc(v.key) + '"' + (v.key === cur ? ' selected' : '') + '>' + esc(v.name) + '</option>';
+    }).join('');
+    el.value = cur;
+  }
+  function vendorLine(v){
+    const x = vendorInfo(v);
+    return x ? (x.name + ' · 소프트웨어 ' + x.sw) : '';
+  }
+  //  그 업체로 이 실험을 못 하는 까닭 (할 수 있으면 빈 글자입니다)
+  function vendorBlock(e, v){
+    if (!window.LAB || !e || !vendorInfo(v)) return '';
+    if (LAB.vendorOk(e, v)) return '';
+    const miss  = (e.sensors || []).filter(function(s){ return !LAB.sensorHas(s.key, v); })
+                                   .map(function(s){ return LAB.sensorName(s.key); });
+    const other = VENDORS.filter(function(x){ return x.key !== v && LAB.vendorOk(e, x.key); })
+                         .map(function(x){ return x.name; });
+    const what = miss.length ? (miss.join(' · ') + ' 센서가 없어') : '쓰는 센서가 없어';
+    return vendorName(v) + '에는 ' + what + ' 이 실험은 ' +
+           (other.length ? (josa(other.join(' · '), '으로만', '로만') + ' 할 수 있습니다.')
+                         : '할 수 없습니다.');
   }
 
   //  대시보드 편집기가 '고치는 중' 인지 (고치는 동안에는 폴링이 덮어쓰지 않습니다)
   let formDirty     = false;
   let formSyncedSig = null;   // 편집기에 담아 둔 질문이 서버의 어느 것인지
   let labBusy       = false;  // 데이터 실험실 탭 켜기·끄기를 보내는 중
+  let procDirty     = false;  // 실험 절차 편집기를 손대는 중
+  let procSyncedSig = null;
 
   const qeNew = makeQEditor({
     boxId  : 'inQBox',
@@ -874,6 +1048,45 @@
   });
   qeNew.set([]);
 
+  //  실험 절차·준비물 편집기 — 질문 편집기와 같은 뼈대(makeListEditor)를 씁니다.
+  //   '되돌리기' 는 lab-data.js 가 가진 그 업체의 원래 절차를 다시 불러옵니다.
+  const seNew = makeLineEditor({
+    boxId: 'inStepBox', noun: '단계',
+    fillLabel  : '원래 절차로 되돌리기',
+    fillConfirm: '고친 절차를 버리고 원래 절차를 다시 불러올까요?',
+    emptyText  : '아직 절차가 없습니다. [+ 단계 추가] 를 누르거나 원래 절차를 불러오세요.',
+    placeholder: '예) 센서 전원을 짧게 한 번 눌러 켠다.',
+    suggest    : function(){ return picked ? LAB.stepsFor(picked, newVendor()) : []; }
+  });
+  const peNew = makeLineEditor({
+    boxId: 'inPrepBox', noun: '준비물',
+    fillLabel  : '원래 준비물로 되돌리기',
+    fillConfirm: '고친 준비물을 버리고 원래 준비물을 다시 불러올까요?',
+    emptyText  : '아직 준비물이 없습니다. [+ 준비물 추가] 를 눌러 적어 주세요.',
+    placeholder: '예) 무선 온도 센서 2개',
+    maxlen     : 120,
+    suggest    : function(){ return picked ? LAB.prepFor(picked, newVendor()) : []; }
+  });
+  const seDash = makeLineEditor({
+    boxId: 'dStepBox', noun: '단계',
+    fillLabel  : '원래 절차로 되돌리기',
+    fillConfirm: '고친 절차를 버리고 원래 절차를 다시 불러올까요?',
+    emptyText  : '아직 절차가 없습니다. [+ 단계 추가] 를 누르거나 원래 절차를 불러오세요.',
+    placeholder: '예) 센서 전원을 짧게 한 번 눌러 켠다.',
+    suggest    : function(){ const e = dashExp(); return e ? LAB.stepsFor(e, dashVendor()) : []; },
+    onChange   : function(){ procDirty = true; $('procErr').textContent = ''; }
+  });
+  const peDash = makeLineEditor({
+    boxId: 'dPrepBox', noun: '준비물',
+    fillLabel  : '원래 준비물로 되돌리기',
+    fillConfirm: '고친 준비물을 버리고 원래 준비물을 다시 불러올까요?',
+    emptyText  : '아직 준비물이 없습니다. [+ 준비물 추가] 를 눌러 적어 주세요.',
+    placeholder: '예) 무선 온도 센서 2개',
+    maxlen     : 120,
+    suggest    : function(){ const e = dashExp(); return e ? LAB.prepFor(e, dashVendor()) : []; },
+    onChange   : function(){ procDirty = true; $('procErr').textContent = ''; }
+  });
+
   // ── lesson.form 다루기 ────────────────────────────────────────
   //  form 은 {questions:[…], features:{…}} 입니다. 스키마를 바꾸지 않으려고
   //  새 설정은 모두 이 안에 넣습니다. 저장할 때 옆칸을 지우지 않도록 늘 통째로 합쳐 보냅니다.
@@ -888,6 +1101,39 @@
   }
   //  features 가 아예 없는 예전 수업은 '켜진 것' 으로 봅니다 (탭이 갑자기 사라지면 안 됩니다).
   function labOn(){ return formFeatures().lab !== false; }
+
+  //  form 안에 함께 담아 둔 실험 절차 — {vendor, steps, prep}
+  //   예전 수업에는 없습니다. 그때는 lab-data.js 의 절차를 그대로 보여 줍니다.
+  function formLines(k){
+    const a = formOf()[k];
+    return Array.isArray(a) ? a.map(function(x){ return String(x == null ? '' : x); }).filter(Boolean) : null;
+  }
+  function dashExp(){ return (window.LAB && lesson && lesson.exp_id) ? LAB.byId(lesson.exp_id) : null; }
+  function dashVendor(){
+    const v = formOf().vendor;
+    if (vendorInfo(v)) return v;                        // 저장해 둔 업체가 먼저입니다
+    //  저장값이 없으면 이 브라우저가 마지막에 고른 업체를 쓰되,
+    //  그 업체로 못 하는 실험이면 할 수 있는 첫 업체로 떨어뜨립니다(없으면 빈 글자).
+    const e = dashExp();
+    const last = lastVendor();
+    if (!e || (vendorInfo(last) && !vendorBlock(e, last))) return last;
+    for (let i = 0; i < VENDORS.length; i++){
+      if (window.LAB && LAB.vendorOk(e, VENDORS[i].key)) return VENDORS[i].key;
+    }
+    return '';
+  }
+  function dashSteps(){
+    const s = formLines('steps');
+    if (s && s.length) return s;
+    const e = dashExp();
+    return e ? LAB.stepsFor(e, dashVendor()) : [];
+  }
+  function dashPrep(){
+    const p = formLines('prep');
+    if (p && p.length) return p;
+    const e = dashExp();
+    return e ? LAB.prepFor(e, dashVendor()) : [];
+  }
 
   Hub.onStatus(function(st){ $('offbar').classList.toggle('hidden', !st.offline); });
 
@@ -979,6 +1225,7 @@
     stopAdminTimer();
     quizDraft = []; quizDirty = false; quizSyncedAt = null;
     formDirty = false; formSyncedSig = null; labBusy = false;
+    procDirty = false; procSyncedSig = null;
     renderRecent(); show('home');
   });
 
@@ -1008,6 +1255,56 @@
   }
 
   // ── 실험 고르기 ────────────────────────────────────────────────
+  //  업체 고르기는 lab-data.js 가 업체 목록을 줄 때만 나타납니다.
+  function newVendor(){
+    const el = $('fVendor');
+    return (el && vendorInfo(el.value)) ? el.value : lastVendor();
+  }
+  function vendorMsg(t){
+    const el = $('vendorMsg');
+    el.textContent = t || '';
+    el.classList.toggle('hidden', !t);
+  }
+  function initVendorPicker(){
+    if (!VENDORS.length) return;                       // lab-data.js 가 없으면 조용히 숨습니다
+    fillVendorSelect($('fVendor'), lastVendor());
+    $('vendorRow').classList.remove('hidden');
+    paintVendorSW();
+    $('fVendor').addEventListener('change', function(){
+      const v = newVendor();
+      Hub.saveLocal(VENDOR_KEY, v);
+      paintVendorSW();
+      //  고른 실험을 그 업체로 못 하게 되면 선택을 풀고 까닭을 알립니다.
+      if (picked){
+        const why = vendorBlock(picked, v);
+        if (why){
+          picked = null;
+          vendorMsg(why + ' 골라 둔 실험을 풀었습니다 — 다른 실험을 골라 주세요.');
+        } else {
+          seNew.set(LAB.stepsFor(picked, v));
+          peNew.set(LAB.prepFor(picked, v));
+          vendorMsg(vendorName(v) + ' 절차와 준비물로 바꿨습니다.');
+        }
+      } else {
+        vendorMsg('');
+      }
+      renderExpList();
+      paintProcNew();
+    });
+  }
+  function paintVendorSW(){
+    const v = newVendor();
+    $('vendorSW').textContent = vendorSW(v) ? ('소프트웨어 ' + vendorSW(v)) : '';
+  }
+  //  절차·준비물 상자는 실험을 골랐을 때만 나타납니다.
+  function paintProcNew(){
+    const on = !!(picked && VENDORS.length);
+    $('procNew').classList.toggle('hidden', !on);
+    if (!on){ seNew.set([]); peNew.set([]); return; }
+    $('procNewSub').textContent = vendorLine(newVendor()) +
+      ' — 이 업체의 절차입니다. 고쳐서 수업에 담을 수 있고, 수업 도중에도 다시 고칠 수 있습니다.';
+  }
+
   function fillUnits(){
     const g = $('fGrade').value;
     const units = (window.LAB ? LAB.unitList(g === '' ? null : Number(g)) : []);
@@ -1020,27 +1317,43 @@
     let list = q ? LAB.search(q) : LAB.experiments.slice();
     if (g) list = list.filter(e => Number(e.grade) === Number(g));
     if (u) list = list.filter(e => e.unit === u);
-    $('expCount').textContent = list.length + '건';
+    const v = newVendor();
+    //  못 하는 실험도 목록에 그대로 둡니다 — 흐리게 두고 까닭을 보여 주는 편이 공부가 됩니다.
+    const nOk = VENDORS.length ? list.filter(function(e){ return !vendorBlock(e, v); }).length : list.length;
+    $('expCount').textContent = list.length + '건' +
+      ((VENDORS.length && nOk !== list.length) ? (' · ' + vendorName(v) + ' 가능 ' + nOk + '건') : '');
     if (!list.length){ $('explist').innerHTML = '<div class="empty">조건에 맞는 실험이 없습니다.</div>'; return; }
     $('explist').innerHTML = list.map(function(e){
       const sensors = (e.sensors || []).map(s => LAB.sensorName(s.key) + ' ' + s.n).join(' · ');
-      return '<div class="exp' + (picked && picked.id === e.id ? ' on' : '') + '" data-id="' + esc(e.id) + '" tabindex="0" role="button">' +
+      const why = vendorBlock(e, v);
+      return '<div class="exp' + (why ? ' off' : ((picked && picked.id === e.id) ? ' on' : '')) + '" data-id="' + esc(e.id) + '"' +
+             (why ? ' aria-disabled="true"' : ' tabindex="0" role="button"') + '>' +
              '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
              '<b>' + esc(e.title) + '</b>' +
-             '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div></div>';
+             '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div>' +
+             (why ? '<div class="no">' + esc(why) + '</div>' : '') + '</div>';
     }).join('');
-    Array.prototype.forEach.call($('explist').querySelectorAll('.exp'), function(el){
+    Array.prototype.forEach.call($('explist').querySelectorAll('.exp:not(.off)'), function(el){
       const choose = function(){ pickExp(el.dataset.id); };
       el.addEventListener('click', choose);
       el.addEventListener('keydown', function(ev){ if (ev.key === 'Enter' || ev.key === ' ') { ev.preventDefault(); choose(); } });
     });
   }
   function pickExp(id){
-    picked = LAB.byId(id);
-    if (!picked) return;
+    const e = LAB.byId(id);
+    if (!e) return;
+    //  고른 업체로 못 하는 실험은 고를 수 없습니다(까닭은 목록 카드에 이미 적혀 있습니다).
+    const why = vendorBlock(e, newVendor());
+    if (why){ vendorMsg(why); return; }
+    picked = e;
+    vendorMsg('');
     $('inTitle').value = picked.title;
     //  실험을 고르면 추천 질문이 지금처럼 저절로 채워집니다(교사가 가장 좋아하는 자리입니다).
     qeNew.set(picked.questions || []);
+    //  절차·준비물도 그 업체 것으로 채워 둡니다.
+    seNew.set(LAB.stepsFor(picked, newVendor()));
+    peNew.set(LAB.prepFor(picked, newVendor()));
+    paintProcNew();
     renderExpList();
     $('inTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -1050,6 +1363,7 @@
 
   $('btnNew').addEventListener('click', function(){
     picked = null;
+    vendorMsg(''); paintVendorSW(); paintProcNew();
     fillUnits(); renderExpList();
     $('inTeacher').value = Hub.loadLocal('teacher_name', '') || '';
     $('inClass').value = '';
@@ -1081,7 +1395,11 @@
       classLabel : $('inClass').value.trim(),
       teacherName: $('inTeacher').value.trim(),
       //  features 는 켜고 끌 수 있는 탭들입니다. 지금은 lab 하나뿐이지만 뒤에 더 붙일 수 있게 객체로 둡니다.
-      form       : { questions: qs, features: { lab: !!$('inFeatLab').checked } },
+      //  vendor·steps·prep 은 실험 절차입니다. 스키마를 바꾸지 않으려고 form 안에 함께 담습니다.
+      form       : Object.assign(
+                     { questions: qs, features: { lab: !!$('inFeatLab').checked } },
+                     VENDORS.length ? { vendor: newVendor(), steps: seNew.get(), prep: peNew.get() } : {}
+                   ),
       dataSpec   : spec,
       groupCount : Number($('inGroups').value) || 7
     }).then(function(r){
@@ -1119,7 +1437,9 @@
       noteAdmin(b);
       quizDirty = false; quizSyncedAt = null;
       formDirty = false; formSyncedSig = null; labBusy = false;
+      procDirty = false; procSyncedSig = null;
       $('formErr').textContent = ''; $('formMsg').textContent = ''; $('featMsg').textContent = '';
+      $('procErr').textContent = ''; $('procMsg').textContent = '';
       show('dash');
       paintHeader();
       syncQuizEditor(true);
@@ -1236,6 +1556,7 @@
 
     paintPredict(spec);
     syncFormEditor(false);
+    syncProcEditor(false);
     syncLabToggle();
     syncQuizEditor(false);
     paintQuizResult();
@@ -1296,6 +1617,9 @@
     const next = Object.assign({}, formOf());
     if (patch.questions !== undefined) next.questions = patch.questions;
     if (patch.features  !== undefined) next.features  = Object.assign({}, formFeatures(), patch.features);
+    if (patch.vendor    !== undefined) next.vendor    = patch.vendor;
+    if (patch.steps     !== undefined) next.steps     = patch.steps;
+    if (patch.prep      !== undefined) next.prep      = patch.prep;
     if (!Array.isArray(next.questions)) next.questions = formQuestions();
     return setDash({ form: next });
   }
@@ -1324,6 +1648,70 @@
     $('featMsg').textContent = t || '';
     if (t) setTimeout(function(){ if ($('featMsg').textContent === t) $('featMsg').textContent = ''; }, 3200);
   }
+  function procMsg(t){
+    $('procMsg').textContent = t || '';
+    if (t) setTimeout(function(){ if ($('procMsg').textContent === t) $('procMsg').textContent = ''; }, 3200);
+  }
+
+  // ── 실험 절차 고치기 (대시보드) ────────────────────────────────
+  //  질문 편집기와 같은 규칙입니다 — 교사가 고치는 중이면 폴링이 덮어쓰지 않습니다.
+  //  붙은 실험도 없고 저장해 둔 절차도 없으면 이 상자는 조용히 숨습니다.
+  function syncProcEditor(force){
+    const on = !!(VENDORS.length && (dashExp() || (formLines('steps') || []).length || (formLines('prep') || []).length));
+    $('dProcBox').classList.toggle('hidden', !on);
+    if (!on) return;
+    const v = dashVendor(), st = dashSteps(), pr = dashPrep();
+    const sig = qSig([v, st, pr]);
+    if (!force && (procDirty || sig === procSyncedSig)) return;
+    procSyncedSig = sig;
+    procDirty = false;
+    //  못 하는 업체가 걸려 있으면(예전 수업·기본값) 그 까닭을 늘 띄워 둡니다.
+    $('procErr').textContent = vendorBlock(dashExp(), v);
+    fillVendorSelect($('dVendor'), v);
+    $('dVendorSW').textContent = vendorSW(v) ? ('소프트웨어 ' + vendorSW(v)) : '';
+    seDash.set(st); peDash.set(pr);
+  }
+  //  대시보드에서 업체를 바꾸면 그 업체의 절차를 불러옵니다(저장은 따로 눌러야 합니다).
+  $('dVendor').addEventListener('change', function(){
+    const v = vendorInfo(this.value) ? this.value : dashVendor();
+    const e = dashExp();
+    const why = e ? vendorBlock(e, v) : '';
+    $('dVendorSW').textContent = vendorSW(v) ? ('소프트웨어 ' + vendorSW(v)) : '';
+    $('procErr').textContent = why;                       // 못 하는 업체면 까닭을 알려 둡니다
+    if (e){ seDash.set(LAB.stepsFor(e, v)); peDash.set(LAB.prepFor(e, v)); }
+    procDirty = true;
+    procMsg(vendorName(v) + ' 절차를 불러왔습니다. [절차 저장] 을 눌러야 학생 화면에 갑니다.');
+  });
+  $('btnSaveProc').addEventListener('click', function(){
+    const st = seDash.get(), pr = peDash.get();
+    const v  = vendorInfo($('dVendor').value) ? $('dVendor').value : dashVendor();
+    const e  = dashExp();
+    const why = e ? vendorBlock(e, v) : '';
+    if (why){                                            // 못 하는 업체로는 저장하지 않습니다
+      $('procErr').textContent = why + ' 이 업체로는 저장할 수 없습니다.';
+      return;
+    }
+    if (!st.length){
+      $('procErr').textContent = '절차가 하나도 없습니다. [+ 단계 추가] 로 적거나 [원래 절차로 되돌리기] 를 눌러 주세요.';
+      return;
+    }
+    $('procErr').textContent = '';
+    const btn = this;
+    btn.disabled = true; btn.textContent = '저장 중…';
+    saveForm({ vendor: v, steps: st, prep: pr }).then(function(r){
+      btn.disabled = false; btn.textContent = '절차 저장';
+      if (!r || !r.ok){ $('procErr').textContent = (r && r.err && r.err.message) || '절차를 저장하지 못했습니다.'; return; }
+      procDirty = false;
+      procSyncedSig = qSig([dashVendor(), dashSteps(), dashPrep()]);
+      procMsg(vendorName(v) + ' 절차 ' + st.length + '단계를 저장했습니다. 학생 화면에 곧 나타납니다.');
+    });
+  });
+  $('btnProcReset').addEventListener('click', function(){
+    if (procDirty && !confirm('고치던 절차를 버리고 저장된 절차를 다시 불러올까요?')) return;
+    procDirty = false; procSyncedSig = null;
+    syncProcEditor(true);
+    procMsg('저장된 절차를 다시 불러왔습니다.');
+  });
 
   Array.prototype.forEach.call(document.querySelectorAll('.ph'), function(b){
     b.addEventListener('click', function(){ setDash({ phase: b.dataset.phase }); });
@@ -1534,6 +1922,44 @@
     });
   }
   $('btnPinPrint').addEventListener('click', printPins);
+
+  // ── 준비물·절차 인쇄 ───────────────────────────────────────────
+  //  업체마다 조작이 다르므로 업체 이름과 소프트웨어 이름을 함께 찍습니다.
+  function printProc(o){
+    const steps = o.steps || [], prep = o.prep || [];
+    if (!steps.length && !prep.length){ return false; }
+    const v    = vendorInfo(o.vendor);
+    const head = [o.title, o.classLabel].filter(Boolean).map(esc).join(' · ') || '실험 준비물과 절차';
+    let h = '<p style="font-size:15px;font-weight:800;margin-bottom:2px">' + head + '</p>';
+    if (v) h += '<p style="font-size:13px;font-weight:800;margin-bottom:2px">쓰는 센서 · ' + esc(v.name) +
+                ' &nbsp;|&nbsp; 소프트웨어 · ' + esc(v.sw) + '</p>';
+    h += '<p style="font-size:12px;margin-bottom:10px">업체마다 조작 방법이 다릅니다. 아래 절차는 ' +
+         esc(v ? v.name : '고른 업체') + ' 기준입니다.</p>';
+    if (prep.length)  h += '<h3>준비물</h3><ul>' + prep.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ul>';
+    if (steps.length) h += '<h3>실험 절차</h3><ol>' + steps.map(function(x){ return '<li>' + esc(x) + '</li>'; }).join('') + '</ol>';
+    $('printArea').innerHTML = h;
+    const done = function(){ document.body.classList.remove('print-doc'); };
+    window.addEventListener('afterprint', done, { once: true });
+    document.body.classList.add('print-doc');
+    window.print();
+    setTimeout(done, 1500);
+    return true;
+  }
+  $('btnProcPrintNew').addEventListener('click', function(){
+    printProc({
+      vendor: newVendor(), steps: seNew.get(), prep: peNew.get(),
+      title : $('inTitle').value.trim() || (picked && picked.title) || '',
+      classLabel: $('inClass').value.trim()
+    });
+  });
+  $('btnProcPrint').addEventListener('click', function(){
+    const ok = printProc({
+      vendor: vendorInfo($('dVendor').value) ? $('dVendor').value : dashVendor(),
+      steps : seDash.get(), prep: peDash.get(),
+      title : (lesson && lesson.title) || '', classLabel: (lesson && lesson.class_label) || ''
+    });
+    if (!ok) procMsg('인쇄할 준비물·절차가 없습니다.');
+  });
 
   // ════════════════════════════════════════════════════════════════
   //  관리코드 전용 자료 되살리기
@@ -2842,6 +3268,7 @@
 
   // ── 시작 ───────────────────────────────────────────────────────
   checkSetup(false);
+  initVendorPicker();
   renderRecent();
   renderPins();
   renderQuiz();
