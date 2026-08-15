@@ -154,6 +154,13 @@
       <a href="#about">이 허브란</a>
       <a href="#files">파일 세트</a>
       <a href="#flow">수업 진행 순서</a>
+      <a href="#time" style="padding-left:28px;font-size:13px">└ 45분 시간표</a>
+      <a href="#predict" style="padding-left:28px;font-size:13px">└ 예상 그래프</a>
+      <a href="#csv" style="padding-left:28px;font-size:13px">└ CSV 불러오기</a>
+      <a href="#lab" style="padding-left:28px;font-size:13px">└ 데이터 실험실</a>
+      <a href="#classall" style="padding-left:28px;font-size:13px">└ 반 전체로 보기</a>
+      <a href="#quiz" style="padding-left:28px;font-size:13px">└ 개념 확인 3문항</a>
+      <a href="#export" style="padding-left:28px;font-size:13px">└ 생기부 내보내기</a>
       <a href="#pin" style="padding-left:28px;font-size:13px">└ 모둠 비밀번호</a>
       <a href="#supabase">Supabase 설치</a>
       <a href="#privacy">개인정보와 안전</a>
@@ -162,6 +169,7 @@
       <a href="#deploy">배포</a>
       <a href="#share">다른 학교에 배포하기</a>
       <a href="#trouble">막히면</a>
+      <a href="#sources">출처와 저작권</a>
     </nav>
 
     <div class="doc">
@@ -192,7 +200,7 @@
           <table class="files">
             <tr><th>파일</th><th>무엇을 하나</th></tr>
             <tr><td><code>config.js</code></td><td><b>★ 학교마다 고치는 단 하나의 파일.</b> 우리 학교 Supabase 주소·키와 학교·교사 이름</td></tr>
-            <tr><td><code>index.html</code></td><td><b>학생용 허브.</b> 참여코드 입력 → 모둠 선택 → 데이터 입력표 → 보고서 → 모둠 공유·별점</td></tr>
+            <tr><td><code>index.html</code></td><td><b>학생용 허브.</b> 참여코드 입력 → 모둠 선택 → 데이터 입력표 → <b>데이터 실험실</b>(축 바꾸기·변환·반 전체) → 보고서 → 모둠 공유·별점</td></tr>
             <tr><td><code>teacher.html</code></td><td><b>교사용 대시보드.</b> 실험 고르기 → 수업 만들기(참여코드 발급) → 단계 전환 → 모둠 현황</td></tr>
             <tr><td><code>present.html</code></td><td><b>발표 모드.</b> 전자칠판 전용. 참여코드만 넣으면 교사 조작을 그대로 따라갑니다</td></tr>
             <tr><td><code>manual.html</code></td><td>지금 보고 계신 이 설명서</td></tr>
@@ -232,23 +240,125 @@
             <p>한 번 맞게 넣은 비밀번호는 그 기기에 남습니다. <b>같은 기기에서는 다시 묻지 않습니다.</b></p>
           </li>
           <li>
+            <h3>예상 그래프 먼저 그리기 (도입 3분)</h3>
+            <p>측정하기 <b>전에</b>, 학생 화면 위쪽 <b>“먼저 예상해 볼까요?”</b> 카드에서 <b>[예상 그리기]</b> 를 눌러 결과를 손가락으로 훑어 그립니다. 실제 데이터가 들어오면 그래프에 <b>점선</b>으로 겹쳐져, 예상과 실제가 어디서 갈라졌는지 그대로 보입니다. 건너뛰어도 실험은 그대로 진행됩니다(<a href="#predict" style="color:var(--mint-d);font-weight:700">아래 예상 그래프</a>).</p>
+          </li>
+          <li>
             <h3>① 데이터 수집</h3>
             <p>학생이 <b>데이터 입력</b> 탭에서 측정값을 적습니다. 숫자를 넣는 즉시 아래에 그래프가 그려지고, <b>데이터 저장</b> 을 누르면 교사 화면에 나타납니다. 교사 대시보드에서 어느 모둠이 몇 줄을 넣었는지 한눈에 보입니다.</p>
+            <p>센서 프로그램에서 내보낸 <b>CSV 파일을 표 위에 끌어다 놓으면</b> 손으로 옮겨 적을 필요가 없습니다. 자동 수집은 한 번에 수백 줄이 나오므로, 입력표 줄 수에 맞춰 <b>고르게 솎아 넣는</b> 것이 기본입니다(<a href="#csv" style="color:var(--mint-d);font-weight:700">아래 CSV 불러오기</a>).</p>
+          </li>
+          <li>
+            <h3>데이터 실험실에서 분석 (전개 8분)</h3>
+            <p>값을 저장했으면 <b>데이터 실험실</b> 탭입니다. 가로축을 시간 대신 다른 값으로 바꾸거나(옴의 법칙 → 전압), 1/거리²·1/부피 같은 <b>변환</b>을 걸거나, 압력×부피 같은 <b>파생열</b>을 만들거나, 그래프를 <b>드래그해 한 구간</b>만 재 봅니다. 휘어 있던 그래프가 직선이 되면서 <b>R² 가 어떻게 올라가는지</b>가 그대로 보입니다. <b>원본 표는 바뀌지 않습니다</b>(<a href="#lab" style="color:var(--mint-d);font-weight:700">아래 데이터 실험실</a>).</p>
           </li>
           <li>
             <h3>② 모둠 공유</h3>
             <p>교사가 <b>② 모둠 공유</b> 를 누르면 학생 화면의 <b>모둠 공유</b> 탭이 열립니다. 다른 모둠의 그래프를 보고 별점과 한 줄 칭찬을 남깁니다. 자기 모둠에게는 줄 수 없습니다.</p>
+            <p>이 단계부터 데이터 실험실의 <b>[우리 반 전체]</b> 도 열립니다. 모든 모둠의 점을 한 산점도에 모아, 우리 모둠이 반 전체 분포의 어디쯤인지 봅니다(<a href="#classall" style="color:var(--mint-d);font-weight:700">아래 반 전체로 보기</a>).</p>
           </li>
           <li>
             <h3>③ 발표</h3>
             <p>전자칠판에서 <code class="inline">present.html</code> 을 열어 두세요(교사 화면의 <b>발표 화면</b> 단추). 대시보드의 모둠 카드에서 <b>발표</b> 를 누르면 그 모둠이 칠판 가득 뜹니다. <b>이전/다음</b> 으로 <b>그래프 → 보고서 → 별점</b> 세 장을 넘깁니다.</p>
+            <p>발표하는 모둠이 <b>예상을 그렸다면</b> 발표 화면에 <b>[📈 예상 vs 실제 보기]</b> 단추가 함께 나옵니다. 누르면 실제 그래프 위에 예상이 점선으로 겹쳐지고, <b>가장 크게 빗나간 곳</b>이 큰 동그라미로 표시됩니다. 예상을 그리지 않은 모둠에서는 이 단추도 이 장도 나오지 않아, 넘기는 장 수가 달라지지 않습니다.</p>
+            <p>자료를 낸 모둠이 <b>둘 이상이면</b> <b>[👥 반 전체 속 우리 모둠]</b> 단추도 나옵니다. 반 전체 점 위에 <b>발표 모둠만 크게</b> 찍어, 반 전체 추세선과 그 모둠 추세선을 나란히 보여 줍니다(<a href="#classall" style="color:var(--mint-d);font-weight:700">아래 반 전체로 보기</a>).</p>
           </li>
           <li>
-            <h3>④ 마무리</h3>
+            <h3>④ 마무리 · 개념 확인 (정리 5분)</h3>
+            <p>교사가 문항을 만들어 두었다면, 학생 화면 아래 <b>개념 확인</b> 영역에서 각자 <b>자기 번호와 이름</b>을 넣고 3~5문항을 풉니다. <b>모둠이 아니라 개인별</b>이므로 한 기기로 모둠원이 돌아가며 풀어도 각각 남습니다. 제출하면 바로 채점되고 해설이 뜹니다(<a href="#quiz" style="color:var(--mint-d);font-weight:700">아래 개념 확인</a>). 대시보드에는 문항별 정답률이, 발표 화면 마지막 장에는 반 전체 정답률 한 줄이 나옵니다.</p>
             <p>마무리 단계로 바꾸면 학생은 계속 자기 기록을 볼 수 있습니다. 수업은 만든 날부터 <b>60일</b> 동안 보관되고, 그 뒤에는 열리지 않습니다. 더 오래 두려면 <b>[30일 연장]</b>, 먼저 지우려면 <b>[지금 삭제]</b> 입니다(<a href="#keep" style="color:var(--mint-d);font-weight:700">E. 60일 보관 기한</a>).</p>
+          </li>
+          <li>
+            <h3>수업이 끝난 뒤 (교사)</h3>
+            <p>대시보드의 <b>[생기부 자료 내보내기]</b> 로 <b>학생별로 묶인 Markdown 파일</b> 한 개를 내려받습니다. 그대로 Claude 에 붙여넣어 세특 문장을 뽑을 수 있게 안내 문단이 파일 맨 앞에 들어 있습니다(<a href="#export" style="color:var(--mint-d);font-weight:700">아래 생기부 내보내기</a>). <b>60일이 지나기 전에</b> 받아 두세요.</p>
           </li>
         </ol>
         <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>관리코드를 학생에게 보여 주지 마세요.</b> 관리코드가 있으면 수업 단계와 보고서 질문을 바꾸고, 모든 모둠의 비밀번호까지 볼 수 있습니다. 칠판에 적는 것은 참여코드 6자리와 <b>각 모둠의 비밀번호 4자리</b> 뿐입니다.</div></div>
+
+        <!-- 45분 시간표 -->
+        <h3 id="time" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">45분 시간표 (예시)</h3>
+        <p>실험마다 다르지만, 한 차시를 이렇게 잡으면 <b>예상 그리기</b>·<b>데이터 실험실</b>·<b>개념 확인</b>까지 넣고도 시간이 맞습니다. 측정 시간이 긴 실험이면 보고서와 모둠 공유를 줄이고, 그래도 모자라면 <b>데이터 실험실을 다음 차시 도입</b>으로 옮기세요(저장해 둔 값이 그대로 남아 있습니다).</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>시간</th><th>하는 일</th><th>누가</th></tr>
+            <tr><td>도입 2분</td><td>참여코드·<b>모둠 비밀번호</b> 알려 주고 입장</td><td>교사 → 학생</td></tr>
+            <tr><td><b>도입 3분</b></td><td><b>예상 그래프 먼저 그리기</b> — 측정 전에 결과를 예측해 그립니다</td><td>모둠</td></tr>
+            <tr><td>전개 12분</td><td>실험·측정 → <b>데이터 입력(CSV 끌어다 놓기)</b> → 저장</td><td>모둠</td></tr>
+            <tr><td><b>전개 8분</b></td><td><b>데이터 실험실 — 분석</b>. 축 바꾸기·변환·구간으로 곡선을 직선으로 만들고 <b>[이 분석 저장]</b></td><td>모둠</td></tr>
+            <tr><td>전개 6분</td><td>보고서 답하기 (예상을 그린 모둠은 문항이 하나 늘어납니다)</td><td>모둠</td></tr>
+            <tr><td>전개 4분</td><td><b>② 모둠 공유</b> — 다른 모둠 그래프 보고 별점·칭찬, <b>[우리 반 전체]</b> 로 모아 보기</td><td>모둠</td></tr>
+            <tr><td>발표 5분</td><td><b>③ 발표</b> — 그래프 → (예상 vs 실제) → (반 전체 속 우리 모둠) → 보고서 → 별점</td><td>전자칠판</td></tr>
+            <tr><td><b>정리 5분</b></td><td><b>개념 확인 3문항 — 개인별</b>로 각자 풀고 즉시 채점·해설</td><td>학생 개인</td></tr>
+          </table>
+        </div>
+
+        <!-- 예상 그래프 -->
+        <h3 id="predict" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">예상 그래프 먼저 그리기</h3>
+        <p><b>왜 넣었나요.</b> 결과를 먼저 예상하고 나서 측정하면, 그래프가 “그냥 나온 그림”이 아니라 <b>맞혀 볼 대상</b>이 됩니다. 예상과 어긋난 자리가 곧 그 시간에 배울 지점입니다.</p>
+        <p>학생 화면의 데이터 입력표 위에 <b>“먼저 예상해 볼까요?”</b> 카드가 있습니다. <b>[예상 그리기]</b> 를 누르면 실험의 가로축·세로축(단위까지)이 그대로 들어간 빈 그래프가 열리고, 왼쪽에서 오른쪽으로 <b>손가락이나 마우스로 훑으면</b> 곡선이 그려집니다. 되돌리기·지우기가 있고, 계열이 둘 이상이면(예: 물·식용유) 계열을 골라 각각 그립니다.</p>
+        <p>저장한 예상은 실제 측정값과 <b>같은 그래프에 점선으로</b> 겹쳐지고, <b>예상과 가장 많이 달랐던 지점</b>(가로축 값과 차이)이 표시됩니다. 전자칠판 발표 화면에도 <b>예상 vs 실제</b> 한 장이 더해집니다.</p>
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18l5-6 4 4 6-8"/><path d="M4 20h16"/></svg></span><div>예상을 저장한 모둠에게는 보고서에 <b>“예상과 무엇이 달랐나요? 왜 그랬을까요?”</b> 문항이 자동으로 하나 덧붙습니다(교사가 만든 문항 뒤에, 여러 번 붙지 않게). <b>예상을 그리지 않아도 실험은 그대로 진행됩니다</b> — 강제가 아닙니다.</div></div>
+
+        <!-- CSV -->
+        <h3 id="csv" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">CSV 끌어다 놓기</h3>
+        <p><b>왜 넣었나요.</b> ezon.ai · 사이언스# 같은 프로그램이 내보낸 값을 표에 손으로 옮겨 적느라 한 차시에 5~10분이 사라집니다. 파일을 <b>표 위에 끌어다 놓기만</b> 하면 되도록 했습니다.</p>
+        <p>데이터 입력표 위 <b>드롭 영역</b>에 파일을 놓거나, <b>[파일 불러오기]</b> 로 고르거나, 표 값을 <b>복사해 붙여넣어도</b>(탭·쉼표 구분) 됩니다. 업체마다 형식이 달라 <b>범용 파서</b>로 만들었습니다 — 구분자(쉼표·탭·세미콜론)를 스스로 찾고, 파일 앞머리의 BOM·설명 줄·<code class="inline">#</code> 주석·빈 줄을 건너뛰고, 숫자 열만 골라냅니다.</p>
+        <p>열 이름을 실험의 가로축·계열과 <b>이름이 비슷한 것끼리 자동으로 짝지어</b> 주고, 확실하지 않으면 <b>드롭다운으로 직접 고르게</b> 합니다. 앞 5줄 <b>미리보기</b>를 확인한 뒤 <b>[표에 넣기]</b> 를 누릅니다. 표에 이미 값이 있으면 덮어쓸지 먼저 물어봅니다.</p>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>행 솎아내기를 꼭 확인하세요.</b> 자동 수집(예: 1초에 5번)은 <b>수백~수천 줄</b>이 나옵니다. 그대로 넣으면 표도 그래프도 못 볼 지경이 됩니다. 그래서 실험이 정한 줄 수(<code class="inline">dataSpec.rows</code>)에 맞춰 <b>고르게 솎아 넣는 것이 기본</b>이고, 원본이 몇 줄이었고 몇 줄로 줄었는지 화면에 알려 줍니다. 필요하면 <b>[전부 넣기]</b> 도 고를 수 있습니다.</div></div>
+
+        <!-- 데이터 실험실 -->
+        <h3 id="lab" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">데이터 실험실 — 축 바꾸기 · 변환 · 파생열 · 구간</h3>
+        <p><b>왜 넣었나요.</b> 센서로 모은 값은 대개 <b>시간에 대한 곡선</b>으로 그려집니다. 그런데 과학에서 뜻을 읽어 내는 순간은 대부분 <b>축을 바꾸거나 값을 변환해 곡선이 직선이 될 때</b>입니다. 서울시교육청 자료집의 수업 사례 가운데 여럿이 바로 이 분석을 요구하는데, 그림만 보고서는 할 수 없는 일이었습니다. 그래서 학생 화면에 <b>데이터 실험실</b> 탭을 두었습니다. <b>모둠에 들어와야</b> 열립니다.</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>자료집 사례</th><th>실험실에서 하는 일</th><th>읽어 내는 것</th></tr>
+            <tr><td><b>옴의 법칙</b></td><td>가로축을 시간 대신 <b>전압</b>으로 바꾸어 <b>전압–전류</b> 그래프를 그립니다</td><td>직선의 기울기 = <b>1/저항</b>. 기울기의 역수가 저항값</td></tr>
+            <tr><td><b>거리와 빛의 세기</b></td><td>가로축에 <b>1/거리²</b> 변환을 겁니다</td><td>휘어 있던 그래프가 <b>직선</b>으로. 기울기 = 광원의 상대적 세기, 절편 = <b>배경 조도</b></td></tr>
+            <tr><td><b>보일 법칙</b></td><td><b>파생열</b>로 <code class="inline">압력 × 부피</code> 를 만들고, 가로축에 <b>1/부피</b> 변환을 겁니다</td><td>P×V 가 일정한지 눈으로 확인. 1/V–P 는 원점을 지나는 직선</td></tr>
+            <tr><td><b>광합성량</b></td><td>그래프에서 <b>구간을 드래그</b>해 고릅니다</td><td>그 구간만의 기울기 = <b>그 조건에서의 광합성률</b></td></tr>
+          </table>
+        </div>
+        <p><b>쓰는 법.</b> 가로축 하나와 세로축(여러 개 가능)을 고르고, 축마다 변환을 겁니다 — <code class="inline">그대로 · 1/값 · 값² · √값 · log 값 · 1/값² · 값−최솟값</code>. <b>파생열 만들기</b> 에서는 두 열을 <code class="inline">× ÷ + −</code> 로 묶어 새 열을 만들고 이름을 붙일 수 있습니다(만든 열도 축으로 씁니다). 그래프를 <b>드래그하면 그 구간만</b>의 기울기·절편·R² 가 나오고, <b>[구간 해제]</b> 로 풀립니다. 점/선 보기와 <b>추세선</b>을 켜고 끌 수 있습니다.</p>
+        <p><b>무엇을 보여 주나요.</b> <b>기울기 · 절편 · R²</b> 를 단위와 함께 적어 줍니다(예: 기울기 <code class="inline">1200 lx·cm²</code>). 그리고 <b>변환 전후의 R² 를 나란히</b> 보여 줍니다 — <code class="inline">0.72 → 0.99</code> 처럼 바뀌는 그 순간이 학습 지점입니다. 결과 아래에는 질문 카드 세 개(<b>모양이 어떻게 달라졌나 · 기울기는 무엇을 뜻하나 · 벗어난 점은 왜 생겼나</b>)가 있어, 답을 적어 두면 분석과 함께 저장됩니다.</p>
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><div><b>원본 표는 절대 바뀌지 않습니다.</b> 실험실에서 하는 일은 모두 <b>보기</b>일 뿐이라, 데이터 입력표의 값은 그대로 남습니다. 센서 프로그램에서는 변환을 걸면 원본으로 되돌릴 수 없어 자료집도 이를 경고하지만, 이 앱에서는 <b>[원래대로]</b> 한 번이면 처음 상태로 돌아옵니다. 마음 놓고 이것저것 걸어 보게 하세요.</div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>계산할 수 없는 점은 조용히 버리지 않습니다.</b> <code class="inline">log</code> 는 0 이하에서, <code class="inline">1/값</code> 은 0 에서 값을 만들 수 없습니다. 이럴 때는 <b>몇 개를 뺐는지와 그 까닭</b>을 화면에 적어 줍니다. R² 는 <b>바꾼 뒤의 좌표</b>에서 잰 값이라는 안내도 함께 나옵니다.</div></div>
+        <p><b>[이 분석 저장]</b> 을 누르면 어떤 축·변환·구간을 썼고 결과가 무엇이었는지가 <b>모둠 보고서에 함께</b> 저장됩니다(<b>최대 5개</b>, 넘치면 오래된 것부터 밀려납니다). 보고서 문항 목록에는 나타나지 않아 학생이 헷갈릴 일이 없고, <b>과정 중심 평가와 생기부의 근거</b>가 됩니다.</p>
+
+        <!-- 반 전체로 보기 -->
+        <h3 id="classall" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">반 전체로 보기 · 여러 반 묶어보기</h3>
+        <p><b>왜 넣었나요.</b> 모둠 하나의 점 여덟 개로는 추세선을 믿기 어렵습니다. 7모둠이면 <b>표본이 일곱 배</b>가 되고, 우리 모둠이 반 전체 분포의 어디쯤인지도 보입니다.</p>
+        <p><b>학생 화면.</b> 데이터 실험실 위쪽 <b>[우리 반 전체]</b> 를 누르면, 모든 모둠의 점이 <b>모둠 색으로 한 산점도</b>에 모입니다. <b>반 전체 추세선은 굵게</b>, 모둠별 추세선은 연하게 겹쳐 그리고, 모둠별 <b>기울기·R² 표</b>가 함께 나옵니다. <b>우리 모둠 점만 크게·테두리를 둘러</b> 강조하고 “우리 모둠 기울기는 <b>7모둠 가운데 3번째로 큽니다</b>”처럼 순위를, “표본이 <b>8개에서 56개로</b> 늘었습니다”처럼 표본 수를 알려 줍니다. 계열이 둘 이상이면 어떤 계열로 볼지 고릅니다.</p>
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><div>이 모드는 <b>② 모둠 공유 단계부터</b> 열립니다. 그 전에는 다른 모둠 자료를 볼 수 없다는 안내만 나오고, 학생은 <b>[우리 모둠]</b> 으로 먼저 분석해 두면 됩니다. 모둠 공유와 같은 규칙이라 새로 열리는 것이 없습니다.</div></div>
+        <p><b>전자칠판.</b> 발표 화면에도 <b>[👥 반 전체 속 우리 모둠]</b> 한 장이 붙습니다. 반 전체 점을 찍고 <b>발표 모둠만 크게</b> 강조해, 반 전체 추세선과 그 모둠 추세선을 나란히 보여 줍니다. <b>자료를 낸 모둠이 두 모둠 미만이면 이 장은 아예 만들어지지 않아</b>, 넘기는 장 수가 흔들리지 않습니다(예상 vs 실제와 같은 방식입니다).</p>
+        <p><b>교사 화면 — 여러 반 묶어보기.</b> 대시보드에서 <b>이 브라우저에 보관된 관리코드</b> 가운데 <b>같은 실험</b>인 수업들을 골라 한 그래프에 겹쳐 볼 수 있습니다. 반별 색으로 점을 찍고, 반별 기울기·R² 표와 <b>전체 통합 추세선</b>, “표본이 <b>n개에서 m개로</b> 늘었습니다” 안내가 나옵니다. 3반·5반·7반을 같은 실험으로 했다면 <b>반 사이의 차이</b>가 그대로 드러납니다. <b>수업이 하나뿐이면 이 영역은 나오지 않습니다.</b></p>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>기울기가 다르다고 틀린 것이 아닙니다.</b> 모둠·반마다 광원 밝기, 주변 조도, 센서를 대는 위치가 달랐다면 기울기와 절편이 다른 것이 자연스럽습니다. <b>왜 달랐을까</b>를 묻는 것이 이 화면의 목적입니다. 관리코드를 지운 브라우저에서는 그 수업이 목록에 없으니, 학기 중에는 관리코드를 지우지 마세요.</div></div>
+
+        <!-- 개념 확인 -->
+        <h3 id="quiz" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">개념 확인 3문항 — 개인별</h3>
+        <p><b>모둠 활동과 다릅니다.</b> 데이터·보고서·별점은 모둠 단위지만, 개념 확인은 <b>학생이 자기 번호와 이름을 넣고 각자</b> 풉니다. 그래야 형성평가 자료가 되고, 생기부에 쓸 개인 근거가 남습니다. 모둠 기기 한 대로 모둠원이 돌아가며 풀어도 <b>번호마다 따로</b> 저장됩니다.</p>
+        <p><b>교사</b>는 대시보드에서 <b>3~5문항</b>을 만듭니다. 유형은 <b>객관식</b>(보기 2~5개, 정답 1개)과 <b>단답형</b>(공백·대소문자는 무시하고 비교) 두 가지이고, 문항마다 <b>해설</b>을 적을 수 있습니다. <b>문항을 만들지 않으면 학생 화면에 이 영역이 아예 나타나지 않습니다.</b></p>
+        <p><b>학생</b>은 번호·이름을 넣고 풀면 <b>즉시 채점</b>되고 해설이 보입니다. 다시 풀 수 있고, <b>마지막 제출</b>이 저장됩니다.</p>
+        <p><b>교사 대시보드</b>에는 <b>문항별 정답률</b>이 나오고 오답이 많은 문항이 강조됩니다 — 어디서 막혔는지 바로 보입니다. 전자칠판 마무리 화면에는 <b>반 전체 정답률 한 줄</b>만 나오고 학생 이름은 나오지 않습니다.</p>
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><div><b>정답은 학생 화면으로 내려가지 않습니다.</b> 채점은 서버에서 하고, 학생 화면에는 정답이 빠진 문항만 내려갑니다. 다른 학생의 답과 이름도 보이지 않습니다. 그래서 답을 하나씩 넣어 보며 정답을 알아내는 일이 되지 않습니다.</div></div>
+
+        <!-- 생기부 -->
+        <h3 id="export" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">생기부 자료 내보내기</h3>
+        <p>대시보드의 <b>[생기부 자료 내보내기]</b> 를 누르면 <b>학생별로 묶인 Markdown 파일</b> 한 개를 내려받습니다. 엑셀로 정리하고 싶으면 <b>CSV</b> 도 함께 받을 수 있습니다.</p>
+        <p>학생 한 명 분량에 이런 것들이 들어갑니다.</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>담기는 것</th><th>내용</th></tr>
+            <tr><td>누구</td><td>이름·번호와 소속 모둠</td></tr>
+            <tr><td>무엇을</td><td>실험명, 관련 <b>성취기준 코드와 원문</b></td></tr>
+            <tr><td>측정</td><td>계열별 처음·마지막·평균, 낼 수 있으면 <b>기울기와 R²</b></td></tr>
+            <tr><td>예상</td><td>예상을 그렸다면 예상과 실제의 차이</td></tr>
+            <tr><td>서술</td><td>보고서 답변 <b>전문</b></td></tr>
+            <tr><td>개념 확인</td><td>점수와 <b>틀린 문항</b></td></tr>
+            <tr><td>동료 평가</td><td>받은 별점 평균과 칭찬 문구</td></tr>
+          </table>
+        </div>
+        <p>파일 맨 앞에는 <b>Claude 에 그대로 붙여넣을 수 있는 안내 문단</b>이 들어 있습니다 — “아래는 …수업 기록입니다. 학생별로 과목별 세부능력 및 특기사항 문장을 <b>명사형 종결로 250자 내외</b>로 작성해 주세요” 같은 식입니다. 모둠원 칸을 비워 둔 모둠은 <b>“모둠 단위 기록”</b> 한 건으로 묶여 나옵니다.</p>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div>내보낸 파일에는 <b>학생 이름이 들어갈 수 있습니다.</b> 개인 기기나 공용 PC 바탕화면에 두지 말고, 세특 작성이 끝나면 지우세요. 생성형 AI 에 넣을 때는 학교·교육청 지침을 먼저 확인하고, 필요하면 이름을 <b>번호로 바꿔서</b> 넣으세요.</div></div>
 
         <!-- 모둠 비밀번호 -->
         <h3 id="pin" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">모둠 비밀번호 4자리</h3>
@@ -370,11 +480,14 @@
             <tr><td>모둠 이름, 모둠원 표기(번호·별명 또는 이름)</td><td><code>mbl_groups</code></td></tr>
             <tr><td>모둠 비밀번호 4자리 (자동 발급, 학생 화면으로는 내려가지 않음)</td><td><code>mbl_groups</code></td></tr>
             <tr><td>측정값과 실험 메모</td><td><code>mbl_data</code></td></tr>
+            <tr><td>모둠이 그린 <b>예상 그래프</b></td><td><code>mbl_data</code> 의 <code>predict</code> 칸</td></tr>
             <tr><td>보고서 답변</td><td><code>mbl_reports</code></td></tr>
             <tr><td>모둠끼리 남긴 별점·한 줄 칭찬</td><td><code>mbl_feedback</code></td></tr>
+            <tr><td><b>개념 확인</b> — 학생 번호·이름, 고른 답, 점수 (개인별)</td><td><code>mbl_quiz</code></td></tr>
           </table>
         </div>
         <p>계정도, 학번도, 연락처도 받지 않습니다. 로그인 자체가 없어 저장할 것도 없습니다. 그리고 이 자료들은 <b>60일 뒤 만료</b>됩니다(<a href="#keep" style="color:var(--mint-d);font-weight:700">아래 60일 보관 기한</a>).</p>
+        <p><b>개념 확인만 개인 단위입니다.</b> 형성평가로 쓰려면 누가 풀었는지 알아야 하기 때문입니다. 이름 대신 <b>번호만</b> 넣게 해도 채점과 대시보드는 그대로 동작합니다. 학생 화면으로는 <b>남의 답도 이름도 내려가지 않고</b>, 문항의 정답도 빠진 채 내려갑니다(<a href="#quiz" style="color:var(--mint-d);font-weight:700">C. 개념 확인</a>).</p>
 
         <h3>학생 이름 대신 번호나 별명을 권합니다</h3>
         <p>모둠원 칸은 원래 <b>선택</b>이고, 학생 화면의 기본 안내도 <code class="inline">예) 3, 11, 17</code> 처럼 <b>번호</b>를 적도록 바뀌어 있습니다. 번호만 있어도 교사는 누구인지 알고, 자료에는 이름이 남지 않습니다. 이름을 그대로 쓰고 싶으면 물론 쓸 수 있습니다 — 학교 방침에 맞게 고르세요.</p>
@@ -501,10 +614,50 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
             <tr><td>관리코드를 잃어버렸다</td><td>수업을 만든 그 브라우저의 <b>이 브라우저에 저장된 수업</b> 목록에서 찾을 수 있습니다. 목록에도 없다면 Supabase <code>SQL Editor</code> 에서 <code>select * from mbl_admin;</code> 로 확인합니다(프로젝트 소유자만 가능).</td></tr>
             <tr><td>실험 목록이 비어 보인다</td><td><code>lab-data.js</code> 가 <code>hub.js</code> 보다 <b>먼저</b> 읽히는지, 같은 폴더에 있는지 확인합니다.</td></tr>
             <tr><td>전송량이 걱정된다</td><td>Supabase 대시보드 <code>Settings → Usage</code> 에서 이번 달 사용량을 볼 수 있습니다. 한 차시 10MB 안팎이니 5GB 한도까지는 여유가 큽니다.</td></tr>
+            <tr><td>CSV 를 놓았는데 표가 안 채워진다</td><td>미리보기에 숫자 열이 잡혔는지 봅니다. 열 이름이 실험과 달라 자동으로 못 짝지었으면 <b>드롭다운으로 열을 직접 고르면</b> 됩니다. 그래도 비어 있으면 그 파일에 숫자 열이 없는 것입니다(설명만 있는 머리글 파일인지 확인).</td></tr>
+            <tr><td>표가 수백 줄이 되어 버렸다</td><td><b>행 솎아내기</b>가 꺼져 있었던 경우입니다. 다시 불러오면서 솎아내기를 켜세요(<a href="#csv" style="color:var(--mint-d);font-weight:700">C. CSV 불러오기</a>).</td></tr>
+            <tr><td>학생 화면에 <b>개념 확인</b> 이 안 보인다</td><td>교사가 문항을 아직 만들지 않은 것입니다. 문항이 없으면 그 영역은 <b>일부러 나타나지 않습니다</b>.</td></tr>
+            <tr><td>발표 화면에 <b>예상 vs 실제</b> 장이 없다</td><td>그 발표 모둠이 예상을 그리지 않았거나 저장하지 않았습니다. 예상이 없으면 그 장은 건너뛰고 세 장 그대로 넘어갑니다.</td></tr>
           </table>
         </div>
         <p>브라우저 개발자 도구 콘솔에서 <code class="inline">await Hub.diagnose()</code> 를 치면 <b>[연결 확인]</b> 과 같은 진단을 직접 볼 수 있습니다.</p>
         <p>문의: 해누리중학교 조승재(과학이조선생).</p>
+      </section>
+
+      <!-- 출처와 저작권 -->
+      <section id="sources">
+        <h2><span class="no">J</span>출처와 저작권</h2>
+        <p class="lead">실험 도감 38건은 아래 두 자료집을 <b>참고해 다시 쓴 것</b>입니다. 어디서 왔는지 분명히 밝힙니다.</p>
+
+        <h3>참고한 자료</h3>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>자료</th><th>서지 사항</th></tr>
+            <tr>
+              <td>실험 사례 · 수업 설계</td>
+              <td>『2026 교구 및 디지털 도구 활용 과학 교수학습자료(중등 과학)』<br />
+                  서울특별시교육청 <b>창의미래교육과</b>, 2026년 7월.<br />
+                  집필 <b>김지연 · 이승윤 · 이차은 · 오유리 · 최효석</b></td>
+            </tr>
+            <tr>
+              <td>센서 실험 절차</td>
+              <td>『AI-STEAM 교육을 위한 디지털 과학실험 따라하기 — 이지메이커 수업사례집(중학 합본 V1)』<br />
+                  <b>최효석</b>(영서중학교)</td>
+            </tr>
+            <tr>
+              <td>성취기준 87개</td>
+              <td>2022 개정 교육과정 과학과 성취기준 — <b>교육부 고시 제2022-33호 [별책 9]</b></td>
+            </tr>
+          </table>
+        </div>
+
+        <h3>어떻게 썼나</h3>
+        <p><b>실험 절차와 해설은 위 자료를 참고해 다시 쓴 것이며, 원문을 그대로 옮기지 않았습니다.</b> 어떤 센서로 무엇을 재는 실험인지, 어느 성취기준에 닿는지를 참고한 뒤, 중학생이 읽을 문장과 이 허브의 데이터 입력표·보고서 질문 형식에 맞게 <b>새로 작성</b>했습니다. 자료집의 사진·표·문장을 복사해 넣은 곳은 없습니다. 성취기준은 고시 원문 그대로이며(공공저작물), 코드와 원문을 함께 표시해 출처를 알 수 있게 했습니다.</p>
+        <p>실험 하나하나의 출처는 <code class="inline">lab-data.js</code> 의 <code class="inline">src</code> 값(<code class="inline">seoul</code> = 서울시교육청 자료집, <code class="inline">ez</code> = 이지메이커 수업사례집)으로 남아 있습니다. 두 자료집에 함께 실린 실험은 <code class="inline">src:'seoul'</code> 로 합치고 <code class="inline">altSrc:'ez'</code> 를 남겨 <b>두 곳을 모두</b> 표시합니다. 학생 화면의 실험 도감과 상세 시트에도 이 정식 명칭이 한 줄로 나옵니다.</p>
+
+        <h3>이 앱에 대해</h3>
+        <p>이 허브는 <b>해누리중학교 조승재</b>가 <b>학교 수업 목적</b>으로 만들었습니다. 상업적 목적이 없고, 어느 업체와도 관계가 없습니다. 화면·코드(<code class="inline">index.html · teacher.html · present.html · manual.html · hub.js · schema.sql</code>)의 저작권은 제작자에게 있으며, 다른 학교가 자기 수업에 쓰는 것은 환영합니다(<a href="#share" style="color:var(--mint-d);font-weight:700">H. 다른 학교에 배포하기</a>).</p>
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 6h16v12H4z"/><path d="M4 7l8 6 8-6"/></svg></span><div><b>출처 표기나 저작권에 문제가 있다면 알려 주세요.</b> 확인하고 바로 고치거나 내리겠습니다. 실험 내용에 오류가 있을 때도 마찬가지입니다.<br />연락처 · <a href="mailto:chuseonjae@outlook.kr">chuseonjae@outlook.kr</a> (해누리중학교 조승재)</div></div>
       </section>
 
       <div class="endnote">
@@ -517,7 +670,7 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
     </div>
   </div>
 
-<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-11</span></footer>
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-15</span></footer>
 
 </body>
 </html>

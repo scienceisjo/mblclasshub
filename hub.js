@@ -58,8 +58,32 @@
 //     (발표 슬라이드 넘김은 보드를 다시 받지 않고 신호만으로 따라갑니다.)
 //     Hub.setWatchPace('ABC234', 5000) 으로 간격을 직접 정할 수 있습니다.
 //
+//  ▶ 예상 그래프 (측정 전에 손으로 그려 보는 곡선)
+//     예상은 측정 데이터와 같은 행(mbl_data.predict)에 들어갑니다. 꼴은 [{x:0, s0:20, s1:20}, ...]
+//     · 저장   await Hub.savePredict('ABC234', group.id, [{x:0,s0:20}, ...]);
+//     · 함께   await Hub.saveData('ABC234', group.id, rows, note, pin, predict);
+//     · 유지   predict 를 넘기지 않으면(undefined·null) 서버는 있던 예상을 그대로 둡니다.
+//              그래서 예전처럼 인자 5개로 부르던 화면은 하나도 고칠 것이 없습니다.
+//     · 비우기 빈 배열 [] 을 넘깁니다(= "예상을 그리지 않음"). 화면에서도 길이 0 이면 없는 것으로 봅니다.
+//     · 비교   Hub.predictGap(rows, predict, seriesIndex) → 예상과 가장 많이 달랐던 지점
+//
+//  ▶ 개념 확인(형성평가) — 여기만 "개인별" 입니다
+//     교사: await Hub.adminSetQuiz(adminCode, [{id:'q1', type:'choice', q:'...',
+//                                              options:['물','식용유'], answer:0, explain:'...'}]);
+//           빈 배열 [] 을 넘기면 문항이 사라져 학생 화면에서 이 영역이 다시 감춰집니다.
+//     학생: const r = await Hub.saveQuiz('ABC234', group.id, 7, '김하나', {q1:'0', q2:'비열'});
+//           r.score / r.max_score / r.detail(문항별 채점) / r.explains(해설)
+//           ★ 점수는 서버가 매깁니다. 화면은 점수를 보내지 않습니다.
+//     교사 화면의 문항별 정답률은 Hub.gradeQuiz(lesson.quiz, 응답.answers) 로 직접 셉니다
+//     (교사 보드에만 정답이 실려 있습니다. 학생 보드에는 정답·해설이 아예 없습니다).
+//
+//  ▶ 생기부 자료 만들기 (순수 함수 · 네트워크 없음)
+//     Hub.exportStudents(board) → 학생 한 명씩 묶은 배열. Markdown·CSV 로 조립하기 쉽게
+//       {kind, name, no, groupNo, groupName, standards, data, predict, report, quiz, feedback ...}
+//     Hub.stats(rows, seriesIndex) → {n, first, last, mean, min, max, slope, r2 ...}
+//
 //  ▶ 오프라인
-//     인터넷이 끊겨도 saveData/saveReport 는 localStorage 에 저장되고 {offline:true} 를
+//     인터넷이 끊겨도 saveData/saveReport/saveQuiz 는 localStorage 에 저장되고 {offline:true} 를
 //     돌려줍니다. 화면 위에 "임시 저장 중" 배너를 띄우세요.
 //     연결이 돌아오면  await Hub.flushOffline('ABC234')  로 한 번에 다시 보냅니다.
 //     Hub.onStatus(on => banner.hidden = !on.offline)  로 상태 변화를 받을 수 있습니다.
@@ -206,6 +230,172 @@ window.Hub = (function () {
     var h = 5381;
     for (var i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0;
     return h.toString(36);
+  }
+
+  // ── 숫자·표 도우미 ───────────────────────────────────────────────
+  //  CSV·손입력·서버 값이 뒤섞여 들어오므로 숫자로 바꾸는 자리를 한 곳에 모읍니다.
+  //  '20.1 ℃' → 20.1,  '1,250' → 1250,  '1,25'(소수점 쉼표) → 1.25,  '' → NaN
+  function num(v) {
+    if (v === null || v === undefined) return NaN;
+    if (typeof v === 'number') return isFinite(v) ? v : NaN;
+    var s = String(v).replace(/\s+/g, '').replace(/[^0-9,.eE+\-]/g, '');
+    if (!s) return NaN;
+    //  쉼표 갈라 읽기 — 1,250·1,250,000 은 자릿점, 1,25 는 소수점(유럽식 내보내기),
+    //  둘 다 있으면 뒤에 오는 쪽이 소수점입니다(1.250,5 → 1250.5).
+    var dot = s.lastIndexOf('.'), com = s.lastIndexOf(',');
+    if (dot >= 0 && com >= 0) {
+      if (com > dot) s = s.replace(/\./g, '').replace(',', '.');
+      else           s = s.replace(/,/g, '');
+    } else if (com >= 0) {
+      if (/^[+-]?\d{1,3}(,\d{3})+$/.test(s)) s = s.replace(/,/g, '');
+      else if (/^[+-]?\d+,\d+$/.test(s))     s = s.replace(',', '.');
+      else                                   s = s.replace(/,/g, '');
+    }
+    var n = Number(s);
+    return isFinite(n) ? n : NaN;
+  }
+
+  //  표 한 칸 꺼내기 — rows 는 [[x, s1, s2...], ...] 도, [{x:0, s0:20, s1:20}, ...] 도 됩니다.
+  //  col 0 = 가로축(x), col 1 = 첫 계열, col 2 = 둘째 계열 …
+  function cellAt(row, col) {
+    if (row === null || row === undefined) return NaN;
+    if (Array.isArray(row)) return num(row[col]);
+    if (typeof row === 'object') {
+      if (col === 0) {
+        if (row.x !== undefined) return num(row.x);
+        if (row.X !== undefined) return num(row.X);
+      } else {
+        var k = 's' + (col - 1);
+        if (row[k] !== undefined) return num(row[k]);
+        if (row['y' + (col - 1)] !== undefined) return num(row['y' + (col - 1)]);
+        if (col === 1 && row.y !== undefined) return num(row.y);
+      }
+      var keys = Object.keys(row);                 // 이름을 모르면 키 순서대로
+      return (col < keys.length) ? num(row[keys[col]]) : NaN;
+    }
+    return (col === 0) ? NaN : num(row);           // 값 하나짜리 행
+  }
+
+  //  Hub.stats(rows, seriesIndex)
+  //  → {n, first, last, delta, mean, min, max, slope, intercept, r2, xFirst, xLast}
+  //  값이 2개 미만이면 slope·r2 는 null 입니다(가로축 값이 모두 같을 때도 null).
+  function stats(rows, seriesIndex) {
+    var si   = Math.max(0, Number(seriesIndex) || 0);
+    var list = Array.isArray(rows) ? rows : [];
+    var xs = [], ys = [], i;
+    for (i = 0; i < list.length; i++) {
+      var y = cellAt(list[i], si + 1);
+      if (!isFinite(y)) continue;
+      var x = cellAt(list[i], 0);
+      xs.push(isFinite(x) ? x : xs.length);        // 가로축이 비어 있으면 순번으로 셉니다
+      ys.push(y);
+    }
+    var out = {
+      n: ys.length, first: null, last: null, delta: null,
+      mean: null, min: null, max: null,
+      slope: null, intercept: null, r2: null, xFirst: null, xLast: null
+    };
+    if (!ys.length) return out;
+
+    var sum = 0, mn = ys[0], mx = ys[0];
+    for (i = 0; i < ys.length; i++) {
+      sum += ys[i];
+      if (ys[i] < mn) mn = ys[i];
+      if (ys[i] > mx) mx = ys[i];
+    }
+    out.first  = ys[0];
+    out.last   = ys[ys.length - 1];
+    out.delta  = out.last - out.first;
+    out.mean   = sum / ys.length;
+    out.min    = mn;
+    out.max    = mx;
+    out.xFirst = xs[0];
+    out.xLast  = xs[xs.length - 1];
+    if (ys.length < 2) return out;
+
+    // 최소제곱 직선 y = a·x + b 와 결정계수 R²
+    var n = ys.length, sx = 0, sy = sum, sxx = 0, sxy = 0;
+    for (i = 0; i < n; i++) { sx += xs[i]; sxx += xs[i] * xs[i]; sxy += xs[i] * ys[i]; }
+    var den = n * sxx - sx * sx;
+    if (den === 0) return out;                     // 가로축 값이 모두 같으면 기울기를 낼 수 없습니다
+    var a = (n * sxy - sx * sy) / den;
+    var b = (sy - a * sx) / n;
+    out.slope = a; out.intercept = b;
+
+    var ssTot = 0, ssRes = 0, ybar = out.mean;
+    for (i = 0; i < n; i++) {
+      var e = ys[i] - (a * xs[i] + b);
+      ssRes += e * e;
+      ssTot += (ys[i] - ybar) * (ys[i] - ybar);
+    }
+    out.r2 = (ssTot === 0) ? null : (1 - ssRes / ssTot);
+    return out;
+  }
+
+  //  Hub.predictGap(rows, predict, seriesIndex)
+  //  예상 곡선과 실제 측정값을 견줍니다 → {n, maxDiff, atX, predicted, actual, meanDiff}
+  //  가로축 값이 딱 맞지 않아도 가장 가까운 예상 점을 찾아 비교합니다.
+  function predictGap(rows, predict, seriesIndex) {
+    var si = Math.max(0, Number(seriesIndex) || 0);
+    var A  = Array.isArray(rows)    ? rows    : [];
+    var P  = Array.isArray(predict) ? predict : [];
+    var out = { n: 0, maxDiff: null, atX: null, predicted: null, actual: null, meanDiff: null };
+    if (!A.length || !P.length) return out;
+
+    var px = [], py = [], i, j;
+    for (i = 0; i < P.length; i++) {
+      var vy = cellAt(P[i], si + 1);
+      if (!isFinite(vy)) continue;
+      var vx = cellAt(P[i], 0);
+      px.push(isFinite(vx) ? vx : px.length);
+      py.push(vy);
+    }
+    if (!px.length) return out;
+
+    var sumd = 0, cnt = 0;
+    for (i = 0, j = 0; i < A.length; i++) {
+      var ay = cellAt(A[i], si + 1);
+      if (!isFinite(ay)) continue;
+      var ax = cellAt(A[i], 0);
+      if (!isFinite(ax)) ax = j;
+      j++;
+      var best = 0, bd = Math.abs(px[0] - ax), k;
+      for (k = 1; k < px.length; k++) {
+        var d = Math.abs(px[k] - ax);
+        if (d < bd) { bd = d; best = k; }
+      }
+      var diff = Math.abs(ay - py[best]);
+      sumd += diff; cnt++;
+      if (out.maxDiff === null || diff > out.maxDiff) {
+        out.maxDiff = diff; out.atX = ax; out.predicted = py[best]; out.actual = ay;
+      }
+    }
+    out.n = cnt;
+    out.meanDiff = cnt ? (sumd / cnt) : null;
+    return out;
+  }
+
+  //  예상 곡선 다듬기 — 화면이 준 값을 [{x, s0, s1...}] 꼴로 맞춥니다.
+  //   · null·undefined → undefined (= "건드리지 않음". 서버가 있던 예상을 그대로 둡니다)
+  //   · []             → []        (= "예상 없음" 으로 지우기)
+  function tidyPredict(predict) {
+    if (predict === null || predict === undefined) return undefined;
+    if (!Array.isArray(predict)) return [];
+    var out = [];
+    for (var i = 0; i < predict.length; i++) {
+      var r = predict[i];
+      if (r === null || r === undefined) continue;
+      var o = {}, x = cellAt(r, 0), got = false;
+      o.x = isFinite(x) ? x : i;
+      for (var c = 1; c <= 8; c++) {
+        var y = cellAt(r, c);
+        if (!isFinite(y)) continue;
+        o['s' + (c - 1)] = y;
+        got = true;
+      }
+      if (got) out.push(o);
+    }
+    return out;
   }
 
   function looksOffline(err) {
@@ -426,9 +616,11 @@ window.Hub = (function () {
     });
   }
 
-  //  Hub.adminSet(adminCode, {phase, presenterGroup, slideIdx, form, extendDays})
+  //  Hub.adminSet(adminCode, {phase, presenterGroup, slideIdx, form, extendDays, quiz})
   //  넘기지 않은 항목은 그대로 둡니다. presenterGroup 을 비우려면 null 대신 '' 를 넘기세요.
   //  extendDays 가 양수면 보관 기한을 그만큼 미룹니다(넣지 않으면 기한은 그대로).
+  //  quiz 는 개념 확인 문항(정답·해설 포함)입니다. patch 에 quiz 키가 있을 때만 보냅니다
+  //  — 옛 schema.sql 을 아직 실행하지 않은 학교에서도 나머지 기능이 그대로 돌아가게 하려는 것입니다.
   var CLEAR_UUID = '00000000-0000-0000-0000-000000000000';
   function adminSet(adminCode, patch) {
     patch = patch || {};
@@ -436,18 +628,38 @@ window.Hub = (function () {
     if (Object.prototype.hasOwnProperty.call(patch, 'presenterGroup')) {
       pg = patch.presenterGroup ? String(patch.presenterGroup) : CLEAR_UUID;
     }
-    return rpc('mbl_admin_set', {
+    var args = {
       p_admin_code     : norm(adminCode),
       p_phase          : patch.phase != null ? String(patch.phase) : null,
       p_presenter_group: pg,
       p_slide_idx      : (patch.slideIdx == null ? null : Number(patch.slideIdx)),
       p_form           : (patch.form == null ? null : patch.form),
       p_extend_days    : (patch.extendDays == null ? null : Number(patch.extendDays))
-    }).then(function (l) {
+    };
+    if (Object.prototype.hasOwnProperty.call(patch, 'quiz') && patch.quiz != null) {
+      args.p_quiz = patch.quiz;
+    }
+    return rpc('mbl_admin_set', args).then(function (l) {
       state.lesson = l;
       if (l && l.join_code) saveLocal('lesson_' + l.join_code, l);
       return l;
     });
+  }
+
+  //  Hub.adminSetQuiz(adminCode, quiz) → lesson
+  //  개념 확인 문항 배포·수정. quiz 는 배열도, {questions:[...]} 도 됩니다(서버가 배열로 맞춥니다).
+  //    [{id:'q1', type:'choice', q:'…', options:['물','식용유'], answer:0, explain:'…'},
+  //     {id:'q2', type:'short',  q:'…', answer:'비열|비열이 크다',        explain:'…'}]
+  //  빈 배열 [] 을 넘기면 문항이 사라져 학생 화면에서 개념 확인 영역이 다시 감춰집니다.
+  //  ★ 정답·해설은 교사 경로(mbl_admin_load)로만 되돌아옵니다.
+  function adminSetQuiz(adminCode, quiz) {
+    var q = quiz;
+    if (q == null) q = [];
+    if (!Array.isArray(q) && typeof q === 'object') {
+      q = Array.isArray(q.questions) ? q.questions : (Array.isArray(q.items) ? q.items : []);
+    }
+    if (!Array.isArray(q)) q = [];
+    return adminSet(adminCode, { quiz: q });
   }
 
   //  Hub.adminPins(adminCode) → [{group_id, group_no, group_name, pin}]
@@ -580,10 +792,15 @@ window.Hub = (function () {
 
   // ── 오프라인 대기열 ──────────────────────────────────────────────
   function queueKey(code) { return 'queue_' + norm(code); }
+  //  같은 종류·같은 모둠의 대기 항목은 마지막 것만 남깁니다.
+  //  개념 확인은 한 기기에서 여러 학생이 이어서 풀 수 있으므로 번호까지 넣은 key 로 가릅니다.
+  function queueId(x) {
+    return (x && x.key != null) ? String(x.key) : String((x && x.groupId) || '');
+  }
   function pushQueue(code, item) {
     var q = loadLocal(queueKey(code), []) || [];
-    // 같은 종류·같은 모둠의 대기 항목은 마지막 것만 남깁니다.
-    q = q.filter(function (x) { return !(x.kind === item.kind && x.groupId === item.groupId); });
+    var id = queueId(item);
+    q = q.filter(function (x) { return !(x.kind === item.kind && queueId(x) === id); });
     q.push(item);
     saveLocal(queueKey(code), q);
     return q.length;
@@ -594,25 +811,127 @@ window.Hub = (function () {
     return normPin(pin) || getPin(code, groupId);
   }
 
-  //  Hub.saveData(joinCode, groupId, rows, note, pin)
+  //  Hub.saveData(joinCode, groupId, rows, note, pin [, predict])
   //  성공하면 localStorage 에도 백업, 실패하면 localStorage 에만 저장하고 {offline:true}
-  function saveData(joinCode, groupId, rows, note, pin) {
+  //  ★ predict(예상 곡선)는 맨 뒤 선택 인자입니다. 넘기지 않으면 서버가 있던 예상을 그대로 둡니다
+  //    — 그래서 예전처럼 인자 5개로 부르던 화면 코드는 하나도 고칠 것이 없습니다.
+  function saveData(joinCode, groupId, rows, note, pin, predict) {
     var code = norm(joinCode);
     var p = pinFor(code, groupId, pin);
+    var pre = tidyPredict(predict);        // undefined = 건드리지 않음
     var payload = { rows: rows || [], note: note == null ? '' : String(note) };
+    if (pre !== undefined) payload.predict = pre;
     saveLocal('data_' + code + '_' + groupId, payload);
-    return rpc('mbl_save_data', {
+
+    var args = {
       p_join_code: code, p_group_id: groupId,
       p_rows: payload.rows, p_note: payload.note, p_pin: p
-    }).then(function (row) {
+    };
+    if (pre !== undefined) args.p_predict = pre;
+
+    return rpc('mbl_save_data', args).then(function (row) {
       rememberPin(code, groupId, p);
       return row;
     }, function (err) {
       if (isPinError(err)) { forgetPin(code, groupId); throw err; }
       if (!looksOffline(err.raw || err)) throw err;
-      pushQueue(code, { kind: 'data', groupId: groupId, rows: payload.rows, note: payload.note, pin: p, at: Date.now() });
+      var item = { kind: 'data', groupId: groupId, rows: payload.rows, note: payload.note, pin: p, at: Date.now() };
+      if (pre !== undefined) item.predict = pre;
+      pushQueue(code, item);
       setOffline(true);
-      return { offline: true, group_id: groupId, rows: payload.rows, note: payload.note };
+      var res = { offline: true, group_id: groupId, rows: payload.rows, note: payload.note };
+      if (pre !== undefined) res.predict = pre;
+      return res;
+    });
+  }
+
+  //  Hub.savePredict(joinCode, groupId, predict, pin) — 예상 곡선만 저장하는 편의 함수
+  //  ★ 서버의 mbl_save_data 는 rows 도 함께 받으므로, 지금 있는 측정값을 그대로 다시 넣어 줍니다
+  //    (그렇게 하지 않으면 예상을 저장하다가 이미 적어 둔 측정값이 지워집니다).
+  //  예상을 지우려면 빈 배열 [] 을 넘기세요.
+  function savePredict(joinCode, groupId, predict, pin) {
+    var code = norm(joinCode);
+    var cur  = currentData(code, groupId);
+    return saveData(code, groupId, cur.rows, cur.note, pin,
+                    (predict === null || predict === undefined) ? [] : predict);
+  }
+
+  //  지금 이 모둠의 측정값·메모 찾기 — 이 기기가 마지막으로 저장한 값을 먼저 봅니다
+  //  (화면에 보이는 표와 같은 값이기 때문입니다). 없으면 서버에서 받아 둔 보드에서 찾습니다.
+  function currentData(code, groupId) {
+    var out = { rows: [], note: '' };
+    var local = loadLocal('data_' + norm(code) + '_' + groupId, null);
+    if (local && Array.isArray(local.rows) && local.rows.length) {
+      out.rows = local.rows;
+      out.note = local.note == null ? '' : String(local.note);
+      return out;
+    }
+    try {
+      var b = state.board;
+      if (b && Array.isArray(b.data)) {
+        for (var i = 0; i < b.data.length; i++) {
+          if (b.data[i] && String(b.data[i].group_id) === String(groupId)) {
+            out.rows = Array.isArray(b.data[i].rows) ? b.data[i].rows : [];
+            out.note = b.data[i].note == null ? '' : String(b.data[i].note);
+            return out;
+          }
+        }
+      }
+    } catch (e) {}
+    if (local) {                                   // 표는 비었지만 메모만 적어 둔 경우
+      out.rows = Array.isArray(local.rows) ? local.rows : [];
+      out.note = local.note == null ? '' : String(local.note);
+    }
+    return out;
+  }
+
+  //  Hub.saveQuiz(joinCode, groupId, studentNo, studentName, answers, pin)
+  //  개념 확인(형성평가) 제출 — ★ 개인별. 같은 번호로 다시 내면 마지막 제출이 남습니다.
+  //  ★ 점수는 서버가 매깁니다. 화면은 점수를 보내지 않습니다(보내도 서버가 버립니다).
+  //  → {score, max_score, detail:[{no, id, type, correct, your, answer, explain}], explains:[...], ...}
+  function saveQuiz(joinCode, groupId, studentNo, studentName, answers, pin) {
+    var code = norm(joinCode);
+    var p    = pinFor(code, groupId, pin);
+    var no   = Number(studentNo);
+    var nm   = studentName == null ? '' : String(studentName).trim();
+    var ans  = (answers && typeof answers === 'object') ? answers : {};
+    saveLocal('quiz_' + code + '_' + groupId + '_' + no, { student_name: nm, answers: ans });
+
+    return rpc('mbl_save_quiz', {
+      p_join_code   : code,
+      p_group_id    : groupId,
+      p_student_no  : no,
+      p_student_name: nm || null,
+      p_answers     : ans,
+      p_score       : null,      // ★ 서버가 채점합니다. 받기만 하고 쓰지 않는 자리입니다.
+      p_max_score   : null,
+      p_pin         : p
+    }).then(function (row) {
+      rememberPin(code, groupId, p);
+      var r = row || {};
+      var detail = Array.isArray(r.results) ? r.results : [];
+      return {
+        id: r.id, group_id: r.group_id, student_no: r.student_no, student_name: r.student_name,
+        score: r.score, max_score: r.max_score, updated_at: r.updated_at,
+        results: detail,
+        detail : detail,
+        explains: detail.map(function (d) {
+          return { no: d.no, id: d.id, correct: d.correct, explain: d.explain || '' };
+        })
+      };
+    }, function (err) {
+      if (isPinError(err)) { forgetPin(code, groupId); throw err; }
+      if (!looksOffline(err.raw || err)) throw err;
+      pushQueue(code, {
+        kind: 'quiz', key: 'quiz:' + String(groupId) + '#' + no,
+        groupId: groupId, studentNo: no, studentName: nm, answers: ans, pin: p, at: Date.now()
+      });
+      setOffline(true);
+      // 채점은 서버만 할 수 있으므로 오프라인에서는 점수를 알려 주지 않습니다.
+      return {
+        offline: true, graded: false, group_id: groupId, student_no: no, student_name: nm,
+        answers: ans, score: null, max_score: null, results: [], detail: [], explains: []
+      };
     });
   }
 
@@ -689,8 +1008,18 @@ window.Hub = (function () {
         var p;
         // 대기열에 넣을 때 함께 저장해 둔 PIN 을 씁니다(없으면 이 기기에 보관된 값).
         if (item.kind === 'data') {
-          p = rpc('mbl_save_data', {
+          var dArgs = {
             p_join_code: code, p_group_id: item.groupId, p_rows: item.rows, p_note: item.note,
+            p_pin: pinFor(code, item.groupId, item.pin)
+          };
+          // 예상 곡선은 저장할 때 함께 담아 두었을 때만 보냅니다(없으면 서버의 예상을 건드리지 않습니다).
+          if (Object.prototype.hasOwnProperty.call(item, 'predict')) dArgs.p_predict = item.predict;
+          p = rpc('mbl_save_data', dArgs);
+        } else if (item.kind === 'quiz') {
+          p = rpc('mbl_save_quiz', {
+            p_join_code: code, p_group_id: item.groupId,
+            p_student_no: item.studentNo, p_student_name: item.studentName || null,
+            p_answers: item.answers, p_score: null, p_max_score: null,
             p_pin: pinFor(code, item.groupId, item.pin)
           });
         } else if (item.kind === 'report') {
@@ -734,6 +1063,8 @@ window.Hub = (function () {
   //  공유 보드 · 실시간
   // =================================================================
 
+  //  ★ lesson.quiz = 문항,  최상위 quiz = 학생들이 낸 응답  (이름이 비슷하니 헷갈리지 마세요)
+  //    학생 경로에서는 문항에 정답·해설이 없고, 응답도 번호·점수만 실려 옵니다.
   function shapeBoard(b) {
     b = b || {};
     return {
@@ -741,7 +1072,8 @@ window.Hub = (function () {
       groups  : Array.isArray(b.groups)   ? b.groups   : [],
       data    : Array.isArray(b.data)     ? b.data     : [],
       reports : Array.isArray(b.reports)  ? b.reports  : [],
-      feedback: Array.isArray(b.feedback) ? b.feedback : []
+      feedback: Array.isArray(b.feedback) ? b.feedback : [],
+      quiz    : Array.isArray(b.quiz)     ? b.quiz     : []
     };
   }
 
@@ -768,9 +1100,16 @@ window.Hub = (function () {
     var fs = '';
     try { fs = JSON.stringify(l.form || {}); } catch (e) { fs = ''; }
     var fsig = fs.length + ':' + hash32(fs);
-    var s = [l.phase, l.slide_idx, l.presenter_group, fsig, b.groups.length,
-             b.data.length, b.reports.length, b.feedback.length].join('|');
-    for (var i = 0; i < b.data.length; i++)    s += '|d' + b.data[i].group_id + b.data[i].updated_at;
+    var qs = '';
+    try { qs = JSON.stringify(l.quiz || []); } catch (e) { qs = ''; }
+    var qsig = (l.quiz_at || '') + ':' + qs.length + ':' + hash32(qs);
+    var quiz = Array.isArray(b.quiz) ? b.quiz : [];
+    var s = [l.phase, l.slide_idx, l.presenter_group, fsig, qsig, b.groups.length,
+             b.data.length, b.reports.length, b.feedback.length, quiz.length].join('|');
+    for (var n = 0; n < quiz.length; n++) s += '|q' + quiz[n].group_id + quiz[n].student_no + quiz[n].score + quiz[n].updated_at;
+    // 예상 곡선이 생기거나 지워지면 updated_at 도 함께 바뀌지만, 눈에 보이게 한 글자 더 붙여 둡니다.
+    for (var i = 0; i < b.data.length; i++)    s += '|d' + b.data[i].group_id + b.data[i].updated_at
+                                                  + ((b.data[i].predict && b.data[i].predict.length) ? 'P' : '');
     for (var j = 0; j < b.reports.length; j++) s += '|r' + b.reports[j].group_id + b.reports[j].status + b.reports[j].updated_at;
     for (var k = 0; k < b.groups.length; k++)  s += '|g' + b.groups[k].group_no + (b.groups[k].group_name || '') + (b.groups[k].members || []).join(',');
     for (var m = 0; m < b.feedback.length; m++) s += '|f' + b.feedback[m].id + b.feedback[m].stars + (b.feedback[m].comment || '');
@@ -840,7 +1179,10 @@ window.Hub = (function () {
     function needBoard(prev, next) {
       if (!board || !prev) return true;                       // 아직 보드가 없으면 받아야 합니다
       if (prev.form_at !== next.form_at) return true;         // 보고서 양식이 바뀜
+      if (prev.quiz_at !== next.quiz_at) return true;         // 개념 확인 문항 배포·수정(학생 화면에 영역이 생깁니다)
       if (prev.grp_ver !== next.grp_ver) return true;         // 모둠 입장·이름 변경
+      // 남의 응시 결과는 교사 대시보드의 문항별 정답률에만 씁니다.
+      if (prev.quiz_ver !== next.quiz_ver && role === 'admin') return true;
       var phase = next.phase || 'collect';
       if (prev.data_ver !== next.data_ver || prev.rep_ver !== next.rep_ver) {
         // 발표 중에는 학생 화면이 슬라이드만 따라가면 됩니다(전송량 절약).
@@ -972,6 +1314,327 @@ window.Hub = (function () {
   }
 
   // =================================================================
+  //  개념 확인 채점 (화면용) · 생기부 자료 만들기 — 모두 순수 함수입니다
+  //  ※ 학생 점수는 언제나 서버가 매깁니다(mbl_save_quiz). 여기 채점기는
+  //    교사 화면에서 "문항별 정답률"을 세거나 생기부 자료에 틀린 문항을 적을 때만 씁니다.
+  //    교사 보드(mbl_admin_load)에만 정답이 실려 있으므로, 학생 보드로 부르면
+  //    정답이 없어 scored:false 만 나옵니다(그래도 오류는 나지 않습니다).
+  // =================================================================
+
+  function txtNorm(v) {
+    return String(v == null ? '' : v).replace(/\s+/g, '').toLowerCase();
+  }
+  //  문항 묶음을 언제나 배열로 (서버 mbl_quiz_norm 과 같은 규칙)
+  function quizItems(quiz) {
+    if (Array.isArray(quiz)) return quiz;
+    if (quiz && typeof quiz === 'object') {
+      if (Array.isArray(quiz.questions)) return quiz.questions;
+      if (Array.isArray(quiz.items))     return quiz.items;
+    }
+    return [];
+  }
+  function optText(o) {
+    if (o && typeof o === 'object') return String(o.text == null ? '' : o.text);
+    return String(o == null ? '' : o);
+  }
+  //  보기 안에서의 위치(0부터). 숫자면 그 위치로, 글자면 같은 보기를 찾아서. 없으면 -1.
+  function choiceIdx(options, val) {
+    var opts = Array.isArray(options) ? options : [];
+    var s = String(val == null ? '' : val).trim();
+    if (!s) return -1;
+    if (/^[0-9]+$/.test(s) && Number(s) < opts.length) return Number(s);
+    for (var i = 0; i < opts.length; i++) {
+      if (txtNorm(optText(opts[i])) !== '' && txtNorm(optText(opts[i])) === txtNorm(s)) return i;
+    }
+    return -1;
+  }
+
+  //  Hub.gradeQuiz(quiz, answers) → {score, max_score, results:[{id,no,type,scored,correct,your,answer,explain}]}
+  function gradeQuiz(quiz, answers) {
+    var items = quizItems(quiz);
+    var out = { score: 0, max_score: 0, results: [] };
+    for (var i = 0; i < items.length; i++) {
+      var q = items[i];
+      if (!q || typeof q !== 'object') continue;
+
+      var id   = (q.id != null && String(q.id) !== '') ? String(q.id) : String(i);
+      var type = String(q.type || 'short').trim().toLowerCase() || 'short';
+      var opts = Array.isArray(q.options) ? q.options : (Array.isArray(q.choices) ? q.choices : []);
+
+      var sub = null;
+      if (Array.isArray(answers)) sub = answers[i];
+      else if (answers && typeof answers === 'object') {
+        sub = (answers[id] !== undefined) ? answers[id] : answers[String(i)];
+      }
+      var your = (sub === null || sub === undefined) ? null : String(sub);
+
+      var acc = null;
+      if (Array.isArray(q.answer)) acc = q.answer.map(String);
+      else if (q.answer !== undefined && q.answer !== null && q.answer !== '') acc = [String(q.answer)];
+      else if (Array.isArray(q.answers)) acc = q.answers.map(String);
+      else if (q.answers !== undefined && q.answers !== null && q.answers !== '') acc = [String(q.answers)];
+
+      if (!acc || !acc.length) {   // 교사가 정답을 비워 둔 문항(또는 학생 보드) — 점수에 넣지 않습니다
+        out.results.push({ id: id, no: i + 1, q: q.q || q.text || '', type: type,
+                           scored: false, correct: null, your: your, answer: null,
+                           explain: q.explain || q.explanation || '' });
+        continue;
+      }
+
+      out.max_score += 1;
+      var ok = false, show = acc[0], k, p, pieces;
+      if (type === 'choice') {
+        var mine = choiceIdx(opts, your);
+        for (k = 0; k < acc.length; k++) {
+          if ((mine >= 0 && mine === choiceIdx(opts, acc[k]))
+              || (your != null && txtNorm(acc[k]) !== '' && txtNorm(your) === txtNorm(acc[k]))) ok = true;
+        }
+        var si = choiceIdx(opts, acc[0]);
+        if (si >= 0) show = optText(opts[si]);            // 번호 대신 보기 내용으로 보여 줍니다
+      } else {
+        for (k = 0; k < acc.length; k++) {
+          pieces = String(acc[k]).split('|');             // '|' 로 여러 정답
+          for (p = 0; p < pieces.length; p++) {
+            if (your != null && txtNorm(pieces[p]) !== '' && txtNorm(pieces[p]) === txtNorm(your)) ok = true;
+          }
+        }
+      }
+      if (ok) out.score += 1;
+      out.results.push({ id: id, no: i + 1, q: q.q || q.text || '', type: type,
+                         scored: true, correct: ok, your: your, answer: show,
+                         explain: q.explain || q.explanation || '' });
+    }
+    return out;
+  }
+
+  // ── 실험 도감(lab-data.js) 참고 — 없으면 조용히 건너뜁니다 ──────
+  function labExpOf(lesson) {
+    try {
+      if (typeof window !== 'undefined' && window.LAB && LAB.byId && lesson && lesson.exp_id) {
+        return LAB.byId(lesson.exp_id) || null;
+      }
+    } catch (e) {}
+    return null;
+  }
+  //  성취기준 코드와 원문 → [{code, text}]
+  function standardsOf(lesson) {
+    var e = labExpOf(lesson);
+    var codes = (e && Array.isArray(e.std)) ? e.std : [];
+    var out = [];
+    for (var i = 0; i < codes.length; i++) {
+      var t = '';
+      try { t = (window.LAB && LAB.stdText) ? (LAB.stdText(codes[i]) || '') : ''; } catch (err) { t = ''; }
+      out.push({ code: String(codes[i]), text: t });
+    }
+    return out;
+  }
+
+  //  이름으로 응시 기록 짝짓기 (한 번 쓴 기록은 used 에 표시해 두 번 붙지 않게 합니다)
+  function matchQuiz(list, used, name) {
+    for (var k = 0; k < list.length; k++) {
+      if (used[k]) continue;
+      var nm = list[k].student_name;
+      if (nm && txtNorm(nm) === txtNorm(name)) { used[k] = true; return list[k]; }
+    }
+    return null;
+  }
+
+  //  Hub.exportStudents(board) → 학생별로 묶은 기록 배열 (순수 함수 · 네트워크 없음)
+  //   · 교사 보드(Hub.adminLoad)를 넣어야 이름·응답 전문·정답까지 담깁니다.
+  //   · members 가 비어 있는 모둠은 kind:'group' 한 건으로 묶어 내보냅니다.
+  //   · 한 사람 분량:
+  //       name no groupNo groupName members
+  //       lesson{title, expTitle, classLabel, teacherName, joinCode, date}
+  //       standards[{code,text}]
+  //       data{note, updatedAt, rowCount, series[{label,unit,first,last,mean,min,max,slope,r2}]}
+  //       predict{drawn, series[{label,unit,maxDiff,atX,predicted,actual,meanDiff}]}
+  //       report{status, updatedAt, answers[{no,q,type,answer}]}
+  //       quiz{taken, score, maxScore, rate, wrong[{no,q,your,answer,explain}]}
+  //       feedback{count, starsAvg, comments[]}
+  function exportStudents(board) {
+    var b      = shapeBoard(board || {});
+    var lesson = b.lesson || {};
+    var exp    = labExpOf(lesson);
+
+    var spec = (lesson.data_spec && Array.isArray(lesson.data_spec.series) && lesson.data_spec.series.length)
+             ? lesson.data_spec
+             : ((exp && exp.dataSpec) || { x: { label: '회차', unit: '' }, series: [{ label: '측정값', unit: '' }] });
+    var series = (Array.isArray(spec.series) && spec.series.length) ? spec.series : [{ label: '측정값', unit: '' }];
+    var xLabel = (spec.x && spec.x.label) ? String(spec.x.label) : '회차';
+    var xUnit  = (spec.x && spec.x.unit)  ? String(spec.x.unit)  : '';
+
+    var questions = (lesson.form && Array.isArray(lesson.form.questions) && lesson.form.questions.length)
+                  ? lesson.form.questions
+                  : ((exp && Array.isArray(exp.questions)) ? exp.questions : []);
+    var qz    = quizItems(lesson.quiz);
+    var stds  = standardsOf(lesson);
+    var head  = {
+      title      : lesson.title || '',
+      expId      : lesson.exp_id || '',
+      expTitle   : lesson.exp_title || (exp && exp.title) || '',
+      classLabel : lesson.class_label || '',
+      teacherName: lesson.teacher_name || '',
+      joinCode   : lesson.join_code || '',
+      date       : lesson.created_at || ''
+    };
+
+    // 모둠별로 자료를 모읍니다
+    var bag = {}, i, j;
+    for (i = 0; i < b.groups.length; i++) {
+      bag[String(b.groups[i].id)] = { g: b.groups[i], data: null, report: null, quiz: [], got: [] };
+    }
+    function slot(id) { return bag[String(id)] || null; }
+    for (i = 0; i < b.data.length; i++)    { var sd = slot(b.data[i].group_id);    if (sd) sd.data   = b.data[i]; }
+    for (i = 0; i < b.reports.length; i++) { var sr = slot(b.reports[i].group_id); if (sr) sr.report = b.reports[i]; }
+    for (i = 0; i < b.quiz.length; i++)    { var sq = slot(b.quiz[i].group_id);    if (sq) sq.quiz.push(b.quiz[i]); }
+    for (i = 0; i < b.feedback.length; i++){ var sf = slot(b.feedback[i].to_group);if (sf) sf.got.push(b.feedback[i]); }
+
+    function dataBlock(d) {
+      var rows = (d && Array.isArray(d.rows)) ? d.rows : [];
+      var out  = { note: (d && d.note) || '', updatedAt: (d && d.updated_at) || '',
+                   rowCount: rows.length, x: { label: xLabel, unit: xUnit }, series: [] };
+      for (var k = 0; k < series.length; k++) {
+        var st = stats(rows, k);
+        st.label = series[k].label || ('계열 ' + (k + 1));
+        st.unit  = series[k].unit  || '';
+        out.series.push(st);
+      }
+      return out;
+    }
+    function predictBlock(d) {
+      var pre  = (d && Array.isArray(d.predict)) ? d.predict : [];
+      var rows = (d && Array.isArray(d.rows))    ? d.rows    : [];
+      var out  = { drawn: pre.length > 0, pointCount: pre.length, series: [] };
+      if (!out.drawn) return out;
+      for (var k = 0; k < series.length; k++) {
+        var gp = predictGap(rows, pre, k);
+        gp.label = series[k].label || ('계열 ' + (k + 1));
+        gp.unit  = series[k].unit  || '';
+        out.series.push(gp);
+      }
+      return out;
+    }
+    function reportBlock(r) {
+      var ans = (r && r.answers && typeof r.answers === 'object') ? r.answers : {};
+      var out = { status: (r && r.status) || '', updatedAt: (r && r.updated_at) || '', answers: [] };
+      var last = questions.length, key;
+      for (key in ans) {                                  // 화면이 덧붙인 문항(예: 예상과의 차이)까지 담습니다
+        if (!Object.prototype.hasOwnProperty.call(ans, key)) continue;
+        var m = /^q(\d+)$/.exec(key);
+        if (m && Number(m[1]) > last) last = Number(m[1]);
+      }
+      for (var k = 0; k < last; k++) {
+        var q = questions[k] || null;
+        var v = ans['q' + (k + 1)];
+        if (v === undefined) v = ans[String(k)];
+        out.answers.push({
+          no: k + 1,
+          q : q ? String(q.q || q.text || '') : '(화면이 덧붙인 질문)',
+          type: q ? String(q.type || 'short') : 'long',
+          answer: (v == null) ? '' : String(v)
+        });
+      }
+      // q1..qn 꼴이 아닌 키도 놓치지 않습니다
+      for (key in ans) {
+        if (!Object.prototype.hasOwnProperty.call(ans, key)) continue;
+        if (/^q\d+$/.test(key) || /^\d+$/.test(key)) continue;
+        out.answers.push({ no: null, q: key, type: 'short',
+                           answer: (ans[key] == null) ? '' : String(ans[key]) });
+      }
+      return out;
+    }
+    function quizBlock(row) {
+      var out = { taken: !!row, score: null, maxScore: null, rate: null, updatedAt: '', wrong: [], graded: false };
+      if (!row) return out;
+      out.score    = (row.score == null) ? null : Number(row.score);
+      out.maxScore = (row.max_score == null) ? null : Number(row.max_score);
+      out.updatedAt = row.updated_at || '';
+      if (out.maxScore) out.rate = out.score / out.maxScore;
+      if (qz.length && row.answers) {                     // 교사 보드에서만 됩니다(정답이 있어야 합니다)
+        var g = gradeQuiz(qz, row.answers);
+        out.graded = g.max_score > 0;
+        for (var k = 0; k < g.results.length; k++) {
+          var r = g.results[k];
+          if (r.scored && r.correct === false) {
+            out.wrong.push({ no: r.no, q: r.q, your: r.your, answer: r.answer, explain: r.explain });
+          }
+        }
+      }
+      return out;
+    }
+    function feedbackBlock(list) {
+      var out = { count: list.length, starsAvg: null, comments: [] }, sum = 0;
+      for (var k = 0; k < list.length; k++) {
+        sum += Number(list[k].stars) || 0;
+        if (list[k].comment) out.comments.push(String(list[k].comment));
+      }
+      if (list.length) out.starsAvg = sum / list.length;
+      return out;
+    }
+
+    var outList = [];
+    for (i = 0; i < b.groups.length; i++) {
+      var g    = b.groups[i];
+      var s    = bag[String(g.id)];
+      var mem  = (Array.isArray(g.members) ? g.members : [])
+                   .map(function (x) { return String(x == null ? '' : x).trim(); })
+                   .filter(function (x) { return !!x; });
+      var base = {
+        lesson: head, standards: stds,
+        groupId: g.id, groupNo: g.group_no, groupName: g.group_name || (g.group_no + '모둠'),
+        members: mem,
+        data   : dataBlock(s.data),
+        predict: predictBlock(s.data),
+        report : reportBlock(s.report),
+        feedback: feedbackBlock(s.got)
+      };
+
+      var used = {};
+
+      if (mem.length) {
+        for (j = 0; j < mem.length; j++) {
+          var qrow = matchQuiz(s.quiz, used, mem[j]);
+          var rec  = {}; for (var kk in base) if (Object.prototype.hasOwnProperty.call(base, kk)) rec[kk] = base[kk];
+          rec.kind = 'student';
+          rec.name = mem[j];
+          rec.no   = qrow ? qrow.student_no : null;
+          rec.seat = j + 1;
+          rec.quiz = quizBlock(qrow);
+          outList.push(rec);
+        }
+      } else {
+        // 이름을 적지 않은 모둠 — 모둠 단위 기록 한 건으로 묶습니다.
+        var grec = {}; for (var k2 in base) if (Object.prototype.hasOwnProperty.call(base, k2)) grec[k2] = base[k2];
+        grec.kind = 'group';
+        grec.name = base.groupName;
+        grec.no   = null;
+        grec.seat = null;
+        grec.quiz = quizBlock(null);
+        grec.quizAll = s.quiz.map(function (q) {
+          return { no: q.student_no, name: q.student_name || '', score: q.score, maxScore: q.max_score };
+        });
+        outList.push(grec);
+      }
+
+      // 명단에 없는 이름으로 응시한 학생도 빠뜨리지 않습니다.
+      for (j = 0; j < s.quiz.length; j++) {
+        if (used[j]) continue;
+        if (!mem.length) continue;                        // 모둠 단위 기록에 이미 담았습니다
+        var q2 = s.quiz[j];
+        var xr = {}; for (var k3 in base) if (Object.prototype.hasOwnProperty.call(base, k3)) xr[k3] = base[k3];
+        xr.kind = 'student';
+        xr.name = q2.student_name || (q2.student_no + '번');
+        xr.no   = q2.student_no;
+        xr.seat = null;
+        xr.notInMembers = true;
+        xr.quiz = quizBlock(q2);
+        outList.push(xr);
+      }
+    }
+    return outList;
+  }
+
+  // =================================================================
   //  (하위호환) 예전 hub_* 활동 리포팅 — 기존 앱들이 계속 쓰고 있습니다.
   // =================================================================
   var auth = null;
@@ -1019,10 +1682,15 @@ window.Hub = (function () {
     adminListLessons: adminListLessons,
     adminPins: adminPins, adminResetPin: adminResetPin,
     adminExtend: adminExtend, adminDelete: adminDelete,
+    adminSetQuiz: adminSetQuiz,
     myAdminCodes: myAdminCodes, forgetAdmin: forgetAdmin,
     // 학생
     getLesson: getLesson, joinGroup: joinGroup,
     saveData: saveData, saveReport: saveReport, sendFeedback: sendFeedback,
+    savePredict: savePredict, saveQuiz: saveQuiz,
+    // 계산·정리 (순수 함수 · 네트워크 없음)
+    stats: stats, predictGap: predictGap, gradeQuiz: gradeQuiz,
+    exportStudents: exportStudents, num: num, cellAt: cellAt,
     // 모둠 비밀번호(PIN)
     rememberPin: rememberPin, getPin: getPin, forgetPin: forgetPin,
     // 공유·변경감지

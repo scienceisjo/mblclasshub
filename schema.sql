@@ -27,8 +27,8 @@
 --    3모둠 학생이 5모둠의 데이터·보고서를 지우거나 남의 모둠 이름으로 별점을 보낼 수 있습니다.
 --    이를 막기 위해 모둠마다 4자리 숫자 PIN 을 둡니다(0000 도 유효합니다).
 --      · 수업을 만들 때 모둠 행과 함께 자동 발급됩니다. 교사만 볼 수 있습니다.
---      · 쓰기 RPC 4개 — mbl_join_group / mbl_save_data / mbl_save_report / mbl_send_feedback —
---        는 p_pin(맨 뒤 인자)을 반드시 받아 확인합니다. 틀리면 {"mbl_error":"..."} 를 돌려주고
+--      · 쓰기 RPC 5개 — mbl_join_group / mbl_save_data / mbl_save_report / mbl_send_feedback /
+--        mbl_save_quiz — 는 p_pin 을 반드시 받아 확인합니다. 틀리면 {"mbl_error":"..."} 를 돌려주고
 --        (hub.js 가 오류로 바꿔 줍니다) 아무것도 저장하지 않습니다.
 --      · 연속 5번 틀린 모둠은 10분 잠깁니다. 4자리는 1만 가지뿐이라 제한이 없으면
 --        콘솔에서 전부 넣어 볼 수 있기 때문입니다. 교사가 PIN 표를 열면 잠금이 풀립니다.
@@ -45,6 +45,25 @@
 --        교사가 기간을 늘리거나(mbl_admin_set 의 p_extend_days) 내려받을 수 있어야 하기 때문입니다.
 --      · mbl_admin_delete 로 지금 바로 지울 수 있고, mbl_cleanup() 이 기한 지난 수업을 정리합니다.
 --        mbl_create_lesson 안에서도 이 정리를 가볍게 한 번 부릅니다(실패해도 수업은 만들어집니다).
+--
+--  ▶ 예상 그래프 · 개념 확인  ★ 3차 개편에서 추가 ★
+--    ① 예상 그래프 — mbl_data.predict (jsonb)
+--        학생이 측정 전에 손으로 그린 예상 곡선을 [{x, s0, s1, ...}] 로 담아 둡니다.
+--        mbl_save_data 의 맨 뒤 인자 p_predict 로 저장하며, null 을 넘기면
+--        "예상을 건드리지 않는다" 는 뜻입니다(데이터만 저장할 때 예상이 지워지지 않습니다).
+--        예상을 지우려면 jsonb null (문자 그대로 'null'::jsonb) 을 넘기세요.
+--    ② 개념 확인(형성평가) — mbl_lessons.quiz (문항) + mbl_quiz (학생별 응답)
+--        · 문항은 교사가 mbl_admin_set 의 맨 뒤 인자 p_quiz 로 배포합니다.
+--          [{"id":"q1","type":"choice","q":"...","options":["...","..."],"answer":0,"explain":"..."},
+--           {"id":"q2","type":"short","q":"...","answer":"물|H2O","explain":"..."}]
+--          answer 가 숫자면 보기의 위치(★ 0부터)이고, short 의 '|' 는 "이것도 정답" 이라는 뜻입니다.
+--        · ★ 정답과 해설은 학생용 보드(mbl_get_board)로 절대 내려가지 않습니다.
+--          mbl_quiz_public() 이 answer·explain 을 떼어 낸 문항만 내보냅니다.
+--        · ★ 채점은 서버(mbl_save_quiz)가 직접 합니다. 화면이 보낸 점수(p_score)는 쓰지 않습니다.
+--          채점 결과와 해설은 그 응답의 반환값으로만 돌려줍니다.
+--        · 모둠 활동이 아니라 개인 기록이므로 (수업, 모둠, 번호) 가 열쇠입니다. 다시 풀면 갱신됩니다.
+--        · 쓰기이므로 우리 모둠 PIN(p_pin, 맨 뒤)이 필요합니다.
+--        · 학생용 보드에는 다른 학생의 답과 이름을 내려보내지 않습니다(번호·점수만).
 -- =====================================================================
 
 create extension if not exists pgcrypto;
@@ -64,6 +83,7 @@ create table if not exists mbl_lessons (
   teacher_name    text,
   form            jsonb  not null default '{}'::jsonb,   -- 보고서 질문 등 교사가 고친 양식
   data_spec       jsonb  not null default '{}'::jsonb,   -- 데이터 입력표 규격
+  quiz            jsonb  not null default '[]'::jsonb,   -- 개념 확인 문항(정답·해설 포함 · 학생에게 그대로 안 나감)
   group_count     int    not null default 7,
   phase           text   not null default 'collect',     -- collect → share → present → done
   presenter_group uuid,                                  -- 지금 발표 중인 모둠(mbl_groups.id)
@@ -80,6 +100,14 @@ alter table mbl_lessons add column if not exists slide_idx       int    not null
 alter table mbl_lessons add column if not exists expires_at      timestamptz not null default (now() + interval '60 days');
 -- 보고서 양식이 바뀐 시각. 화면이 "양식이 바뀌었나?"를 싸게 판별하는 데 씁니다.
 alter table mbl_lessons add column if not exists form_at         timestamptz not null default now();
+
+-- 개념 확인(형성평가) 문항. 교사가 mbl_admin_set(p_quiz) 으로 배포합니다.
+--   [] 이면 "문항 없음" 이고, 학생 화면에서는 개념 확인 영역이 아예 뜨지 않습니다.
+--   ★ 정답(answer)·해설(explain)이 들어 있는 원본이므로 학생용 보드로 그대로 나가면 안 됩니다.
+--     mbl_board_json 이 학생 경로에서는 mbl_quiz_public() 으로 걸러 내보냅니다.
+alter table mbl_lessons add column if not exists quiz            jsonb  not null default '[]'::jsonb;
+-- 문항이 바뀐 시각(변경감지용). form_at 과 같은 쓰임입니다.
+alter table mbl_lessons add column if not exists quiz_at         timestamptz not null default now();
 
 -- 보관 기한 기본값을 60일로 맞춥니다(예전 배포본은 180일이었습니다).
 --   ★ 이미 들어 있는 수업의 값은 건드리지 않습니다. 갑자기 지워지면 안 되기 때문입니다.
@@ -136,8 +164,13 @@ create table if not exists mbl_data (
   lesson_id  uuid not null references mbl_lessons(id) on delete cascade,
   "rows"     jsonb not null default '[]'::jsonb,      -- [[x, s1, s2...], ...] 또는 [{...}]
   note       text,
+  predict    jsonb,                                   -- 측정 전에 손으로 그린 예상 곡선 [{x, s0, s1...}]
   updated_at timestamptz not null default now()
 );
+
+-- 예상 그래프. 예전 배포본에서 올라올 때를 대비한 보강.
+--   null 이면 "예상을 그리지 않았다" 는 뜻입니다(예상은 강제가 아닙니다).
+alter table mbl_data add column if not exists predict jsonb;
 
 -- 모둠별 보고서 (모둠당 1행) -------------------------------------------
 create table if not exists mbl_reports (
@@ -162,6 +195,25 @@ create table if not exists mbl_feedback (
 -- 같은 모둠이 같은 모둠에게 보내는 피드백은 1건(갱신)
 create unique index if not exists mbl_feedback_uniq
   on mbl_feedback (lesson_id, from_group, to_group);
+
+-- 개념 확인(형성평가) 응답 — ★ 여기만 "개인별" 입니다 --------------------
+--   모둠 활동과 달리 학생 한 사람 한 사람이 자기 번호로 풉니다(형성평가 · 생기부 근거).
+--   같은 수업·같은 모둠·같은 번호면 다시 풀 때 갱신됩니다(마지막 제출이 남습니다).
+--   score / max_score 는 서버(mbl_save_quiz)가 계산해 넣은 값입니다.
+create table if not exists mbl_quiz (
+  id           uuid primary key default gen_random_uuid(),
+  lesson_id    uuid not null references mbl_lessons(id) on delete cascade,
+  group_id     uuid not null references mbl_groups(id)  on delete cascade,
+  student_no   int  not null,
+  student_name text,
+  answers      jsonb not null default '{}'::jsonb,   -- {"q1":"1", "q2":"물"} 또는 ["1","물"]
+  score        int  not null default 0,
+  max_score    int  not null default 0,
+  updated_at   timestamptz not null default now(),
+  unique (lesson_id, group_id, student_no)
+);
+
+create index if not exists mbl_quiz_lesson_idx on mbl_quiz (lesson_id, group_id, student_no);
 
 -- 조회 인덱스
 create index if not exists mbl_lessons_teacher_idx on mbl_lessons (teacher_name, created_at desc);
@@ -190,6 +242,7 @@ alter table mbl_groups   enable row level security;
 alter table mbl_data     enable row level security;
 alter table mbl_reports  enable row level security;
 alter table mbl_feedback enable row level security;
+alter table mbl_quiz     enable row level security;   -- 개인 이름·번호가 들어 있으므로 더더욱
 
 -- 예전 배포본에 남아 있는 "누구나 읽기" 정책 제거.
 --   정책 이름을 하나씩 적지 않고, mbl_ 로 시작하는 표에 걸린 읽기 정책(SELECT·ALL)을
@@ -214,7 +267,7 @@ end $$;
 
 -- 테이블 권한: 읽기·쓰기 모두 차단. 자료는 오직 RPC 로만 오갑니다.
 --   PUBLIC 에 준 권한이 남아 있으면 anon 도 그대로 쓸 수 있으므로 함께 회수합니다.
-revoke all on table mbl_lessons, mbl_admin, mbl_groups, mbl_data, mbl_reports, mbl_feedback
+revoke all on table mbl_lessons, mbl_admin, mbl_groups, mbl_data, mbl_reports, mbl_feedback, mbl_quiz
   from public, anon, authenticated;
 -- (grant 는 하지 않습니다. 예전 버전에서 준 select 권한도 위 revoke 로 회수됩니다.)
 
@@ -406,18 +459,231 @@ begin
 end;
 $$;
 
+-- ---------------------------------------------------------------------
+--  개념 확인(형성평가) 도우미 — 정답이 학생 쪽으로 새지 않게 하는 자리입니다.
+-- ---------------------------------------------------------------------
+
+-- 글자 비교용 정규화: 공백을 모두 없애고 소문자로. (단답형 채점 규칙)
+create or replace function mbl_txt_norm(p_text text)
+returns text
+language sql
+immutable
+security definer
+set search_path = public
+as $$
+  select lower(regexp_replace(coalesce(p_text, ''), '\s+', '', 'g'));
+$$;
+
+-- 문항 묶음을 언제나 "배열" 로 맞춰 줍니다.
+--   [...] 도, {"questions":[...]} 도, {"items":[...]} 도 모두 받아 줍니다.
+create or replace function mbl_quiz_norm(p_quiz jsonb)
+returns jsonb
+language sql
+immutable
+security definer
+set search_path = public
+as $$
+  select case
+    when p_quiz is null                       then '[]'::jsonb
+    when jsonb_typeof(p_quiz) = 'array'       then p_quiz
+    when jsonb_typeof(p_quiz) = 'object'
+     and jsonb_typeof(p_quiz->'questions') = 'array' then p_quiz->'questions'
+    when jsonb_typeof(p_quiz) = 'object'
+     and jsonb_typeof(p_quiz->'items') = 'array'     then p_quiz->'items'
+    else '[]'::jsonb
+  end;
+$$;
+
+-- ★★ 학생에게 내보낼 문항 — 정답(answer/answers)과 해설(explain/explanation)을 떼어 냅니다. ★★
+--    id 가 없는 문항에는 0부터 세는 순번을 id 로 붙여 줍니다(답을 어느 문항에 붙일지 정하는 열쇠).
+--    이 함수를 거치지 않은 mbl_lessons.quiz 를 학생 경로로 내보내면 정답이 통째로 새어 나갑니다.
+create or replace function mbl_quiz_public(p_quiz jsonb)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce((
+    select jsonb_agg(
+             (case when q ? 'id' then q else q || jsonb_build_object('id', (ord - 1)::text) end)
+             - 'answer' - 'answers' - 'explain' - 'explanation'
+             order by ord)
+      from jsonb_array_elements(mbl_quiz_norm(p_quiz)) with ordinality as t(q, ord)
+     where jsonb_typeof(q) = 'object'
+  ), '[]'::jsonb);
+$$;
+
+-- 보기(options) 안에서의 위치(0부터). 숫자면 그 위치로, 글자면 같은 보기를 찾아서.
+--   찾지 못하면 -1 을 돌려줍니다. 보기 항목은 "물" 같은 글자도, {"text":"물"} 같은 꼴도 됩니다.
+create or replace function mbl_choice_idx(p_options jsonb, p_val text)
+returns int
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select case
+    when p_val is null or btrim(p_val) = '' then -1
+    when p_val ~ '^[0-9]+$'
+     and jsonb_typeof(p_options) = 'array'
+     and p_val::int < jsonb_array_length(p_options) then p_val::int
+    else coalesce((
+      select (ord - 1)::int
+        from jsonb_array_elements(case when jsonb_typeof(p_options) = 'array' then p_options else '[]'::jsonb end)
+             with ordinality as t(v, ord)
+       where mbl_txt_norm(case when jsonb_typeof(v) = 'object' then v #>> '{text}' else v #>> '{}' end)
+             = mbl_txt_norm(p_val)
+       limit 1
+    ), -1)
+  end;
+$$;
+
+-- ★ 서버 채점 ★ — 문항(정답 포함)과 학생 답을 받아 점수·해설을 돌려줍니다.
+--   화면이 보낸 점수는 절대 쓰지 않습니다(콘솔에서 100점을 보내도 소용없게).
+--   답 찾는 규칙: answers 가 배열이면 순서대로, 객체면 문항 id(없으면 0부터 센 순번)로 찾습니다.
+--   choice : answer 가 숫자면 보기의 위치(0부터), 글자면 보기의 내용. 학생 답도 둘 다 받아 줍니다.
+--   short  : 공백·대소문자를 무시하고 비교하며, '|' 로 여러 정답을 적을 수 있습니다.
+--   정답을 비워 둔 문항은 채점하지 않습니다(만점에도 넣지 않습니다).
+create or replace function mbl_quiz_grade(p_quiz jsonb, p_answers jsonb)
+returns jsonb
+language plpgsql
+stable
+security definer
+set search_path = public
+as $$
+declare
+  v_items jsonb := mbl_quiz_norm(p_quiz);
+  v_res   jsonb := '[]'::jsonb;
+  v_score int := 0;
+  v_max   int := 0;
+  q       jsonb;
+  ord     bigint;
+  v_id    text;
+  v_type  text;
+  v_opts  jsonb;
+  v_sub   jsonb;
+  v_sub_t text;
+  v_acc   text[];
+  v_ok    boolean;
+  v_show  text;
+  a       text;
+  piece   text;
+  v_i     int;
+begin
+  if jsonb_typeof(v_items) <> 'array' or jsonb_array_length(v_items) = 0 then
+    return jsonb_build_object('score', 0, 'max_score', 0, 'results', '[]'::jsonb);
+  end if;
+
+  for q, ord in
+    select t.item, t.idx from jsonb_array_elements(v_items) with ordinality as t(item, idx)
+  loop
+    if jsonb_typeof(q) <> 'object' then continue; end if;
+
+    v_id   := coalesce(nullif(q->>'id', ''), (ord - 1)::text);
+    v_type := lower(coalesce(nullif(btrim(coalesce(q->>'type', '')), ''), 'short'));
+    v_opts := case when jsonb_typeof(q->'options') = 'array' then q->'options'
+                   when jsonb_typeof(q->'choices') = 'array' then q->'choices'
+                   else '[]'::jsonb end;
+
+    -- 학생이 낸 답 한 개 꺼내기
+    if p_answers is null then
+      v_sub := null;
+    elsif jsonb_typeof(p_answers) = 'array' then
+      v_sub := p_answers -> (ord - 1)::int;
+    elsif jsonb_typeof(p_answers) = 'object' then
+      v_sub := coalesce(p_answers -> v_id, p_answers -> ((ord - 1)::text));
+    else
+      v_sub := null;
+    end if;
+    v_sub_t := case when v_sub is null or jsonb_typeof(v_sub) = 'null' then null else v_sub #>> '{}' end;
+
+    -- 정답 목록 모으기 (한 개일 수도, 배열일 수도)
+    v_acc := null;
+    if jsonb_typeof(q->'answer') = 'array' then
+      select array_agg(x #>> '{}') into v_acc from jsonb_array_elements(q->'answer') x;
+    elsif q ? 'answer' and jsonb_typeof(q->'answer') <> 'null' then
+      v_acc := array[(q->'answer') #>> '{}'];
+    elsif jsonb_typeof(q->'answers') = 'array' then
+      select array_agg(x #>> '{}') into v_acc from jsonb_array_elements(q->'answers') x;
+    elsif q ? 'answers' and jsonb_typeof(q->'answers') <> 'null' then
+      v_acc := array[(q->'answers') #>> '{}'];
+    end if;
+
+    if v_acc is null or array_length(v_acc, 1) is null then
+      -- 교사가 정답을 비워 둔 문항: 점수에 넣지 않습니다.
+      v_res := v_res || jsonb_build_array(jsonb_build_object(
+        'id', v_id, 'no', ord, 'type', v_type,
+        'scored', false, 'correct', null,
+        'your', v_sub_t, 'answer', null, 'explain', q->>'explain'));
+      continue;
+    end if;
+
+    v_max  := v_max + 1;
+    v_ok   := false;
+    v_show := v_acc[1];
+
+    if v_type = 'choice' then
+      v_i := mbl_choice_idx(v_opts, v_sub_t);
+      foreach a in array v_acc loop
+        if (v_i >= 0 and v_i = mbl_choice_idx(v_opts, a))
+           or (v_sub_t is not null and mbl_txt_norm(v_sub_t) = mbl_txt_norm(a) and mbl_txt_norm(a) <> '') then
+          v_ok := true;
+        end if;
+      end loop;
+      -- 보여 줄 정답은 "보기의 내용" 으로 바꿔 줍니다(0 같은 번호만 보이면 알아볼 수 없으므로).
+      v_i := mbl_choice_idx(v_opts, v_acc[1]);
+      if v_i >= 0 then
+        v_show := case when jsonb_typeof(v_opts -> v_i) = 'object'
+                       then (v_opts -> v_i) #>> '{text}' else (v_opts -> v_i) #>> '{}' end;
+      end if;
+    else
+      foreach a in array v_acc loop
+        foreach piece in array string_to_array(coalesce(a, ''), '|') loop
+          if v_sub_t is not null and mbl_txt_norm(piece) <> ''
+             and mbl_txt_norm(piece) = mbl_txt_norm(v_sub_t) then
+            v_ok := true;
+          end if;
+        end loop;
+      end loop;
+    end if;
+
+    if v_ok then v_score := v_score + 1; end if;
+
+    v_res := v_res || jsonb_build_array(jsonb_build_object(
+      'id', v_id, 'no', ord, 'type', v_type,
+      'scored', true, 'correct', v_ok,
+      'your', v_sub_t, 'answer', v_show, 'explain', q->>'explain'));
+  end loop;
+
+  return jsonb_build_object('score', v_score, 'max_score', v_max, 'results', v_res);
+end;
+$$;
+
 -- 공유 보드 한 덩어리(json) 만들기
 --   ★ 모둠의 pin 은 여기서 반드시 빼냅니다. 이 함수는 참여코드만 알면 부를 수 있는
 --     mbl_get_board 도 함께 쓰므로, pin 을 담으면 같은 반 학생 누구나 남의 모둠 PIN 을
 --     보게 되어 PIN 을 둔 의미가 사라집니다. 교사는 mbl_admin_pins 로 따로 확인합니다.
-create or replace function mbl_board_json(p_lesson mbl_lessons)
+--   ★ p_admin = false(학생·전자칠판) 일 때
+--       · lesson.quiz 에서 정답·해설을 떼어 냅니다(mbl_quiz_public).
+--       · 개념 확인 응답은 번호·점수만 내보냅니다(남의 답과 이름은 내보내지 않습니다).
+--     p_admin = true(교사 대시보드) 일 때만 원본 문항과 응답 전문이 나갑니다.
+--   ★ 돌려주는 키
+--       lesson / groups / data / reports / feedback / quiz
+--       - lesson.quiz = 문항,  최상위 quiz = 학생들의 응답  (이름이 비슷하니 헷갈리지 마세요)
+--       - data[].predict = 그 모둠이 그린 예상 곡선 (to_jsonb(d) 에 자동으로 들어갑니다)
+drop function if exists mbl_board_json(mbl_lessons);
+create or replace function mbl_board_json(p_lesson mbl_lessons, p_admin boolean default false)
 returns json
 language sql
 security definer
 set search_path = public
 as $$
   select json_build_object(
-    'lesson',   to_jsonb(p_lesson),
+    'lesson',   to_jsonb(p_lesson) || jsonb_build_object(
+                  'quiz', case when coalesce(p_admin, false)
+                               then coalesce(mbl_quiz_norm(p_lesson.quiz), '[]'::jsonb)
+                               else mbl_quiz_public(p_lesson.quiz) end),
     'groups',   coalesce((select jsonb_agg((to_jsonb(g) - 'pin' - 'pin_fail' - 'pin_lock_until') order by g.group_no)
                             from mbl_groups g where g.lesson_id = p_lesson.id), '[]'::jsonb),
     'data',     coalesce((select jsonb_agg(to_jsonb(d) order by d.updated_at)
@@ -425,7 +691,17 @@ as $$
     'reports',  coalesce((select jsonb_agg(to_jsonb(r) order by r.updated_at)
                             from mbl_reports r where r.lesson_id = p_lesson.id), '[]'::jsonb),
     'feedback', coalesce((select jsonb_agg(to_jsonb(f) order by f.created_at)
-                            from mbl_feedback f where f.lesson_id = p_lesson.id), '[]'::jsonb)
+                            from mbl_feedback f where f.lesson_id = p_lesson.id), '[]'::jsonb),
+    'quiz',     coalesce((select jsonb_agg(
+                            case when coalesce(p_admin, false) then to_jsonb(q)
+                                 else jsonb_build_object(
+                                        'group_id',   q.group_id,
+                                        'student_no', q.student_no,
+                                        'score',      q.score,
+                                        'max_score',  q.max_score,
+                                        'updated_at', q.updated_at) end
+                            order by q.student_no, q.updated_at)
+                            from mbl_quiz q where q.lesson_id = p_lesson.id), '[]'::jsonb)
   );
 $$;
 
@@ -441,7 +717,14 @@ revoke execute on function mbl_find_by_admin(text)          from public, anon, a
 revoke execute on function mbl_check_group(uuid, uuid)      from public, anon, authenticated;
 revoke execute on function mbl_check_pin(uuid, uuid, text)  from public, anon, authenticated;
 revoke execute on function mbl_pin_error(uuid, uuid, text)  from public, anon, authenticated;
-revoke execute on function mbl_board_json(mbl_lessons)      from public, anon, authenticated;
+revoke execute on function mbl_board_json(mbl_lessons, boolean) from public, anon, authenticated;
+-- 개념 확인 도우미도 마찬가지입니다. 특히 mbl_quiz_grade 가 열려 있으면
+-- 답을 하나씩 넣어 보며 정답을 알아낼 수 있고, mbl_quiz_norm 은 정답이 든 원본을 그대로 돌려줍니다.
+revoke execute on function mbl_txt_norm(text)               from public, anon, authenticated;
+revoke execute on function mbl_quiz_norm(jsonb)             from public, anon, authenticated;
+revoke execute on function mbl_quiz_public(jsonb)           from public, anon, authenticated;
+revoke execute on function mbl_choice_idx(jsonb, text)      from public, anon, authenticated;
+revoke execute on function mbl_quiz_grade(jsonb, jsonb)     from public, anon, authenticated;
 
 -- =====================================================================
 --  4. 교사용 RPC
@@ -550,7 +833,7 @@ as $$
 declare v mbl_lessons;
 begin
   v := mbl_find_by_admin(p_admin_code);
-  return mbl_board_json(v);
+  return mbl_board_json(v, true);   -- 교사에게는 원본 문항(정답·해설)과 응답 전문을 줍니다
 end;
 $$;
 
@@ -558,14 +841,19 @@ $$;
 --   p_presenter_group 을 비우려면 '00000000-0000-0000-0000-000000000000' 을 넘기세요.
 --   p_extend_days 는 보관 기한 연장(일). 맨 뒤에 있고 기본값이 null 이라
 --   예전처럼 인자 5개로 부르던 화면 코드는 그대로 동작합니다.
+--   p_quiz 는 개념 확인 문항 배포·수정(정답·해설 포함). 역시 맨 뒤에 기본값 null 로 붙였으므로
+--   예전 인자 순서는 하나도 바뀌지 않았습니다. '[]' 를 넘기면 문항이 사라져
+--   학생 화면에서 개념 확인 영역이 다시 감춰집니다.
 drop function if exists mbl_admin_set(text, text, uuid, int, jsonb);
+drop function if exists mbl_admin_set(text, text, uuid, int, jsonb, int);
 create or replace function mbl_admin_set(
   p_admin_code      text,
   p_phase           text,
   p_presenter_group uuid,
   p_slide_idx       int,
   p_form            jsonb,
-  p_extend_days     int default null
+  p_extend_days     int default null,
+  p_quiz            jsonb default null
 )
 returns json
 language plpgsql
@@ -599,6 +887,9 @@ begin
     slide_idx       = coalesce(p_slide_idx, slide_idx),
     form            = coalesce(p_form, form),
     form_at         = case when p_form is not null then now() else form_at end,
+    -- 개념 확인 문항: null 이면 그대로 두고, 넘어온 값은 배열 꼴로 맞춰 저장합니다.
+    quiz            = case when p_quiz is not null then mbl_quiz_norm(p_quiz) else quiz end,
+    quiz_at         = case when p_quiz is not null then now() else quiz_at end,
     -- 보관 기한 연장: 이미 지난 수업이면 오늘부터 다시 셉니다.
     expires_at      = case when coalesce(p_extend_days, 0) > 0
                            then greatest(expires_at, now()) + (p_extend_days * interval '1 day')
@@ -673,7 +964,7 @@ set search_path = public
 as $$
 declare
   v   mbl_lessons;
-  n_g int; n_d int; n_r int; n_f int; n_l int;
+  n_g int; n_d int; n_r int; n_f int; n_q int; n_l int;
 begin
   v := mbl_find_by_admin(p_admin_code);
 
@@ -681,8 +972,9 @@ begin
   select count(*) into n_d from mbl_data     where lesson_id = v.id;
   select count(*) into n_r from mbl_reports  where lesson_id = v.id;
   select count(*) into n_f from mbl_feedback where lesson_id = v.id;
+  select count(*) into n_q from mbl_quiz     where lesson_id = v.id;
 
-  delete from mbl_lessons where id = v.id;   -- mbl_admin 포함 나머지는 on delete cascade
+  delete from mbl_lessons where id = v.id;   -- mbl_admin·mbl_quiz 포함 나머지는 on delete cascade
   get diagnostics n_l = row_count;
 
   return json_build_object(
@@ -691,6 +983,7 @@ begin
     'deleted_data',     n_d,
     'deleted_reports',  n_r,
     'deleted_feedback', n_f,
+    'deleted_quiz',     n_q,
     'title',            v.title,
     'at',               now()
   );
@@ -738,6 +1031,8 @@ $$;
 -- =====================================================================
 
 -- 참여코드로 수업 정보 얻기 (관리코드는 절대 포함되지 않습니다)
+--   ★ 개념 확인 문항은 여기서도 정답·해설을 떼어 내보냅니다. 이 함수는 참여코드만 알면
+--     부를 수 있으므로, 원본 quiz 를 그대로 담으면 정답이 통째로 새어 나갑니다.
 create or replace function mbl_get_lesson(p_join_code text)
 returns json
 language plpgsql
@@ -747,7 +1042,7 @@ as $$
 declare v mbl_lessons;
 begin
   v := mbl_find_lesson(p_join_code);
-  return to_jsonb(v)::json;
+  return (to_jsonb(v) || jsonb_build_object('quiz', mbl_quiz_public(v.quiz)))::json;
 end;
 $$;
 
@@ -805,13 +1100,20 @@ end;
 $$;
 
 -- 측정 데이터 저장 (모둠당 1행 upsert) — 우리 모둠 PIN 이 있어야 합니다.
+--   p_predict 는 측정 전에 그린 예상 곡선입니다. 맨 뒤에 기본값 null 로 붙였으므로
+--   예전처럼 인자 5개로 부르던 화면 코드는 그대로 동작합니다(PIN 자리도 그대로입니다).
+--     · null           → 예상을 건드리지 않습니다(데이터만 저장해도 예상이 지워지지 않습니다).
+--     · [{"x":0,"s0":20}, ...] → 그 값으로 저장
+--     · 'null'::jsonb  → 예상 지우기
 drop function if exists mbl_save_data(text, uuid, jsonb, text);
+drop function if exists mbl_save_data(text, uuid, jsonb, text, text);
 create or replace function mbl_save_data(
   p_join_code text,
   p_group_id  uuid,
   p_rows      jsonb,
   p_note      text,
-  p_pin       text
+  p_pin       text,
+  p_predict   jsonb default null
 )
 returns json
 language plpgsql
@@ -827,11 +1129,16 @@ begin
   v_err := mbl_pin_error(v.id, p_group_id, p_pin);   -- 소속 확인 + PIN 확인 + 시도 횟수 제한
   if v_err is not null then return json_build_object('mbl_error', v_err); end if;
 
-  insert into mbl_data (group_id, lesson_id, "rows", note, updated_at)
-  values (p_group_id, v.id, coalesce(p_rows, '[]'::jsonb), p_note, now())
+  insert into mbl_data (group_id, lesson_id, "rows", note, predict, updated_at)
+  values (p_group_id, v.id, coalesce(p_rows, '[]'::jsonb), p_note,
+          nullif(p_predict, 'null'::jsonb), now())
   on conflict (group_id) do update
     set "rows"     = excluded."rows",
         note       = excluded.note,
+        -- ★ 예상은 함부로 덮어쓰지 않습니다. 안 넘기면(null) 있던 예상을 그대로 둡니다.
+        predict    = case when p_predict is null            then mbl_data.predict
+                          when p_predict = 'null'::jsonb    then null
+                          else p_predict end,
         updated_at = now()
   returning * into v_d;
 
@@ -923,7 +1230,78 @@ begin
 end;
 $$;
 
+-- 개념 확인(형성평가) 제출 — ★ 개인별 ★ 우리 모둠 PIN 이 있어야 합니다.
+--   같은 수업·같은 모둠·같은 번호로 다시 내면 갱신됩니다(마지막 제출이 남습니다).
+--   ★ 점수는 서버가 직접 매깁니다. p_score·p_max_score 는 옛 화면과의 호환을 위해 받아만 두고
+--     저장에는 쓰지 않습니다(콘솔에서 100점을 보내도 소용없습니다).
+--   ★ 해설과 정답은 "지금 제출한 본인" 에게만 이 반환값으로 돌아갑니다.
+--     보드(mbl_get_board)에는 절대 실리지 않습니다.
+create or replace function mbl_save_quiz(
+  p_join_code    text,
+  p_group_id     uuid,
+  p_student_no   int,
+  p_student_name text,
+  p_answers      jsonb,
+  p_score        int,
+  p_max_score    int,
+  p_pin          text
+)
+returns json
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v     mbl_lessons;
+  v_row mbl_quiz;
+  v_g   jsonb;
+  v_err text;
+begin
+  v := mbl_find_lesson(p_join_code);
+  v_err := mbl_pin_error(v.id, p_group_id, p_pin);   -- 소속 확인 + PIN 확인 + 시도 횟수 제한
+  if v_err is not null then return json_build_object('mbl_error', v_err); end if;
+
+  if jsonb_array_length(mbl_quiz_norm(v.quiz)) = 0 then
+    return json_build_object('mbl_error', '아직 개념 확인 문항이 없습니다.');
+  end if;
+
+  if p_student_no is null or p_student_no < 1 or p_student_no > 100 then
+    return json_build_object('mbl_error', '번호를 1~100 사이로 넣어 주세요.');
+  end if;
+
+  -- ★ 서버 채점 ★
+  v_g := mbl_quiz_grade(v.quiz, p_answers);
+
+  insert into mbl_quiz (lesson_id, group_id, student_no, student_name, answers, score, max_score, updated_at)
+  values (v.id, p_group_id, p_student_no,
+          nullif(btrim(coalesce(p_student_name, '')), ''),
+          coalesce(p_answers, '{}'::jsonb),
+          coalesce((v_g->>'score')::int, 0),
+          coalesce((v_g->>'max_score')::int, 0),
+          now())
+  on conflict (lesson_id, group_id, student_no) do update
+    set student_name = coalesce(excluded.student_name, mbl_quiz.student_name),
+        answers      = excluded.answers,
+        score        = excluded.score,
+        max_score    = excluded.max_score,
+        updated_at   = now()
+  returning * into v_row;
+
+  return json_build_object(
+    'id',           v_row.id,
+    'group_id',     v_row.group_id,
+    'student_no',   v_row.student_no,
+    'student_name', v_row.student_name,
+    'score',        v_row.score,
+    'max_score',    v_row.max_score,
+    'updated_at',   v_row.updated_at,
+    'results',      v_g->'results'      -- [{id, no, type, correct, your, answer, explain}]
+  );
+end;
+$$;
+
 -- 공유 보드 (학생·발표·교사 공통)
+--   ★ 학생 경로이므로 문항의 정답·해설은 빠지고, 개념 확인 응답은 번호·점수만 실립니다.
 create or replace function mbl_get_board(p_join_code text)
 returns json
 language plpgsql
@@ -964,7 +1342,11 @@ begin
     'fb_ver',   (select count(*)::text || ':' || coalesce(max(f.created_at)::text, '')
                    from mbl_feedback f where f.lesson_id = v.id),
     'grp_ver',  (select count(*)::text || ':' || coalesce(max(g.updated_at)::text, '')
-                   from mbl_groups g   where g.lesson_id = v.id)
+                   from mbl_groups g   where g.lesson_id = v.id),
+    -- 개념 확인: 문항이 배포·수정된 시각과, 학생 응답의 변화(교사 화면의 정답률 갱신용)
+    'quiz_at',   v.quiz_at,
+    'quiz_ver', (select count(*)::text || ':' || coalesce(max(q.updated_at)::text, '')
+                   from mbl_quiz q     where q.lesson_id = v.id)
   );
 end;
 $$;
@@ -982,7 +1364,7 @@ set search_path = public
 as $$
 declare
   v_ids uuid[];
-  n_l int := 0; n_g int := 0; n_d int := 0; n_r int := 0; n_f int := 0;
+  n_l int := 0; n_g int := 0; n_d int := 0; n_r int := 0; n_f int := 0; n_q int := 0;
 begin
   select coalesce(array_agg(id), '{}'::uuid[]) into v_ids
     from mbl_lessons where expires_at is not null and expires_at < now();
@@ -992,8 +1374,9 @@ begin
     select count(*) into n_d from mbl_data     where lesson_id = any(v_ids);
     select count(*) into n_r from mbl_reports  where lesson_id = any(v_ids);
     select count(*) into n_f from mbl_feedback where lesson_id = any(v_ids);
+    select count(*) into n_q from mbl_quiz     where lesson_id = any(v_ids);
 
-    delete from mbl_lessons where id = any(v_ids);   -- 나머지는 on delete cascade
+    delete from mbl_lessons where id = any(v_ids);   -- mbl_quiz 포함 나머지는 on delete cascade
     get diagnostics n_l = row_count;
   end if;
 
@@ -1003,6 +1386,7 @@ begin
     'deleted_data',     n_d,
     'deleted_reports',  n_r,
     'deleted_feedback', n_f,
+    'deleted_quiz',     n_q,
     'at',               now()
   );
 end;
@@ -1013,18 +1397,22 @@ $$;
 -- =====================================================================
 --  7. 실행 권한 — RPC 만 anon 에게 열어 줍니다
 -- =====================================================================
---   ★ 쓰기 RPC 4개는 맨 뒤에 p_pin 이 붙은 "새 시그니처" 뿐입니다.
+--   ★ 쓰기 RPC 5개(join_group / save_data / save_report / send_feedback / save_quiz)는
+--     모두 p_pin 을 요구하는 "새 시그니처" 뿐입니다.
 --     PIN 없이 부를 수 있던 옛 시그니처는 위에서 drop function 으로 지웠습니다.
+--     (mbl_save_data 만 p_pin 뒤에 p_predict 가 하나 더 붙습니다. 기본값이 null 이라
+--      예전처럼 5개로 불러도 되고, 화면은 이름을 붙여(p_pin:) 부르므로 순서와 무관합니다.)
 grant execute on function mbl_create_lesson(text, text, text, text, text, jsonb, jsonb, int) to anon, authenticated;
 grant execute on function mbl_get_lesson(text)                                               to anon, authenticated;
 grant execute on function mbl_join_group(text, int, text, text[], text)                      to anon, authenticated;
-grant execute on function mbl_save_data(text, uuid, jsonb, text, text)                       to anon, authenticated;
+grant execute on function mbl_save_data(text, uuid, jsonb, text, text, jsonb)                 to anon, authenticated;
 grant execute on function mbl_save_report(text, uuid, jsonb, text, text)                     to anon, authenticated;
 grant execute on function mbl_send_feedback(text, uuid, uuid, int, text, text)               to anon, authenticated;
+grant execute on function mbl_save_quiz(text, uuid, int, text, jsonb, int, int, text)        to anon, authenticated;
 grant execute on function mbl_get_board(text)                                                to anon, authenticated;
 grant execute on function mbl_sig(text)                                                      to anon, authenticated;
 grant execute on function mbl_admin_load(text)                                               to anon, authenticated;
-grant execute on function mbl_admin_set(text, text, uuid, int, jsonb, int)                   to anon, authenticated;
+grant execute on function mbl_admin_set(text, text, uuid, int, jsonb, int, jsonb)            to anon, authenticated;
 grant execute on function mbl_admin_list(text)                                               to anon, authenticated;
 grant execute on function mbl_admin_pins(text)                                               to anon, authenticated;
 grant execute on function mbl_admin_reset_pin(text, uuid)                                    to anon, authenticated;
@@ -1045,7 +1433,8 @@ begin
     from information_schema.role_routine_grants
    where specific_schema = 'public'
      and routine_name in ('mbl_check_pin','mbl_pin_error','mbl_check_group','mbl_find_lesson',
-                          'mbl_find_by_admin','mbl_board_json','mbl_gen_code','mbl_gen_pin','mbl_cleanup')
+                          'mbl_find_by_admin','mbl_board_json','mbl_gen_code','mbl_gen_pin','mbl_cleanup',
+                          'mbl_quiz_norm','mbl_quiz_public','mbl_quiz_grade','mbl_choice_idx','mbl_txt_norm')
      and grantee in ('anon', 'authenticated', 'PUBLIC');
   if n_fn > 0 then
     raise exception '내부 헬퍼 함수가 아직 anon 에게 열려 있습니다(%). 이 파일의 revoke 문이 듣지 않았습니다. Supabase SQL Editor 에서 소유자(postgres) 로 다시 실행해 주세요.', v_fn;
@@ -1061,12 +1450,42 @@ begin
     raise exception 'PIN 없이 저장할 수 있는 옛 함수가 남아 있습니다(%). 이 파일을 다시 실행해 주세요.', v_old;
   end if;
 
+  -- 3차 개편에서 인자가 늘어난 함수의 옛 시그니처가 함께 남아 있으면 호출이 헷갈립니다(ambiguous).
+  --   특히 mbl_board_json 1인자짜리가 남으면 mbl_board_json(v) 가 어느 쪽인지 정하지 못해
+  --   보드가 통째로 열리지 않습니다.
+  if to_regprocedure('public.mbl_board_json(mbl_lessons)')             is not null then v_old := v_old || 'mbl_board_json(1인자) '; end if;
+  if to_regprocedure('public.mbl_save_data(text,uuid,jsonb,text,text)') is not null then v_old := v_old || 'mbl_save_data(예상없음) '; end if;
+  if to_regprocedure('public.mbl_admin_set(text,text,uuid,int,jsonb,int)') is not null then v_old := v_old || 'mbl_admin_set(문항없음) '; end if;
+  if v_old <> '' then
+    raise exception '옛 시그니처가 남아 있습니다(%). 이 파일의 drop function 문이 듣지 않았습니다. 소유자(postgres)로 다시 실행해 주세요.', v_old;
+  end if;
+
+  -- ★ 정답이 학생 쪽으로 새지 않는지 — 문항을 학생용으로 거른 결과에 answer·explain 이 없어야 합니다.
+  if exists (
+    select 1
+      from jsonb_array_elements(mbl_quiz_public(
+             '[{"id":"q1","type":"choice","q":"맛보기","options":["가","나"],"answer":1,"explain":"해설"}]'::jsonb
+           )) x
+     where x ? 'answer' or x ? 'answers' or x ? 'explain' or x ? 'explanation'
+  ) then
+    raise exception '학생용 문항에서 정답·해설이 제거되지 않았습니다. mbl_quiz_public 을 확인해 주세요.';
+  end if;
+
+  -- ★ 서버 채점이 실제로 도는지 — 보기 번호(0부터)와 단답형('|' 여러 정답) 한 번에 확인합니다.
+  if (mbl_quiz_grade(
+        '[{"id":"q1","type":"choice","q":"?","options":["가","나"],"answer":1},
+          {"id":"q2","type":"short","q":"?","answer":"물|H2O"}]'::jsonb,
+        '{"q1":"나","q2":" 물 "}'::jsonb) ->> 'score')::int <> 2 then
+    raise exception '개념 확인 채점이 예상과 다릅니다. mbl_quiz_grade 를 확인해 주세요.';
+  end if;
+
   select count(*) into n_pin from mbl_groups where pin is null or btrim(pin) = '';
   if n_pin > 0 then
     raise exception 'PIN 이 비어 있는 모둠이 % 건 있습니다. 이 파일 1번의 update 문이 실행되지 않았습니다.', n_pin;
   end if;
 
-  raise notice '확인: 쓰기 RPC 4개는 모두 모둠 PIN 을 요구하고, 모든 모둠에 PIN 이 들어 있습니다.';
+  raise notice '확인: 쓰기 RPC 5개는 모두 모둠 PIN 을 요구하고, 모든 모둠에 PIN 이 들어 있습니다.';
+  raise notice '확인: 개념 확인 정답·해설은 학생용 경로(mbl_get_lesson·mbl_get_board)로 나가지 않고, 채점은 서버가 합니다.';
 end $$;
 
 -- =====================================================================
@@ -1125,9 +1544,62 @@ select mbl_admin_reset_pin('여기에-관리코드', '여기에-group-uuid'::uui
 select mbl_get_lesson('ABC234');                      -- 읽기는 PIN 이 필요 없습니다
 select mbl_join_group('ABC234', 3, '3모둠 열정파', array['김하나','이두리','박세찬'], '0417');
 
--- 3) 학생: 데이터 저장 (group_id 는 2)에서 받은 id, 맨 뒤가 우리 모둠 PIN)
+-- 3) 학생: 데이터 저장 (group_id 는 2)에서 받은 id, PIN 다음이 예상 그래프)
 select mbl_save_data('ABC234', '여기에-group-uuid'::uuid,
   '[[0,20.1,20.0],[30,23.4,27.8],[60,26.0,34.9]]'::jsonb, '핫플레이트 3단', '0417');
+--    예상 그래프만 먼저 저장(측정 전) — rows 는 아직 비어 있어도 됩니다
+select mbl_save_data('ABC234', '여기에-group-uuid'::uuid, '[]'::jsonb, null, '0417',
+  '[{"x":0,"s0":20,"s1":20},{"x":30,"s0":24,"s1":30},{"x":60,"s0":27,"s1":38}]'::jsonb);
+--    그 뒤 데이터만 저장(맨 뒤 인자를 생략) → 예상은 그대로 남아 있어야 정상입니다
+select mbl_save_data('ABC234', '여기에-group-uuid'::uuid,
+  '[[0,20.1,20.0],[30,23.4,27.8]]'::jsonb, null, '0417');
+select group_id, predict is not null as 예상있음 from mbl_data where lesson_id =
+  (select id from mbl_lessons where join_code = 'ABC234');
+--    예상 지우기
+select mbl_save_data('ABC234', '여기에-group-uuid'::uuid, '[]'::jsonb, null, '0417', 'null'::jsonb);
+
+-- 3-1) 개념 확인(형성평가)
+--    교사: 문항 배포 (answer 가 숫자면 보기의 위치 ★0부터★, short 의 '|' 는 "이것도 정답")
+select mbl_admin_set('여기에-관리코드', null, null, null, null, null,
+  '[{"id":"q1","type":"choice","q":"비열이 큰 물질은 온도가 어떻게 변하나요?",
+     "options":["빨리 변한다","천천히 변한다","변하지 않는다"],"answer":1,
+     "explain":"비열이 크면 같은 열을 받아도 온도가 천천히 오릅니다."},
+    {"id":"q2","type":"short","q":"비열의 단위를 쓰세요.","answer":"J/(kg·℃)|J/kg℃",
+     "explain":"1kg 을 1℃ 올리는 데 드는 열량입니다."},
+    {"id":"q3","type":"choice","q":"물과 식용유 중 비열이 큰 것은?",
+     "options":["물","식용유"],"answer":0,"explain":"물의 비열이 더 큽니다."}]'::jsonb);
+
+--    학생: 응시 (번호·이름, 맨 뒤가 우리 모둠 PIN) → 점수와 해설이 함께 돌아옵니다
+select mbl_save_quiz('ABC234', '여기에-group-uuid'::uuid, 7, '김하나',
+  '{"q1":"천천히 변한다","q2":"J/kg℃","q3":"식용유"}'::jsonb, 999, 999, '0417');
+--    → score 는 2 여야 정상입니다. p_score 로 999 를 보내도 무시됩니다(서버가 직접 채점).
+
+--    ★ 정답이 학생에게 새지 않는지 — 학생용 보드의 문항에는 answer·explain 이 없어야 합니다
+select jsonb_pretty((mbl_get_board('ABC234')::jsonb)->'lesson'->'quiz');
+--    → 각 문항에 "answer"·"explain" 이 하나도 보이지 않아야 정상입니다.
+--    ★ 학생용 보드의 개념 확인 응답에는 이름·답이 없어야 합니다(번호·점수만)
+select jsonb_pretty((mbl_get_board('ABC234')::jsonb)->'quiz');
+--    교사용은 원본 문항과 응답 전문이 보입니다
+select jsonb_pretty((mbl_admin_load('여기에-관리코드')::jsonb)->'quiz');
+
+--    학생별 점수 (형성평가 · 생기부 근거)
+select q.student_no, q.student_name, q.score, q.max_score, q.updated_at
+  from mbl_quiz q join mbl_lessons l on l.id = q.lesson_id
+ where l.join_code = 'ABC234'
+ order by q.student_no;
+
+--    문항별 정답률 — 교사 대시보드가 그리는 값과 같은 계산입니다.
+--    (다시 채점해 보는 것이므로 저장된 답을 고치지 않습니다)
+select r->>'id'   as 문항,
+       count(*)                                          as 응시,
+       count(*) filter (where (r->>'correct') = 'true')  as 정답,
+       round(100.0 * count(*) filter (where (r->>'correct') = 'true') / nullif(count(*),0)) as 정답률
+  from mbl_quiz q
+  join mbl_lessons l on l.id = q.lesson_id
+  cross join lateral jsonb_array_elements(mbl_quiz_grade(l.quiz, q.answers)->'results') r
+ where l.join_code = 'ABC234' and (r->>'scored') = 'true'
+ group by r->>'id'
+ order by 정답률;
 
 -- 4) 학생: 보고서 저장 / 피드백
 select mbl_save_report('ABC234', '여기에-group-uuid'::uuid, '{"q1":"가열 시간"}'::jsonb, 'done', '0417');
@@ -1171,6 +1643,9 @@ select l.join_code, l.title, l.class_label, l.phase,
        (select count(*) from mbl_groups  g where g.lesson_id=l.id) as 모둠,
        (select count(*) from mbl_data    d where d.lesson_id=l.id) as 데이터,
        (select count(*) from mbl_reports r where r.lesson_id=l.id and r.status='done') as 제출보고서,
+       (select count(*) from mbl_data    d where d.lesson_id=l.id and d.predict is not null) as 예상그래프,
+       jsonb_array_length(mbl_quiz_norm(l.quiz)) as 개념확인문항,
+       (select count(*) from mbl_quiz    q where q.lesson_id=l.id) as 개념확인응시,
        l.created_at, l.expires_at
   from mbl_lessons l order by l.created_at desc limit 20;
 

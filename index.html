@@ -186,6 +186,97 @@
     padding:22px;width:100%;max-width:420px}
   .modalbox h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:6px}
 
+  /* ── CSV 끌어다 놓기 ─────────────────────────────── */
+  .imp{border:1.5px dashed var(--line-2);border-radius:14px;background:var(--cream);padding:14px;margin:12px 0}
+  .drop{border:2px dashed var(--line-2);border-radius:14px;background:#fff;padding:18px 14px;text-align:center;
+    cursor:pointer;transition:.16s;min-height:88px;display:flex;flex-direction:column;justify-content:center;gap:8px}
+  .drop:hover{border-color:var(--mint)}
+  .drop.over{border-color:var(--mint);background:#F0FBFA;border-style:solid}
+  .drop b{font-family:var(--display);font-size:16px;font-weight:400}
+  .improw{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .improw .btn{min-height:44px}
+  .maptbl{display:grid;grid-template-columns:minmax(96px,1fr) minmax(150px,2fr);gap:8px 10px;align-items:center;margin:10px 0}
+  .maptbl .ml{font-size:13.5px;font-weight:700;color:var(--muted)}
+  .maptbl select{min-height:44px}
+  .maptbl select.need{border-color:var(--warn);background:#FFF8F0}
+  .prevwrap{overflow-x:auto;border:1px solid var(--line);border-radius:12px;background:#fff;margin-top:8px}
+  .prevwrap table{min-width:280px}
+  .prevwrap td{padding:7px 8px;font-size:13.5px}
+  .chk{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:700;min-height:44px;cursor:pointer}
+  .chk input{width:22px;height:22px;flex:none}
+  .impmsg{font-size:13.5px;font-weight:700;margin-top:8px;min-height:20px}
+  .impmsg.bad{color:var(--bad)} .impmsg.ok{color:var(--ok)} .impmsg.warn{color:var(--warn)}
+
+  /* ── 예상 그래프 ─────────────────────────────────── */
+  .predsvg{display:block;width:100%;height:auto;touch-action:none;-webkit-user-select:none;user-select:none;
+    border:1px solid var(--line);border-radius:12px;background:#fff;cursor:crosshair}
+  .serpick{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .serbtn{cursor:pointer;border:2px solid var(--line-2);background:#fff;border-radius:999px;padding:9px 15px;
+    font-family:var(--sans);font-size:14px;font-weight:700;color:var(--ink);min-height:44px;display:inline-flex;align-items:center;gap:7px}
+  .serbtn i{width:12px;height:12px;border-radius:3px;display:inline-block}
+  .serbtn.on{border-color:var(--mint);background:#F0FBFA;box-shadow:var(--shadow)}
+  .serbtn.on::after{content:'그리는 중';font-size:11.5px;color:var(--mint-d);font-weight:800}
+  .axrow{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:10px 0}
+  .axrow label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+  .axrow input{min-height:44px}
+  .gapnote{border-left:4px solid var(--coral);background:#FFF6F2;border-radius:0 12px 12px 0;
+    padding:11px 14px;margin-top:10px;font-size:14px}
+
+  /* ── 개념 확인 ───────────────────────────────────── */
+  .qzhead{display:grid;grid-template-columns:minmax(90px,1fr) minmax(150px,2fr);gap:10px;margin:12px 0}
+  .qzhead input{min-height:44px}
+  .qzq{border:1px solid var(--line);border-radius:14px;padding:14px 16px;margin-bottom:12px;background:#fff}
+  .qzq>b{display:block;font-size:15px;margin-bottom:10px}
+  .qzq .qno{color:var(--mint);font-weight:800;margin-right:6px}
+  .qzopt{display:flex;align-items:center;gap:10px;border:1.5px solid var(--line-2);border-radius:12px;
+    padding:10px 13px;margin-bottom:8px;min-height:44px;cursor:pointer;font-size:14.5px;background:#fff}
+  .qzopt:hover{border-color:var(--mint)}
+  .qzopt input{width:22px;height:22px;flex:none;margin:0}
+  .qzopt.pick{border-color:var(--mint);background:#F0FBFA}
+  .qzmark{display:inline-flex;align-items:center;gap:6px;font-size:13.5px;font-weight:800;border-radius:999px;padding:4px 11px}
+  .qzmark.o{background:rgba(55,181,140,.16);color:#1E7A5C}
+  .qzmark.x{background:rgba(224,90,90,.14);color:#B23A3A}
+  .qzmark.n{background:rgba(110,138,150,.14);color:var(--muted)}
+  .qzq.o{border-color:var(--ok);border-width:1.5px}
+  .qzq.x{border-color:var(--bad);border-width:1.5px}
+  .qzexp{border-left:4px solid var(--mint);background:var(--cream);border-radius:0 10px 10px 0;
+    padding:10px 12px;margin-top:10px;font-size:14px}
+  .qzscore{font-family:var(--display);font-size:24px;font-weight:400}
+
+  /* ── 데이터 실험실 ─────────────────────────────── */
+  .modepick{display:flex;gap:8px;flex-wrap:wrap;margin:10px 0}
+  .modebtn{cursor:pointer;border:2px solid var(--line-2);background:#fff;border-radius:999px;padding:9px 16px;
+    font-family:var(--sans);font-size:14px;font-weight:700;color:var(--ink);min-height:44px}
+  .modebtn.on{border-color:var(--mint);background:#F0FBFA;color:var(--mint-d)}
+  .labgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:10px 0}
+  .labgrid label{display:block;font-size:12.5px;font-weight:700;color:var(--muted);margin-bottom:4px}
+  .labgrid select,.labgrid input{min-height:44px}
+  .ycheck{display:flex;flex-wrap:wrap;gap:8px;margin:6px 0 2px}
+  .ycheck label{display:inline-flex;align-items:center;gap:7px;border:1.5px solid var(--line-2);border-radius:999px;
+    padding:8px 14px;min-height:44px;font-size:14px;font-weight:700;cursor:pointer;background:#fff}
+  .ycheck label.on{border-color:var(--mint);background:#F0FBFA}
+  .ycheck input{width:20px;height:20px;flex:none;margin:0}
+  .ycheck i{width:11px;height:11px;border-radius:3px;display:inline-block}
+  .labsvg{display:block;width:100%;height:auto;touch-action:none;-webkit-user-select:none;user-select:none;
+    border:1px solid var(--line);border-radius:12px;background:#fff;cursor:col-resize}
+  .fitcard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px 14px;margin-bottom:10px}
+  .fitcard>b{display:block;font-size:15px;margin-bottom:6px}
+  .fitrow{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px;margin-top:4px}
+  .fitrow span b{font-family:var(--display);font-weight:400;font-size:17px}
+  .r2jump{font-family:var(--display);font-size:18px;color:var(--mint-d)}
+  .qcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:10px}
+  .qcard{border:1.5px solid var(--line);border-radius:14px;background:var(--cream);padding:12px 14px}
+  .qcard b{display:block;font-size:14.5px;margin-bottom:6px}
+  .qcard textarea{min-height:66px;font-size:14px;background:#fff}
+  .anitem{border:1px solid var(--line);border-radius:12px;padding:10px 12px;margin-bottom:8px;background:#fff;
+    font-size:13.5px;display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
+  .anitem .btn{flex:none;min-height:44px}
+
+  /* 자료집 출처 한 줄 */
+  .srcline{font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:14px;
+    border-top:1px dashed var(--line-2);padding-top:10px}
+  .srcline a{text-decoration:underline}
+
   /* 보관 기간이 끝난 수업 */
   .box.gone{border:2px solid var(--bad);background:#FFF6F6}
   .box.gone h2{color:var(--bad);font-size:26px}
@@ -270,6 +361,7 @@
     <div class="tabs" role="tablist">
       <button class="tab on" data-tab="guide" type="button">실험 안내</button>
       <button class="tab" data-tab="data" type="button">데이터 입력</button>
+      <button class="tab" data-tab="lab" type="button">데이터 실험실</button>
       <button class="tab" data-tab="report" type="button">보고서</button>
       <button class="tab" data-tab="share" type="button">모둠 공유</button>
       <button class="tab" data-tab="atlas" type="button">실험 도감</button>
@@ -278,9 +370,81 @@
     <div id="pnGuide" class="panel"></div>
 
     <div id="pnData" class="panel hidden">
+
+      <!-- 예상 그래프 — 측정 전에 결과를 먼저 그려 봅니다 (안 그려도 됩니다) -->
+      <div class="box" id="predCard">
+        <h2>먼저 예상해 볼까요?</h2>
+        <p class="muted">측정하기 전에 결과가 어떤 모양일지 손가락이나 마우스로 그려 보세요.
+          나중에 실제 측정값과 겹쳐 볼 수 있습니다. 안 그려도 실험은 그대로 진행됩니다.</p>
+        <p class="muted" id="predState" style="margin-top:8px"></p>
+        <div class="improw">
+          <button id="btnPredOpen" class="btn btn-solid" type="button" style="min-height:44px">예상 그리기</button>
+          <button id="btnPredWipe" class="btn btn-sm hidden" type="button" style="min-height:44px">예상 지우기</button>
+        </div>
+
+        <div id="predEdit" class="hidden" style="margin-top:14px">
+          <div id="predPick" class="serpick"></div>
+          <div class="axrow" id="predAx">
+            <div><label for="pxMin">가로축 최소</label><input id="pxMin" type="text" inputmode="decimal" /></div>
+            <div><label for="pxMax">가로축 최대</label><input id="pxMax" type="text" inputmode="decimal" /></div>
+            <div><label for="pyMin">세로축 최소</label><input id="pyMin" type="text" inputmode="decimal" /></div>
+            <div><label for="pyMax">세로축 최대</label><input id="pyMax" type="text" inputmode="decimal" /></div>
+          </div>
+          <p class="muted">왼쪽에서 오른쪽으로 훑듯이 그으면 곡선이 그려집니다. 다시 그으면 그 자리만 고쳐집니다.</p>
+          <div id="predWrap" style="margin-top:8px"></div>
+          <div class="improw">
+            <button id="btnPredUndo" class="btn btn-sm" type="button" style="min-height:44px">되돌리기</button>
+            <button id="btnPredClear" class="btn btn-sm" type="button" style="min-height:44px">이 계열 지우기</button>
+            <button id="btnPredSave" class="btn btn-solid" type="button" style="min-height:44px">예상 저장</button>
+            <button id="btnPredClose" class="btn btn-sm" type="button" style="min-height:44px">닫기</button>
+            <span id="predMsg" class="savemsg"></span>
+          </div>
+        </div>
+      </div>
+
       <div class="box">
         <h2 id="dataTitle">데이터 입력표</h2>
         <p class="muted" id="dataSub"></p>
+
+        <!-- CSV 끌어다 놓기 — 손으로 옮겨 적지 않아도 됩니다 -->
+        <div class="imp" id="impCard">
+          <div class="drop" id="dropZone" tabindex="0" role="button"
+               aria-label="측정 파일을 여기에 끌어다 놓거나 눌러서 고르기">
+            <b>여기에 CSV 파일을 끌어다 놓으세요</b>
+            <span class="muted">ezon.ai · 사이언스# 등에서 내보낸 파일을 그대로 놓으면 됩니다.
+              눌러서 파일을 고를 수도 있고, 표를 복사해 <b>Ctrl+V</b> 로 붙여 넣어도 됩니다.</span>
+          </div>
+          <input id="impFile" type="file" class="hidden"
+                 accept=".csv,.tsv,.txt,text/csv,text/plain,text/tab-separated-values" />
+          <div class="improw">
+            <button id="btnImpFile" class="btn btn-sm" type="button">파일 불러오기</button>
+            <button id="btnImpPasteOpen" class="btn btn-sm" type="button">붙여넣기로 넣기</button>
+          </div>
+          <div id="impPasteBox" class="hidden" style="margin-top:10px">
+            <label class="fl" for="impPaste">엑셀·메모장에서 복사한 표를 여기에 붙여 넣으세요</label>
+            <textarea id="impPaste" placeholder="시간,물,식용유&#10;0,20.1,20.3&#10;1,22.4,25.8"></textarea>
+            <div class="improw">
+              <button id="btnImpRead" class="btn btn-sm btn-solid" type="button">붙여넣은 값 읽기</button>
+            </div>
+          </div>
+
+          <div id="impPanel" class="hidden" style="margin-top:12px">
+            <h3 style="margin-top:4px">어느 열을 어디에 넣을까요?</h3>
+            <p class="muted" id="impFound"></p>
+            <div id="impMap" class="maptbl"></div>
+            <label class="chk" for="impThin">
+              <input id="impThin" type="checkbox" checked /> 행 솎아내기 (골고루 뽑아서 줄이기)
+            </label>
+            <p class="muted" id="impThinMsg"></p>
+            <div id="impPrev" class="prevwrap"></div>
+            <div class="improw">
+              <button id="btnImpApply" class="btn btn-solid" type="button">표에 넣기</button>
+              <button id="btnImpCancel" class="btn btn-sm" type="button">취소</button>
+            </div>
+          </div>
+          <div id="impMsg" class="impmsg" aria-live="polite"></div>
+        </div>
+
         <div id="dataTbl" class="tblwrap" style="margin-top:14px"></div>
         <label class="fl" for="inNote">측정 조건 메모 (선택)</label>
         <input id="inNote" type="text" placeholder="예) 핫플레이트 3단, 물 200mL" maxlength="120" />
@@ -292,19 +456,45 @@
       <div class="box">
         <h3>우리 모둠 그래프</h3>
         <div id="myChart" class="chartbox"></div>
+        <div id="gapNote"></div>
       </div>
+    </div>
+
+    <!-- 데이터 실험실 — 축 바꾸기·변환·파생열·구간·반 전체 (모두 보기 전용) -->
+    <div id="pnLab" class="panel hidden">
+      <div id="labBody"></div>
     </div>
 
     <div id="pnReport" class="panel hidden">
       <div class="box">
         <h2>모둠 보고서</h2>
         <p class="muted">저장은 여러 번 해도 됩니다. 다 쓰면 <b>제출하기</b>를 누르세요.</p>
+        <div id="quizHint" class="note hidden">보고서 아래에 <b>개념 확인</b> 문항이 있습니다. 한 사람씩 각자 풀어 보세요.</div>
         <div id="qlist" style="margin-top:14px"></div>
         <div class="savebar">
           <button id="btnDraftReport" class="btn" type="button">임시 저장</button>
           <button id="btnDoneReport" class="btn btn-solid" type="button">제출하기</button>
           <span id="reportMsg" class="savemsg"></span>
         </div>
+      </div>
+
+      <!-- 개념 확인 — 선생님이 문항을 올렸을 때만 나타납니다 (개인별) -->
+      <div class="box hidden" id="quizBox">
+        <h2>개념 확인</h2>
+        <p class="muted">모둠이 아니라 <b>한 사람씩</b> 풉니다. 번호와 이름을 넣고 답하면 바로 채점됩니다. 다시 풀 수 있어요.</p>
+        <div class="qzhead">
+          <div><label class="fl" for="qzNo" style="margin-top:0">번호</label>
+               <input id="qzNo" type="number" min="1" max="100" inputmode="numeric" placeholder="예) 7" /></div>
+          <div><label class="fl" for="qzName" style="margin-top:0">이름</label>
+               <input id="qzName" type="text" maxlength="20" placeholder="예) 김하늘" list="qzMembers" />
+               <datalist id="qzMembers"></datalist></div>
+        </div>
+        <div id="qzItems"></div>
+        <div class="savebar">
+          <button id="btnQuizSubmit" class="btn btn-solid" type="button" style="min-height:44px">채점하기</button>
+          <span id="quizMsg" class="savemsg"></span>
+        </div>
+        <div id="qzResult"></div>
       </div>
     </div>
 
@@ -335,6 +525,13 @@
           <span id="aCount" class="pill" aria-live="polite"></span>
         </div>
         <div id="atlasList" class="atlaslist"></div>
+        <p class="srcline">
+          출처 · 『2026 교구 및 디지털 도구 활용 과학 교수학습자료(중등 과학)』 서울특별시교육청 창의미래교육과, 2026년 7월<br>
+          출처 · 『AI-STEAM 교육을 위한 디지털 과학실험 따라하기 — 이지메이커 수업사례집(중학 합본 V1)』 최효석(영서중)<br>
+          성취기준 · 2022 개정 교육과정(교육부 고시 제2022-33호 [별책 9])<br>
+          실험 절차와 해설은 위 자료를 참고해 다시 쓴 것이며, 원문을 그대로 옮기지 않았습니다.
+          <a href="./manual.html#sources">자세한 출처 보기</a>
+        </p>
       </div>
       <div id="atlasDetail"></div>
     </div>
@@ -390,8 +587,30 @@
   let atlasPick  = '';      // 펼쳐 놓은 실험 id
   let atlasOnly  = false;   // 참여코드 없이 도감만 보는 중
   let expired    = false;   // 보관 기간이 끝난 수업을 안내하는 중
+  let tableRows  = 8;       // 지금 화면에 그려 둔 입력표 줄 수 (CSV 를 통째로 넣으면 늘어납니다)
+  let predict    = null;    // 저장된 예상 곡선 [{x, s0, s1…}] · 없으면 null
+  let quizAt     = '';      // 개념 확인 문항이 바뀐 시각 (변경감지용)
+  let formAt     = '';      // 보고서 양식이 바뀐 시각
+  //  데이터 실험실에서 저장한 분석 기록 — 보고서 답안의 예약 키 __analysis 에 함께 실려 갑니다.
+  //  (보고서 문항 목록에는 나타나지 않습니다. 화면은 questions 배열만 보고 그리기 때문입니다.)
+  let analyses   = [];
+  let reportStatus = 'draft';   // 이미 제출한 보고서를 분석 저장 때문에 '작성 중'으로 되돌리지 않으려고 기억해 둡니다
+
+  //  한 칸 읽기 — 배열 행([x, s1, s2…])도 {x, s0, s1…} 꼴도 받습니다.
+  //  hub.js 의 Hub.cellAt 과 같은 규칙입니다(없으면 배열만 읽는 간이판으로 물러섭니다).
+  function cell(row, col){
+    if (typeof Hub.cellAt === 'function') return Hub.cellAt(row, col);
+    if (Array.isArray(row)) return Number(row[col]);
+    if (row && typeof row === 'object') return Number(col === 0 ? row.x : row['s' + (col - 1)]);
+    return NaN;
+  }
+  function nnum(v){
+    if (typeof Hub.num === 'function') return Hub.num(v);
+    const n = Number(v); return isFinite(n) ? n : NaN;
+  }
 
   // ── 인라인 SVG 그래프 (차트 라이브러리 없이 직접 그립니다) ────────
+  //  opt.predict 를 주면 예상 곡선을 점선으로 겹쳐 그리고, 가장 많이 달랐던 지점을 표시합니다.
   function chartSVG(sp, rows, opt){
     opt = opt || {};
     const W = opt.w || 560, H = opt.h || 300;
@@ -408,13 +627,28 @@
       if (ys.every(v => v === null)) return;
       pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
     });
-    if (!pts.length){
+
+    // 예상 곡선 — [{x, s0, s1…}]
+    const preP = [];
+    if (Array.isArray(opt.predict)){
+      opt.predict.forEach(function(r){
+        const x  = cell(r, 0);
+        const ys = series.map((_, i) => { const v = cell(r, i + 1); return isFinite(v) ? v : null; });
+        if (ys.every(v => v === null)) return;
+        preP.push({ x: isFinite(x) ? x : null, ys: ys });
+      });
+    }
+
+    if (!pts.length && !preP.length){
       return '<div class="empty">아직 입력된 값이 없습니다.</div>';
     }
     const numericX = pts.every(p => p.x !== null) && kind !== 'bar';
     const xs  = numericX ? pts.map(p => p.x) : pts.map((p, i) => i);
+    if (numericX) preP.forEach(p => { if (p.x !== null) xs.push(p.x); });
+    if (!xs.length) preP.forEach((p, i) => { xs.push(i); });
     const allY = [];
     pts.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
+    preP.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
     let y0 = Math.min.apply(null, allY), y1 = Math.max.apply(null, allY);
     if (y0 === y1) { y0 -= 1; y1 += 1; }
     const pad = (y1 - y0) * 0.12; y0 -= pad; y1 += pad;
@@ -438,7 +672,35 @@
       if (pts.length <= 12 || i % Math.ceil(pts.length / 10) === 0)
         s += '<text x="' + X.toFixed(1) + '" y="' + (H - P.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + esc(lb) + '</text>';
     });
+    if (!pts.length){                                   // 아직 측정값이 없고 예상만 있을 때
+      for (let i = 0; i <= 4; i++){
+        const v = x0 + (x1 - x0) * i / 4;
+        s += '<text x="' + px(v).toFixed(1) + '" y="' + (H - P.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' +
+             esc(fmtNum(v)) + '</text>';
+      }
+    }
     s += '<text x="' + (W - P.r) + '" y="' + (H - 8) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' + esc(xLab + (xUnit ? ' (' + xUnit + ')' : '')) + '</text>';
+
+    // 예상 곡선 — 실제 값보다 먼저 그려 뒤쪽에 깔립니다(점선 + 옅게).
+    //  가로축이 숫자가 아닌 그래프에서는 예상 점을 폭에 맞추어 고르게 폅니다.
+    function preX(p, i){
+      if (numericX && p.x !== null) return px(p.x);
+      const span = Math.max(pts.length, preP.length) - 1;
+      return px(preP.length > 1 ? (i * span / (preP.length - 1)) : 0);
+    }
+    if (preP.length){
+      series.forEach(function(se, si){
+        const col = SERIES_COLORS[si % SERIES_COLORS.length];
+        let d = '', pen = false;
+        preP.forEach(function(p, i){
+          if (p.ys[si] === null){ pen = false; return; }
+          d += (pen ? 'L' : 'M') + preX(p, i).toFixed(1) + ' ' + py(p.ys[si]).toFixed(1) + ' ';
+          pen = true;
+        });
+        if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.2" opacity=".62" ' +
+                    'stroke-dasharray="8 6" stroke-linejoin="round" stroke-linecap="round"/>';
+      });
+    }
 
     // 계열
     series.forEach(function(se, si){
@@ -468,6 +730,19 @@
         });
       }
     });
+
+    // 예상과 가장 많이 달랐던 지점 — 세로 점선으로 이어 표시합니다.
+    const gap = (preP.length && pts.length) ? biggestGap(rows, opt.predict, series) : null;
+    if (gap && numericX && isFinite(gap.atX)){
+      const GX = px(gap.atX), Ya = py(gap.actual), Yp = py(gap.predicted);
+      s += '<line x1="' + GX.toFixed(1) + '" y1="' + Math.min(Ya, Yp).toFixed(1) + '" x2="' + GX.toFixed(1) +
+           '" y2="' + Math.max(Ya, Yp).toFixed(1) + '" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="3 3"/>';
+      s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Yp.toFixed(1) + '" r="5" fill="none" stroke="var(--ink)" stroke-width="1.8"/>';
+      s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Ya.toFixed(1) + '" r="5" fill="var(--ink)"/>';
+      s += '<text x="' + Math.min(W - P.r, GX + 8).toFixed(1) + '" y="' + (Math.min(Ya, Yp) - 7).toFixed(1) +
+           '" text-anchor="' + (GX > W * 0.7 ? 'end' : 'start') + '" font-size="11.5" font-weight="700" fill="var(--ink)">가장 큰 차이 ' +
+           esc(fmtNum(gap.maxDiff)) + '</text>';
+    }
     s += '</svg>';
 
     // 범례
@@ -477,7 +752,36 @@
             SERIES_COLORS[si % SERIES_COLORS.length] + ';display:inline-block"></i>' +
             esc(se.label || ('계열' + (si + 1))) + (se.unit ? ' (' + esc(se.unit) + ')' : '') + '</span>';
     });
+    if (preP.length){
+      lg += '<span style="display:inline-flex;align-items:center;gap:5px">' +
+            '<i style="width:20px;height:0;border-top:2.4px dashed var(--muted);display:inline-block"></i>점선 = 우리가 그린 예상</span>';
+    }
     return s + lg + '</div>';
+  }
+
+  //  계열마다 예상과 실제의 차이를 재어 가장 큰 것을 고릅니다.
+  function biggestGap(rows, predict, series){
+    if (typeof Hub.predictGap !== 'function') return null;
+    let best = null;
+    (series || []).forEach(function(se, si){
+      const g = Hub.predictGap(rows, predict, si);
+      if (!g || g.maxDiff === null || !isFinite(g.maxDiff)) return;
+      if (!best || g.maxDiff > best.maxDiff){
+        best = { maxDiff: g.maxDiff, atX: g.atX, predicted: g.predicted, actual: g.actual,
+                 meanDiff: g.meanDiff, si: si,
+                 label: se.label || ('계열' + (si + 1)), unit: se.unit || '' };
+      }
+    });
+    return best;
+  }
+
+  //  숫자를 짧게 — 20 → '20', 20.1234 → '20.12'
+  function fmtNum(v){
+    const n = Number(v);
+    if (!isFinite(n)) return '';
+    if (Math.abs(n - Math.round(n)) < 1e-9) return String(Math.round(n));
+    const a = Math.abs(n);
+    return String(Number(n.toFixed(a < 1 ? 4 : (a < 100 ? 2 : 1))));
   }
 
   // ── 모둠 비밀번호(PIN) 4칸 ─────────────────────────────────────
@@ -618,6 +922,21 @@
     return (err && err.message) || '저장하지 못했습니다.';
   }
 
+  //  모둠에서 빠져나올 때 새 기능 자리를 비웁니다(다음 모둠의 자료가 섞이지 않게).
+  //  아직 화면이 만들어지기 전에 불릴 수도 있으므로 하나하나 확인합니다.
+  function clearExtras(){
+    predict = null;
+    analyses = [];
+    reportStatus = 'draft';
+    labReset();
+    if ($('predEdit')) $('predEdit').classList.add('hidden');
+    if ($('predWrap')) $('predWrap').innerHTML = '';
+    if ($('gapNote'))  $('gapNote').innerHTML = '';
+    if ($('quizBox')){ $('quizBox').classList.add('hidden'); $('qzItems').innerHTML = ''; $('qzResult').innerHTML = ''; }
+    if ($('impCard')) resetImport();
+    if ($('predState')) renderPredCard();
+  }
+
   // ── 보관 기간이 끝났을 때 ──────────────────────────────────────
   function showExpired(){
     if (expired) return;
@@ -626,6 +945,7 @@
     if (unwatch){ unwatch(); unwatch = null; }
     stopPhaseTimer();
     group = null;                       // 더는 저장할 수 없습니다(도감은 그대로 볼 수 있습니다)
+    clearExtras();
     $('phasePill').classList.add('hidden');
     $('topSub').textContent = '보관 기간이 끝난 수업입니다';
     show('expired');
@@ -792,6 +1112,7 @@
     stopPhaseTimer();
     Hub.dropLocal('group_' + joinCode);
     group = null; pickedNo = 0;
+    clearExtras();
     $('btnEnter').disabled = true;
     $('inGroupName').value = ''; $('inMembers').value = '';
     $('topSub').textContent = '참여코드 ' + joinCode;
@@ -805,6 +1126,7 @@
     if (unwatch) { unwatch(); unwatch = null; }
     stopPhaseTimer();
     group = null; lesson = null; joinCode = '';
+    clearExtras();
     $('phasePill').classList.add('hidden');
     $('topSub').textContent = '참여코드를 입력하고 들어오세요';
     show('join');
@@ -822,9 +1144,18 @@
               ? lesson.form.questions
               : ((labExp() && labExp().questions) || []);
     $('topSub').textContent = '참여코드 ' + joinCode + ' · ' + (group.group_name || (group.group_no + '모둠'));
+    quizAt = lesson.quiz_at || '';
+    formAt = lesson.form_at || '';
+    predict = loadPredict();
+    analyses = [];
+    reportStatus = 'draft';
+    labReset();
     renderGuide();
-    renderDataTable();
+    renderDataTable(specRows());
+    resetImport();
     renderReport();
+    renderPredCard();
+    renderQuiz();
     restoreLocal();
     setPhase(lesson.phase);
     Hub.flushOffline(joinCode);
@@ -854,9 +1185,42 @@
       lesson = b.lesson;
       setPhase(lesson.phase);
       if (prev !== lesson.phase && (lesson.phase === 'share' || lesson.phase === 'present')) selectTab('share');
+      applyLessonChange();
+    }
+    if (group){
+      const before = predict;
+      const now = loadPredict();
+      if (JSON.stringify(before || null) !== JSON.stringify(now || null)){
+        predict = now;
+        renderPredCard();
+        renderMyChart();
+        refreshReport();
+      }
+      // 다른 기기에서 낸 보고서가 있으면 상태와 분석 기록을 이어받습니다.
+      const mineRep = (b.reports || []).filter(function(r){ return String(r.group_id) === String(group.id); })[0];
+      if (mineRep){
+        if (mineRep.status) reportStatus = mineRep.status;
+        const saved = mineRep.answers && mineRep.answers.__analysis;
+        if (Array.isArray(saved) && !analyses.length) analyses = saved.slice(-5);
+      }
     }
     renderShare();
+    if (curTab === 'lab') renderLab();
     applyWatch();
+  }
+
+  //  선생님이 보고서 양식이나 개념 확인 문항을 바꿨을 때만 그 부분을 다시 그립니다.
+  function applyLessonChange(){
+    if (!lesson) return;
+    const nq = lesson.quiz_at || '', nf = lesson.form_at || '';
+    if (nf !== formAt){
+      formAt = nf;
+      questions = (lesson.form && Array.isArray(lesson.form.questions) && lesson.form.questions.length)
+                ? lesson.form.questions
+                : ((labExp() && labExp().questions) || []);
+      refreshReport();
+    }
+    if (nq !== quizAt){ quizAt = nq; renderQuiz(); }
   }
 
   function applyWatch(){
@@ -886,11 +1250,23 @@
     Promise.resolve(p).then(function(s){
       if (!s || !lesson) return;
       const prev = lesson.phase;
-      if (s.id) lesson = s;                       // getLesson 결과(수업 전체)
+      if (s.id){ lesson = s; applyLessonChange(); }   // getLesson 결과(수업 전체)
       else {
         if (s.phase) lesson.phase = s.phase;
         if ('presenter_group' in s) lesson.presenter_group = s.presenter_group;
         if ('slide_idx' in s)       lesson.slide_idx = s.slide_idx;
+        // 문항·양식이 바뀌었으면 수업 한 줄을 다시 받아 그 부분만 새로 그립니다.
+        const nq = ('quiz_at' in s) ? (s.quiz_at || '') : quizAt;
+        const nf = ('form_at' in s) ? (s.form_at || '') : formAt;
+        if (group && (nq !== quizAt || nf !== formAt)){
+          Hub.getLesson(joinCode).then(function(l){
+            // 그 사이에 보드를 받기 시작했다면(unwatch 가 생겼다면) 그쪽이 더 새것입니다.
+            if (!l || !group || unwatch || !lesson) return;
+            const keepPhase = lesson.phase;
+            lesson = l; lesson.phase = keepPhase;      // 단계는 방금 받은 신호 쪽이 더 새것입니다
+            applyLessonChange();
+          }, function(){ /* 다음 차례에 다시 봅니다 */ });
+        }
       }
       if (lesson.phase === prev) return;
       setPhase(lesson.phase);
@@ -921,11 +1297,13 @@
     });
     $('pnGuide').classList.toggle('hidden',  name !== 'guide');
     $('pnData').classList.toggle('hidden',   name !== 'data');
+    $('pnLab').classList.toggle('hidden',    name !== 'lab');
     $('pnReport').classList.toggle('hidden', name !== 'report');
     $('pnShare').classList.toggle('hidden',  name !== 'share');
     $('pnAtlas').classList.toggle('hidden',  name !== 'atlas');
     if (name === 'share') renderShare();
     if (name === 'data')  renderMyChart();
+    if (name === 'lab')   renderLab();
     if (name === 'atlas') ensureAtlas();
     applyWatch();   // '모둠 공유' 탭을 열고 닫을 때만 서버를 봅니다
   }
@@ -977,8 +1355,48 @@
   }
 
   // 데이터 입력표
-  function renderDataTable(){
-    const nRows = Math.max(1, Math.min(60, Number(spec.rows) || 8));
+  const MAX_ROWS = 60;                                   // 서버·표가 감당하는 한계
+  function specRows(){ return Math.max(1, Math.min(MAX_ROWS, Number(spec.rows) || 8)); }
+
+  //  표 전체를 있는 그대로 읽고 쓰기 (빈 칸도 자리를 지킵니다 — 줄 수를 바꿀 때 씁니다)
+  function gridRead(){
+    const cols = (spec.series || []).length + 1, out = [];
+    for (let r = 0; r < tableRows; r++){
+      const row = [];
+      for (let c = 0; c < cols; c++){
+        const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
+        row.push(el ? el.value : '');
+      }
+      out.push(row);
+    }
+    return out;
+  }
+  function gridWrite(grid){
+    (grid || []).forEach(function(row, r){
+      (row || []).forEach(function(v, c){
+        const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
+        if (el) el.value = (v === null || v === undefined) ? '' : String(v);
+      });
+    });
+  }
+  function gridClear(){
+    Array.prototype.forEach.call($('dataTbl').querySelectorAll('input'), function(el){ el.value = ''; });
+  }
+  function gridHasAny(){
+    return Array.prototype.some.call($('dataTbl').querySelectorAll('input'), function(el){ return el.value.trim() !== ''; });
+  }
+  //  줄 수 바꾸기 — 적어 둔 값은 그대로 두고 표만 다시 그립니다.
+  function setTableRows(n){
+    n = Math.max(1, Math.min(MAX_ROWS, Number(n) || specRows()));
+    if (n === tableRows) return;
+    const keep = gridRead();
+    renderDataTable(n);
+    gridWrite(keep);
+  }
+
+  function renderDataTable(nWant){
+    const nRows = Math.max(1, Math.min(MAX_ROWS, Number(nWant) || specRows()));
+    tableRows = nRows;
     const ser = spec.series || [];
     $('dataTitle').textContent = '데이터 입력표';
     $('dataSub').textContent = '가로줄 ' + nRows + '칸. 숫자만 적으면 아래 그래프가 바로 그려집니다.';
@@ -999,7 +1417,7 @@
   }
 
   function collectRows(){
-    const nRows = Math.max(1, Math.min(60, Number(spec.rows) || 8));
+    const nRows = Math.max(1, Math.min(MAX_ROWS, tableRows || specRows()));
     const cols  = (spec.series || []).length + 1;
     const out = [];
     for (let r = 0; r < nRows; r++){
@@ -1016,6 +1434,7 @@
     return out;
   }
   function fillRows(rows){
+    if ((rows || []).length > tableRows) setTableRows(rows.length);   // 저장해 둔 줄이 더 많으면 표를 늘립니다
     (rows || []).forEach(function(row, r){
       (row || []).forEach(function(v, c){
         const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
@@ -1025,7 +1444,26 @@
     renderMyChart();
   }
   function renderMyChart(){
-    $('myChart').innerHTML = chartSVG(spec, collectRows());
+    const rows = collectRows();
+    $('myChart').innerHTML = chartSVG(spec, rows, { predict: predict });
+    renderGapNote(rows);
+  }
+
+  //  예상과 가장 많이 달랐던 지점을 말로도 알려 줍니다(그래프의 표시만으로는 읽기 어렵습니다).
+  function renderGapNote(rows){
+    const host = $('gapNote');
+    if (!host) return;
+    if (!predict || !predict.length || !(rows || []).length){ host.innerHTML = ''; return; }
+    const g = biggestGap(rows, predict, spec.series || []);
+    if (!g || g.maxDiff === null){ host.innerHTML = ''; return; }
+    const xLab = (spec.x && spec.x.label) || '가로축';
+    const xUnit= (spec.x && spec.x.unit) ? spec.x.unit : '';
+    host.innerHTML = '<div class="gapnote"><b>예상과 가장 많이 달랐던 지점</b><br>' +
+      esc(g.label) + ' · ' + esc(xLab) + ' ' + esc(fmtNum(g.atX)) + esc(xUnit) + '에서 ' +
+      '예상 ' + esc(fmtNum(g.predicted)) + esc(g.unit) + ' / 실제 ' + esc(fmtNum(g.actual)) + esc(g.unit) +
+      ' — 차이 <b>' + esc(fmtNum(g.maxDiff)) + esc(g.unit) + '</b>' +
+      (g.meanDiff !== null ? ' (평균 차이 ' + esc(fmtNum(g.meanDiff)) + esc(g.unit) + ')' : '') +
+      '<br><span class="muted">왜 이렇게 달랐을까요? 보고서에 적어 보세요.</span></div>';
   }
   function saveDataLocal(){
     if (!group) return;
@@ -1052,19 +1490,999 @@
     }).then(function(){ $('btnSaveData').disabled = false; });
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  //  ① CSV 끌어다 놓기 — 업체마다 형식이 달라서 넉넉하게 읽습니다.
+  //     구분자 자동 찾기 · BOM 제거 · 머리글 줄 자동 찾기 · 주석(#) 건너뛰기
+  //     · 소수점 쉼표 · 시:분:초 · 따옴표로 감싼 칸
+  // ═══════════════════════════════════════════════════════════════
+  let IMP = null;   // {head:[], body:[[]], width, cols:[{name, numRatio}], pick:[]}
+
+  //  한 칸을 숫자로 — '20.1 ℃' · '1,25' · '00:01:30' 모두 받아 줍니다.
+  function toNum(v){
+    if (v === null || v === undefined) return NaN;
+    const s = String(v).trim();
+    if (!s) return NaN;
+    const t = /^(\d{1,3}):([0-5]?\d)(?::([0-5]?\d(?:[.,]\d+)?))?$/.exec(s);
+    if (t){
+      const a = Number(t[1]), b = Number(t[2]);
+      if (t[3] === undefined) return a * 60 + b;                       // 분:초
+      return a * 3600 + b * 60 + Number(String(t[3]).replace(',', '.'));// 시:분:초
+    }
+    return nnum(s);
+  }
+
+  //  한 줄을 칸으로 — 따옴표 안의 구분자는 건드리지 않습니다.
+  function splitLine(line, d){
+    const s = String(line == null ? '' : line);
+    if (d === 'WS') return s.trim().split(/[ \t]+/);
+    const out = []; let cur = '', q = false;
+    for (let i = 0; i < s.length; i++){
+      const ch = s[i];
+      if (q){
+        if (ch === '"'){ if (s[i + 1] === '"'){ cur += '"'; i++; } else q = false; }
+        else cur += ch;
+      }
+      else if (ch === '"') q = true;
+      else if (ch === d){ out.push(cur); cur = ''; }
+      else cur += ch;
+    }
+    out.push(cur);
+    return out.map(c => c.trim());
+  }
+
+  //  구분자 찾기 — 줄마다 칸 수가 가장 고르게 나오는 것을 고릅니다(같으면 탭 > 세미콜론 > 파이프 > 쉼표).
+  function sniffDelim(lines){
+    const cands = ['\t', ';', '|', ',', 'WS'];
+    let best = ',', bestScore = -1;
+    cands.forEach(function(d){
+      const counts = lines.slice(0, 40).map(l => splitLine(l, d).length);
+      const freq = {};
+      counts.forEach(n => { freq[n] = (freq[n] || 0) + 1; });
+      let mode = 0, modeN = 0;
+      Object.keys(freq).forEach(function(k){
+        const n = Number(k);
+        if (freq[k] > modeN || (freq[k] === modeN && n > mode)){ modeN = freq[k]; mode = n; }
+      });
+      if (mode < 2) return;
+      const score = (modeN / counts.length) * 100 + Math.min(mode, 12);
+      if (score > bestScore){ bestScore = score; best = d; }
+    });
+    return best;
+  }
+
+  //  머리글 판정 전용 — "칸 전체가 수치 표기인가" 를 봅니다.
+  //  toNum 은 글자를 다 벗겨 내는 관대한 파서라서 '수중온도1(물)' → 1 처럼 읽힙니다.
+  //  머리글 줄을 자료 줄로 착각하지 않도록, 여기서는 괄호가 있거나 글자가 남는 칸은 숫자로 세지 않습니다.
+  //  ('20.1 ℃' · '45 %' · '00:01:30' · '1,25' · '1.2e3' 은 그대로 숫자로 봅니다.)
+  function isNumCell(v){
+    const s = String(v == null ? '' : v).trim();
+    if (!s) return false;
+    if (/[()\[\]]/.test(s)) return false;                                            // 괄호 → 이름 칸
+    if (/^(\d{1,3}):([0-5]?\d)(?::([0-5]?\d(?:[.,]\d+)?))?$/.test(s)) return true;    // 시:분:초
+    if (/[A-Za-z가-힣]/.test(s.replace(/[eE]/g, ''))) return false;                   // 글자가 남으면 이름 칸
+    const core = s.replace(/[^0-9+\-.,eE]+/g, '');                                    // 단위 기호만 떼기
+    if (!/^[+-]?[0-9]+(?:[.,][0-9]+)*(?:[eE][+-]?[0-9]+)?$/.test(core)) return false;
+    return isFinite(toNum(s));
+  }
+
+  //  숫자가 6할 넘는 줄이면 "자료 줄" 로 봅니다.
+  function isNumRow(r){
+    let n = 0, t = 0;
+    (r || []).forEach(function(c){
+      if (String(c).trim() === '') return;
+      t++; if (isNumCell(c)) n++;
+    });
+    return t > 0 && n >= Math.max(1, Math.ceil(t * 0.6));
+  }
+
+  function parseTable(text){
+    let s = String(text == null ? '' : text);
+    if (s.charCodeAt(0) === 0xFEFF) s = s.slice(1);                 // BOM
+    s = s.replace(/\u0000/g, '');
+    const lines = s.split(/\r\n|\n|\r/).filter(function(l){
+      const t = l.trim();
+      return t !== '' && t.charAt(0) !== '#' && t.slice(0, 2) !== '//';
+    });
+    if (lines.length < 2) return { err: '읽을 줄이 너무 적습니다. 머리글과 값이 함께 들어 있는지 확인해 주세요.' };
+
+    const d = sniffDelim(lines);
+    const raw = lines.map(l => splitLine(l, d)).filter(r => r.some(c => String(c).trim() !== ''));
+    let first = -1;
+    for (let i = 0; i < raw.length; i++){ if (isNumRow(raw[i])){ first = i; break; } }
+    if (first < 0) return { err: '숫자가 들어 있는 줄을 찾지 못했습니다. 파일을 열어 값이 들어 있는지 확인해 주세요.' };
+
+    const body  = raw.slice(first);
+    const width = Math.max.apply(null, body.map(r => r.length));
+    if (width < 1) return { err: '칸을 나누지 못했습니다. 쉼표나 탭으로 나뉜 파일인지 확인해 주세요.' };
+
+    let head = null;
+    for (let i = first - 1; i >= 0; i--){
+      if (raw[i].length >= Math.max(2, width - 1)){ head = raw[i]; break; }
+    }
+    if (!head && first > 0) head = raw[first - 1];
+
+    const cols = [];
+    for (let c = 0; c < width; c++){
+      let n = 0, t = 0;
+      for (let r = 0; r < body.length; r++){
+        const v = body[r][c];
+        if (v === undefined || String(v).trim() === '') continue;
+        t++; if (isFinite(toNum(v))) n++;
+      }
+      cols.push({
+        idx: c,
+        name: (head && head[c] && String(head[c]).trim()) ? String(head[c]).trim() : ('열 ' + (c + 1)),
+        named: !!(head && head[c] && String(head[c]).trim()),
+        ratio: t ? (n / t) : 0
+      });
+    }
+    return { head: head, body: body, width: width, cols: cols, delim: d };
+  }
+
+  // ── 열 이름 짝짓기 ────────────────────────────────────────────
+  const SYN = [
+    ['시간','time','sec','second','초','ms','elapsed','경과','타임','t'],
+    ['온도','temp','temperature','기온','수온','섭씨','열'],
+    ['습도','humidity','humid','rh'],
+    ['조도','lux','illuminance','밝기','빛','light'],
+    ['압력','pressure','hpa','kpa','기압'],
+    ['이산화탄소','co2','탄소'],
+    ['산소','o2'],
+    ['ph','산성도','피에이치'],
+    ['전압','voltage','volt','v'],
+    ['전류','current','amp','a'],
+    ['소리','sound','데시벨','음량','noise','db'],
+    ['거리','distance','위치','변위','position'],
+    ['가속도','acceleration','accel'],
+    ['속력','속도','speed','velocity'],
+    ['질량','무게','mass','weight'],
+    ['전도도','conductivity','ec'],
+    ['자기장','자기','magnetic','gauss'],
+    ['힘','force','뉴턴'],
+    ['회차','번호','순번','샘플','sample','index','idx','no','row','n']
+  ];
+  //  이름 한 벌로는 모자랍니다 — 업체 파일은 계열을 가르는 낱말을 괄호 안에 넣습니다('수중온도1(물)').
+  //  그래서 ① 괄호를 버린 것 ② 괄호 안만 ③ 통째로 이어붙인 것, 세 벌을 만들어 두고 모두 견줍니다.
+  function keyNames(s){
+    const raw   = String(s == null ? '' : s).toLowerCase();
+    const strip = function(v){ return v.replace(/[^0-9a-z가-힣]+/g, ''); };
+    const bare  = strip(raw.replace(/\([^)]*\)/g, ' ').replace(/\[[^\]]*\]/g, ' '));
+    const inner = strip((raw.match(/\(([^)]*)\)|\[([^\]]*)\]/g) || []).join(' '));
+    const full  = strip(raw);
+    const out = [];
+    [bare, inner, full].forEach(function(k){ if (k && out.indexOf(k) < 0) out.push(k); });
+    return out;
+  }
+  function keyName(s){ return keyNames(s)[0] || ''; }
+  function synGroup(k){
+    if (!k) return -1;
+    for (let i = 0; i < SYN.length; i++){
+      for (let j = 0; j < SYN[i].length; j++){
+        const w = SYN[i][j];
+        if (w.length <= 2 ? (k === w) : (k.indexOf(w) >= 0)) return i;
+      }
+    }
+    return -1;
+  }
+  function dice(a, b){
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    if (a.length < 2 || b.length < 2) return 0;
+    const bg = function(s){ const m = {}; for (let i = 0; i < s.length - 1; i++){ const g = s.substr(i, 2); m[g] = (m[g] || 0) + 1; } return m; };
+    const A = bg(a), B = bg(b);
+    let hit = 0, na = 0, nb = 0, k;
+    for (k in A){ na += A[k]; if (B[k]) hit += Math.min(A[k], B[k]); }
+    for (k in B) nb += B[k];
+    return (na + nb) ? (2 * hit) / (na + nb) : 0;
+  }
+  function pairScore(a, b){
+    if (!a || !b) return 0;
+    if (a === b) return 1;
+    let sc = dice(a, b);
+    if (a.indexOf(b) >= 0 || b.indexOf(a) >= 0) sc = Math.max(sc, 0.82);
+    //  한두 글자 목표('물'·'힘')는 dice 가 0 이 되므로, 들어 있기만 하면 크게 쳐 줍니다.
+    if (b.length <= 2 && a.indexOf(b) >= 0) sc = Math.max(sc, 0.8);
+    const ga = synGroup(a), gb = synGroup(b);
+    if (ga >= 0 && ga === gb) sc = Math.max(sc, 0.72);
+    return sc;
+  }
+  function matchScore(colName, target){
+    const A = keyNames(colName), B = keyNames(target);
+    let sc = 0;
+    for (let i = 0; i < A.length; i++){
+      for (let j = 0; j < B.length; j++) sc = Math.max(sc, pairScore(A[i], B[j]));
+    }
+    return sc;
+  }
+  const MATCH_OK = 0.6;
+
+  //  자동 짝짓기
+  //   ① 이름이 확실히 닮은 것부터 붙입니다.
+  //   ② 남은 자리 수와 남은 숫자 열 수가 딱 맞으면 순서대로 임시로 붙이고 "확인하세요" 라고 알립니다.
+  //      (업체 파일은 Ch1·Ch2 처럼 우리 계열 이름과 아주 다르게 나오는 일이 흔합니다.)
+  //   ③ 그래도 알 수 없으면 비워 두고 직접 고르게 합니다.
+  //  IMP.guess[k] = 이름이 아니라 순서로 짐작한 자리
+  function autoPick(){
+    const ser = spec.series || [];
+    const targets = [ (spec.x && spec.x.label) || '가로축' ].concat(ser.map((s, i) => s.label || ('계열 ' + (i + 1))));
+    const pick  = targets.map(() => -1);
+    const guess = targets.map(() => false);
+    const used  = {};
+
+    targets.forEach(function(t, k){
+      let best = -1, bestSc = 0;
+      IMP.cols.forEach(function(c){
+        if (used[c.idx]) return;
+        if (k > 0 && c.ratio < 0.5) return;                 // 계열 자리는 숫자 열만
+        const sc = matchScore(c.name, t);
+        if (sc > bestSc){ bestSc = sc; best = c.idx; }
+      });
+      if (best >= 0 && bestSc >= MATCH_OK){ pick[k] = best; used[best] = true; }
+    });
+
+    const left    = IMP.cols.filter(c => c.ratio >= 0.5 && !used[c.idx]).map(c => c.idx);
+    const holes   = [];
+    for (let k = 0; k < pick.length; k++) if (pick[k] < 0) holes.push(k);
+    if (holes.length && left.length === holes.length){
+      holes.forEach(function(k, i){ pick[k] = left[i]; guess[k] = true; used[left[i]] = true; });
+    }
+    IMP.guess = guess;
+    return pick;
+  }
+
+  function impSay(text, cls){
+    const el = $('impMsg');
+    el.className = 'impmsg' + (cls ? ' ' + cls : '');
+    el.textContent = text || '';
+  }
+  function resetImport(){
+    IMP = null;
+    $('impPanel').classList.add('hidden');
+    $('impPasteBox').classList.add('hidden');
+    $('impPaste').value = '';
+    $('impFile').value = '';
+    $('impMap').innerHTML = '';
+    $('impPrev').innerHTML = '';
+    $('impThinMsg').textContent = '';
+    $('impFound').textContent = '';
+    impSay('');
+  }
+
+  function startImport(text, from){
+    if (!group){ impSay('먼저 모둠에 들어와 주세요.', 'bad'); return; }
+    const r = parseTable(text);
+    if (r.err){ resetImport(); impSay(r.err + ' 표는 그대로 두었습니다.', 'bad'); return; }
+    IMP = r;
+    IMP.pick = autoPick();
+    const dName = { '\t':'탭', ';':'세미콜론', '|':'막대(|)', ',':'쉼표', 'WS':'빈칸' }[r.delim] || r.delim;
+    $('impFound').textContent =
+      (from ? from + ' · ' : '') + '자료 ' + r.body.length.toLocaleString() + '행 · 열 ' + r.width + '개 · ' +
+      dName + ' 기준으로 나뉘어 있습니다.' + (r.head ? '' : ' (머리글 줄이 없어 순서대로 맞췄습니다)');
+    $('impPanel').classList.remove('hidden');
+    renderImpMap();
+    impSay('');
+  }
+
+  function renderImpMap(){
+    const ser = spec.series || [];
+    const labels = [ ((spec.x && spec.x.label) || '가로축') + ((spec.x && spec.x.unit) ? ' (' + spec.x.unit + ')' : '') ]
+      .concat(ser.map((s, i) => (s.label || ('계열 ' + (i + 1))) + (s.unit ? ' (' + s.unit + ')' : '')));
+
+    let h = '';
+    labels.forEach(function(lb, k){
+      const sel = IMP.pick[k];
+      const iffy = (sel < 0) || !!(IMP.guess && IMP.guess[k]);
+      h += '<div class="ml"><label for="impSel' + k + '">' + esc(lb) + '</label></div>';
+      h += '<div><select id="impSel' + k + '" data-k="' + k + '"' + (iffy ? ' class="need"' : '') + '>';
+      h += '<option value="-1">— 안 넣음 —</option>';
+      if (k === 0) h += '<option value="-2"' + (sel === -2 ? ' selected' : '') + '>순번으로 채우기 (1, 2, 3…)</option>';
+      IMP.cols.forEach(function(c){
+        h += '<option value="' + c.idx + '"' + (sel === c.idx ? ' selected' : '') + '>' +
+             esc(c.name) + (c.ratio >= 0.5 ? '' : ' (숫자 아님)') + '</option>';
+      });
+      h += '</select>';
+      if (sel < 0)                 h += '<p class="muted" style="margin-top:4px">이 자리는 직접 골라 주세요.</p>';
+      else if (iffy)               h += '<p class="muted" style="margin-top:4px">이름이 달라 순서대로 맞췄습니다. 맞는지 확인해 주세요.</p>';
+      h += '</div>';
+    });
+    $('impMap').innerHTML = h;
+    Array.prototype.forEach.call($('impMap').querySelectorAll('select'), function(sl){
+      sl.addEventListener('change', function(){
+        const k = Number(sl.dataset.k);
+        IMP.pick[k] = Number(sl.value);
+        if (IMP.guess) IMP.guess[k] = false;             // 직접 고른 자리는 더 묻지 않습니다
+        renderImpMap();
+      });
+    });
+    renderImpPreview();
+  }
+
+  //  넣을 줄 고르기 — 목표 줄 수에 맞추어 처음·끝을 포함해 골고루 뽑습니다.
+  function pickIdx(n, want){
+    if (want >= n){ const all = []; for (let i = 0; i < n; i++) all.push(i); return all; }
+    if (want <= 1) return [0];
+    const out = [];
+    for (let i = 0; i < want; i++){
+      const k = Math.round(i * (n - 1) / (want - 1));
+      if (!out.length || out[out.length - 1] !== k) out.push(k);
+    }
+    return out;
+  }
+  function impTargetRows(){
+    const n = IMP ? IMP.body.length : 0;
+    if ($('impThin').checked) return Math.min(specRows(), n || specRows());
+    return Math.min(MAX_ROWS, n);
+  }
+  //  고른 열로 실제 넣을 값 만들기
+  function impBuild(){
+    const cols = (spec.series || []).length + 1;
+    const idx = pickIdx(IMP.body.length, impTargetRows());
+    return idx.map(function(bi, i){
+      const row = [];
+      for (let c = 0; c < cols; c++){
+        const src = IMP.pick[c];
+        if (src === -2){ row.push(String(i + 1)); continue; }         // 순번
+        if (src === undefined || src < 0){ row.push(''); continue; }
+        const v = toNum(IMP.body[bi][src]);
+        row.push(isFinite(v) ? fmtNum(v) : '');
+      }
+      return row;
+    });
+  }
+
+  function renderImpPreview(){
+    const n = IMP.body.length, want = impTargetRows();
+    $('impThinMsg').textContent = $('impThin').checked
+      ? (n > want ? '원본 ' + n.toLocaleString() + '행 → ' + want + '행으로 줄여서 넣습니다. (처음·끝을 포함해 골고루 뽑습니다)'
+                  : '원본 ' + n.toLocaleString() + '행 — 줄일 것이 없어 그대로 넣습니다.')
+      : (n > MAX_ROWS ? '전부 넣기 — 다만 표는 ' + MAX_ROWS + '줄까지라 ' + MAX_ROWS + '행으로 줄여서 넣습니다.'
+                      : '전부 넣기 — 원본 ' + n.toLocaleString() + '행을 그대로 넣습니다.');
+
+    const ser = spec.series || [];
+    const labels = [ (spec.x && spec.x.label) || '가로축' ].concat(ser.map((s, i) => s.label || ('계열 ' + (i + 1))));
+    const rows = impBuild().slice(0, 5);
+    let h = '<table><thead><tr><th></th>' + labels.map(l => '<th>' + esc(l) + '</th>').join('') + '</tr></thead><tbody>';
+    rows.forEach(function(r, i){
+      h += '<tr><td class="rowno">' + (i + 1) + '</td>' +
+           r.map(v => '<td>' + (v === '' ? '<span class="muted">—</span>' : esc(v)) + '</td>').join('') + '</tr>';
+    });
+    h += '</tbody></table>';
+    $('impPrev').innerHTML = h;
+  }
+
+  function applyImport(){
+    if (!IMP) return;
+    const cols = (spec.series || []).length + 1;
+    let filled = 0;
+    for (let c = 0; c < cols; c++) if (IMP.pick[c] !== undefined && IMP.pick[c] !== -1) filled++;
+    if (!filled){ impSay('넣을 열을 하나도 고르지 않았습니다. 표는 그대로 두었습니다.', 'bad'); return; }
+    if (!(spec.series || []).some((s, i) => IMP.pick[i + 1] !== undefined && IMP.pick[i + 1] >= 0)){
+      impSay('측정값 열을 적어도 하나는 골라 주세요. 표는 그대로 두었습니다.', 'bad'); return;
+    }
+    if (gridHasAny() && !confirm('표에 이미 적어 둔 값이 있습니다. 지우고 새로 넣을까요?')){
+      impSay('그대로 두었습니다.', 'warn'); return;
+    }
+    const rows = impBuild();
+    setTableRows(Math.max(specRows(), rows.length));
+    gridClear();
+    gridWrite(rows);
+    renderMyChart();
+    saveDataLocal();
+    const n = IMP.body.length;
+    impSay('표에 넣었습니다. 원본 ' + n.toLocaleString() + '행 → ' + rows.length + '행. ' +
+           '값을 확인한 뒤 아래 [데이터 저장]을 눌러 주세요.', 'ok');
+    $('impPanel').classList.add('hidden');
+    $('impPasteBox').classList.add('hidden');
+    $('impPaste').value = '';
+    $('impFile').value = '';
+    IMP = null;
+  }
+
+  function readFile(file){
+    if (!file){ return; }
+    if (file.size > 8 * 1024 * 1024){ impSay('파일이 너무 큽니다(8MB 넘음).', 'bad'); return; }
+    const fr = new FileReader();
+    fr.onload  = function(){ startImport(String(fr.result || ''), file.name); };
+    fr.onerror = function(){ impSay('파일을 읽지 못했습니다. 다시 시도해 주세요.', 'bad'); };
+    try { fr.readAsText(file, 'utf-8'); }
+    catch (e){ impSay('파일을 읽지 못했습니다.', 'bad'); }
+  }
+
+  (function bindImport(){
+    const dz = $('dropZone');
+    ['dragenter','dragover'].forEach(function(ev){
+      dz.addEventListener(ev, function(e){ e.preventDefault(); e.stopPropagation(); dz.classList.add('over'); });
+    });
+    ['dragleave','dragend'].forEach(function(ev){
+      dz.addEventListener(ev, function(e){ e.preventDefault(); dz.classList.remove('over'); });
+    });
+    dz.addEventListener('drop', function(e){
+      e.preventDefault(); e.stopPropagation(); dz.classList.remove('over');
+      const dt = e.dataTransfer;
+      if (!dt) return;
+      if (dt.files && dt.files.length){ readFile(dt.files[0]); return; }
+      const t = dt.getData ? dt.getData('text') : '';
+      if (t) startImport(t, '끌어다 놓은 표'); else impSay('파일을 알아보지 못했습니다.', 'bad');
+    });
+    dz.addEventListener('click', function(){ $('impFile').click(); });
+    dz.addEventListener('keydown', function(e){
+      if (e.key === 'Enter' || e.key === ' ' || e.key === 'Spacebar'){ e.preventDefault(); $('impFile').click(); }
+    });
+    dz.addEventListener('paste', function(e){
+      const cb = e.clipboardData || window.clipboardData;
+      const t = cb ? String(cb.getData('text') || '') : '';
+      if (!t) return;
+      e.preventDefault();
+      startImport(t, '붙여넣은 표');
+    });
+    $('btnImpFile').addEventListener('click', function(){ $('impFile').click(); });
+    $('impFile').addEventListener('change', function(){ readFile(this.files && this.files[0]); });
+    $('btnImpPasteOpen').addEventListener('click', function(){
+      $('impPasteBox').classList.toggle('hidden');
+      if (!$('impPasteBox').classList.contains('hidden')) $('impPaste').focus();
+    });
+    $('btnImpRead').addEventListener('click', function(){
+      const t = $('impPaste').value;
+      if (!t.trim()){ impSay('붙여 넣은 값이 없습니다.', 'bad'); return; }
+      startImport(t, '붙여넣은 표');
+    });
+    $('impPaste').addEventListener('paste', function(){
+      const el = this;
+      setTimeout(function(){ if (el.value.trim()) startImport(el.value, '붙여넣은 표'); }, 0);
+    });
+    $('impThin').addEventListener('change', renderImpPreview);
+    $('btnImpApply').addEventListener('click', applyImport);
+    $('btnImpCancel').addEventListener('click', function(){ resetImport(); impSay('취소했습니다. 표는 그대로입니다.'); });
+  })();
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ② 예상 그래프 — 측정 전에 손으로 그려 보고, 나중에 실제와 겹쳐 봅니다.
+  // ═══════════════════════════════════════════════════════════════
+  const PW = 560, PH = 300, PP = { l: 52, r: 16, t: 18, b: 44 };
+  const PRED = { n: 8, x0: 0, x1: 7, y0: 0, y1: 100, cur: 0, buckets: [], undo: [], dirty: false, drawing: false, last: -1 };
+
+  //  예상을 어디서 찾을지 — 서버(보드) → 이 기기 백업 순서입니다.
+  //   ★ 보드에 우리 모둠 줄이 있으면 그 값이 참입니다(지운 것도 그대로 반영됩니다).
+  //   ★ Hub.saveData 를 예상 없이 부르면 이 기기 백업(data_…)에서 predict 키가 빠집니다.
+  //     그래서 예상을 저장할 때 pred_… 키에 따로 한 벌 남겨 둡니다.
+  function predKey(){ return 'pred_' + joinCode + '_' + group.id; }
+  function loadPredict(){
+    if (!group || !joinCode) return null;
+    if (board && Array.isArray(board.data)){
+      for (let i = 0; i < board.data.length; i++){
+        if (String(board.data[i].group_id) === String(group.id)){
+          const p = board.data[i].predict;
+          return (Array.isArray(p) && p.length) ? p : null;
+        }
+      }
+    }
+    const local = Hub.loadLocal('data_' + joinCode + '_' + group.id, null);
+    if (local && Array.isArray(local.predict)) return local.predict.length ? local.predict : null;
+    const mine = Hub.loadLocal(predKey(), null);
+    return (Array.isArray(mine) && mine.length) ? mine : null;
+  }
+
+  function renderPredCard(){
+    const on = !!(predict && predict.length);
+    $('predState').textContent = on
+      ? '예상을 저장해 두었습니다 (' + predict.length + '점). 실제 그래프에 점선으로 함께 나옵니다.'
+      : '아직 예상을 그리지 않았습니다.';
+    $('btnPredOpen').textContent = on ? '예상 고쳐 그리기' : '예상 그리기';
+    $('btnPredWipe').classList.toggle('hidden', !on);
+  }
+
+  function predX(i){ return PRED.x0 + (PRED.x1 - PRED.x0) * (PRED.n > 1 ? i / (PRED.n - 1) : 0); }
+  function pxTo(v){ return PP.l + (v - PRED.x0) / ((PRED.x1 - PRED.x0) || 1) * (PW - PP.l - PP.r); }
+  function pyTo(v){ return PH - PP.b - (v - PRED.y0) / ((PRED.y1 - PRED.y0) || 1) * (PH - PP.t - PP.b); }
+  function invY(vy){
+    const t = (PH - PP.b - vy) / ((PH - PP.t - PP.b) || 1);
+    return Math.max(PRED.y0, Math.min(PRED.y1, PRED.y0 + t * (PRED.y1 - PRED.y0)));
+  }
+  function invIdx(vx){
+    const t = (vx - PP.l) / ((PW - PP.l - PP.r) || 1);
+    return Math.max(0, Math.min(PRED.n - 1, Math.round(t * (PRED.n - 1))));
+  }
+
+  //  축 눈금 기본값 — 표에 값이 있으면 그 범위를, 없으면 무난한 값을 씁니다.
+  function predDefaults(){
+    const rows = collectRows();
+    const n = Math.max(4, Math.min(40, specRows()));
+    let x0 = 0, x1 = n - 1, y0 = 0, y1 = 100;
+    const xsAll = [], ysAll = [];
+    rows.forEach(function(r){
+      const x = toNum(r[0]); if (isFinite(x)) xsAll.push(x);
+      for (let c = 1; c < r.length; c++){ const y = toNum(r[c]); if (isFinite(y)) ysAll.push(y); }
+    });
+    if (xsAll.length >= 2){ x0 = Math.min.apply(null, xsAll); x1 = Math.max.apply(null, xsAll); }
+    if (ysAll.length >= 2){
+      const a = Math.min.apply(null, ysAll), b = Math.max.apply(null, ysAll), pad = (b - a) * 0.2 || 1;
+      y0 = Math.floor(a - pad); y1 = Math.ceil(b + pad);
+    }
+    if (x1 <= x0) x1 = x0 + 1;
+    if (y1 <= y0) y1 = y0 + 1;
+    return { n: n, x0: x0, x1: x1, y0: y0, y1: y1 };
+  }
+
+  function predReset(keep){
+    const d = predDefaults();
+    PRED.n = d.n;
+    if (!keep){ PRED.x0 = d.x0; PRED.x1 = d.x1; PRED.y0 = d.y0; PRED.y1 = d.y1; }
+    PRED.cur = 0; PRED.undo = []; PRED.dirty = false; PRED.last = -1;
+    PRED.buckets = (spec.series || []).map(function(){ return new Array(PRED.n).fill(null); });
+    // 저장해 둔 예상이 있으면 되살립니다(가까운 자리에 얹습니다).
+    if (predict && predict.length){
+      const xs = predict.map(r => cell(r, 0));
+      const okX = xs.every(v => isFinite(v));
+      if (!keep && okX && xs.length >= 2){
+        PRED.x0 = Math.min.apply(null, xs); PRED.x1 = Math.max.apply(null, xs);
+        if (PRED.x1 <= PRED.x0) PRED.x1 = PRED.x0 + 1;
+      }
+      const ys = [];
+      predict.forEach(function(r){
+        for (let s = 0; s < PRED.buckets.length; s++){ const v = cell(r, s + 1); if (isFinite(v)) ys.push(v); }
+      });
+      if (!keep && ys.length >= 2){
+        const a = Math.min.apply(null, ys), b = Math.max.apply(null, ys), pad = (b - a) * 0.2 || 1;
+        PRED.y0 = Math.floor(a - pad); PRED.y1 = Math.ceil(b + pad);
+        if (PRED.y1 <= PRED.y0) PRED.y1 = PRED.y0 + 1;
+      }
+      predict.forEach(function(r, i){
+        const x = cell(r, 0);
+        const k = isFinite(x) ? invIdx(pxTo(x)) : Math.min(PRED.n - 1, i);
+        for (let s = 0; s < PRED.buckets.length; s++){
+          const v = cell(r, s + 1);
+          if (isFinite(v)) PRED.buckets[s][k] = v;
+        }
+      });
+    }
+  }
+
+  function predAxToInputs(){
+    $('pxMin').value = fmtNum(PRED.x0); $('pxMax').value = fmtNum(PRED.x1);
+    $('pyMin').value = fmtNum(PRED.y0); $('pyMax').value = fmtNum(PRED.y1);
+  }
+
+  function predSkeleton(){
+    const ser = spec.series || [];
+    const xLab = ((spec.x && spec.x.label) || '가로축') + ((spec.x && spec.x.unit) ? ' (' + spec.x.unit + ')' : '');
+    let s = '<svg id="predSvg" class="predsvg" viewBox="0 0 ' + PW + ' ' + PH + '" width="100%" ' +
+            'role="img" aria-label="예상 그래프를 손으로 그리는 칸">';
+    for (let i = 0; i <= 4; i++){
+      const v = PRED.y0 + (PRED.y1 - PRED.y0) * i / 4, y = pyTo(v);
+      s += '<line x1="' + PP.l + '" y1="' + y.toFixed(1) + '" x2="' + (PW - PP.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)" stroke-width="1"/>';
+      s += '<text x="' + (PP.l - 8) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + esc(fmtNum(v)) + '</text>';
+    }
+    for (let i = 0; i <= 4; i++){
+      const v = PRED.x0 + (PRED.x1 - PRED.x0) * i / 4, x = pxTo(v);
+      s += '<line x1="' + x.toFixed(1) + '" y1="' + PP.t + '" x2="' + x.toFixed(1) + '" y2="' + (PH - PP.b) + '" stroke="var(--line)" stroke-width="1" opacity=".6"/>';
+      s += '<text x="' + x.toFixed(1) + '" y="' + (PH - PP.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + esc(fmtNum(v)) + '</text>';
+    }
+    s += '<line x1="' + PP.l + '" y1="' + (PH - PP.b) + '" x2="' + (PW - PP.r) + '" y2="' + (PH - PP.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    s += '<text x="' + (PW - PP.r) + '" y="' + (PH - 8) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' + esc(xLab) + '</text>';
+    ser.forEach(function(se, si){
+      const col = SERIES_COLORS[si % SERIES_COLORS.length];
+      s += '<path id="pl' + si + '" d="" fill="none" stroke="' + col + '" stroke-width="3" stroke-linejoin="round" stroke-linecap="round"/>';
+      s += '<g id="pd' + si + '"></g>';
+    });
+    s += '</svg>';
+    return s;
+  }
+
+  function predDraw(dotsToo){
+    (spec.series || []).forEach(function(se, si){
+      const path = $('pl' + si);
+      if (!path) return;
+      const b = PRED.buckets[si] || [];
+      let d = '', pen = false;
+      for (let i = 0; i < PRED.n; i++){
+        if (b[i] === null || b[i] === undefined){ pen = false; continue; }
+        d += (pen ? 'L' : 'M') + pxTo(predX(i)).toFixed(1) + ' ' + pyTo(b[i]).toFixed(1) + ' ';
+        pen = true;
+      }
+      path.setAttribute('d', d);
+      path.setAttribute('opacity', si === PRED.cur ? '1' : '.42');
+      if (dotsToo){
+        const g = $('pd' + si);
+        if (!g) return;
+        let dots = '';
+        for (let i = 0; i < PRED.n; i++){
+          if (b[i] === null || b[i] === undefined) continue;
+          dots += '<circle cx="' + pxTo(predX(i)).toFixed(1) + '" cy="' + pyTo(b[i]).toFixed(1) +
+                  '" r="4" fill="' + SERIES_COLORS[si % SERIES_COLORS.length] + '" opacity="' + (si === PRED.cur ? 1 : .42) + '"/>';
+        }
+        g.innerHTML = dots;
+      }
+    });
+  }
+
+  function renderSerPick(){
+    const ser = spec.series || [];
+    if (ser.length < 2){ $('predPick').innerHTML = ''; return; }
+    $('predPick').innerHTML = '<span class="muted" style="align-self:center">그릴 계열 고르기 · </span>' +
+      ser.map(function(s, i){
+        return '<button class="serbtn' + (i === PRED.cur ? ' on' : '') + '" type="button" data-si="' + i + '">' +
+               '<i style="background:' + SERIES_COLORS[i % SERIES_COLORS.length] + '"></i>' +
+               esc(s.label || ('계열 ' + (i + 1))) + (s.unit ? ' (' + esc(s.unit) + ')' : '') + '</button>';
+      }).join('');
+    Array.prototype.forEach.call($('predPick').querySelectorAll('.serbtn'), function(b){
+      b.addEventListener('click', function(){
+        PRED.cur = Number(b.dataset.si);
+        renderSerPick(); predDraw(true);
+      });
+    });
+  }
+
+  function predBindPointer(){
+    const svg = $('predSvg');
+    if (!svg) return;
+    function at(ev){
+      const r = svg.getBoundingClientRect();
+      if (!r.width || !r.height) return null;
+      return { vx: (ev.clientX - r.left) / r.width * PW, vy: (ev.clientY - r.top) / r.height * PH };
+    }
+    function put(i, y){
+      const b = PRED.buckets[PRED.cur];
+      if (!b) return;
+      if (PRED.last >= 0 && PRED.last !== i){        // 지나간 자리를 곧게 이어 줍니다
+        const a = PRED.last, ya = (b[a] === null || b[a] === undefined) ? y : b[a];
+        const step = (i > a) ? 1 : -1;
+        for (let k = a + step; k !== i; k += step){
+          const t = (k - a) / (i - a);
+          b[k] = ya + (y - ya) * t;
+        }
+      }
+      b[i] = y;
+      PRED.last = i;
+    }
+    svg.addEventListener('pointerdown', function(ev){
+      const p = at(ev); if (!p) return;
+      ev.preventDefault();
+      try { svg.setPointerCapture(ev.pointerId); } catch (e){}
+      PRED.undo.push(PRED.buckets.map(a => a.slice()));
+      if (PRED.undo.length > 30) PRED.undo.shift();
+      PRED.drawing = true; PRED.last = -1; PRED.dirty = true;
+      put(invIdx(p.vx), invY(p.vy));
+      predDraw(false);
+    });
+    svg.addEventListener('pointermove', function(ev){
+      if (!PRED.drawing) return;
+      const p = at(ev); if (!p) return;
+      ev.preventDefault();
+      put(invIdx(p.vx), invY(p.vy));
+      predDraw(false);
+    });
+    function end(ev){
+      if (!PRED.drawing) return;
+      PRED.drawing = false; PRED.last = -1;
+      try { svg.releasePointerCapture(ev.pointerId); } catch (e){}
+      predDraw(true);
+    }
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+    svg.addEventListener('pointerleave', function(ev){ if (PRED.drawing) end(ev); });
+  }
+
+  function predOpen(){
+    if (!group || expired) return;
+    predReset(false);
+    predAxToInputs();
+    $('predEdit').classList.remove('hidden');
+    $('predWrap').innerHTML = predSkeleton();
+    renderSerPick();
+    predBindPointer();
+    predDraw(true);
+    $('predMsg').className = 'savemsg'; $('predMsg').textContent = '';
+    $('predEdit').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  function predRedrawAxes(){
+    const x0 = toNum($('pxMin').value), x1 = toNum($('pxMax').value);
+    const y0 = toNum($('pyMin').value), y1 = toNum($('pyMax').value);
+    if (isFinite(x0) && isFinite(x1) && x1 > x0){ PRED.x0 = x0; PRED.x1 = x1; }
+    if (isFinite(y0) && isFinite(y1) && y1 > y0){ PRED.y0 = y0; PRED.y1 = y1; }
+    $('predWrap').innerHTML = predSkeleton();
+    predBindPointer();
+    predDraw(true);
+  }
+  function predCollect(){
+    const out = [];
+    for (let i = 0; i < PRED.n; i++){
+      const o = { x: Number(fmtNum(predX(i))) };
+      let got = false;
+      for (let s = 0; s < PRED.buckets.length; s++){
+        const v = PRED.buckets[s][i];
+        if (v === null || v === undefined) continue;
+        o['s' + s] = Number(fmtNum(v)); got = true;
+      }
+      if (got) out.push(o);
+    }
+    return out;
+  }
+
+  $('btnPredOpen').addEventListener('click', predOpen);
+  $('btnPredClose').addEventListener('click', function(){
+    if (PRED.dirty && !confirm('저장하지 않은 예상이 있습니다. 그냥 닫을까요?')) return;
+    $('predEdit').classList.add('hidden');
+  });
+  $('btnPredUndo').addEventListener('click', function(){
+    if (!PRED.undo.length){ $('predMsg').className = 'savemsg warn'; $('predMsg').textContent = '되돌릴 것이 없습니다.'; return; }
+    PRED.buckets = PRED.undo.pop();
+    predDraw(true);
+    $('predMsg').className = 'savemsg'; $('predMsg').textContent = '';
+  });
+  $('btnPredClear').addEventListener('click', function(){
+    PRED.undo.push(PRED.buckets.map(a => a.slice()));
+    PRED.buckets[PRED.cur] = new Array(PRED.n).fill(null);
+    PRED.dirty = true;
+    predDraw(true);
+  });
+  ['pxMin','pxMax','pyMin','pyMax'].forEach(function(id){
+    $(id).addEventListener('change', predRedrawAxes);
+  });
+
+  //  예상 저장 — 표에 값이 있으면 함께 저장합니다(예상만 보내면 측정값이 지워질 수 있습니다).
+  function savePredictNow(rowsOrNull){
+    const msg = $('predMsg');
+    msg.className = 'savemsg'; msg.textContent = '저장 중…';
+    $('btnPredSave').disabled = true;
+    const pre  = rowsOrNull;
+    const rows = collectRows();
+    const note = $('inNote').value.trim();
+    return writeWithPin(function(pin){
+      if (rows.length) return Hub.saveData(joinCode, group.id, rows, note, pin, pre);
+      if (typeof Hub.savePredict === 'function') return Hub.savePredict(joinCode, group.id, pre, pin);
+      return Hub.saveData(joinCode, group.id, rows, note, pin, pre);
+    }).then(function(res){
+      predict = (pre && pre.length) ? pre : null;
+      Hub.saveLocal(predKey(), pre || []);          // 데이터만 저장해도 예상이 남아 있게
+      renderPredCard();
+      renderMyChart();
+      refreshReport();
+      if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다. 연결되면 자동으로 보냅니다.'; }
+      else { msg.textContent = pre && pre.length ? '예상을 저장했습니다.' : '예상을 지웠습니다.'; }
+      PRED.dirty = false;
+    }, function(err){
+      msg.className = 'savemsg warn'; msg.textContent = writeErrText(err);
+    }).then(function(){ $('btnPredSave').disabled = false; });
+  }
+
+  $('btnPredSave').addEventListener('click', function(){
+    if (!group || expired) return;
+    const pre = predCollect();
+    if (!pre.length){
+      $('predMsg').className = 'savemsg warn';
+      $('predMsg').textContent = '아직 아무것도 그리지 않았습니다. 그래프 위를 왼쪽에서 오른쪽으로 그어 보세요.';
+      return;
+    }
+    savePredictNow(pre);
+  });
+  $('btnPredWipe').addEventListener('click', function(){
+    if (!group || expired) return;
+    if (!confirm('저장한 예상을 지울까요?')) return;
+    $('predEdit').classList.add('hidden');
+    savePredictNow([]);
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ③ 개념 확인 — 선생님이 문항을 올렸을 때만 나타납니다(개인별).
+  // ═══════════════════════════════════════════════════════════════
+  function quizList(){
+    const q = lesson && lesson.quiz;
+    if (Array.isArray(q)) return q;
+    if (q && typeof q === 'object'){
+      if (Array.isArray(q.questions)) return q.questions;
+      if (Array.isArray(q.items))     return q.items;
+    }
+    return [];
+  }
+  function qid(q, i){ return (q && q.id !== undefined && q.id !== null && String(q.id) !== '') ? String(q.id) : String(i); }
+  function qOptions(q){
+    return Array.isArray(q.options) ? q.options : (Array.isArray(q.choices) ? q.choices : []);
+  }
+  function optLabel(o){
+    if (o && typeof o === 'object') return String(o.text == null ? '' : o.text);
+    return String(o == null ? '' : o);
+  }
+
+  function renderQuiz(){
+    const box = $('quizBox');
+    const list = quizList();
+    if (!box) return;
+    if (!list.length || !group || atlasOnly || expired){
+      box.classList.add('hidden');
+      if ($('quizHint')) $('quizHint').classList.add('hidden');
+      $('qzItems').innerHTML = '';
+      $('qzResult').innerHTML = '';
+      return;
+    }
+    box.classList.remove('hidden');
+    if ($('quizHint')) $('quizHint').classList.remove('hidden');
+
+    $('qzMembers').innerHTML = ((group && Array.isArray(group.members)) ? group.members : [])
+      .map(m => '<option value="' + esc(m) + '"></option>').join('');
+
+    $('qzItems').innerHTML = list.map(function(q, i){
+      const id = qid(q, i);
+      const type = String(q.type || 'short').toLowerCase();
+      let h = '<div class="qzq" data-qid="' + esc(id) + '"><b><span class="qno">' + (i + 1) + '.</span>' +
+              esc(q.q || q.text || '') + '</b>';
+      if (type === 'choice'){
+        h += qOptions(q).map(function(o, k){
+          return '<label class="qzopt"><input type="radio" name="qzq_' + esc(id) + '" value="' + k + '" ' +
+                 'data-qa="' + esc(id) + '" /><span>' + esc(optLabel(o)) + '</span></label>';
+        }).join('');
+      } else {
+        h += '<input type="text" data-qa="' + esc(id) + '" maxlength="60" placeholder="답을 적어 보세요" />';
+      }
+      return h + '</div>';
+    }).join('');
+
+    Array.prototype.forEach.call($('qzItems').querySelectorAll('.qzopt input'), function(r){
+      r.addEventListener('change', function(){
+        const wrap = r.closest('.qzq');
+        if (!wrap) return;
+        Array.prototype.forEach.call(wrap.querySelectorAll('.qzopt'), function(l){ l.classList.remove('pick'); });
+        if (r.parentNode && r.parentNode.classList) r.parentNode.classList.add('pick');
+      });
+    });
+    $('qzResult').innerHTML = '';
+    $('quizMsg').className = 'savemsg'; $('quizMsg').textContent = '';
+    $('btnQuizSubmit').textContent = '채점하기';
+    prefillQuiz();
+  }
+
+  function quizAnswers(){
+    const a = {};
+    Array.prototype.forEach.call($('qzItems').querySelectorAll('[data-qa]'), function(el){
+      const id = el.dataset.qa;
+      if (el.type === 'radio'){ if (el.checked) a[id] = el.value; }
+      else if (String(el.value).trim() !== '') a[id] = String(el.value).trim();
+    });
+    return a;
+  }
+  function fillQuizAnswers(ans){
+    if (!ans) return;
+    Array.prototype.forEach.call($('qzItems').querySelectorAll('[data-qa]'), function(el){
+      const v = ans[el.dataset.qa];
+      if (v === undefined || v === null) return;
+      if (el.type === 'radio'){
+        el.checked = (String(el.value) === String(v));
+        if (el.checked && el.parentNode && el.parentNode.classList) el.parentNode.classList.add('pick');
+      } else el.value = v;
+    });
+  }
+  //  같은 번호로 다시 풀 때, 이 기기에 남은 지난 답을 되살립니다.
+  function prefillQuiz(){
+    if (!group) return;
+    const no = Number($('qzNo').value);
+    if (!no) return;
+    const saved = Hub.loadLocal('quiz_' + joinCode + '_' + group.id + '_' + no, null);
+    if (!saved) return;
+    if (saved.student_name && !$('qzName').value) $('qzName').value = saved.student_name;
+    fillQuizAnswers(saved.answers);
+  }
+  $('qzNo').addEventListener('change', prefillQuiz);
+
+  function renderQuizResult(res){
+    const list = quizList();
+    const det = (res && (res.results || res.detail)) || [];
+    const byId = {};
+    det.forEach(function(d){ byId[String(d.id)] = d; });
+
+    let head = '';
+    if (res && res.offline){
+      // 채점은 서버만 할 수 있습니다. 문항별 ○·✕ 를 늘어놓으면 오해를 부르므로 안내만 남깁니다.
+      $('qzResult').innerHTML = '<div class="note warn">임시 저장했습니다. 인터넷이 돌아오면 자동으로 보냅니다. ' +
+        '채점 결과는 연결된 뒤에 <b>다시 채점하기</b>를 눌러 확인해 주세요.</div>';
+      return;
+    }
+    {
+      const sc = (res && res.score != null) ? Number(res.score) : null;
+      const mx = (res && res.max_score != null) ? Number(res.max_score) : null;
+      head = '<div class="note plus"><span class="qzscore">' +
+             (sc === null ? '채점 결과를 받지 못했습니다' : esc(sc + ' / ' + (mx === null ? '?' : mx))) +
+             '</span>' + (sc !== null && mx ? ' &nbsp;<span class="muted">맞힌 문항 ' + sc + '개</span>' : '') + '</div>';
+    }
+
+    let h = head;
+    list.forEach(function(q, i){
+      const id = qid(q, i);
+      const d  = byId[id] || byId[String(i)] || null;
+      const ok = d ? d.correct : null;
+      const cls = (ok === true) ? 'o' : (ok === false ? 'x' : 'n');
+      const mark = (ok === true) ? '<span class="qzmark o">○ 맞음</span>'
+                 : (ok === false ? '<span class="qzmark x">✕ 틀림</span>'
+                                 : '<span class="qzmark n">— 채점하지 않는 문항</span>');
+      h += '<div class="qzq ' + cls + '"><b><span class="qno">' + (i + 1) + '.</span>' + esc(q.q || q.text || '') + '</b>';
+      h += mark;
+      if (d){
+        h += '<div style="margin-top:8px;font-size:14px">내 답 · ' +
+             (d.your === null || d.your === undefined || d.your === '' ? '<span class="muted">비워 둠</span>' : esc(showAnswer(q, d.your))) + '</div>';
+        if (ok === false && d.answer !== null && d.answer !== undefined && d.answer !== ''){
+          h += '<div style="font-size:14px">정답 · <b>' + esc(showAnswer(q, d.answer)) + '</b></div>';
+        }
+        if (d.explain) h += '<div class="qzexp">' + esc(d.explain) + '</div>';
+      }
+      h += '</div>';
+    });
+    $('qzResult').innerHTML = '<h3>채점 결과</h3>' + h;
+    $('qzResult').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }
+  //  보기 번호(0부터)로 온 답은 보기 내용으로 바꿔 보여 줍니다.
+  function showAnswer(q, v){
+    const s = String(v == null ? '' : v);
+    if (String(q.type || '').toLowerCase() !== 'choice') return s;
+    const opts = qOptions(q);
+    if (/^\d+$/.test(s) && Number(s) < opts.length) return optLabel(opts[Number(s)]);
+    return s;
+  }
+
+  $('btnQuizSubmit').addEventListener('click', function(){
+    if (!group || expired) return;
+    if (typeof Hub.saveQuiz !== 'function'){
+      $('quizMsg').className = 'savemsg warn';
+      $('quizMsg').textContent = '이 기기의 hub.js 가 개념 확인을 아직 지원하지 않습니다. 선생님께 알려 주세요.';
+      return;
+    }
+    const no   = Number($('qzNo').value);
+    const name = $('qzName').value.trim();
+    const msg  = $('quizMsg');
+    if (!no || no < 1 || no > 100){
+      msg.className = 'savemsg warn'; msg.textContent = '번호를 1~100 사이로 넣어 주세요.';
+      $('qzNo').focus(); return;
+    }
+    if (!name){
+      msg.className = 'savemsg warn'; msg.textContent = '이름을 넣어 주세요. 선생님이 누구 기록인지 알 수 있어야 합니다.';
+      $('qzName').focus(); return;
+    }
+    const ans = quizAnswers();
+    if (!Object.keys(ans).length && !confirm('아직 답을 하나도 고르지 않았습니다. 그대로 낼까요?')) return;
+
+    msg.className = 'savemsg'; msg.textContent = '채점 중…';
+    $('btnQuizSubmit').disabled = true;
+    writeWithPin(function(pin){
+      return Hub.saveQuiz(joinCode, group.id, no, name, ans, pin);
+    }).then(function(res){
+      renderQuizResult(res);
+      if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다.'; }
+      else { msg.textContent = '냈습니다. 다시 풀어도 됩니다(마지막 것이 남습니다).'; }
+      $('btnQuizSubmit').textContent = '다시 채점하기';
+    }, function(err){
+      msg.className = 'savemsg warn'; msg.textContent = writeErrText(err);
+    }).then(function(){ $('btnQuizSubmit').disabled = false; });
+  });
+
   // 보고서
+  //  예상 곡선을 저장한 모둠에게만 이 문항이 교사 문항 뒤에 하나 더 붙습니다.
+  //  선생님이 비슷한 질문을 이미 냈으면 붙이지 않습니다(중복 방지).
+  const PREDICT_Q = '예상과 무엇이 달랐나요? 왜 그랬을까요?';
+  const flat = s => String(s == null ? '' : s).replace(/\s+/g, '');
+  function extraQs(){
+    if (!predict || !predict.length) return [];
+    const key = flat(PREDICT_Q);
+    if (questions.some(q => flat(q && (q.q || q.text)) === key)) return [];
+    return [{ q: PREDICT_Q, type: 'long', key: PREDICT_Q }];
+  }
+
   function renderReport(){
-    if (!questions.length){
+    const extra = extraQs();
+    if (!questions.length && !extra.length){
       $('qlist').innerHTML = '<p class="muted">선생님이 아직 질문을 올리지 않았습니다. 실험 결과를 정리해 두세요.</p>';
       return;
     }
-    $('qlist').innerHTML = questions.map(function(q, i){
+    let h = questions.map(function(q, i){
       const long = (q.type === 'long');
       return '<div class="q"><b><span class="qno">' + (i + 1) + '.</span>' + esc(q.q || '') + '</b>' +
              (long ? '<textarea data-q="' + i + '" placeholder="문장으로 답해 보세요"></textarea>'
                    : '<input type="text" data-q="' + i + '" placeholder="짧게 답해 보세요" />') + '</div>';
     }).join('');
-    Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q]'), function(el){
+    h += extra.map(function(q, k){
+      return '<div class="q" style="border-color:var(--coral)"><b><span class="qno" style="color:var(--coral)">' +
+             (questions.length + k + 1) + '.</span>' + esc(q.q) + '</b>' +
+             '<p class="muted" style="margin:-4px 0 8px">우리 모둠이 그린 예상이 있어서 덧붙은 질문입니다.</p>' +
+             '<textarea data-qk="' + esc(q.key) + '" placeholder="문장으로 답해 보세요"></textarea></div>';
+    }).join('');
+    $('qlist').innerHTML = h;
+    Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q],[data-qk]'), function(el){
       el.addEventListener('input', function(){
         if (!group) return;
         Hub.saveLocal('draft_report_' + joinCode + '_' + group.id, collectAnswers());
@@ -1076,14 +2494,30 @@
     Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q]'), function(el){
       a['q' + (Number(el.dataset.q) + 1)] = el.value;
     });
+    Array.prototype.forEach.call($('qlist').querySelectorAll('[data-qk]'), function(el){
+      a[el.dataset.qk] = el.value;                      // 화면이 덧붙인 문항은 질문 글이 그대로 열쇠입니다
+    });
+    //  데이터 실험실의 분석 기록 — 예약 키라서 보고서 문항으로는 그려지지 않습니다.
+    if (analyses.length) a.__analysis = analyses;
     return a;
   }
   function fillAnswers(ans){
     if (!ans) return;
+    if (Array.isArray(ans.__analysis)) analyses = ans.__analysis.slice(-5);
     Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q]'), function(el){
       const v = ans['q' + (Number(el.dataset.q) + 1)];
       if (v !== undefined && v !== null) el.value = v;
     });
+    Array.prototype.forEach.call($('qlist').querySelectorAll('[data-qk]'), function(el){
+      const v = ans[el.dataset.qk];
+      if (v !== undefined && v !== null) el.value = v;
+    });
+  }
+  //  적던 답을 지키면서 보고서를 다시 그립니다(예상을 저장해 문항이 늘어날 때).
+  function refreshReport(){
+    const keep = $('qlist').querySelector('[data-q],[data-qk]') ? collectAnswers() : null;
+    renderReport();
+    if (keep) fillAnswers(keep);
   }
   function submitReport(status){
     if (!group || expired) return;
@@ -1093,6 +2527,7 @@
     writeWithPin(function(pin){
       return Hub.saveReport(joinCode, group.id, answers, status, pin);
     }).then(function(res){
+      reportStatus = status;
       if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다. 연결되면 자동으로 보냅니다.'; }
       else { msg.textContent = (status === 'done') ? '제출했습니다. 고칠 수 있어요.' : '임시 저장했습니다.'; }
     }, function(err){
@@ -1106,7 +2541,11 @@
     const d = Hub.loadLocal('data_' + joinCode + '_' + group.id, null) ||
               Hub.loadLocal('draft_data_' + joinCode + '_' + group.id, null);
     if (d){ fillRows(d.rows); if (d.note) $('inNote').value = d.note; }
+    predict = loadPredict();
+    renderPredCard();
+    refreshReport();
     const r = Hub.loadLocal('report_' + joinCode + '_' + group.id, null);
+    if (r && r.status) reportStatus = r.status;
     fillAnswers(r ? r.answers : Hub.loadLocal('draft_report_' + joinCode + '_' + group.id, null));
     renderMyChart();
   }
@@ -1183,8 +2622,959 @@
     });
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  ④ 데이터 실험실 — 축 바꾸기 · 변환 · 파생열 · 구간 · 우리 반 전체
+  //
+  //  ★ 여기서 하는 일은 모두 "보기"입니다. 데이터 입력표의 원본 값은 손대지 않습니다.
+  //  ★ 최소제곱(기울기·절편·R²)은 labFit() 한 곳에서만 계산합니다.
+  //    변환한 좌표를 [[x, y], …] 꼴로 만들어 Hub.stats 에 그대로 넘깁니다(중복 구현 없음).
+  // ═══════════════════════════════════════════════════════════════
+
+  //  변환 한 벌 — f(값, 최솟값) 이 실제 계산, ok(값) 가 "이 점을 쓸 수 있는가"입니다.
+  const LAB_TF = {
+    none: { name:'그대로 두기',        lab:l => l,            unit:u => u,                  ok:v => true,   f:v => v },
+    inv : { name:'1/값 으로 바꾸기',   lab:l => '1/' + l,     unit:u => u ? '1/' + u : '',  ok:v => v !== 0, f:v => 1 / v },
+    sq  : { name:'제곱하기 (값²)',      lab:l => l + '²',      unit:u => u ? u + '²' : '',   ok:v => true,   f:v => v * v },
+    sqrt: { name:'제곱근 (√값)',        lab:l => '√' + l,      unit:u => u ? '√' + u : '',   ok:v => v >= 0, f:v => Math.sqrt(v) },
+    log : { name:'로그로 보기 (log 값)', lab:l => 'log ' + l,  unit:u => '',                 ok:v => v > 0,  f:v => Math.log(v) / Math.LN10 },
+    inv2: { name:'1/값² 으로 바꾸기',   lab:l => '1/' + l + '²', unit:u => u ? '1/' + u + '²' : '', ok:v => v !== 0, f:v => 1 / (v * v) },
+    sub : { name:'값 − 최솟값',         lab:l => l + ' − 최솟값', unit:u => u,               ok:v => true,   f:(v, m) => v - m, needMin:true }
+  };
+  const TF_ORDER = ['none','inv','sq','sqrt','log','inv2','sub'];
+  //  건너뛴 점이 생기는 까닭 — 조용히 버리지 않고 화면에 그대로 알립니다.
+  const TF_WHY = {
+    inv :'0 인 값은 1/값 을 만들 수 없어서',
+    inv2:'0 인 값은 1/값² 을 만들 수 없어서',
+    log :'0 이거나 음수인 값은 로그를 만들 수 없어서',
+    sqrt:'음수인 값은 제곱근을 만들 수 없어서'
+  };
+  const LAB_OPS = ['×','÷','+','−'];
+  const LAB_Q = [
+    '축을 바꾸니 그래프 모양이 어떻게 달라졌나요?',
+    '기울기는 무엇을 뜻할까요? 단위까지 넣어 말해 보세요.',
+    '직선에서 벗어난 점이 있다면 왜 그럴까요?'
+  ];
+
+  const LABS = {
+    mode:'mine', xk:'x', xt:'none', ys:[], yt:'none',
+    kind:'scatter', trend:true, selA:null, selB:null,
+    derived:[], dseq:0, mk:{ a:'', b:'', op:'×', name:'' },
+    notes:['','',''], msg:'', msgCls:'', last:null, ready:false, fetching:false
+  };
+  //  그래프 칸 — 좁은 화면에서는 눈금 글씨가 너무 작아지지 않도록 그림 자체를 작게 잡습니다.
+  let LW = 620, LH = 340;
+  const LP = { l: 64, r: 18, t: 18, b: 48 };
+  function labSizeUp(){
+    const narrow = (typeof window !== 'undefined' && window.innerWidth < 560);
+    LW = narrow ? 380 : 620;
+    LH = narrow ? 300 : 340;
+    LP.l = narrow ? 46 : 64;
+  }
+  let LABV = null;         // 지금 그린 그래프의 눈금 범위 (드래그 → 값 되돌리기에 씁니다)
+
+  function labReset(){
+    LABS.mode = 'mine'; LABS.xk = 'x'; LABS.xt = 'none'; LABS.ys = []; LABS.yt = 'none';
+    LABS.kind = 'scatter'; LABS.trend = true; LABS.selA = null; LABS.selB = null;
+    LABS.derived = []; LABS.dseq = 0; LABS.mk = { a:'', b:'', op:'×', name:'' };
+    LABS.notes = ['','','']; LABS.msg = ''; LABS.msgCls = ''; LABS.last = null; LABS.ready = false;
+    LABV = null;
+    if ($('labBody')) $('labBody').innerHTML = '';
+  }
+  //  축·변환·구간만 처음 상태로 (만들어 둔 파생열은 그대로 둡니다)
+  function labDefaults(){
+    LABS.xk = 'x'; LABS.xt = 'none'; LABS.yt = 'none';
+    LABS.ys = (spec && spec.series || []).map(function(s, i){ return 's' + i; });
+    LABS.kind = 'scatter'; LABS.trend = true; LABS.selA = null; LABS.selB = null;
+  }
+
+  // ── 숫자 · 단위 ────────────────────────────────────────────────
+  const SUP = { '-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' };
+  //  아주 작거나 큰 값도 읽히게 — 0.00012 → 1.20×10⁻⁴
+  function labNum(v){
+    const n = Number(v);
+    if (v === null || v === undefined || !isFinite(n)) return '—';
+    if (n === 0) return '0';
+    const a = Math.abs(n);
+    if (a < 1e-3 || a >= 1e6){
+      const s = n.toExponential(2).split('e');
+      const ex = String(Number(s[1])).split('').map(function(c){ return SUP[c] || c; }).join('');
+      return String(Number(s[0])) + '×10' + ex;
+    }
+    return String(Number(n.toPrecision(4)));
+  }
+  function fmtR2(v){
+    if (v === null || v === undefined || !isFinite(v)) return '—';
+    return (Math.abs(v) >= 0.995) ? Number(v).toFixed(3) : Number(v).toFixed(2);
+  }
+  function unitTxt(u){ return u ? ' ' + u : ''; }
+  //  기울기의 단위 = 세로축 단위 ÷ 가로축 단위.
+  //  가로축이 1/cm² 처럼 이미 뒤집힌 단위면 lx/1/cm² 가 아니라 lx·cm² 로 적어 줍니다.
+  function slopeUnit(yu, xu){
+    let inv = false;
+    if (xu && xu.indexOf('1/') === 0){ xu = xu.slice(2); inv = true; }
+    if (yu && xu) return inv ? (yu + '·' + xu) : (yu + '/' + xu);
+    if (yu) return yu;
+    if (xu) return inv ? xu : ('1/' + xu);
+    return '';
+  }
+  function r6(v){ return (v === null || v === undefined || !isFinite(v)) ? null : Number(Number(v).toPrecision(6)); }
+
+  // ── 쓸 수 있는 열 목록 ─────────────────────────────────────────
+  function labCols(){
+    const out = [{ k:'x', label:(spec && spec.x && spec.x.label) || '가로축', unit:(spec && spec.x && spec.x.unit) || '' }];
+    (spec && spec.series || []).forEach(function(s, i){
+      out.push({ k:'s' + i, label: s.label || ('계열 ' + (i + 1)), unit: s.unit || '' });
+    });
+    LABS.derived.forEach(function(d){ out.push({ k:d.id, label:d.name, unit:d.unit || '', made:true }); });
+    return out;
+  }
+  function labCol(k){
+    const list = labCols();
+    for (let i = 0; i < list.length; i++) if (list[i].k === k) return list[i];
+    return null;
+  }
+  function labColorOf(k){
+    const list = labCols();
+    for (let i = 0; i < list.length; i++) if (list[i].k === k) return SERIES_COLORS[i % SERIES_COLORS.length];
+    return 'var(--muted)';
+  }
+  function labDerived(id){
+    for (let i = 0; i < LABS.derived.length; i++) if (LABS.derived[i].id === id) return LABS.derived[i];
+    return null;
+  }
+
+  //  한 줄에서 그 열의 "원래 값" 꺼내기 (파생열은 그 자리에서 계산합니다)
+  function rawVal(row, k){
+    if (!k) return NaN;
+    if (k === 'x') return cell(row, 0);
+    if (k.charAt(0) === 's') return cell(row, Number(k.slice(1)) + 1);
+    if (k.charAt(0) === 'd'){
+      const d = labDerived(k);
+      if (!d) return NaN;
+      const a = rawVal(row, d.a), b = rawVal(row, d.b);
+      if (!isFinite(a) || !isFinite(b)) return NaN;
+      if (d.op === '×') return a * b;
+      if (d.op === '÷') return (b === 0) ? NaN : (a / b);   // 0 으로 나누는 칸은 건너뜁니다
+      if (d.op === '+') return a + b;
+      return a - b;
+    }
+    return NaN;
+  }
+  function colMin(rows, k){
+    let m = null;
+    (rows || []).forEach(function(r){
+      const v = rawVal(r, k);
+      if (isFinite(v) && (m === null || v < m)) m = v;
+    });
+    return (m === null) ? 0 : m;
+  }
+
+  //  줄 목록 → 변환한 (x, y) 점들.
+  //  raw     는 값이 있는 모든 줄의 변환 전 좌표,
+  //  rawKept 는 "변환에 성공해 pts 에 남은 점"의 변환 전 좌표입니다 (변환 전후 R² 를 같은 점끼리 견주려고 따로 모읍니다).
+  //  minX·minY 를 주면 그 값을 '최솟값 빼기' 변환에 씁니다 — 반 전체 보기에서 모둠마다 다른 값을 빼지 않도록 하기 위함입니다.
+  function labPoints(rows, xk, xt, yk, yt, minX, minY){
+    const tx = LAB_TF[xt] || LAB_TF.none, ty = LAB_TF[yt] || LAB_TF.none;
+    const mx = tx.needMin ? ((minX === undefined || minX === null || !isFinite(minX)) ? colMin(rows, xk) : minX) : 0;
+    const my = ty.needMin ? ((minY === undefined || minY === null || !isFinite(minY)) ? colMin(rows, yk) : minY) : 0;
+    const out = { pts: [], raw: [], rawKept: [], skipped: 0, missing: 0, minX: mx, minY: my };
+    (rows || []).forEach(function(r){
+      const a = rawVal(r, xk), b = rawVal(r, yk);
+      if (!isFinite(a) || !isFinite(b)){ out.missing++; return; }   // 빈 칸 — 원래 없는 값입니다
+      out.raw.push({ x:a, y:b });
+      if (!tx.ok(a) || !ty.ok(b)){ out.skipped++; return; }
+      const X = tx.f(a, mx), Y = ty.f(b, my);
+      if (!isFinite(X) || !isFinite(Y)){ out.skipped++; return; }
+      out.pts.push({ x:X, y:Y });
+      out.rawKept.push({ x:a, y:b });                               // 같은 점 집합으로 전후를 견줍니다
+    });
+    return out;
+  }
+
+  //  ★ 최소제곱은 여기 한 곳에서만 — 변환한 좌표를 Hub.stats 가 읽는 표 모양으로 넘깁니다.
+  function labFit(pts){
+    const list = (pts || []).map(function(p){ return [p.x, p.y]; });
+    const st = Hub.stats(list, 0);
+    st.ok = (st.n >= 2 && st.slope !== null && isFinite(st.slope));
+    return st;
+  }
+  function labInSel(p){
+    return (LABS.selA === null) || (p.x >= LABS.selA && p.x <= LABS.selB);
+  }
+  function labClassOk(){
+    const ph = (lesson && lesson.phase) || 'collect';
+    return ph === 'share' || ph === 'present' || ph === 'done';
+  }
+  function labMsg(text, cls){
+    LABS.msg = text || ''; LABS.msgCls = cls || '';
+    const el = $('labMsg');
+    if (el){ el.className = 'savemsg' + (cls ? ' ' + cls : ''); el.textContent = LABS.msg; }
+  }
+
+  // ── 그래프 (인라인 SVG 직접 그리기) ────────────────────────────
+  function labPX(v){
+    if (!LABV) return LP.l;
+    return LP.l + (v - LABV.x0) / ((LABV.x1 - LABV.x0) || 1) * (LW - LP.l - LP.r);
+  }
+  //  추세선을 그림 안쪽으로만 자릅니다.
+  function lineSeg(a, b, x0, x1, y0, y1){
+    let lo = x0, hi = x1;
+    if (a === 0){ if (b < y0 || b > y1) return null; }
+    else {
+      const p = (y0 - b) / a, q = (y1 - b) / a;
+      lo = Math.max(lo, Math.min(p, q));
+      hi = Math.min(hi, Math.max(p, q));
+    }
+    if (!(hi > lo)) return null;
+    return [lo, a * lo + b, hi, a * hi + b];
+  }
+
+  //  sets: [{label, color, pts, line, big, faint, fit, thick}]
+  function labChart(sets, opt){
+    opt = opt || {};
+    const xs = [], ys = [];
+    (sets || []).forEach(function(s){ s.pts.forEach(function(p){ xs.push(p.x); ys.push(p.y); }); });
+    if (!xs.length){ LABV = null; return '<div class="empty">그릴 점이 없습니다. 축이나 변환을 바꿔 보세요.</div>'; }
+
+    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
+    let y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
+    if (x1 === x0){ x0 -= 0.5; x1 += 0.5; }
+    if (y1 === y0){ y0 -= 1;   y1 += 1;   }
+    const padX = (x1 - x0) * 0.06, padY = (y1 - y0) * 0.10;
+    x0 -= padX; x1 += padX; y0 -= padY; y1 += padY;
+    LABV = { x0:x0, x1:x1, y0:y0, y1:y1 };
+    const px = function(v){ return LP.l + (v - x0) / (x1 - x0) * (LW - LP.l - LP.r); };
+    const py = function(v){ return LH - LP.b - (v - y0) / (y1 - y0) * (LH - LP.t - LP.b); };
+
+    let s = '<svg id="labSvg" class="labsvg" viewBox="0 0 ' + LW + ' ' + LH + '" width="100%" role="img" ' +
+            'aria-label="' + esc((opt.xLabel || 'x') + ' 대 ' + (opt.yLabel || 'y') + ' 그래프. 드래그하면 구간을 고를 수 있습니다.') + '">';
+    // 고른 구간(뒤에 깔립니다) — 드래그 중에는 이 사각형만 고쳐 그립니다.
+    s += '<rect id="labSel" x="0" y="' + LP.t + '" width="0" height="' + (LH - LP.t - LP.b) +
+         '" fill="var(--sun)" opacity=".18"/>';
+    for (let i = 0; i <= 4; i++){
+      const v = y0 + (y1 - y0) * i / 4, y = py(v);
+      s += '<line x1="' + LP.l + '" y1="' + y.toFixed(1) + '" x2="' + (LW - LP.r) + '" y2="' + y.toFixed(1) +
+           '" stroke="var(--line)" stroke-width="1"/>';
+      s += '<text x="' + (LP.l - 8) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="var(--muted)">' +
+           esc(labNum(v)) + '</text>';
+    }
+    for (let i = 0; i <= 4; i++){
+      const v = x0 + (x1 - x0) * i / 4, x = px(v);
+      s += '<line x1="' + x.toFixed(1) + '" y1="' + LP.t + '" x2="' + x.toFixed(1) + '" y2="' + (LH - LP.b) +
+           '" stroke="var(--line)" stroke-width="1" opacity=".6"/>';
+      s += '<text x="' + x.toFixed(1) + '" y="' + (LH - LP.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' +
+           esc(labNum(v)) + '</text>';
+    }
+    s += '<line x1="' + LP.l + '" y1="' + (LH - LP.b) + '" x2="' + (LW - LP.r) + '" y2="' + (LH - LP.b) +
+         '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    s += '<text x="' + (LW - LP.r) + '" y="' + (LH - 8) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' +
+         esc(opt.xLabel || '') + '</text>';
+    s += '<text x="' + (LP.l - 8) + '" y="' + (LP.t - 4) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' +
+         esc(opt.yLabel || '') + '</text>';
+
+    (sets || []).forEach(function(se){
+      const op = se.faint ? '.45' : '1';
+      if (se.line && se.pts.length > 1){
+        let d = '';
+        se.pts.slice().sort(function(a, b){ return a.x - b.x; }).forEach(function(p, i){
+          d += (i ? 'L' : 'M') + px(p.x).toFixed(1) + ' ' + py(p.y).toFixed(1) + ' ';
+        });
+        s += '<path d="' + d + '" fill="none" stroke="' + se.color + '" stroke-width="2.2" opacity="' + op +
+             '" stroke-linejoin="round" stroke-linecap="round"/>';
+      }
+      se.pts.forEach(function(p){
+        s += '<circle cx="' + px(p.x).toFixed(1) + '" cy="' + py(p.y).toFixed(1) + '" r="' + (se.big ? 5 : 3.2) +
+             '" fill="' + se.color + '" opacity="' + op + '"' +
+             (se.big ? ' stroke="#fff" stroke-width="1.6"' : '') + '/>';
+      });
+      if (se.fit && se.fit.ok){
+        const seg = lineSeg(se.fit.slope, se.fit.intercept, x0, x1, y0, y1);
+        if (seg){
+          s += '<line x1="' + px(seg[0]).toFixed(1) + '" y1="' + py(seg[1]).toFixed(1) + '" x2="' + px(seg[2]).toFixed(1) +
+               '" y2="' + py(seg[3]).toFixed(1) + '" stroke="' + se.color + '" stroke-width="' + (se.thick ? 3.6 : 1.8) +
+               '" opacity="' + (se.faint ? '.5' : '.9') + '" stroke-dasharray="' + (se.thick ? '' : '7 5') + '"/>';
+        }
+      }
+    });
+    s += '</svg>';
+
+    let lg = '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:12.5px;color:var(--muted)">';
+    (sets || []).forEach(function(se){
+      if (!se.label) return;
+      lg += '<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:' +
+            se.color + ';display:inline-block"></i>' + esc(se.label) + '</span>';
+    });
+    lg += '</div>';
+    return s + lg;
+  }
+
+  //  드래그로 구간 고르기 — 마우스도 손가락도 같은 포인터 이벤트로 받습니다.
+  function labBindDrag(){
+    const svg = $('labSvg');
+    if (!svg || !LABV) return;
+    let start = null;
+    function xAt(ev){
+      const r = svg.getBoundingClientRect();
+      if (!r.width) return null;
+      const vx = (ev.clientX - r.left) / r.width * LW;
+      const t = (vx - LP.l) / ((LW - LP.l - LP.r) || 1);
+      return LABV.x0 + Math.max(0, Math.min(1, t)) * (LABV.x1 - LABV.x0);
+    }
+    function paint(){
+      const rect = $('labSel');
+      if (!rect) return;
+      if (LABS.selA === null){ rect.setAttribute('width', '0'); return; }
+      const a = labPX(LABS.selA), b = labPX(LABS.selB);
+      rect.setAttribute('x', Math.min(a, b).toFixed(1));
+      rect.setAttribute('width', Math.abs(b - a).toFixed(1));
+    }
+    paint();
+    svg.addEventListener('pointerdown', function(ev){
+      const v = xAt(ev);
+      if (v === null) return;
+      ev.preventDefault();
+      try { svg.setPointerCapture(ev.pointerId); } catch (e){}
+      start = v; LABS.selA = v; LABS.selB = v;
+      paint();
+    });
+    svg.addEventListener('pointermove', function(ev){
+      if (start === null) return;
+      const v = xAt(ev);
+      if (v === null) return;
+      ev.preventDefault();
+      LABS.selA = Math.min(start, v); LABS.selB = Math.max(start, v);
+      paint();
+    });
+    function end(ev){
+      if (start === null) return;
+      start = null;
+      try { svg.releasePointerCapture(ev.pointerId); } catch (e){}
+      // 살짝 누르기만 한 것은 "구간 해제" 로 봅니다.
+      if (LABS.selA !== null && (LABS.selB - LABS.selA) < (LABV.x1 - LABV.x0) * 0.02){
+        LABS.selA = null; LABS.selB = null;
+      }
+      renderLab();
+    }
+    svg.addEventListener('pointerup', end);
+    svg.addEventListener('pointercancel', end);
+  }
+
+  // ── 화면 만들기 ────────────────────────────────────────────────
+  function colOptionsHTML(list, cur){
+    return list.map(function(c){
+      return '<option value="' + esc(c.k) + '"' + (c.k === cur ? ' selected' : '') + '>' +
+             esc(c.label) + (c.unit ? ' (' + esc(c.unit) + ')' : '') + '</option>';
+    }).join('');
+  }
+  function tfOptionsHTML(cur){
+    return TF_ORDER.map(function(k){
+      return '<option value="' + k + '"' + (k === cur ? ' selected' : '') + '>' + esc(LAB_TF[k].name) + '</option>';
+    }).join('');
+  }
+
+  function labIntroHTML(){
+    return '<div class="box"><h2>데이터 실험실</h2>' +
+      '<p class="lead">축을 바꾸고, 값을 바꾸어 보면서 <b>곡선이 직선이 되는 순간</b>을 찾아보세요.</p>' +
+      '<div class="note plus">여기서 바꾸는 것은 <b>보는 방법</b>일 뿐입니다. ' +
+      '데이터 입력표의 원본 값은 절대 바뀌지 않으니 마음껏 바꿔 보고, ' +
+      '언제든 <b>[원래대로]</b>를 누르면 처음 모습으로 돌아옵니다.</div></div>';
+  }
+
+  function labControlsHTML(){
+    const cols = labCols();
+    const classOn = (LABS.mode === 'class');
+    let h = '<div class="box"><h3 style="margin-top:0">무엇을 어떻게 볼까요?</h3>';
+    h += '<div class="modepick">' +
+         '<button class="modebtn' + (!classOn ? ' on' : '') + '" type="button" data-mode="mine">우리 모둠</button>' +
+         '<button class="modebtn' + (classOn ? ' on' : '') + '" type="button" data-mode="class">우리 반 전체</button>' +
+         '</div>';
+    h += '<div class="labgrid">' +
+         '<div><label for="labX">가로축</label><select id="labX">' + colOptionsHTML(cols, LABS.xk) + '</select></div>' +
+         '<div><label for="labXT">가로축 값 바꾸기</label><select id="labXT">' + tfOptionsHTML(LABS.xt) + '</select></div>' +
+         '<div><label for="labYT">세로축 값 바꾸기</label><select id="labYT">' + tfOptionsHTML(LABS.yt) + '</select></div>' +
+         '</div>';
+    h += '<label class="fl">세로축 ' + (classOn ? '(반 전체는 한 가지만 봅니다)' : '(여러 개 고를 수 있어요)') + '</label>';
+    h += '<div class="ycheck">' + cols.filter(function(c){ return c.k !== LABS.xk; }).map(function(c){
+      const on = LABS.ys.indexOf(c.k) >= 0;
+      return '<label class="' + (on ? 'on' : '') + '">' +
+             '<input type="' + (classOn ? 'radio' : 'checkbox') + '" name="labY" data-y="' + esc(c.k) + '"' + (on ? ' checked' : '') + ' />' +
+             '<i style="background:' + labColorOf(c.k) + '"></i>' + esc(c.label) + (c.unit ? ' (' + esc(c.unit) + ')' : '') +
+             '</label>';
+    }).join('') + '</div>';
+    h += '<div class="improw" style="margin-top:12px">' +
+         '<button class="modebtn' + (LABS.kind === 'scatter' ? ' on' : '') + '" type="button" data-kind="scatter">점으로 보기</button>' +
+         '<button class="modebtn' + (LABS.kind === 'line' ? ' on' : '') + '" type="button" data-kind="line">선으로 잇기</button>' +
+         '<label class="chk"><input id="labTrend" type="checkbox"' + (LABS.trend ? ' checked' : '') + ' /> 추세선 그리기</label>' +
+         '<button id="btnLabReset" class="btn btn-sm" type="button" style="min-height:44px">원래대로</button>' +
+         '</div></div>';
+    return h;
+  }
+
+  function labDeriveHTML(){
+    const cols = labCols();
+    const a = LABS.mk.a || (cols[1] ? cols[1].k : cols[0].k);
+    const b = LABS.mk.b || (cols[2] ? cols[2].k : cols[0].k);
+    let h = '<div class="box"><h3 style="margin-top:0">두 값을 계산해 새 열 만들기</h3>' +
+            '<p class="muted">예) 압력 × 부피 를 만들면 그 곱이 일정한지 눈으로 볼 수 있습니다.</p>';
+    h += '<div class="labgrid">' +
+         '<div><label for="labMkA">첫째 값</label><select id="labMkA">' + colOptionsHTML(cols, a) + '</select></div>' +
+         '<div><label for="labMkOp">계산</label><select id="labMkOp">' +
+           LAB_OPS.map(function(o){ return '<option value="' + esc(o) + '"' + (LABS.mk.op === o ? ' selected' : '') + '>' + esc(o) + '</option>'; }).join('') +
+         '</select></div>' +
+         '<div><label for="labMkB">둘째 값</label><select id="labMkB">' + colOptionsHTML(cols, b) + '</select></div>' +
+         '<div><label for="labMkName">새 열 이름 (선택)</label><input id="labMkName" type="text" maxlength="24" ' +
+           'placeholder="예) 압력×부피" value="' + esc(LABS.mk.name || '') + '" /></div>' +
+         '</div>';
+    h += '<div class="improw"><button id="btnLabMake" class="btn btn-solid" type="button" style="min-height:44px">새 열 만들기</button></div>';
+    if (LABS.derived.length){
+      h += '<div style="margin-top:12px">' + LABS.derived.map(function(d){
+        return '<div class="anitem"><span><b>' + esc(d.name) + '</b>' + (d.unit ? ' <span class="muted">(' + esc(d.unit) + ')</span>' : '') +
+               '<br><span class="muted">' + esc(d.how) + '</span></span>' +
+               '<button class="btn btn-sm" type="button" data-delcol="' + esc(d.id) + '">지우기</button></div>';
+      }).join('') + '</div>';
+    }
+    h += '</div>';
+    return h;
+  }
+
+  //  변환 때문에 빠진 점을 알려 주는 한 줄
+  function skipNoteHTML(P){
+    let out = '';
+    if (P.skipped){
+      const why = TF_WHY[LABS.xt] || TF_WHY[LABS.yt] || '계산할 수 없는 값이라서';
+      out += '<div class="note warn">값을 바꾸면서 <b>' + P.skipped + '개</b>를 뺐습니다 — ' + esc(why) + '입니다. ' +
+             '뺀 점은 기울기·R² 계산에도 들어가지 않습니다.</div>';
+    }
+    if (P.missing){
+      out += '<p class="muted" style="margin-top:6px">값을 구할 수 없는 줄 ' + P.missing +
+             '개는 건너뛰었습니다 (빈 칸이거나, 만든 열에서 0 으로 나누는 자리입니다).</p>';
+    }
+    return out;
+  }
+
+  //  기울기·절편·R² 한 덩이
+  function fitLineHTML(fit, yUnit, xUnit, head){
+    if (!fit || !fit.ok){
+      return '<div class="fitrow"><span class="muted">' + esc(head ? head + ' · ' : '') +
+             '점이 부족합니다 (점 ' + (fit ? fit.n : 0) + '개). 점이 2개 이상이고 가로축 값이 서로 달라야 계산할 수 있습니다.</span></div>';
+    }
+    const su = slopeUnit(yUnit, xUnit);
+    return '<div class="fitrow">' +
+      (head ? '<span class="muted">' + esc(head) + '</span>' : '') +
+      '<span>기울기 <b>' + esc(labNum(fit.slope)) + '</b>' + esc(unitTxt(su)) + '</span>' +
+      '<span>절편 <b>' + esc(labNum(fit.intercept)) + '</b>' + esc(unitTxt(yUnit)) + '</span>' +
+      '<span>R² <b>' + esc(fmtR2(fit.r2)) + '</b></span>' +
+      '<span class="muted">점 ' + fit.n + '개</span></div>';
+  }
+
+  // ── 우리 모둠 보기 ─────────────────────────────────────────────
+  function labMineHTML(rows){
+    const xc = labCol(LABS.xk);
+    const xLabel = LAB_TF[LABS.xt].lab(xc.label);
+    const xUnit  = LAB_TF[LABS.xt].unit(xc.unit);
+    const items = [];
+    LABS.ys.forEach(function(yk){
+      const yc = labCol(yk);
+      if (!yc) return;
+      const P  = labPoints(rows, LABS.xk, LABS.xt, yk, LABS.yt);
+      const inSel = P.pts.filter(labInSel);
+      items.push({
+        key: yk, label: LAB_TF[LABS.yt].lab(yc.label), unit: LAB_TF[LABS.yt].unit(yc.unit),
+        pts: P.pts, skipped: P.skipped, missing: P.missing,
+        fit: labFit(P.pts), fitRaw: labFit(P.rawKept),   // 전후 비교는 살아남은 같은 점끼리만
+        sel: (LABS.selA !== null) ? labFit(inSel) : null, selN: inSel.length
+      });
+    });
+    LABS.last = { mode:'mine', xLabel: xLabel, xUnit: xUnit, items: items };
+
+    const sets = items.map(function(it){
+      return { label: it.label + (it.unit ? ' (' + it.unit + ')' : ''), color: labColorOf(it.key),
+               pts: it.pts, line: (LABS.kind === 'line'), big: false,
+               fit: (LABS.trend && it.fit.ok) ? it.fit : null };
+    });
+
+    let h = '<div class="box"><h3 style="margin-top:0">그래프</h3>' +
+            '<p class="muted">그래프 위를 <b>옆으로 끌면</b> 그 구간만 따로 계산합니다. 손가락으로도 됩니다.</p>' +
+            '<div class="chartbox">' +
+            labChart(sets, { xLabel: xLabel + (xUnit ? ' (' + xUnit + ')' : ''),
+                             yLabel: items.length === 1 ? (items[0].label + (items[0].unit ? ' (' + items[0].unit + ')' : '')) : '세로축' }) +
+            '</div>';
+    h += '<div class="improw">' +
+         (LABS.selA !== null
+            ? '<span class="pill sun">고른 구간 ' + esc(labNum(LABS.selA)) + ' ~ ' + esc(labNum(LABS.selB)) + esc(unitTxt(xUnit)) + '</span>' +
+              '<button id="btnLabClearSel" class="btn btn-sm" type="button" style="min-height:44px">구간 해제</button>'
+            : '<span class="muted">구간을 고르지 않았습니다 (전체를 계산합니다).</span>') +
+         '</div></div>';
+
+    h += '<div class="box"><h3 style="margin-top:0">계산 결과</h3>';
+    if (!items.length) h += '<p class="muted">세로축을 하나 이상 골라 주세요.</p>';
+    items.forEach(function(it){
+      h += '<div class="fitcard"><b><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:' +
+           labColorOf(it.key) + '"></span> ' + esc(it.label) + esc(unitTxt(it.unit)) +
+           ' <span class="muted" style="font-weight:400">↔ ' + esc(xLabel) + '</span></b>';
+      h += fitLineHTML(it.fit, it.unit, xUnit, '');
+      if (it.fit.ok && it.fitRaw.ok && it.fitRaw.r2 !== null && it.fit.r2 !== null && (LABS.xt !== 'none' || LABS.yt !== 'none')){
+        const up = (it.fit.r2 - it.fitRaw.r2);
+        h += '<p style="margin-top:8px">바꾸기 전 R² <span class="r2jump">' + esc(fmtR2(it.fitRaw.r2)) + ' → ' +
+             esc(fmtR2(it.fit.r2)) + '</span> ' +
+             (up > 0.02 ? '<span class="pill">직선에 더 가까워졌어요</span>'
+                        : (up < -0.02 ? '<span class="pill coral">오히려 덜 직선이 됐어요</span>' : '<span class="pill sky">거의 그대로예요</span>')) +
+             ' <span class="muted">점 ' + it.fit.n + '개 기준(같은 점끼리 견줍니다)</span></p>';
+      }
+      if (it.sel){
+        h += '<div style="border-top:1px dashed var(--line-2);margin-top:10px;padding-top:8px">' +
+             fitLineHTML(it.sel, it.unit, xUnit, '고른 구간만') + '</div>';
+      }
+      h += skipNoteHTML(it);
+      h += '</div>';
+    });
+    h += '<p class="muted">R² 는 <b>바꾼 뒤의 좌표</b>에서 잰 값입니다. 원래 값의 R² 와는 다른 수입니다.</p>';
+    h += '</div>';
+    return h;
+  }
+
+  // ── 우리 반 전체 보기 ──────────────────────────────────────────
+  function labFetchBoard(){
+    if (LABS.fetching || !joinCode) return;
+    LABS.fetching = true;
+    Hub.safe(function(){ return Hub.getBoard(joinCode); }, null).then(function(b){
+      LABS.fetching = false;
+      if (b){ board = b; if (curTab === 'lab') renderLab(); }
+    });
+  }
+
+  function labClassHTML(myRows){
+    LABS.last = null;                       // 계산하지 못한 상태에서 옛 결과를 저장하지 않도록 비웁니다
+    if (!labClassOk()){
+      return '<div class="box"><h3 style="margin-top:0">우리 반 전체</h3>' +
+             '<p class="lead">아직 다른 모둠의 자료를 볼 수 없습니다. 선생님이 <b>‘모둠 공유’</b> 단계를 열면 ' +
+             '반 전체의 점을 한 그래프에 모아 볼 수 있어요.</p>' +
+             '<p class="muted" style="margin-top:8px">그때까지는 <b>[우리 모둠]</b>으로 먼저 분석해 두세요.</p></div>';
+    }
+    if (!board){
+      labFetchBoard();
+      return '<div class="box"><p class="muted">반 전체 자료를 불러오는 중입니다…</p></div>';
+    }
+    const yk = LABS.ys[0];
+    const xc = labCol(LABS.xk), yc = yk ? labCol(yk) : null;
+    if (!yc) return '<div class="box"><p class="muted">세로축을 하나 골라 주세요.</p></div>';
+
+    const xLabel = LAB_TF[LABS.xt].lab(xc.label), xUnit = LAB_TF[LABS.xt].unit(xc.unit);
+    const yLabel = LAB_TF[LABS.yt].lab(yc.label), yUnit = LAB_TF[LABS.yt].unit(yc.unit);
+
+    const dataBy = {};
+    (board.data || []).forEach(function(d){ dataBy[String(d.group_id)] = d; });
+
+    const rowsOf = function(g){
+      if (String(g.id) === String(group.id)) return myRows;      // 우리 모둠은 지금 표에 적힌 값이 참입니다
+      const d = dataBy[String(g.id)];
+      return (d && Array.isArray(d.rows)) ? d.rows : [];
+    };
+
+    //  ★ '최솟값 빼기' 변환은 반 전체에서 한 번만 구한 값을 씁니다.
+    //     모둠마다 자기 줄만 보고 다시 구하면, 서로 다른 구간을 잰 모둠의 점이 같은 자리에 겹쳐 버립니다.
+    const txC = LAB_TF[LABS.xt] || LAB_TF.none, tyC = LAB_TF[LABS.yt] || LAB_TF.none;
+    let clsMinX = null, clsMinY = null;
+    if (txC.needMin || tyC.needMin){
+      let allRows = [];
+      (board.groups || []).forEach(function(g){ allRows = allRows.concat(rowsOf(g) || []); });
+      if (txC.needMin) clsMinX = colMin(allRows, LABS.xk);
+      if (tyC.needMin) clsMinY = colMin(allRows, yk);
+    }
+
+    const parts = [];
+    let allPts = [], skipped = 0;
+    (board.groups || []).forEach(function(g){
+      const P = labPoints(rowsOf(g), LABS.xk, LABS.xt, yk, LABS.yt, clsMinX, clsMinY);
+      const pts = P.pts.filter(labInSel);
+      skipped += P.skipped;
+      if (!pts.length) return;
+      allPts = allPts.concat(pts);
+      parts.push({
+        id: g.id, no: Number(g.group_no), name: g.group_name || (g.group_no + '모둠'),
+        mine: String(g.id) === String(group.id),
+        color: 'var(--g' + (((Number(g.group_no) - 1) % 7) + 1) + ')',
+        pts: pts, fit: labFit(pts)
+      });
+    });
+    if (!parts.length){
+      return '<div class="box"><p class="empty">아직 모을 자료가 없습니다. 모둠들이 데이터를 저장하면 여기에 모입니다.</p></div>';
+    }
+
+    const allFit = labFit(allPts);
+    const mine   = parts.filter(function(p){ return p.mine; })[0] || null;
+    //  기울기 순위 — 큰 것부터 셉니다.
+    const ranked = parts.filter(function(p){ return p.fit.ok; }).slice()
+                        .sort(function(a, b){ return b.fit.slope - a.fit.slope; });
+    let rankTxt = '';
+    if (mine && mine.fit.ok){
+      const at = ranked.map(function(p){ return p.id; }).indexOf(mine.id);
+      if (at >= 0) rankTxt = '우리 모둠 기울기는 ' + ranked.length + '모둠 가운데 <b>' + (at + 1) + '번째로 큽니다</b>.';
+    }
+
+    LABS.last = {
+      mode:'class', xLabel: xLabel, xUnit: xUnit, yLabel: yLabel, yUnit: yUnit,
+      allFit: allFit, parts: parts, rank: rankTxt.replace(/<[^>]*>/g, ''),
+      mineN: mine ? mine.pts.length : 0, allN: allPts.length
+    };
+
+    const sets = parts.map(function(p){
+      return { label: p.name + (p.mine ? ' (우리)' : ''), color: p.color, pts: p.pts,
+               line: false, big: p.mine, faint: !p.mine,
+               fit: (LABS.trend && p.fit.ok) ? p.fit : null };
+    });
+    if (LABS.trend && allFit.ok){
+      sets.push({ label: '반 전체 추세선', color: 'var(--ink)', pts: [], line: false, big: false, thick: true, fit: allFit });
+    }
+
+    let h = '<div class="box"><h3 style="margin-top:0">우리 반 전체</h3>' +
+            '<p class="lead">표본이 <b>' + (mine ? mine.pts.length : 0) + '개</b>에서 <b>' + allPts.length + '개</b>로 늘었습니다 (' +
+            parts.length + '모둠).</p>' +
+            '<div class="chartbox">' +
+            labChart(sets, { xLabel: xLabel + (xUnit ? ' (' + xUnit + ')' : ''),
+                             yLabel: yLabel + (yUnit ? ' (' + yUnit + ')' : '') }) + '</div>';
+    h += '<div class="improw">' +
+         (LABS.selA !== null
+            ? '<span class="pill sun">고른 구간 ' + esc(labNum(LABS.selA)) + ' ~ ' + esc(labNum(LABS.selB)) + esc(unitTxt(xUnit)) + '</span>' +
+              '<button id="btnLabClearSel" class="btn btn-sm" type="button" style="min-height:44px">구간 해제</button>'
+            : '<span class="muted">우리 모둠 점은 크게, 테두리를 둘러 표시했습니다.</span>') +
+         '</div></div>';
+
+    h += '<div class="box"><h3 style="margin-top:0">반 전체 계산 결과</h3>';
+    h += '<div class="fitcard"><b>반 전체를 하나로 봤을 때</b>' + fitLineHTML(allFit, yUnit, xUnit, '') +
+         (rankTxt ? '<p style="margin-top:8px">' + rankTxt + '</p>' : '') + '</div>';
+    h += '<div class="tblwrap"><table><thead><tr><th>모둠</th><th>점</th><th>기울기' +
+         (slopeUnit(yUnit, xUnit) ? ' (' + esc(slopeUnit(yUnit, xUnit)) + ')' : '') + '</th><th>R²</th></tr></thead><tbody>';
+    parts.forEach(function(p){
+      h += '<tr' + (p.mine ? ' style="background:#F0FBFA;font-weight:800"' : '') + '>' +
+           '<td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' + p.color + '"></span> ' +
+           esc(p.name) + (p.mine ? ' (우리)' : '') + '</td>' +
+           '<td>' + p.pts.length + '</td>' +
+           '<td>' + esc(p.fit.ok ? labNum(p.fit.slope) : '—') + '</td>' +
+           '<td>' + esc(p.fit.ok ? fmtR2(p.fit.r2) : '—') + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+    if (skipped) h += '<div class="note warn" style="margin-top:10px">값을 바꾸면서 반 전체에서 <b>' + skipped +
+                      '개</b>를 뺐습니다 — ' + esc(TF_WHY[LABS.xt] || TF_WHY[LABS.yt] || '계산할 수 없는 값이라서') + '입니다.</div>';
+    h += '<p class="muted" style="margin-top:10px">R² 는 <b>바꾼 뒤의 좌표</b>에서 잰 값입니다. ' +
+         '모둠마다 측정 조건이 달랐다면 기울기가 다른 것도 자연스럽습니다.</p></div>';
+    return h;
+  }
+
+  // ── 해석 발판 · 분석 저장 ──────────────────────────────────────
+  //  실험마다 힌트를 다르게 — 축 이름과 고른 변환을 보고 고릅니다.
+  function labHint(){
+    const xc = labCol(LABS.xk);
+    const xn = xc ? xc.label : '';
+    const yn = LABS.ys.map(function(k){ const c = labCol(k); return c ? c.label : ''; }).join(' ');
+    if (LABS.xt === 'inv2')
+      return '1/거리² 로 바꾸었을 때 직선이 되면, 기울기는 <b>광원이 얼마나 센지</b>를, 절편은 <b>주변의 배경 밝기</b>를 뜻합니다.';
+    if (LABS.xt === 'inv')
+      return '1/값 으로 바꾸었을 때 직선이 되면, 두 값은 <b>반비례</b>합니다. 기울기는 그 곱(일정한 값)에 해당합니다.';
+    if (/전압/.test(xn) && /전류/.test(yn))
+      return '전압-전류 그래프의 기울기는 <b>1/저항</b>입니다. 기울기의 역수를 계산해 저항을 구해 보세요.';
+    if (LABS.selA !== null)
+      return '고른 구간의 기울기는 그 동안의 <b>변화 빠르기</b>입니다. 구간을 옮겨 가며 빠르기가 어떻게 달라지는지 견주어 보세요.';
+    if (LABS.derived.length && LABS.ys.some(function(k){ return k.charAt(0) === 'd'; }))
+      return '만든 값이 <b>일정한 수</b> 가까이에 나란히 놓이면, 그 곱(또는 몫)이 변하지 않는다는 뜻입니다.';
+    return '가로축을 바꾸어 보세요. 휘어 있던 그래프가 <b>직선</b>이 되는 순간이 바로 규칙을 찾은 순간입니다.';
+  }
+
+  function labScaffoldHTML(){
+    let h = '<div class="box"><h3 style="margin-top:0">이렇게 읽어 보세요</h3>' +
+            '<div class="note">' + labHint() + '</div>' +
+            '<div class="qcards">' + LAB_Q.map(function(q, i){
+              return '<div class="qcard"><b>' + esc(q) + '</b>' +
+                     '<textarea data-note="' + i + '" placeholder="짧게 적어 보세요"></textarea></div>';
+            }).join('') + '</div>';
+    h += '<div class="savebar"><button id="btnLabSave" class="btn btn-solid" type="button" style="min-height:44px">이 분석 저장</button>' +
+         '<span id="labMsg" class="savemsg' + (LABS.msgCls ? ' ' + LABS.msgCls : '') + '">' + esc(LABS.msg) + '</span></div>';
+    h += '<p class="muted" style="margin-top:6px">어떤 축·어떤 변환을 썼고 결과가 무엇이었는지가 보고서와 함께 저장됩니다 (최대 5개).</p>';
+    if (analyses.length){
+      h += '<h3>저장한 분석 ' + analyses.length + '개</h3>' + analyses.map(function(a, i){
+        return '<div class="anitem"><span>' + esc(a.text || '') +
+               (a.when ? '<br><span class="muted">' + esc(a.when) + '</span>' : '') + '</span>' +
+               '<button class="btn btn-sm" type="button" data-delan="' + i + '">지우기</button></div>';
+      }).join('');
+    }
+    h += '</div>';
+    return h;
+  }
+
+  //  저장할 한 건 만들기 — 화면에 보이는 숫자를 그대로 담습니다.
+  function labMakeRecord(){
+    const L = LABS.last;
+    if (!L) return null;
+    const now = new Date();
+    const when = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) +
+                 ' ' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+    const notes = LAB_Q.map(function(q, i){ return { q: q, a: String(LABS.notes[i] || '') }; })
+                       .filter(function(n){ return n.a.trim() !== ''; });
+    const rec = {
+      at: now.toISOString(), when: when,
+      mode: (L.mode === 'class') ? '우리 반 전체' : '우리 모둠',
+      x: L.xLabel, xUnit: L.xUnit,
+      xChange: LAB_TF[LABS.xt].name, yChange: LAB_TF[LABS.yt].name,
+      range: (LABS.selA === null) ? null : { from: r6(LABS.selA), to: r6(LABS.selB), unit: L.xUnit },
+      series: [], notes: notes
+    };
+    if (L.mode === 'class'){
+      if (!L.allFit || !L.allFit.ok) return null;
+      rec.series.push({
+        name: L.yLabel, unit: L.yUnit, scope: '반 전체',
+        n: L.allFit.n, slope: r6(L.allFit.slope), intercept: r6(L.allFit.intercept), r2: r6(L.allFit.r2),
+        slopeUnit: slopeUnit(L.yUnit, L.xUnit)
+      });
+      (L.parts || []).forEach(function(p){
+        if (!p.fit.ok) return;
+        rec.series.push({ name: p.name, unit: L.yUnit, scope: '모둠', n: p.fit.n,
+                          slope: r6(p.fit.slope), r2: r6(p.fit.r2), mine: !!p.mine,
+                          slopeUnit: slopeUnit(L.yUnit, L.xUnit) });
+      });
+      rec.rank = L.rank || '';
+      rec.sample = { mine: L.mineN, all: L.allN };
+      rec.text = '반 전체 · ' + L.yLabel + ' ↔ ' + L.xLabel + ' · 기울기 ' + labNum(L.allFit.slope) +
+                 unitTxt(slopeUnit(L.yUnit, L.xUnit)) + ' · R² ' + fmtR2(L.allFit.r2) +
+                 ' · 점 ' + L.allN + '개' + (rec.rank ? ' · ' + rec.rank : '');
+      return rec;
+    }
+    const items = (L.items || []).filter(function(it){ return it.fit.ok; });
+    if (!items.length) return null;
+    items.forEach(function(it){
+      const use = it.sel && it.sel.ok ? it.sel : it.fit;
+      rec.series.push({
+        name: it.label, unit: it.unit, scope: (it.sel && it.sel.ok) ? '고른 구간' : '전체',
+        n: use.n, slope: r6(use.slope), intercept: r6(use.intercept), r2: r6(use.r2),
+        r2Before: r6(it.fitRaw.r2), r2After: r6(it.fit.r2), skipped: it.skipped,
+        slopeUnit: slopeUnit(it.unit, L.xUnit)
+      });
+    });
+    const f = items[0];
+    const useF = (f.sel && f.sel.ok) ? f.sel : f.fit;
+    rec.text = f.label + ' ↔ ' + L.xLabel + ' · 기울기 ' + labNum(useF.slope) + unitTxt(slopeUnit(f.unit, L.xUnit)) +
+               ' · R² ' + fmtR2(useF.r2) +
+               ((f.fitRaw.ok && f.fitRaw.r2 !== null && (LABS.xt !== 'none' || LABS.yt !== 'none'))
+                  ? ' (바꾸기 전 ' + fmtR2(f.fitRaw.r2) + ' → ' + fmtR2(f.fit.r2) + ')' : '') +
+               (rec.range ? ' · 구간 ' + labNum(rec.range.from) + '~' + labNum(rec.range.to) : '') +
+               (items.length > 1 ? ' 외 ' + (items.length - 1) + '개' : '');
+    return rec;
+  }
+
+  //  ★ 분석 저장은 보고서 답안을 건드리면 안 됩니다.
+  //     이 탭에는 보고서 칸이 보이지 않아서, 화면(collectAnswers)을 통째로 보내면
+  //     다른 기기에서 쓴 답안이 빈 문자열로 덮일 수 있습니다.
+  //     그래서 "이미 저장돼 있던 답안 + __analysis" 만 보냅니다.
+  function analysisAnswers(){
+    const base = {};
+    const put = function(src){
+      if (!src || typeof src !== 'object') return;
+      Object.keys(src).forEach(function(k){ if (k !== '__analysis') base[k] = src[k]; });
+    };
+    //  ① 기기에 남아 있던 답안 → ② 서버에 저장돼 있는 답안 순으로 덮습니다.
+    put(Hub.loadLocal('draft_report_' + joinCode + '_' + group.id, null));
+    const lr = Hub.loadLocal('report_' + joinCode + '_' + group.id, null);
+    if (lr) put(lr.answers);
+    const srv = ((board && board.reports) || []).filter(function(r){
+      return String(r.group_id) === String(group.id);
+    })[0];
+    if (srv) put(srv.answers);
+    //  ③ 지금 화면에 실제로 적혀 있는 답만 덧씌웁니다 (빈 칸으로는 덮지 않습니다).
+    const dom = $('qlist') ? collectAnswers() : {};
+    Object.keys(dom).forEach(function(k){
+      if (k === '__analysis') return;
+      if (String(dom[k] === undefined || dom[k] === null ? '' : dom[k]).trim() !== '') base[k] = dom[k];
+    });
+    if (analyses.length) base.__analysis = analyses;
+    return base;
+  }
+
+  function labSaveAnalysis(){
+    if (!group || expired) return;
+    const rec = labMakeRecord();
+    if (!rec){ labMsg('저장할 계산 결과가 없습니다. 점이 2개 이상 필요합니다.', 'warn'); return; }
+    const before = analyses.slice();
+    analyses = analyses.concat([rec]).slice(-5);      // 최대 5개 — 오래된 것부터 밀려납니다
+    const btn = $('btnLabSave');
+    if (btn) btn.disabled = true;
+    labMsg('저장 중…', '');
+    writeWithPin(function(pin){
+      return Hub.saveReport(joinCode, group.id, analysisAnswers(), reportStatus, pin);
+    }).then(function(res){
+      if (res && res.offline) labMsg('임시 저장했습니다. 연결되면 자동으로 보냅니다.', 'warn');
+      else labMsg('분석을 저장했습니다 (' + analyses.length + '/5).', '');
+      renderLab();
+    }, function(err){
+      analyses = before;                               // 저장하지 못했으면 되돌립니다
+      labMsg(writeErrText(err), 'warn');
+      if ($('btnLabSave')) $('btnLabSave').disabled = false;
+    });
+  }
+
+  // ── 그리기 · 이벤트 ────────────────────────────────────────────
+  function renderLab(){
+    const host = $('labBody');
+    if (!host) return;
+    if (!group || atlasOnly || expired){
+      host.innerHTML = '<div class="box"><h2>데이터 실험실</h2>' +
+        '<p class="lead">수업에 들어와 모둠을 고르면 열립니다.</p></div>';
+      return;
+    }
+    if (!LABS.ready){ labDefaults(); LABS.ready = true; }
+    labSizeUp();
+
+    // 지운 파생열을 축으로 잡고 있으면 되돌립니다.
+    if (!labCol(LABS.xk)) LABS.xk = 'x';
+    LABS.ys = LABS.ys.filter(function(k){ return !!labCol(k) && k !== LABS.xk; });
+    if (!LABS.ys.length) LABS.ys = (spec && spec.series || []).map(function(s, i){ return 's' + i; })
+                                     .filter(function(k){ return k !== LABS.xk; });
+    if (LABS.mode === 'class' && LABS.ys.length > 1) LABS.ys = [LABS.ys[0]];
+
+    const rows = labRows();
+    if (!rows.length){
+      host.innerHTML = labIntroHTML() +
+        '<div class="box"><h3 style="margin-top:0">아직 볼 값이 없어요</h3>' +
+        '<p class="lead"><b>데이터 입력</b> 탭에서 측정값을 먼저 넣어 주세요. ' +
+        'CSV 파일을 끌어다 놓아도 됩니다.</p></div>';
+      return;
+    }
+
+    host.innerHTML = labIntroHTML() + labControlsHTML() + labDeriveHTML() +
+                     ((LABS.mode === 'class') ? labClassHTML(rows) : labMineHTML(rows)) +
+                     labScaffoldHTML();
+    labBind();
+  }
+  function labRows(){ return collectRows(); }
+
+  function labBind(){
+    Array.prototype.forEach.call($('labBody').querySelectorAll('[data-mode]'), function(b){
+      b.addEventListener('click', function(){
+        const m = b.dataset.mode;
+        if (m === LABS.mode) return;
+        LABS.mode = m;
+        if (m === 'class'){
+          LABS.selA = null; LABS.selB = null;
+          if (LABS.ys.length > 1) LABS.ys = [LABS.ys[0]];
+          if (!board) labFetchBoard();
+        }
+        renderLab();
+      });
+    });
+    if ($('labX')) $('labX').addEventListener('change', function(){
+      LABS.xk = this.value;
+      LABS.ys = LABS.ys.filter(function(k){ return k !== LABS.xk; });
+      LABS.selA = null; LABS.selB = null;                 // 축이 바뀌면 고른 구간은 뜻이 달라집니다
+      renderLab();
+    });
+    if ($('labXT')) $('labXT').addEventListener('change', function(){
+      LABS.xt = this.value; LABS.selA = null; LABS.selB = null; renderLab();
+    });
+    if ($('labYT')) $('labYT').addEventListener('change', function(){ LABS.yt = this.value; renderLab(); });
+    Array.prototype.forEach.call($('labBody').querySelectorAll('[data-y]'), function(inp){
+      inp.addEventListener('change', function(){
+        const k = inp.dataset.y;
+        if (LABS.mode === 'class'){ LABS.ys = [k]; }
+        else if (inp.checked){ if (LABS.ys.indexOf(k) < 0) LABS.ys.push(k); }
+        else { LABS.ys = LABS.ys.filter(function(x){ return x !== k; }); }
+        renderLab();
+      });
+    });
+    Array.prototype.forEach.call($('labBody').querySelectorAll('[data-kind]'), function(b){
+      b.addEventListener('click', function(){ LABS.kind = b.dataset.kind; renderLab(); });
+    });
+    if ($('labTrend')) $('labTrend').addEventListener('change', function(){ LABS.trend = this.checked; renderLab(); });
+    if ($('btnLabReset')) $('btnLabReset').addEventListener('click', function(){
+      labDefaults(); labMsg('처음 상태로 되돌렸습니다.', ''); renderLab();
+    });
+    if ($('btnLabClearSel')) $('btnLabClearSel').addEventListener('click', function(){
+      LABS.selA = null; LABS.selB = null; renderLab();
+    });
+
+    // 파생열
+    ['labMkA','labMkB','labMkOp','labMkName'].forEach(function(id){
+      const el = $(id);
+      if (!el) return;
+      const key = { labMkA:'a', labMkB:'b', labMkOp:'op', labMkName:'name' }[id];
+      el.addEventListener('input',  function(){ LABS.mk[key] = el.value; });
+      el.addEventListener('change', function(){ LABS.mk[key] = el.value; });
+    });
+    if ($('btnLabMake')) $('btnLabMake').addEventListener('click', labMakeColumn);
+    Array.prototype.forEach.call($('labBody').querySelectorAll('[data-delcol]'), function(b){
+      b.addEventListener('click', function(){ labDropColumn(b.dataset.delcol); });
+    });
+
+    // 해석 발판 · 저장
+    Array.prototype.forEach.call($('labBody').querySelectorAll('[data-note]'), function(t){
+      t.value = LABS.notes[Number(t.dataset.note)] || '';
+      t.addEventListener('input', function(){ LABS.notes[Number(t.dataset.note)] = t.value; });
+    });
+    if ($('btnLabSave')) $('btnLabSave').addEventListener('click', labSaveAnalysis);
+    Array.prototype.forEach.call($('labBody').querySelectorAll('[data-delan]'), function(b){
+      b.addEventListener('click', function(){
+        const i = Number(b.dataset.delan);
+        if (!confirm('저장한 분석을 지울까요? 다음에 보고서를 저장할 때 반영됩니다.')) return;
+        analyses = analyses.filter(function(x, k){ return k !== i; });
+        labMsg('지웠습니다. [이 분석 저장]이나 보고서 저장을 누르면 서버에도 반영됩니다.', 'warn');
+        renderLab();
+      });
+    });
+
+    labBindDrag();
+  }
+
+  function labMakeColumn(){
+    const cols = labCols();
+    const a = LABS.mk.a || (cols[1] ? cols[1].k : cols[0].k);
+    const b = LABS.mk.b || (cols[2] ? cols[2].k : cols[0].k);
+    const ca = labCol(a), cb = labCol(b);
+    if (!ca || !cb){ labMsg('계산할 값을 골라 주세요.', 'warn'); return; }
+    if (LABS.derived.length >= 4){ labMsg('새 열은 4개까지 만들 수 있습니다.', 'warn'); return; }
+    const op = LABS.mk.op || '×';
+    let unit = '';
+    if (op === '×') unit = (ca.unit && cb.unit) ? (ca.unit + '·' + cb.unit) : (ca.unit || cb.unit || '');
+    else if (op === '÷') unit = (ca.unit && cb.unit) ? (ca.unit + '/' + cb.unit) : (ca.unit || (cb.unit ? '1/' + cb.unit : ''));
+    else unit = (ca.unit === cb.unit) ? ca.unit : '';
+    const id   = 'd' + (LABS.dseq++);
+    const how  = ca.label + ' ' + op + ' ' + cb.label;
+    const name = String(LABS.mk.name || '').trim() || how;
+    LABS.derived.push({ id: id, name: name, unit: unit, a: a, b: b, op: op, how: how });
+    LABS.mk.name = '';
+    labMsg('새 열 「' + name + '」을 만들었습니다. 가로축·세로축에서 고를 수 있어요.', '');
+    renderLab();
+  }
+
+  //  지운 열을 쓰던 열도 함께 정리합니다(계산할 근거가 사라지기 때문입니다).
+  function labDropColumn(id){
+    let kill = [id], grew = true;
+    while (grew){
+      grew = false;
+      LABS.derived.forEach(function(d){
+        if (kill.indexOf(d.id) >= 0) return;
+        if (kill.indexOf(d.a) >= 0 || kill.indexOf(d.b) >= 0){ kill.push(d.id); grew = true; }
+      });
+    }
+    LABS.derived = LABS.derived.filter(function(d){ return kill.indexOf(d.id) < 0; });
+    if (kill.indexOf(LABS.xk) >= 0) LABS.xk = 'x';
+    LABS.ys = LABS.ys.filter(function(k){ return kill.indexOf(k) < 0; });
+    LABS.selA = null; LABS.selB = null;
+    renderLab();
+  }
+
   // ── 실험 도감 ──────────────────────────────────────────────────
   const SRC_NAME  = { seoul:'서울시교육청 자료집', ez:'이지메이커 사례집' };
+  //  자료집 정식 명칭 — 설명서(manual.html#sources)의 출처 절과 같은 표기를 씁니다.
+  const SRC_FULL  = {
+    seoul: '『2026 교구 및 디지털 도구 활용 과학 교수학습자료(중등 과학)』 서울특별시교육청 창의미래교육과, 2026년 7월',
+    ez   : '『AI-STEAM 교육을 위한 디지털 과학실험 따라하기 — 이지메이커 수업사례집(중학 합본 V1)』 최효석(영서중)'
+  };
+  const SRC_NOTE  = '실험 절차와 해설은 위 자료를 참고해 다시 쓴 것이며, 원문을 그대로 옮기지 않았습니다. ' +
+                    '성취기준은 2022 개정 교육과정(교육부 고시 제2022-33호 [별책 9])을 따릅니다.';
+  function srcLine(keys){
+    const list = (keys || []).filter(k => SRC_FULL[k]);
+    if (!list.length) return '';
+    return '<p class="srcline">출처 · ' + list.map(k => esc(SRC_FULL[k])).join('<br>출처 · ') +
+           '<br>' + esc(SRC_NOTE) +
+           ' <a href="./manual.html#sources">자세한 출처 보기</a></p>';
+  }
   const LEVEL_TXT = { 1:'쉬움', 2:'보통', 3:'어려움' };
 
   // 참여코드 없이 도감만 볼 때는 나머지 탭을 잠그고 까닭을 알려 줍니다.
@@ -1202,6 +3592,7 @@
     atlasOnly = false;
     expired   = false;
     group = null; pickedNo = 0;
+    clearExtras();
     if (unwatch){ unwatch(); unwatch = null; }
     stopPhaseTimer();
     lockTabsForAtlas(false);
@@ -1350,6 +3741,7 @@
       }).join('');
     }
     if (e.textbook) h += '<h3>교과서</h3><p class="muted">' + esc(e.textbook) + '</p>';
+    h += srcLine([e.src, e.altSrc].filter(Boolean));
     h += '</div>';
     return h;
   }
