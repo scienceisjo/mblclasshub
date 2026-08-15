@@ -1439,6 +1439,45 @@ window.Hub = (function () {
     return null;
   }
 
+  //  ── 답안을 문항에 붙들어 두기 (순수 함수 · index.html 의 alignAnswers 와 같은 규칙) ──
+  //  학생 화면은 답을 q1·q2… 로 저장하면서, 그때 화면에 있던 문항 글 목록을
+  //  예약 열쇠 __qkeys 에 함께 적어 둡니다. 선생님이 나중에 ▲▼ 로 차례를 바꾸거나
+  //  문항을 지워도 글이 같은 문항끼리 이어 붙여, 답이 엉뚱한 문항에 붙지 않게 합니다.
+  var QKEYS = '__qkeys';
+  function qKeyOf(q) {
+    var t = (q && typeof q === 'object') ? (q.q || q.text) : q;
+    return String(t == null ? '' : t).replace(/\s+/g, '');
+  }
+  //  Hub.alignAnswers(answers, questions, usedOut) → 문항 차례대로 늘어놓은 답 배열
+  //   · 못 이은 자리는 undefined 입니다.
+  //   · usedOut 을 주면 가져다 쓴 q열쇠를 { q3:true } 꼴로 적어 줍니다(남은 열쇠 가려내기용).
+  function alignAnswers(ans, questions, usedOut) {
+    var keys = (Array.isArray(questions) ? questions : []).map(qKeyOf);
+    var out  = new Array(keys.length);
+    var old  = (ans && Array.isArray(ans[QKEYS]))
+             ? ans[QKEYS].map(function (k) { return String(k == null ? '' : k); }) : null;
+    var usedOld = {}, filled = {};
+    function take(t, i) {
+      if (usedOut) usedOut['q' + (t + 1)] = true;
+      var v = ans ? ans['q' + (t + 1)] : undefined;
+      if (v !== undefined && v !== null) out[i] = v;
+    }
+    if (old) {                                   // ① 문항 글이 같은 것끼리 잇습니다
+      for (var i = 0; i < keys.length; i++) {
+        if (!keys[i]) continue;
+        for (var t = 0; t < old.length; t++) {
+          if (!usedOld[t] && old[t] === keys[i]) { usedOld[t] = true; filled[i] = true; take(t, i); break; }
+        }
+      }
+    }
+    for (var j = 0; j < keys.length; j++) {      // ② 못 이은 자리는 번호로 잇습니다
+      if (filled[j]) continue;
+      if (old && usedOld[j]) continue;           //   그 번호는 이미 다른 문항이 가져갔습니다
+      take(j, j);
+    }
+    return out;
+  }
+
   //  Hub.exportStudents(board) → 학생별로 묶은 기록 배열 (순수 함수 · 네트워크 없음)
   //   · 교사 보드(Hub.adminLoad)를 넣어야 이름·응답 전문·정답까지 담깁니다.
   //   · members 가 비어 있는 모둠은 kind:'group' 한 건으로 묶어 내보냅니다.
@@ -1517,29 +1556,44 @@ window.Hub = (function () {
     function reportBlock(r) {
       var ans = (r && r.answers && typeof r.answers === 'object') ? r.answers : {};
       var out = { status: (r && r.status) || '', updatedAt: (r && r.updated_at) || '', answers: [] };
-      var last = questions.length, key;
-      for (key in ans) {                                  // 화면이 덧붙인 문항(예: 예상과의 차이)까지 담습니다
-        if (!Object.prototype.hasOwnProperty.call(ans, key)) continue;
-        var m = /^q(\d+)$/.exec(key);
-        if (m && Number(m[1]) > last) last = Number(m[1]);
-      }
-      for (var k = 0; k < last; k++) {
-        var q = questions[k] || null;
-        var v = ans['q' + (k + 1)];
-        if (v === undefined) v = ans[String(k)];
+      //  문항 글로 이어 붙입니다 — 선생님이 ▲▼ 로 차례를 바꿔도 답이 옮겨 가지 않습니다.
+      var used = {};
+      var vals = alignAnswers(ans, questions, used);
+      var key, k;
+      for (k = 0; k < questions.length; k++) {
+        var q = questions[k] || {};
+        var v = vals[k];
+        if (v === undefined) v = ans[String(k)];          // 아주 옛 기록(0·1… 열쇠)도 놓치지 않습니다
         out.answers.push({
           no: k + 1,
-          q : q ? String(q.q || q.text || '') : '(화면이 덧붙인 질문)',
-          type: q ? String(q.type || 'short') : 'long',
+          q : String(q.q || q.text || ''),
+          type: String(q.type || 'short'),
           answer: (v == null) ? '' : String(v)
         });
       }
-      // q1..qn 꼴이 아닌 키도 놓치지 않습니다
+      //  아직 쓰이지 않은 열쇠(화면이 덧붙인 문항 등)를 뒤에 붙입니다.
+      //  __analysis·__qkeys 처럼 밑줄 두 개로 시작하는 열쇠는 화면 기록이라 문항이 아닙니다.
+      var rest = [], no = questions.length;
       for (key in ans) {
         if (!Object.prototype.hasOwnProperty.call(ans, key)) continue;
-        if (/^q\d+$/.test(key) || /^\d+$/.test(key)) continue;
-        out.answers.push({ no: null, q: key, type: 'short',
-                           answer: (ans[key] == null) ? '' : String(ans[key]) });
+        if (used[key] || String(key).slice(0, 2) === '__' || /^\d+$/.test(key)) continue;
+        rest.push(key);
+      }
+      rest.sort(function (a, b) {
+        var na = /^q(\d+)$/.exec(a), nb = /^q(\d+)$/.exec(b);
+        if (na && nb) return Number(na[1]) - Number(nb[1]);
+        if (na) return -1;
+        if (nb) return 1;
+        return 0;
+      });
+      for (k = 0; k < rest.length; k++) {
+        var isQ = /^q\d+$/.test(rest[k]);
+        out.answers.push({
+          no: ++no,
+          q : isQ ? '(화면이 덧붙인 질문)' : rest[k],
+          type: 'long',
+          answer: (ans[rest[k]] == null) ? '' : String(ans[rest[k]])
+        });
       }
       return out;
     }
@@ -1691,6 +1745,7 @@ window.Hub = (function () {
     // 계산·정리 (순수 함수 · 네트워크 없음)
     stats: stats, predictGap: predictGap, gradeQuiz: gradeQuiz,
     exportStudents: exportStudents, num: num, cellAt: cellAt,
+    alignAnswers: alignAnswers, qKeyOf: qKeyOf,
     // 모둠 비밀번호(PIN)
     rememberPin: rememberPin, getPin: getPin, forgetPin: forgetPin,
     // 공유·변경감지

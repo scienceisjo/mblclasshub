@@ -168,6 +168,23 @@
   .opt .pick input{width:20px;height:20px;margin:0;accent-color:var(--mint)}
   .opt .pick.on{border-color:var(--mint);background:rgba(32,178,166,.12);color:var(--mint-d)}
   .opt input[type=text]{flex:1 1 160px;min-width:140px}
+
+  /* 보고서 질문 편집기 (수업 만들기 · 대시보드 공용) */
+  .qedit{margin-top:6px}
+  .qcard{border:1.5px solid var(--line);border-radius:16px;background:var(--cream);padding:12px 14px;margin-bottom:10px}
+  .qcard .qtop{display:flex;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .qcard .qtop b{font-family:var(--display);font-weight:400;font-size:16px}
+  .qcard .qtop select{width:auto;min-width:120px;min-height:44px}
+  .qcard .qtop .sp{flex:1 1 auto}
+  .qcard textarea{min-height:52px;line-height:1.55;overflow:hidden}
+  .qmove{min-width:44px;min-height:44px;padding:0 12px;font-size:17px;line-height:1}
+  .qmove:disabled{opacity:.35}
+  /* 켜고 끄는 줄 — 네모칸 + 글자로 알립니다(색만으로 알리지 않습니다) */
+  .chkline{display:flex;align-items:flex-start;gap:11px;border:1.5px solid var(--line-2);border-radius:14px;
+    background:#fff;padding:11px 14px;min-height:44px;cursor:pointer}
+  .chkline input{width:22px;height:22px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--mint)}
+  .chkline .ct b{display:block;font-size:14.5px}
+  .chkline .ct span{display:block;font-size:12.5px;color:var(--muted);font-weight:600;line-height:1.55}
   .qrow{border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px 14px;margin-bottom:8px}
   .qrow.low{border:2px solid var(--coral);background:#FFF7F4}
   .qrow .qq{font-size:14px;font-weight:700;line-height:1.5}
@@ -289,8 +306,18 @@
           <input id="inGroups" type="number" min="1" max="20" value="7" />
         </div>
       </div>
-      <label class="fl" for="inQ">보고서 질문 (한 줄에 하나. 줄 끝에 <b>*</b> 를 붙이면 긴 답)</label>
-      <textarea id="inQ" placeholder="예) 이 실험에서 조작변인은 무엇인가요?"></textarea>
+      <label class="fl">보고서 질문</label>
+      <p class="muted" style="margin:-2px 0 4px">질문 하나가 카드 한 장입니다. 유형을 고르고 <b>▲ ▼</b> 로 순서를 바꿉니다.
+        비어 있는 질문은 저장할 때 저절로 빠집니다.</p>
+      <div id="inQBox" class="qedit"></div>
+
+      <label class="fl">학생 화면 탭</label>
+      <label class="chkline" for="inFeatLab">
+        <input id="inFeatLab" type="checkbox" checked />
+        <span class="ct"><b>데이터 실험실 탭 열기</b>
+          <span>학생이 축을 바꾸고 변환해 보며 분석하는 탭입니다. 측정만 할 차시라면 꺼 두세요.</span></span>
+      </label>
+
       <div id="newErr" class="err"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
         <button id="btnCreate" class="btn btn-solid" type="button">수업 만들기</button>
@@ -391,9 +418,27 @@
 
     <div class="box">
       <h2>보고서 질문 고치기</h2>
-      <p class="muted">한 줄에 질문 하나. 줄 끝에 <b>*</b> 를 붙이면 긴 답 칸이 됩니다. 저장하면 학생 화면이 바로 바뀝니다.</p>
-      <textarea id="dQ"></textarea>
-      <button id="btnSaveForm" class="btn btn-solid" style="margin-top:10px" type="button">질문 저장</button>
+      <p class="muted">질문 하나가 카드 한 장입니다. 유형을 고르고 <b>▲ ▼</b> 로 순서를 바꿉니다.
+        저장하면 학생 화면이 바로 바뀝니다. 고치는 동안에는 화면이 저절로 덮어써지지 않습니다.</p>
+      <div id="dQBox" class="qedit" style="margin-top:10px"></div>
+      <div id="formErr" class="err"></div>
+      <div class="toolrow">
+        <button id="btnSaveForm"  class="btn btn-solid tap" type="button">질문 저장</button>
+        <button id="btnFormReset" class="btn btn-sm btn-ghost tap" type="button">저장된 질문 다시 불러오기</button>
+        <span id="formMsg" class="ok"></span>
+      </div>
+    </div>
+
+    <div class="box">
+      <h2>학생 화면 탭</h2>
+      <p class="muted">수업 도중에도 켜고 끌 수 있습니다. 바꾸면 학생 화면이 곧 따라옵니다.
+        발표 화면과 이 대시보드의 분석 표시는 이 설정과 상관없이 그대로 남습니다.</p>
+      <label class="chkline" for="dFeatLab" style="margin-top:10px">
+        <input id="dFeatLab" type="checkbox" />
+        <span class="ct"><b>데이터 실험실 탭 열기</b>
+          <span>학생이 축을 바꾸고 변환해 보며 분석하는 탭입니다. 측정만 할 차시라면 꺼 두세요.</span></span>
+      </label>
+      <div id="featMsg" class="ok" style="min-height:20px;margin-top:8px"></div>
     </div>
 
     <!-- 개념 확인 문항 출제 (형성평가) -->
@@ -663,6 +708,187 @@
     return (list || []).map(q => (q.q || '') + (q.type === 'long' ? ' *' : '')).join('\n');
   }
 
+  // ════════════════════════════════════════════════════════════════
+  //  보고서 질문 편집기 — 수업 만들기와 대시보드가 같은 것을 씁니다
+  //  ※ 유형은 학생 화면(index.html renderReport)이 실제로 그리는 것만 둡니다.
+  //     그 함수는 type === 'long' 이면 긴 답 칸, 그 밖에는 짧은 답 칸을 그립니다.
+  //     숫자·객관식은 학생 화면이 그리지 못하므로 여기에도 두지 않습니다.
+  // ════════════════════════════════════════════════════════════════
+  const Q_TYPES = [{ v:'short', label:'짧은 답' }, { v:'long', label:'긴 답' }];
+  const qType   = t => (String(t == null ? '' : t) === 'long') ? 'long' : 'short';
+  function normQuestions(arr){
+    return (Array.isArray(arr) ? arr : []).map(function(x){
+      if (typeof x === 'string') return { q: x, type: 'short' };
+      return { q: String((x && (x.q || x.text)) || ''), type: qType(x && x.type) };
+    });
+  }
+
+  //  makeQEditor({boxId, suggest, onChange}) → {set, get, size, redraw}
+  //   · suggest()  : 이 자리에서 불러올 추천 질문 배열 (없으면 버튼이 숨습니다)
+  //   · onChange() : 교사가 손댈 때마다 부릅니다 (대시보드는 이때 '고치는 중' 표시를 켭니다)
+  function makeQEditor(o){
+    const box = $(o.boxId);
+    let list = [];
+    let focusSel = null, focusAlt = null;   // 다시 그린 뒤 커서를 둘 곳 (앞엣것이 막혀 있으면 뒤엣것)
+
+    function touched(){ if (o.onChange) o.onChange(); }
+    function suggestions(){
+      const s = (o.suggest && o.suggest()) || [];
+      return normQuestions(s).filter(x => x.q.trim());
+    }
+    function hasText(){ return list.some(x => String(x.q || '').trim()); }
+
+    function cardHTML(it, i){
+      const n = i + 1;
+      let h = '<div class="qcard" data-i="' + i + '">';
+      h += '<div class="qtop"><b>질문 ' + n + '</b>';
+      h += '<select class="tap" data-k="type" data-i="' + i + '" aria-label="질문 ' + n + ' 유형">' +
+           Q_TYPES.map(function(t){
+             return '<option value="' + t.v + '"' + (qType(it.type) === t.v ? ' selected' : '') + '>' + t.label + '</option>';
+           }).join('') + '</select>';
+      h += '<span class="sp"></span>';
+      h += '<button class="btn btn-sm qmove" type="button" data-up="' + i + '" title="위로 옮기기" ' +
+           'aria-label="질문 ' + n + ' 위로 옮기기"' + (i === 0 ? ' disabled' : '') + '>▲</button>';
+      h += '<button class="btn btn-sm qmove" type="button" data-down="' + i + '" title="아래로 옮기기" ' +
+           'aria-label="질문 ' + n + ' 아래로 옮기기"' + (i === list.length - 1 ? ' disabled' : '') + '>▼</button>';
+      h += '<button class="btn btn-sm btn-ghost tap" type="button" data-del="' + i + '" ' +
+           'aria-label="질문 ' + n + ' 삭제">삭제</button>';
+      h += '</div>';
+      h += '<textarea data-k="q" data-i="' + i + '" maxlength="300" aria-label="질문 ' + n + ' 내용" ' +
+           'placeholder="예) 이 실험에서 조작변인은 무엇인가요?">' + esc(it.q || '') + '</textarea>';
+      return h + '</div>';
+    }
+
+    function grow(el){
+      el.style.height = 'auto';
+      el.style.height = Math.max(52, el.scrollHeight + 2) + 'px';
+    }
+
+    function render(){
+      const sg = suggestions();
+      let h = list.length ? list.map(cardHTML).join('')
+            : '<div class="empty">아직 질문이 없습니다. [+ 질문 추가] 를 누르거나 추천 질문을 불러오세요.</div>';
+      h += '<div class="toolrow">' +
+           '<button class="btn btn-sm tap" type="button" data-add="1">+ 질문 추가</button>' +
+           (sg.length ? '<button class="btn btn-sm tap" type="button" data-fill="1">추천 질문 불러오기</button>' : '') +
+           '<span class="muted" data-count="1"></span></div>';
+      box.innerHTML = h;
+      bind();
+      const c = box.querySelector('[data-count]');
+      if (c) c.textContent = list.length ? ('질문 ' + list.length + '개') : '';
+      if (focusSel || focusAlt){
+        let el = focusSel ? box.querySelector(focusSel) : null;
+        if (!el || el.disabled) el = focusAlt ? box.querySelector(focusAlt) : null;
+        if (el && !el.disabled) el.focus();
+        focusSel = null; focusAlt = null;
+      }
+    }
+
+    function move(i, j){
+      if (i < 0 || j < 0 || i >= list.length || j >= list.length) return;
+      const t = list[i]; list[i] = list[j]; list[j] = t;
+      focusSel = (j < i ? '[data-up="' : '[data-down="') + j + '"]';
+      focusAlt = '.qcard[data-i="' + j + '"] textarea';
+      touched(); render();
+    }
+
+    function bind(){
+      Array.prototype.forEach.call(box.querySelectorAll('textarea[data-k="q"]'), function(el){
+        grow(el);
+        el.addEventListener('input', function(){
+          const it = list[Number(el.dataset.i)];
+          if (!it) return;
+          it.q = el.value; grow(el); touched();
+        });
+      });
+      Array.prototype.forEach.call(box.querySelectorAll('select[data-k="type"]'), function(el){
+        el.addEventListener('change', function(){
+          const it = list[Number(el.dataset.i)];
+          if (!it) return;
+          it.type = qType(el.value); touched();
+        });
+      });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-up]'), function(el){
+        el.addEventListener('click', function(){ const i = Number(el.dataset.up); move(i, i - 1); });
+      });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-down]'), function(el){
+        el.addEventListener('click', function(){ const i = Number(el.dataset.down); move(i, i + 1); });
+      });
+      Array.prototype.forEach.call(box.querySelectorAll('[data-del]'), function(el){
+        el.addEventListener('click', function(){
+          const i = Number(el.dataset.del);
+          if (!list[i]) return;
+          if (String(list[i].q || '').trim() && !confirm('이 질문을 지울까요?')) return;
+          list.splice(i, 1);
+          focusSel = list.length ? ('.qcard[data-i="' + Math.min(i, list.length - 1) + '"] textarea') : '[data-add]';
+          focusAlt = null;
+          touched(); render();
+        });
+      });
+      const add = box.querySelector('[data-add]');
+      if (add) add.addEventListener('click', function(){
+        list.push({ q:'', type:'short' });
+        focusSel = '.qcard[data-i="' + (list.length - 1) + '"] textarea';
+        focusAlt = null;
+        touched(); render();
+      });
+      const fill = box.querySelector('[data-fill]');
+      if (fill) fill.addEventListener('click', function(){
+        const sg = suggestions();
+        if (!sg.length) return;
+        if (hasText() && !confirm('지금 질문을 지우고 추천 질문을 불러올까요?')) return;
+        list = sg;
+        focusSel = null; focusAlt = null;
+        touched(); render();
+      });
+    }
+
+    return {
+      set: function(arr){ list = normQuestions(arr); focusSel = null; focusAlt = null; render(); },
+      //  빈 질문은 여기에서 걸러집니다 — 저장하는 쪽은 이 결과만 씁니다.
+      get: function(){
+        return list.map(function(x){ return { q: String(x.q || '').trim(), type: qType(x.type) }; })
+                   .filter(function(x){ return !!x.q; });
+      },
+      size  : function(){ return list.length; },
+      redraw: function(){ render(); }
+    };
+  }
+
+  //  대시보드 편집기가 '고치는 중' 인지 (고치는 동안에는 폴링이 덮어쓰지 않습니다)
+  let formDirty     = false;
+  let formSyncedSig = null;   // 편집기에 담아 둔 질문이 서버의 어느 것인지
+  let labBusy       = false;  // 데이터 실험실 탭 켜기·끄기를 보내는 중
+
+  const qeNew = makeQEditor({
+    boxId  : 'inQBox',
+    suggest: function(){ return (picked && picked.questions) || []; }
+  });
+  const qeDash = makeQEditor({
+    boxId  : 'dQBox',
+    suggest: function(){
+      const e = (window.LAB && lesson && lesson.exp_id) ? LAB.byId(lesson.exp_id) : null;
+      return (e && e.questions) || [];
+    },
+    onChange: function(){ formDirty = true; $('formErr').textContent = ''; }
+  });
+  qeNew.set([]);
+
+  // ── lesson.form 다루기 ────────────────────────────────────────
+  //  form 은 {questions:[…], features:{…}} 입니다. 스키마를 바꾸지 않으려고
+  //  새 설정은 모두 이 안에 넣습니다. 저장할 때 옆칸을 지우지 않도록 늘 통째로 합쳐 보냅니다.
+  function formOf(){
+    const f = lesson && lesson.form;
+    return (f && typeof f === 'object' && !Array.isArray(f)) ? f : {};
+  }
+  function formQuestions(){ return normQuestions(formOf().questions); }
+  function formFeatures(){
+    const x = formOf().features;
+    return (x && typeof x === 'object' && !Array.isArray(x)) ? x : {};
+  }
+  //  features 가 아예 없는 예전 수업은 '켜진 것' 으로 봅니다 (탭이 갑자기 사라지면 안 됩니다).
+  function labOn(){ return formFeatures().lab !== false; }
+
   Hub.onStatus(function(st){ $('offbar').classList.toggle('hidden', !st.offline); });
 
   // ── 연결 진단 ──────────────────────────────────────────────────
@@ -752,6 +978,7 @@
     if (unwatch){ unwatch(); unwatch = null; }
     stopAdminTimer();
     quizDraft = []; quizDirty = false; quizSyncedAt = null;
+    formDirty = false; formSyncedSig = null; labBusy = false;
     renderRecent(); show('home');
   });
 
@@ -812,7 +1039,8 @@
     picked = LAB.byId(id);
     if (!picked) return;
     $('inTitle').value = picked.title;
-    $('inQ').value = questionsToText(picked.questions);
+    //  실험을 고르면 추천 질문이 지금처럼 저절로 채워집니다(교사가 가장 좋아하는 자리입니다).
+    qeNew.set(picked.questions || []);
     renderExpList();
     $('inTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
@@ -825,6 +1053,9 @@
     fillUnits(); renderExpList();
     $('inTeacher').value = Hub.loadLocal('teacher_name', '') || '';
     $('inClass').value = '';
+    $('inFeatLab').checked = true;
+    $('newErr').textContent = '';
+    qeNew.set([]);
     show('new');
   });
   $('btnCancelNew').addEventListener('click', function(){ show('home'); });
@@ -833,7 +1064,11 @@
   $('btnCreate').addEventListener('click', function(){
     const title = $('inTitle').value.trim();
     if (!title){ $('newErr').textContent = '수업 제목을 적어 주세요.'; return; }
-    const qs = textToQuestions($('inQ').value);
+    const qs = qeNew.get();                       // 빈 질문은 여기에서 걸러집니다
+    if (!qs.length){
+      $('newErr').textContent = '보고서 질문이 하나도 없습니다. [+ 질문 추가] 로 적거나 [추천 질문 불러오기] 를 눌러 주세요.';
+      return;
+    }
     const spec = (picked && picked.dataSpec) ||
                  { x:{label:'회차',unit:''}, series:[{label:'측정값',unit:''}], rows:8, chart:'line' };
     $('newErr').textContent = '';
@@ -845,7 +1080,8 @@
       expTitle   : picked ? picked.title : null,
       classLabel : $('inClass').value.trim(),
       teacherName: $('inTeacher').value.trim(),
-      form       : { questions: qs },
+      //  features 는 켜고 끌 수 있는 탭들입니다. 지금은 lab 하나뿐이지만 뒤에 더 붙일 수 있게 객체로 둡니다.
+      form       : { questions: qs, features: { lab: !!$('inFeatLab').checked } },
       dataSpec   : spec,
       groupCount : Number($('inGroups').value) || 7
     }).then(function(r){
@@ -882,6 +1118,8 @@
       board = b; lesson = b.lesson;
       noteAdmin(b);
       quizDirty = false; quizSyncedAt = null;
+      formDirty = false; formSyncedSig = null; labBusy = false;
+      $('formErr').textContent = ''; $('formMsg').textContent = ''; $('featMsg').textContent = '';
       show('dash');
       paintHeader();
       syncQuizEditor(true);
@@ -923,7 +1161,7 @@
     $('dSub').textContent   = [lesson.class_label, lesson.exp_title, lesson.teacher_name ? lesson.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ');
     $('lnkStudent').href = './index.html?code=' + encodeURIComponent(lesson.join_code);
     $('lnkPresent').href = './present.html?code=' + encodeURIComponent(lesson.join_code);
-    $('dQ').value = questionsToText(lesson.form && lesson.form.questions);
+    syncFormEditor(true);
     $('topSub').textContent = '참여코드 ' + lesson.join_code;
   }
 
@@ -997,6 +1235,8 @@
     });
 
     paintPredict(spec);
+    syncFormEditor(false);
+    syncLabToggle();
     syncQuizEditor(false);
     paintQuizResult();
     syncMerge();
@@ -1033,16 +1273,56 @@
     return presenterHasPredict() ? SLIDE_NAMES.concat([PRED_SLIDE]) : SLIDE_NAMES.slice();
   }
 
+  //  setDash(patch) → Promise<{ok, lesson|err}> — 부르는 쪽에서 결과를 알 수 있게 돌려줍니다.
   function setDash(patch){
     $('dashMsg').textContent = '바꾸는 중…';
-    Hub.adminSet(adminCode, patch).then(function(l){
+    return Hub.adminSet(adminCode, patch).then(function(l){
       lesson = l;
-      $('dashMsg').textContent = '학생·발표 화면에 반영했습니다.';
+      if (board) board.lesson = l;
+      const done = '학생·발표 화면에 반영했습니다.';
+      $('dashMsg').textContent = done;
       paintDash();
-      setTimeout(function(){ $('dashMsg').textContent = ''; }, 2200);
+      setTimeout(function(){ if ($('dashMsg').textContent === done) $('dashMsg').textContent = ''; }, 2200);
+      return { ok: true, lesson: l };
     }, function(err){
       $('dashMsg').textContent = (err && err.message) || '바꾸지 못했습니다.';
+      return { ok: false, err: err };
     });
+  }
+
+  // ── 보고서 질문 · 학생 화면 탭 (둘 다 lesson.form 안에 있습니다) ──
+  //  form 을 통째로 보내야 하므로, 한쪽만 바꿀 때도 나머지를 반드시 그대로 실어 보냅니다.
+  function saveForm(patch){
+    const next = Object.assign({}, formOf());
+    if (patch.questions !== undefined) next.questions = patch.questions;
+    if (patch.features  !== undefined) next.features  = Object.assign({}, formFeatures(), patch.features);
+    if (!Array.isArray(next.questions)) next.questions = formQuestions();
+    return setDash({ form: next });
+  }
+  function qSig(list){
+    try { return JSON.stringify(list || []); } catch (e){ return String((list || []).length); }
+  }
+  //  syncFormEditor(force) — 교사가 고치는 중이면 덮어쓰지 않습니다(개념 확인 편집기와 같은 방식).
+  function syncFormEditor(force){
+    const qs  = formQuestions();
+    const sig = qSig(qs);
+    if (!force && (formDirty || sig === formSyncedSig)) return;
+    formSyncedSig = sig;
+    formDirty = false;
+    $('formErr').textContent = '';
+    qeDash.set(qs);
+  }
+  function syncLabToggle(){
+    if (labBusy) return;                                  // 보내는 중에는 손대지 않습니다
+    $('dFeatLab').checked = labOn();
+  }
+  function formMsg(t){
+    $('formMsg').textContent = t || '';
+    if (t) setTimeout(function(){ if ($('formMsg').textContent === t) $('formMsg').textContent = ''; }, 3200);
+  }
+  function featMsg(t){
+    $('featMsg').textContent = t || '';
+    if (t) setTimeout(function(){ if ($('featMsg').textContent === t) $('featMsg').textContent = ''; }, 3200);
   }
 
   Array.prototype.forEach.call(document.querySelectorAll('.ph'), function(b){
@@ -1058,7 +1338,44 @@
     setDash({ slideIdx: Math.min(slideNames().length - 1, (Number(lesson.slide_idx) || 0) + 1) });
   });
   $('btnSaveForm').addEventListener('click', function(){
-    setDash({ form: { questions: textToQuestions($('dQ').value) } });
+    const qs = qeDash.get();                      // 빈 질문은 여기에서 걸러집니다
+    if (!qs.length){
+      $('formErr').textContent = '질문이 하나도 없습니다. 학생 보고서가 텅 비게 되므로 저장하지 않았습니다. ' +
+                                 '[+ 질문 추가] 로 적거나 [추천 질문 불러오기] 를 눌러 주세요.';
+      return;
+    }
+    $('formErr').textContent = '';
+    const btn = this;
+    btn.disabled = true; btn.textContent = '저장 중…';
+    saveForm({ questions: qs }).then(function(r){
+      btn.disabled = false; btn.textContent = '질문 저장';
+      if (!r || !r.ok){ $('formErr').textContent = (r && r.err && r.err.message) || '질문을 저장하지 못했습니다.'; return; }
+      formDirty = false;
+      formSyncedSig = qSig(formQuestions());
+      qeDash.set(qs);
+      formMsg('질문 ' + qs.length + '개를 저장했습니다. 학생 화면에 곧 나타납니다.');
+    });
+  });
+
+  $('btnFormReset').addEventListener('click', function(){
+    if (formDirty && !confirm('고치던 내용을 버리고 저장된 질문을 다시 불러올까요?')) return;
+    formDirty = false; formSyncedSig = null;
+    syncFormEditor(true);
+    formMsg('저장된 질문을 다시 불러왔습니다.');
+  });
+
+  //  데이터 실험실 탭 켜고 끄기 — 바로 저장합니다(수업 도중에 쓰는 스위치입니다).
+  $('dFeatLab').addEventListener('change', function(){
+    const el = this, on = !!el.checked;
+    labBusy = true; el.disabled = true;
+    featMsg(on ? '데이터 실험실 탭을 켜는 중…' : '데이터 실험실 탭을 끄는 중…');
+    saveForm({ features: { lab: on } }).then(function(r){
+      labBusy = false; el.disabled = false;
+      if (!r || !r.ok){ syncLabToggle(); featMsg('바꾸지 못했습니다. 다시 눌러 주세요.'); return; }
+      syncLabToggle();
+      featMsg(on ? '데이터 실험실 탭을 켰습니다. 학생 화면에 곧 나타납니다.'
+                 : '데이터 실험실 탭을 껐습니다. 학생 화면에서 곧 사라집니다.');
+    });
   });
 
   function copy(text, btn){

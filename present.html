@@ -594,24 +594,31 @@
 
   function presentReportHTML(l, g, repBy){
     const r = repBy[g.id];
-    const qs = (l.form && Array.isArray(l.form.questions)) ? l.form.questions : [];
+    const qs  = (l.form && Array.isArray(l.form.questions)) ? l.form.questions : [];
+    const ans = (r && r.answers && typeof r.answers === 'object') ? r.answers : {};
     let h = '<div class="bigcard"><h2 style="color:' + gcolor(g) + '">' + esc(gname(g)) + ' · 보고서</h2>';
+    //  답은 번호가 아니라 문항 글로 이어 붙입니다(Hub 가 하는 일) —
+    //  선생님이 ▲▼ 로 차례를 바꾸거나 문항을 지워도 답이 옮겨 가지 않습니다.
+    const used = {};
+    const vals = (typeof Hub.alignAnswers === 'function') ? Hub.alignAnswers(ans, qs, used) : [];
+    const rows = qs.map(function(q, i){
+      return { q: (q && (q.q || q.text)) || ('질문 ' + (i + 1)), a: vals[i] };
+    });
     //  __analysis 처럼 밑줄 두 개로 시작하는 열쇠는 화면이 저장해 둔 기록입니다(보고서 문항이 아닙니다).
-    const keys = (r && r.answers ? Object.keys(r.answers) : []).filter(function(k){
-      return String(k).slice(0, 2) !== '__';
+    Object.keys(ans).filter(function(k){
+      return String(k).slice(0, 2) !== '__' && !used[k];
     }).sort(function(a, b){
       return (parseInt(a.replace(/\D/g, ''), 10) || 0) - (parseInt(b.replace(/\D/g, ''), 10) || 0);
+    }).forEach(function(k){
+      rows.push({ q: /^q\d+$/.test(k) ? ('질문 ' + k.replace(/\D/g, '')) : k, a: ans[k] });
     });
-    if (!keys.length){
+    const shown = rows.filter(function(x){ return x.a !== '' && x.a !== null && x.a !== undefined; });
+    if (!shown.length){
       h += '<div class="empty">아직 제출한 내용이 없습니다.</div></div>';
       return h;
     }
-    keys.forEach(function(k, i){
-      const idx = (parseInt(k.replace(/\D/g, ''), 10) || (i + 1)) - 1;
-      const q = qs[idx] ? qs[idx].q : ('질문 ' + (idx + 1));
-      const a = r.answers[k];
-      if (a === '' || a === null || a === undefined) return;
-      h += '<div class="qa"><b>' + esc(q) + '</b><p>' + esc(a) + '</p></div>';
+    shown.forEach(function(x){
+      h += '<div class="qa"><b>' + esc(x.q) + '</b><p>' + esc(x.a) + '</p></div>';
     });
     return h + '</div>';
   }
