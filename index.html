@@ -289,6 +289,25 @@
     font-size:13.5px;display:flex;gap:10px;align-items:flex-start;justify-content:space-between}
   .anitem .btn{flex:none;min-height:44px}
 
+  /* ── AI와 협업 탐구 ─────────────────────────────── */
+  .aibox{border:2px solid var(--mint);background:var(--cream)}
+  .aiphase{display:flex;gap:8px;flex-wrap:wrap;margin:8px 0 2px}
+  .aiphase .modebtn{line-height:1.25;text-align:left}
+  .aiphase .modebtn small{display:block;font-family:var(--sans);font-size:11.5px;font-weight:600;color:var(--muted)}
+  .aiphase .modebtn.on small{color:var(--mint-d)}
+  .aipre{min-height:230px;font-size:12.5px;line-height:1.6;background:#fff;
+    font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,'Malgun Gothic',monospace}
+  .aimeta{display:flex;gap:8px 14px;flex-wrap:wrap;align-items:center;font-size:13px;
+    color:var(--muted);font-weight:700;margin-top:8px}
+  .ailock{border-left:4px solid var(--coral);background:#FFF6F2;border-radius:0 12px 12px 0;
+    padding:11px 14px;margin:10px 0 0;font-size:14px;font-weight:700;color:#C9542F}
+  .aivpick{display:flex;gap:8px;flex-wrap:wrap;margin:6px 0 2px}
+  .aivbtn{cursor:pointer;border:2px solid var(--line-2);background:#fff;border-radius:999px;padding:9px 16px;
+    font-family:var(--sans);font-size:14px;font-weight:700;color:var(--ink);min-height:44px}
+  .aivbtn.on{border-color:var(--mint);background:#F0FBFA;color:var(--mint-d)}
+  .aivbtn.on.no{border-color:var(--bad);background:#FFF4F4;color:#B23A3A}
+  .aivbtn.on.na{border-color:var(--sun);background:#FFFBF0;color:#9A6B00}
+
   /* 자료집 출처 한 줄 */
   .srcline{font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:14px;
     border-top:1px dashed var(--line-2);padding-top:10px}
@@ -619,6 +638,8 @@
   //  데이터 실험실에서 저장한 분석 기록 — 보고서 답안의 예약 키 __analysis 에 함께 실려 갑니다.
   //  (보고서 문항 목록에는 나타나지 않습니다. 화면은 questions 배열만 보고 그리기 때문입니다.)
   let analyses   = [];
+  //  AI와 협업 탐구 기록 — 예약 키 __ai 에 실려 갑니다(보고서 문항으로는 그려지지 않습니다).
+  let aiLogs     = [];
   //  보고서에 지금 그려 둔 문항의 열쇠(질문 글) 차례 — 답안을 문항에 붙들어 두는 데 씁니다.
   let repKeys    = [];
   let labTabState  = null;  // 데이터 실험실 탭이 열려 있었는지(바뀔 때만 알립니다)
@@ -956,6 +977,8 @@
   function clearExtras(){
     predict = null;
     analyses = [];
+    aiLogs = [];
+    aiReset();
     reportStatus = 'draft';
     labReset();
     if ($('predEdit')) $('predEdit').classList.add('hidden');
@@ -1177,6 +1200,8 @@
     formAt = lesson.form_at || '';
     predict = loadPredict();
     analyses = [];
+    aiLogs = [];
+    aiReset();
     reportStatus = 'draft';
     labReset();
     renderGuide();
@@ -1234,6 +1259,8 @@
         if (mineRep.status) reportStatus = mineRep.status;
         const saved = mineRep.answers && mineRep.answers.__analysis;
         if (Array.isArray(saved) && !analyses.length) analyses = saved.slice(-5);
+        const savedAi = mineRep.answers && mineRep.answers.__ai;
+        if (Array.isArray(savedAi) && !aiLogs.length) aiLogs = savedAi.slice(-5);
       }
     }
     renderShare();
@@ -2689,6 +2716,8 @@
     });
     //  데이터 실험실의 분석 기록 — 예약 키라서 보고서 문항으로는 그려지지 않습니다.
     if (analyses.length) a.__analysis = analyses;
+    //  AI와 협업 탐구 기록도 같은 방식의 예약 키입니다.
+    if (aiLogs.length) a.__ai = aiLogs;
     //  지금 문항 차례를 함께 적어 둡니다(뒤에 차례가 바뀌어도 답을 되찾으려고).
     if (repKeys.length) a[QKEYS] = repKeys.slice();
     return a;
@@ -2696,6 +2725,7 @@
   function fillAnswers(ans){
     if (!ans) return;
     if (Array.isArray(ans.__analysis)) analyses = ans.__analysis.slice(-5);
+    if (Array.isArray(ans.__ai)) aiLogs = ans.__ai.slice(-5);
     const vals = alignAnswers(ans, repKeys);
     Array.prototype.forEach.call($('qlist').querySelectorAll('[data-q]'), function(el){
       const v = vals[Number(el.dataset.q)];
@@ -2734,6 +2764,7 @@
     const d = Hub.loadLocal('data_' + joinCode + '_' + group.id, null) ||
               Hub.loadLocal('draft_data_' + joinCode + '_' + group.id, null);
     if (d){ fillRows(d.rows); if (d.note) $('inNote').value = d.note; }
+    aiLoadLocal();                     // 이 기기에서 쓰던 협업 초안(고친 프롬프트 포함)
     predict = loadPredict();
     renderPredCard();
     refreshReport();
@@ -3564,7 +3595,7 @@
     const put = function(src){
       if (!src || typeof src !== 'object') return;
       Object.keys(src).forEach(function(k){
-        if (k === '__analysis' || k === QKEYS) return;
+        if (k === '__analysis' || k === '__ai' || k === QKEYS) return;
         if (repKeys.length && /^q\d+$/.test(k)) return;   // 번호 열쇠는 아래에서 다시 맞춥니다
         base[k] = src[k];
       });
@@ -3585,11 +3616,12 @@
     //  ③ 지금 화면에 실제로 적혀 있는 답만 덧씌웁니다 (빈 칸으로는 덮지 않습니다).
     const dom = $('qlist') ? collectAnswers() : {};
     Object.keys(dom).forEach(function(k){
-      if (k === '__analysis' || k === QKEYS) return;
+      if (k === '__analysis' || k === '__ai' || k === QKEYS) return;
       if (String(dom[k] === undefined || dom[k] === null ? '' : dom[k]).trim() !== '') base[k] = dom[k];
     });
     if (repKeys.length) base[QKEYS] = repKeys.slice();
     if (analyses.length) base.__analysis = analyses;
+    if (aiLogs.length)   base.__ai = aiLogs;
     return base;
   }
 
@@ -3636,17 +3668,23 @@
 
     const rows = labRows();
     if (!rows.length){
+      //  값이 아직 없어도 「탐구 설계 점검」은 지금 하는 편이 낫습니다. AI 협업 자리는 함께 엽니다.
+      LABS.last = null;
       host.innerHTML = labIntroHTML() +
         '<div class="box"><h3 style="margin-top:0">아직 볼 값이 없어요</h3>' +
         '<p class="lead"><b>데이터 입력</b> 탭에서 측정값을 먼저 넣어 주세요. ' +
-        'CSV 파일을 끌어다 놓아도 됩니다.</p></div>';
+        'CSV 파일을 끌어다 놓아도 됩니다.</p></div>' +
+        '<div id="aiWrap">' + aiSectionHTML() + '</div>';
+      aiBind();
       return;
     }
 
     host.innerHTML = labIntroHTML() + labControlsHTML() + labDeriveHTML() +
                      ((LABS.mode === 'class') ? labClassHTML(rows) : labMineHTML(rows)) +
-                     labScaffoldHTML();
+                     labScaffoldHTML() +
+                     '<div id="aiWrap">' + aiSectionHTML() + '</div>';
     labBind();
+    aiBind();
   }
   function labRows(){ return collectRows(); }
 
@@ -3762,6 +3800,567 @@
     LABS.ys = LABS.ys.filter(function(k){ return kill.indexOf(k) < 0; });
     LABS.selA = null; LABS.selB = null;
     renderLab();
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ⑤ AI와 협업 탐구
+  //
+  //  ★ 이것은 "AI에게 물어보기"가 아닙니다. 학생이 먼저 자기 해석을 내놓고,
+  //    AI 는 그것을 검토·반박·확장하는 동료이며, 마지막에 학생이 AI 말을 자기 데이터로 검증합니다.
+  //  ★ 핵심 장치 — 「우리 생각」 칸이 비어 있으면 복사 단추가 잠깁니다. 이 잠금을 빼지 마세요.
+  //  ★ 개인정보 — 프롬프트에는 모둠 번호까지만 넣습니다. aiScrub() 이 마지막으로 한 번 더
+  //    모둠원 이름·모둠 이름·선생님 이름을 ○○ 로 지웁니다.
+  //  ★ 저장 — 예약 키 __ai 에 최대 5개까지 쌓입니다. 보고서 문항으로는 그려지지 않으며,
+  //    저장은 analysisAnswers() 를 그대로 써서 다른 답안을 덮어쓰지 않습니다.
+  //  ★ 이 자리는 데이터 실험실 탭 안에 있습니다. 선생님이 실험실 탭을 닫으면 함께 닫힙니다.
+  // ═══════════════════════════════════════════════════════════════
+
+  //  탐구 국면 5종 — my 는 학생이 먼저 적어야 하는 칸의 이름입니다(국면마다 다릅니다).
+  const AI_PHASES = [
+    { k:'plan',      name:'탐구 설계 점검',        when:'재기 전',
+      my:'우리 계획',            ph:'무엇을 바꾸고 무엇을 같게 둘지, 어떻게 잴지 적어 보세요.' },
+    { k:'interpret', name:'데이터 해석 겨루기',    when:'데이터를 본 뒤',
+      my:'우리 모둠의 해석',     ph:'우리 데이터가 무엇을 말한다고 보나요? 어느 수치 때문에 그렇게 보나요?' },
+    { k:'error',     name:'차이의 원인 함께 찾기', when:'예상과 다를 때',
+      my:'우리가 짐작하는 까닭', ph:'예상과 달라진 까닭을 우리는 무엇이라고 짐작하나요?' },
+    { k:'redteam',   name:'우리 결론 반박해 보기', when:'결론을 쓴 뒤',
+      my:'우리 결론',            ph:'우리가 내린 결론을 한두 문장으로 적어 보세요.' },
+    { k:'next',      name:'다음 탐구 제안받기',    when:'마무리할 때',
+      my:'여기까지 알아낸 것',   ph:'이번 탐구에서 알아낸 것을 한두 문장으로 적어 보세요.' }
+  ];
+  function aiPhase(k){
+    for (let i = 0; i < AI_PHASES.length; i++) if (AI_PHASES[i].k === k) return AI_PHASES[i];
+    return AI_PHASES[1];                              // 기본은 '데이터 해석 겨루기'
+  }
+  const AI_VERDICTS = [
+    { v:'맞음', c:'' }, { v:'틀림', c:'no' }, { v:'우리 데이터로는 알 수 없음', c:'na' }
+  ];
+
+  //  다섯 국면에 공통으로 주는 규칙 — 생각을 대신하지 못하게 막는 장치입니다.
+  const AI_RULES = [
+    '우리 대신 결론을 쓰지 마라. 결론은 우리가 고른다.',
+    '무엇을 말하든 위에 적힌 수치 가운데 어느 값을 근거로 삼았는지 함께 밝혀라.',
+    '위에 없는 값·단위·조건을 지어내지 마라. 필요하면 우리에게 되물어라.',
+    '확실하지 않으면 "이 데이터만으로는 알 수 없다"고 분명히 말하라.'
+  ];
+  //  마지막 규칙은 이 수업의 학년에 맞춰 적습니다(도감의 학년을 그대로 씁니다).
+  function aiRules(){
+    const e = labExp();
+    const g = (e && e.grade) ? ('중학교 ' + e.grade + '학년') : '중학생';
+    return AI_RULES.concat([g + '이 읽을 수 있는 말로, 한 항목마다 세 문장 안쪽으로 짧게 답하라.']);
+  }
+
+  //  국면별 역할·부탁 기본 틀 — 선생님이 form.aiTemplate 로 고쳐 배포하면 그쪽을 씁니다.
+  const AI_TPL_DEF = {
+    plan: {
+      role: '너는 우리 모둠의 탐구 동료다. 우리는 아직 측정하지 않았다. 계획을 대신 세우지 말고, 우리 계획에서 빈 곳을 찾아 주는 것이 네 일이다.',
+      asks: [
+        '바로 답하지 마라. 우리 계획에서 분명하지 않은 곳을 골라 확인 질문을 2~3개 먼저 해 줘.',
+        '우리가 답한 뒤에, 같게 두어야 하는데 우리가 빠뜨린 조건을 짚어 줘.',
+        '몇 번쯤 되풀이해 재면 좋을지, 그 까닭과 함께 알려 줘.',
+        '이 계획으로는 답할 수 없는 질문이 있으면 그렇다고 미리 말해 줘.'
+      ]
+    },
+    interpret: {
+      role: '너는 우리 모둠의 탐구 동료다. 채점자가 아니다. 우리가 이미 내놓은 해석을 함께 검토하는 것이 네 일이다.',
+      asks: [
+        '우리 해석에서 데이터가 뒷받침하는 부분과, 데이터만으로는 말하기 어려운 부분을 나눠 줘. 각각 어느 수치 때문인지 밝혀 줘.',
+        '같은 데이터를 다르게 볼 해석이 있으면 하나만 말해 줘. 어느 수치를 근거로 그렇게 보는지도 함께 밝혀 줘.',
+        '우리 해석이 맞다면 반드시 나타나야 할 결과를 하나 말해 줘. 우리가 교실에서 직접 확인할 수 있는 것으로.',
+        '마지막 줄에 "우리가 확인해야 할 주장" 을 한 문장으로 정리해 줘.'
+      ]
+    },
+    error: {
+      role: '너는 우리 모둠의 탐구 동료다. 예상과 실제가 달랐다. 누가 틀렸는지 가리지 말고, 왜 달라졌는지 함께 찾는 것이 네 일이다.',
+      asks: [
+        '차이가 난 까닭으로 볼 만한 것을 3가지만, 그럴듯한 순서대로 말해 줘. 각각 위의 어느 수치 때문에 그렇게 보는지 밝혀 줘.',
+        '그 가운데 재는 방법 때문인 것과, 우리가 세운 생각 자체가 달랐던 것을 나눠 줘.',
+        '각 까닭이 맞는지 우리가 교실에서 확인할 방법을 한 줄씩 붙여 줘.',
+        '우리 데이터로는 가릴 수 없는 까닭이 있으면 그렇다고 말해 줘.'
+      ]
+    },
+    redteam: {
+      role: '너는 우리 결론을 일부러 의심하는 동료다. 칭찬으로 시작하지 마라. 우리 결론이 무너질 수 있는 곳을 찾는 것이 네 일이다.',
+      asks: [
+        '우리 결론에서 가장 약한 고리 2가지를 골라, 왜 약한지 수치를 들어 말해 줘.',
+        '점의 개수(표본)가 적어서 말하기 어려운 것이 있으면 짚어 줘.',
+        '우리가 "함께 변한 것"을 "원인"이라고 말한 곳이 있으면 그 문장을 그대로 인용해서 짚어 줘.',
+        '그 반박에 답하려면 무엇을 더 재야 하는지 한 줄로 알려 줘.'
+      ]
+    },
+    next: {
+      role: '너는 우리 모둠의 탐구 동료다. 우리가 알아낸 것에서 이어질 다음 탐구를 함께 고르는 것이 네 일이다. 대신 정해 주지는 마라.',
+      asks: [
+        '우리가 알아낸 것에서 이어지는 다음 질문을 3개 만들어 줘. 45분 안에, 학교 센서로 할 수 있는 것만.',
+        '각 질문마다 무엇을 바꾸고 무엇을 같게 둘지 한 줄로 적어 줘.',
+        '그 가운데 우리 데이터가 이미 절반쯤 답해 놓은 것이 있으면 알려 줘.',
+        '특별한 장비가 있어야만 되는 것은 그렇다고 미리 말해 줘.'
+      ]
+    }
+  };
+
+  //  선생님이 배포한 틀이 있으면 그것을, 없으면 기본 틀을 씁니다.
+  function aiTpl(k){
+    const def  = AI_TPL_DEF[k] || AI_TPL_DEF.interpret;
+    const all  = lesson && lesson.form && lesson.form.aiTemplate;
+    const mine = (all && typeof all === 'object') ? all[k] : null;
+    const role = (mine && typeof mine.role === 'string' && mine.role.trim()) ? mine.role.trim() : def.role;
+    let asks = def.asks;
+    if (mine && Array.isArray(mine.asks)){
+      const list = mine.asks.map(function(s){ return String(s == null ? '' : s).trim(); }).filter(Boolean);
+      if (list.length) asks = list;
+    }
+    return { role: role, asks: asks };
+  }
+
+  //  선생님이 form.features.ai 로 정합니다. false 일 때만 숨깁니다(없으면 켜진 것으로 봅니다).
+  //  데이터 실험실 탭이 닫혀 있으면 이 자리도 함께 닫힙니다.
+  function aiOn(){
+    if (!labOn()) return false;
+    const f = lesson && lesson.form && lesson.form.features;
+    return !(f && typeof f === 'object' && f.ai === false);
+  }
+
+  const AIS = { phase:'interpret', views:{}, edits:{}, claim:'', verdict:'', why:'',
+                msg:'', msgCls:'', copyMsg:'', scrubbed:false };
+  function aiReset(){
+    AIS.phase = 'interpret'; AIS.views = {}; AIS.edits = {};
+    AIS.claim = ''; AIS.verdict = ''; AIS.why = '';
+    AIS.msg = ''; AIS.msgCls = ''; AIS.copyMsg = ''; AIS.scrubbed = false;
+  }
+  function aiKey(){ return 'ai_' + joinCode + '_' + (group ? group.id : ''); }
+  //  고친 프롬프트와 적던 글은 이 기기에 남습니다(서버에는 [저장]을 눌러야 올라갑니다).
+  function aiLoadLocal(){
+    if (!group) return;
+    const d = Hub.loadLocal(aiKey(), null);
+    if (!d || typeof d !== 'object') return;
+    if (d.phase && aiPhase(d.phase).k === d.phase) AIS.phase = d.phase;
+    if (d.views && typeof d.views === 'object') AIS.views = d.views;
+    if (d.edits && typeof d.edits === 'object') AIS.edits = d.edits;
+    AIS.claim   = String(d.claim   == null ? '' : d.claim);
+    AIS.verdict = String(d.verdict == null ? '' : d.verdict);
+    AIS.why     = String(d.why     == null ? '' : d.why);
+  }
+  function aiSaveLocal(){
+    if (!group) return;
+    Hub.saveLocal(aiKey(), { phase:AIS.phase, views:AIS.views, edits:AIS.edits,
+                             claim:AIS.claim, verdict:AIS.verdict, why:AIS.why });
+  }
+  const AI_MIN = 10;                       // 이만큼은 적어야 "우리 생각"으로 봅니다
+  function aiViewOk(){ return String(AIS.views[AIS.phase] || '').trim().length >= AI_MIN; }
+
+  //  ★ 개인정보 잠금 — 조립이 끝난 글에서 이름으로 보이는 말을 한 번 더 지웁니다.
+  function aiScrub(t){
+    let out = String(t == null ? '' : t);
+    const bad = [];
+    if (group){
+      (Array.isArray(group.members) ? group.members : []).forEach(function(m){
+        const s = String(m == null ? '' : m).trim();
+        if (s.length >= 2) bad.push(s);
+      });
+      const gn = String(group.group_name || '').trim();        // 선생님이 이름으로 지었을 수도 있습니다
+      if (gn.length >= 2 && !/^\d+\s*모둠$/.test(gn)) bad.push(gn);
+    }
+    // 반 전체 보기가 다른 모둠을 보여 주므로, 학생이 남의 모둠 친구 이름을 적을 수도 있습니다.
+    ((board && board.groups) || []).forEach(function(g){
+      (Array.isArray(g && g.members) ? g.members : []).forEach(function(m){
+        const s = String(m == null ? '' : m).trim();
+        if (s.length >= 2) bad.push(s);
+      });
+    });
+    const tn = String((lesson && lesson.teacher_name) || '').trim();
+    if (tn.length >= 2) bad.push(tn);
+    AIS.scrubbed = false;
+    bad.forEach(function(n){
+      if (!n || out.indexOf(n) < 0) return;
+      AIS.scrubbed = true;
+      out = out.split(n).join('○○');
+    });
+    return out;
+  }
+
+  // ── 프롬프트 재료 모으기 ───────────────────────────────────────
+  function aiCellTxt(row, c){
+    let raw = null;
+    if (Array.isArray(row)) raw = row[c];
+    else if (row && typeof row === 'object') raw = (c === 0) ? row.x : row['s' + (c - 1)];
+    if (raw === null || raw === undefined || raw === '') return '—';
+    const n = Number(raw);
+    return isFinite(n) ? String(Number(n.toPrecision(6))) : String(raw);
+  }
+  //  표가 길면 붙여넣기 어렵습니다 — 앞 8행 + 줄임 + 뒤 4행으로 줄입니다.
+  const AI_MAXROW = 20, AI_HEAD = 8, AI_TAIL = 4;
+  function aiTable(rows){
+    const ser = (spec && spec.series) || [];
+    const xc  = (spec && spec.x) || {};
+    const head = [String(xc.label || '가로축') + (xc.unit ? '(' + xc.unit + ')' : '')]
+      .concat(ser.map(function(s, i){
+        return String(s.label || ('계열' + (i + 1))) + (s.unit ? '(' + s.unit + ')' : '');
+      }));
+    const line = function(r){
+      const out = [];
+      for (let c = 0; c <= ser.length; c++) out.push(aiCellTxt(r, c));
+      return out.join(' | ');
+    };
+    const body = [];
+    if (rows.length > AI_MAXROW){
+      rows.slice(0, AI_HEAD).forEach(function(r){ body.push(line(r)); });
+      body.push('… (가운데 ' + (rows.length - AI_HEAD - AI_TAIL) + '행 줄임) …');
+      rows.slice(rows.length - AI_TAIL).forEach(function(r){ body.push(line(r)); });
+    } else {
+      rows.forEach(function(r){ body.push(line(r)); });
+    }
+    return [head.join(' | ')].concat(body).join('\n');
+  }
+  //  계열별 통계 — 기울기·R² 는 Hub.stats 한 곳에서만 옵니다.
+  function aiStatLines(rows){
+    const ser   = (spec && spec.series) || [];
+    const xUnit = (spec && spec.x && spec.x.unit) || '';
+    return ser.map(function(s, i){
+      const st = Hub.stats(rows, i);
+      if (!st || !st.n) return null;
+      const u = s.unit ? ' ' + s.unit : '';
+      const bits = ['값 ' + st.n + '개', '처음 ' + labNum(st.first) + u,
+                    '마지막 ' + labNum(st.last) + u, '평균 ' + labNum(st.mean) + u];
+      if (st.slope !== null && isFinite(st.slope)){
+        const su = slopeUnit(s.unit, xUnit);
+        bits.push('기울기 ' + labNum(st.slope) + (su ? ' ' + su : ''));
+      }
+      if (st.r2 !== null && isFinite(st.r2)) bits.push('R² ' + fmtR2(st.r2));
+      return '· ' + String(s.label || ('계열' + (i + 1))) + ' — ' + bits.join(' · ');
+    }).filter(Boolean);
+  }
+  //  데이터 실험실에서 한 것 — 지금 화면에서 보고 있는 것 + 저장해 둔 __analysis
+  function aiAnalysisLines(){
+    const out = [];
+    const L = LABS.last;
+    if (L && L.mode === 'class' && L.allFit && L.allFit.ok){
+      out.push('· 지금 보고 있는 것 — 우리 반 전체 · ' + L.yLabel + ' ↔ ' + L.xLabel +
+               ' · 기울기 ' + labNum(L.allFit.slope) + ' · R² ' + fmtR2(L.allFit.r2) +
+               ' · 점 ' + L.allN + '개(우리 모둠 ' + L.mineN + '개)');
+      if (L.rank) out.push('  - ' + L.rank);
+    } else if (L && L.items && L.items.length){
+      const chg = [];
+      if (LABS.xt !== 'none') chg.push('가로축을 ' + LAB_TF[LABS.xt].name);
+      if (LABS.yt !== 'none') chg.push('세로축을 ' + LAB_TF[LABS.yt].name);
+      out.push('· 지금 보고 있는 것 — 우리 모둠 · 가로축 ' + L.xLabel +
+               (chg.length ? ' · ' + chg.join(' · ') : ' · 값은 그대로'));
+      L.items.forEach(function(it){
+        if (!it.fit.ok) return;
+        let s = '  - ' + it.label + ' ↔ ' + L.xLabel + ' · 기울기 ' + labNum(it.fit.slope) +
+                ' · R² ' + fmtR2(it.fit.r2);
+        if (it.fitRaw.ok && it.fitRaw.r2 !== null && (LABS.xt !== 'none' || LABS.yt !== 'none'))
+          s += ' (바꾸기 전 R² ' + fmtR2(it.fitRaw.r2) + ' → ' + fmtR2(it.fit.r2) + ')';
+        if (it.sel && it.sel.ok)
+          s += ' · 고른 구간만 보면 기울기 ' + labNum(it.sel.slope) + ' · R² ' + fmtR2(it.sel.r2);
+        if (it.skipped) s += ' · 값을 바꾸며 뺀 점 ' + it.skipped + '개';
+        out.push(s);
+      });
+    }
+    analyses.slice(-3).forEach(function(a){
+      out.push('· 저장해 둔 분석 — ' + String(a.text || ''));
+      (a.notes || []).forEach(function(n){
+        out.push('  - ' + String(n.q || '') + ' → ' + String(n.a || ''));
+      });
+    });
+    return out;
+  }
+  //  예상 그래프를 그렸으면 — 예상과 실제가 가장 크게 달랐던 곳
+  function aiGapLines(rows){
+    if (!predict || !predict.length || !rows.length) return [];
+    const g = biggestGap(rows, predict, (spec && spec.series) || []);
+    if (!g || g.maxDiff === null) return [];
+    const xLab  = (spec && spec.x && spec.x.label) || '가로축';
+    const xUnit = (spec && spec.x && spec.x.unit)  || '';
+    return ['· ' + g.label + ' — ' + xLab + ' ' + fmtNum(g.atX) + xUnit + ' 에서 가장 크게 달랐다. ' +
+            '예상 ' + fmtNum(g.predicted) + g.unit + ' / 실제 ' + fmtNum(g.actual) + g.unit +
+            ' (차이 ' + fmtNum(g.maxDiff) + g.unit +
+            (g.meanDiff !== null ? ', 평균 차이 ' + fmtNum(g.meanDiff) + g.unit : '') + ')'];
+  }
+
+  // ── 프롬프트 조립 ──────────────────────────────────────────────
+  function aiBuildPrompt(k){
+    const P = aiPhase(k), T = aiTpl(P.k), e = labExp();
+    let rows = [];
+    try { if (group && spec && $('dataTbl')) rows = labRows(); } catch (err){ rows = []; }
+
+    const L = [];
+    L.push('[함께 살펴볼 탐구]');
+    L.push('· 실험 · ' + String((lesson && (lesson.exp_title || lesson.title)) || '오늘의 실험'));
+    if (e) L.push('· 학년·단원 · 중' + e.grade + ' · ' + e.unit);
+    ((e && Array.isArray(e.std)) ? e.std : []).forEach(function(c){
+      const t = (window.LAB && LAB.stdText) ? LAB.stdText(c) : '';
+      L.push('· 성취기준 · ' + c + (t ? ' ' + t : ''));
+    });
+    L.push('· 우리 · ' + ((group && group.group_no != null) ? (group.group_no + '모둠') : '한 모둠') +
+           ' (이름은 알려 주지 않는다)');
+    L.push('· 지금 하려는 것 · ' + P.name + ' (' + P.when + ')');
+    L.push('');
+
+    L.push('[우리가 잰 데이터]');
+    if (rows.length){
+      L.push(aiTable(rows));
+      const st = aiStatLines(rows);
+      if (st.length){ L.push(''); L.push('계열별로 정리하면'); st.forEach(function(s){ L.push(s); }); }
+    } else {
+      L.push('아직 재지 않았다. (측정 전이다)');
+    }
+    L.push('');
+
+    const an = aiAnalysisLines();
+    if (an.length){
+      L.push('[데이터 실험실에서 해 본 것]');
+      an.forEach(function(s){ L.push(s); });
+      L.push('');
+    }
+    const gp = aiGapLines(rows);
+    if (gp.length){
+      L.push('[예상 그래프와 실제의 차이]');
+      gp.forEach(function(s){ L.push(s); });
+      L.push('');
+    }
+
+    L.push('[' + P.my + ' — 우리가 먼저 내놓는 생각]');
+    L.push(String(AIS.views[P.k] || '').trim() || '(아직 적지 않았다)');
+    L.push('');
+
+    L.push('[너에게 — 역할과 규칙]');
+    L.push(T.role);
+    aiRules().forEach(function(r){ L.push('· ' + r); });
+    L.push('');
+
+    L.push('[우리가 부탁하는 것]');
+    T.asks.forEach(function(a, i){ L.push((i + 1) + '. ' + a); });
+    L.push('');
+    L.push('· 우리는 네 답을 그대로 옮겨 적지 않는다. 네 말 가운데 하나를 골라 우리 데이터로 맞는지 따져 볼 것이다.');
+    return aiScrub(L.join('\n'));
+  }
+
+  // ── 화면 ───────────────────────────────────────────────────────
+  function aiSectionHTML(){
+    if (!aiOn() || !group || atlasOnly || expired) return '';
+    const P      = aiPhase(AIS.phase);
+    const view   = String(AIS.views[P.k] || '');
+    const edited = (typeof AIS.edits[P.k] === 'string');
+    const text   = edited ? String(AIS.edits[P.k]) : aiBuildPrompt(P.k);
+    const ready  = aiViewOk();
+
+    let h = '<div class="box aibox"><h2>AI와 협업 탐구</h2>' +
+      '<p class="lead">AI 는 답을 주는 기계가 아니라 <b>우리 해석을 검토해 주는 동료</b>입니다. ' +
+      '우리가 먼저 생각을 내놓고, 마지막에는 AI 말을 <b>우리 데이터로 검증</b>합니다.</p>' +
+      '<div class="note plus">AI 답을 그대로 옮겨 적지 않습니다. 우리 데이터로 확인한 것만 보고서에 씁니다.</div>';
+
+    h += '<label class="fl">① 지금 무엇을 함께 할까요?</label><div class="aiphase">' +
+      AI_PHASES.map(function(p){
+        return '<button class="modebtn' + (p.k === P.k ? ' on' : '') + '" type="button" data-aiph="' + esc(p.k) + '">' +
+               esc(p.name) + '<small>' + esc(p.when) + '</small></button>';
+      }).join('') + '</div>';
+
+    h += '<label class="fl" for="aiView">② ' + esc(P.my) +
+         ' <span style="color:var(--coral)">— 이것을 적어야 프롬프트가 완성됩니다</span></label>' +
+         '<textarea id="aiView" placeholder="' + esc(P.ph) + '">' + esc(view) + '</textarea>' +
+         '<div id="aiLock" class="ailock' + (ready ? ' hidden' : '') + '">' +
+         '먼저 우리 생각을 적어야 협업이 됩니다. ' + AI_MIN + '글자 이상 적으면 복사할 수 있어요.</div>';
+
+    h += '<label class="fl" for="aiPrompt">③ 프롬프트 — 자동으로 조립됩니다. 여기서 바로 고쳐도 됩니다</label>' +
+         '<textarea id="aiPrompt" class="aipre" spellcheck="false">' + esc(text) + '</textarea>' +
+         '<div class="aimeta"><span id="aiCount">글자 수 ' + text.length + '자</span>' +
+         '<span id="aiEditedTag" class="pill sun' + (edited ? '' : ' hidden') + '">직접 고친 상태</span>' +
+         '<span id="aiScrubTag" class="pill coral' + (AIS.scrubbed ? '' : ' hidden') + '">이름처럼 보이는 말을 ○○ 로 바꿨습니다</span></div>';
+
+    h += '<div class="improw">' +
+         '<button id="btnAiCopy" class="btn btn-solid" type="button" style="min-height:44px"' +
+           (ready ? '' : ' disabled') + '>프롬프트 복사</button>' +
+         '<button id="btnAiRevert" class="btn btn-sm" type="button" style="min-height:44px"' +
+           (edited ? '' : ' disabled') + '>원래대로 되돌리기</button>' +
+         '<span id="aiCopyMsg" class="savemsg">' + esc(AIS.copyMsg) + '</span></div>';
+    h += '<p class="muted" style="margin-top:6px">복사한 다음 <b>어떤 생성형 AI 든</b> 대화창에 붙여넣으면 됩니다. ' +
+         '복사가 막힌 기기에서는 글이 저절로 선택되니 <b>Ctrl+C</b>(맥은 ⌘+C)를 누르세요.</p>';
+
+    h += '<h3>④ AI 답 검증 — 여기가 가장 중요합니다</h3>' +
+         '<p class="muted">AI 가 한 말 가운데 <b>우리 데이터로 확인할 수 있는 주장 하나</b>를 골라 따져 봅니다.</p>' +
+         '<label class="fl" for="aiClaim">AI 가 한 말 중 확인할 주장</label>' +
+         '<textarea id="aiClaim" style="min-height:66px" placeholder="AI 가 한 말을 한 문장으로 옮겨 적어 보세요">' +
+           esc(AIS.claim) + '</textarea>' +
+         '<label class="fl">판정</label><div class="aivpick">' +
+         AI_VERDICTS.map(function(o){
+           return '<button class="aivbtn' + (o.c ? ' ' + o.c : '') + (AIS.verdict === o.v ? ' on' : '') +
+                  '" type="button" data-aiv="' + esc(o.v) + '">' + esc(o.v) + '</button>';
+         }).join('') + '</div>' +
+         '<label class="fl" for="aiWhy">그렇게 본 까닭 — 우리 수치를 들어 적어 보세요</label>' +
+         '<textarea id="aiWhy" style="min-height:66px" placeholder="예) 우리 표에서 …이 …였기 때문입니다">' +
+           esc(AIS.why) + '</textarea>';
+
+    h += '<div class="savebar"><button id="btnAiSave" class="btn btn-solid" type="button" style="min-height:44px">이 협업 기록 저장</button>' +
+         '<span id="aiMsg" class="savemsg' + (AIS.msgCls ? ' ' + AIS.msgCls : '') + '">' + esc(AIS.msg) + '</span></div>';
+    h += '<p class="muted" style="margin-top:6px">보고서와 함께 저장됩니다 (최대 5개). ' +
+         '프롬프트에는 이름을 넣지 않고 <b>모둠 번호까지만</b> 씁니다.</p>';
+
+    if (aiLogs.length){
+      h += '<h3>저장한 협업 기록 ' + aiLogs.length + '개</h3>' + aiLogs.map(function(a, i){
+        const pill = (a.verdict === '맞음') ? '' : ((a.verdict === '틀림') ? ' coral' : ' sun');
+        return '<div class="anitem"><span><b>' + esc(aiPhase(a.phase).name) + '</b>' +
+               (a.edited ? ' <span class="muted">· 프롬프트를 고쳐 씀</span>' : '') +
+               (a.verdict ? ' <span class="pill' + pill + '">' + esc(a.verdict) + '</span>' : '') +
+               '<br>' + esc(a.claim ? ('AI 주장 · ' + a.claim) : '(확인할 주장을 아직 적지 않음)') +
+               (a.why ? '<br><span class="muted">까닭 · ' + esc(a.why) + '</span>' : '') +
+               (a.when ? '<br><span class="muted">' + esc(a.when) + '</span>' : '') + '</span>' +
+               '<button class="btn btn-sm" type="button" data-delai="' + i + '">지우기</button></div>';
+      }).join('');
+    }
+    h += '</div>';
+    return h;
+  }
+
+  function aiRender(){
+    const w = $('aiWrap');
+    if (!w) return;
+    w.innerHTML = aiSectionHTML();
+    aiBind();
+  }
+  //  글을 쓰는 동안에는 화면을 다시 그리지 않습니다(글자를 치던 자리를 잃지 않으려고).
+  function aiMeta(){
+    const ta = $('aiPrompt');
+    if (!ta) return;
+    const ready = aiViewOk(), edited = (typeof AIS.edits[AIS.phase] === 'string');
+    const btn = $('btnAiCopy');     if (btn)  btn.disabled = !ready;
+    const rb  = $('btnAiRevert');   if (rb)   rb.disabled  = !edited;
+    const lk  = $('aiLock');        if (lk)   lk.classList.toggle('hidden', ready);
+    const cn  = $('aiCount');       if (cn)   cn.textContent = '글자 수 ' + ta.value.length + '자';
+    const et  = $('aiEditedTag');   if (et)   et.classList.toggle('hidden', !edited);
+    const sc  = $('aiScrubTag');    if (sc)   sc.classList.toggle('hidden', !AIS.scrubbed);
+  }
+  function aiMsg(text, cls){
+    AIS.msg = text || ''; AIS.msgCls = cls || '';
+    const el = $('aiMsg');
+    if (el){ el.className = 'savemsg' + (cls ? ' ' + cls : ''); el.textContent = AIS.msg; }
+  }
+  function aiCopyMsg(text, cls){
+    AIS.copyMsg = text || '';
+    const el = $('aiCopyMsg');
+    if (el){ el.className = 'savemsg' + (cls ? ' ' + cls : ''); el.textContent = AIS.copyMsg; }
+  }
+
+  //  ★ 복사 — clipboard 가 막힌 기기(학교 크롬북)에서는 글을 선택해 주고 Ctrl+C 를 안내합니다.
+  function aiCopy(){
+    const ta = $('aiPrompt');
+    if (!ta) return;
+    if (!aiViewOk()){ aiCopyMsg('먼저 우리 생각을 적어야 협업이 됩니다.', 'warn'); return; }
+    const txt = aiScrub(ta.value);          // 고쳐 쓰면서 이름이 섞였을 수 있어 한 번 더 지웁니다
+    if (txt !== ta.value){
+      ta.value = txt;
+      if (typeof AIS.edits[AIS.phase] === 'string') AIS.edits[AIS.phase] = txt;
+      aiSaveLocal();
+    }
+    aiMeta();
+    const pick = function(){
+      try { ta.focus(); ta.select(); ta.setSelectionRange(0, txt.length); } catch (e){}
+    };
+    const fallback = function(){
+      pick();
+      let done = false;
+      try { done = !!(document.execCommand && document.execCommand('copy')); } catch (e){ done = false; }
+      if (done) aiCopyMsg('복사했습니다. AI 대화창에 붙여넣으세요.', '');
+      else aiCopyMsg('글을 모두 선택했습니다. 이제 Ctrl+C (맥은 ⌘+C) 를 누르세요.', 'warn');
+    };
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(txt).then(function(){
+        aiCopyMsg('복사했습니다. AI 대화창에 붙여넣으세요.', '');
+      }, fallback);
+    } else fallback();
+  }
+
+  //  ★ 저장은 analysisAnswers() 로 — 다른 기기에서 쓴 보고서 답안을 덮어쓰지 않습니다.
+  function aiSave(){
+    if (!group || expired) return;
+    const P = aiPhase(AIS.phase);
+    if (!aiViewOk()){ aiMsg('먼저 「' + P.my + '」을 ' + AI_MIN + '글자 이상 적어 주세요.', 'warn'); return; }
+    const ta  = $('aiPrompt');
+    const now = new Date();
+    const when = now.getFullYear() + '-' + ('0' + (now.getMonth() + 1)).slice(-2) + '-' + ('0' + now.getDate()).slice(-2) +
+                 ' ' + ('0' + now.getHours()).slice(-2) + ':' + ('0' + now.getMinutes()).slice(-2);
+    const rec = {
+      phase:  P.k,
+      phaseName: P.name,
+      myView: aiScrub(String(AIS.views[P.k] || '').trim()),
+      prompt: aiScrub(String(ta ? ta.value : '')).slice(0, 4000),
+      edited: (typeof AIS.edits[P.k] === 'string'),
+      claim:  aiScrub(String(AIS.claim || '').trim()),
+      verdict: String(AIS.verdict || ''),
+      why:    aiScrub(String(AIS.why || '').trim()),
+      at: now.toISOString(), when: when
+    };
+    const before = aiLogs.slice();
+    aiLogs = aiLogs.concat([rec]).slice(-5);          // 최대 5개 — 오래된 것부터 밀려납니다
+    const btn = $('btnAiSave');
+    if (btn) btn.disabled = true;
+    aiMsg('저장 중…', '');
+    writeWithPin(function(pin){
+      return Hub.saveReport(joinCode, group.id, analysisAnswers(), reportStatus, pin);
+    }).then(function(res){
+      if (res && res.offline) aiMsg('임시 저장했습니다. 연결되면 자동으로 보냅니다.', 'warn');
+      else if (!rec.verdict)  aiMsg('저장했습니다 (' + aiLogs.length + '/5). AI 답을 받은 뒤 「판정」까지 채워 다시 저장하면 더 좋습니다.', 'warn');
+      else                    aiMsg('협업 기록을 저장했습니다 (' + aiLogs.length + '/5).', '');
+      aiRender();
+    }, function(err){
+      aiLogs = before;                                 // 저장하지 못했으면 되돌립니다
+      aiMsg(writeErrText(err), 'warn');
+      if ($('btnAiSave')) $('btnAiSave').disabled = false;
+    });
+  }
+
+  function aiBind(){
+    const wrap = $('aiWrap');
+    if (!wrap) return;
+    Array.prototype.forEach.call(wrap.querySelectorAll('[data-aiph]'), function(b){
+      b.addEventListener('click', function(){
+        if (AIS.phase === b.dataset.aiph) return;
+        AIS.phase = b.dataset.aiph;
+        AIS.msg = ''; AIS.msgCls = ''; AIS.copyMsg = '';
+        aiSaveLocal(); aiRender();
+      });
+    });
+    const v = $('aiView');
+    if (v) v.addEventListener('input', function(){
+      AIS.views[AIS.phase] = v.value;
+      const ta = $('aiPrompt');
+      if (ta && typeof AIS.edits[AIS.phase] !== 'string') ta.value = aiBuildPrompt(AIS.phase);
+      aiMeta(); aiSaveLocal();
+    });
+    const ta = $('aiPrompt');
+    if (ta) ta.addEventListener('input', function(){
+      AIS.edits[AIS.phase] = ta.value;                 // 손을 대는 순간부터 '직접 고친 상태'입니다
+      aiMeta(); aiSaveLocal();
+    });
+    if ($('btnAiRevert')) $('btnAiRevert').addEventListener('click', function(){
+      delete AIS.edits[AIS.phase];
+      aiSaveLocal(); aiRender();
+      aiCopyMsg('자동으로 조립한 프롬프트로 되돌렸습니다.', '');
+    });
+    if ($('btnAiCopy')) $('btnAiCopy').addEventListener('click', aiCopy);
+    Array.prototype.forEach.call(wrap.querySelectorAll('[data-aiv]'), function(b){
+      b.addEventListener('click', function(){
+        AIS.verdict = (AIS.verdict === b.dataset.aiv) ? '' : b.dataset.aiv;
+        Array.prototype.forEach.call(wrap.querySelectorAll('[data-aiv]'), function(x){
+          x.classList.toggle('on', x.dataset.aiv === AIS.verdict);
+        });
+        aiSaveLocal();
+      });
+    });
+    const cl = $('aiClaim');
+    if (cl) cl.addEventListener('input', function(){ AIS.claim = cl.value; aiSaveLocal(); });
+    const wy = $('aiWhy');
+    if (wy) wy.addEventListener('input', function(){ AIS.why = wy.value; aiSaveLocal(); });
+    if ($('btnAiSave')) $('btnAiSave').addEventListener('click', aiSave);
+    Array.prototype.forEach.call(wrap.querySelectorAll('[data-delai]'), function(b){
+      b.addEventListener('click', function(){
+        const i = Number(b.dataset.delai);
+        if (!confirm('저장한 협업 기록을 지울까요? 다음에 보고서를 저장할 때 반영됩니다.')) return;
+        aiLogs = aiLogs.filter(function(x, k){ return k !== i; });
+        aiRender();
+        aiMsg('지웠습니다. [이 협업 기록 저장]이나 보고서 저장을 누르면 서버에도 반영됩니다.', 'warn');
+      });
+    });
   }
 
   // ── 실험 도감 ──────────────────────────────────────────────────

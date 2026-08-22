@@ -1488,6 +1488,7 @@ window.Hub = (function () {
   //       data{note, updatedAt, rowCount, series[{label,unit,first,last,mean,min,max,slope,r2}]}
   //       predict{drawn, series[{label,unit,maxDiff,atX,predicted,actual,meanDiff}]}
   //       report{status, updatedAt, answers[{no,q,type,answer}]}
+  //       ai[{phase,phaseName,myView,prompt,edited,claim,verdict,why,at,when}]
   //       quiz{taken, score, maxScore, rate, wrong[{no,q,your,answer,explain}]}
   //       feedback{count, starsAvg, comments[]}
   function exportStudents(board) {
@@ -1597,6 +1598,34 @@ window.Hub = (function () {
       }
       return out;
     }
+    //  AI와 협업 탐구 — 학생 화면이 answers.__ai 에 쌓아 둔 기록입니다.
+    //  __analysis 와 똑같이 보고서 문항이 아니라 화면이 저장해 둔 기록이라, 위 reportBlock 은
+    //  이것을 답변 목록에서 빼 두었습니다(밑줄 두 개로 시작하는 열쇠). 여기에서 따로 꺼내
+    //  "AI와 협업한 탐구" 항목으로 내보냅니다 — 무엇을 부탁했고, AI 말 가운데 무엇을
+    //  우리 데이터로 검증했는지가 세특에 쓸 알맹이입니다.
+    var AI_KEY = '__ai';
+    function aiBlock(r) {
+      var raw = (r && r.answers && typeof r.answers === 'object') ? r.answers[AI_KEY] : null;
+      var out = [];
+      if (!Array.isArray(raw)) return out;
+      for (var k = 0; k < raw.length; k++) {
+        var a = raw[k];
+        if (!a || typeof a !== 'object') continue;
+        out.push({
+          phase    : String(a.phase == null ? '' : a.phase),
+          phaseName: String(a.phaseName == null ? '' : a.phaseName),
+          myView   : String(a.myView == null ? '' : a.myView),
+          prompt   : String(a.prompt == null ? '' : a.prompt),
+          edited   : a.edited === true,
+          claim    : String(a.claim == null ? '' : a.claim),
+          verdict  : String(a.verdict == null ? '' : a.verdict),
+          why      : String(a.why == null ? '' : a.why),
+          at       : String(a.at == null ? '' : a.at),
+          when     : String(a.when == null ? '' : a.when)
+        });
+      }
+      return out;
+    }
     function quizBlock(row) {
       var out = { taken: !!row, score: null, maxScore: null, rate: null, updatedAt: '', wrong: [], graded: false };
       if (!row) return out;
@@ -1640,6 +1669,7 @@ window.Hub = (function () {
         data   : dataBlock(s.data),
         predict: predictBlock(s.data),
         report : reportBlock(s.report),
+        ai     : aiBlock(s.report),
         feedback: feedbackBlock(s.got)
       };
 
