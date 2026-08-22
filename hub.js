@@ -1626,6 +1626,38 @@ window.Hub = (function () {
       }
       return out;
     }
+    //  선생님 평가 — 교사 화면이 answers.__eval 에 넣어 둔 항목별 점수와 서술 피드백입니다.
+    //  __ai 와 마찬가지로 밑줄 두 개로 시작하는 예약 열쇠라서 보고서 문항 목록에는 들어가지
+    //  않습니다. 여기에서 따로 꺼내 "선생님 평가" 항목으로 내보냅니다 — 기준표 항목 이름과
+    //  선생님이 쓴 문장이 그대로 세특 근거가 됩니다.
+    //  ★ rubric 은 채점하던 그때의 기준이 박혀 있는 것을 그대로 씁니다(뒤에 기준표를 고쳐도
+    //    이미 준 점수의 뜻이 달라지지 않게).
+    var EVAL_KEY = '__eval';
+    function evalBlock(r) {
+      var out = { graded: false, items: [], total: null, max: null, feedback: '', at: '', by: '' };
+      var e = (r && r.answers && typeof r.answers === 'object') ? r.answers[EVAL_KEY] : null;
+      if (!e || typeof e !== 'object' || Array.isArray(e)) return out;
+      var rub = Array.isArray(e.rubric) ? e.rubric : [];
+      var sc  = Array.isArray(e.scores) ? e.scores : [];
+      var k, mx;
+      for (k = 0; k < rub.length; k++) {
+        var it = (rub[k] && typeof rub[k] === 'object') ? rub[k] : { name: rub[k] };
+        mx = Number(it.max);
+        out.items.push({
+          name : String(it.name == null ? '' : it.name),
+          max  : isFinite(mx) ? mx : null,
+          score: (sc[k] === null || sc[k] === undefined || sc[k] === '' || !isFinite(Number(sc[k])))
+                   ? null : Number(sc[k])
+        });
+      }
+      out.total    = (e.total == null || !isFinite(Number(e.total))) ? null : Number(e.total);
+      out.max      = (e.max   == null || !isFinite(Number(e.max)))   ? null : Number(e.max);
+      out.feedback = String(e.feedback == null ? '' : e.feedback);
+      out.at       = String(e.at == null ? '' : e.at);
+      out.by       = String(e.by == null ? '' : e.by);
+      out.graded   = out.items.length > 0 || out.total !== null || out.feedback !== '';
+      return out;
+    }
     function quizBlock(row) {
       var out = { taken: !!row, score: null, maxScore: null, rate: null, updatedAt: '', wrong: [], graded: false };
       if (!row) return out;
@@ -1670,6 +1702,7 @@ window.Hub = (function () {
         predict: predictBlock(s.data),
         report : reportBlock(s.report),
         ai     : aiBlock(s.report),
+        eval   : evalBlock(s.report),
         feedback: feedbackBlock(s.got)
       };
 
