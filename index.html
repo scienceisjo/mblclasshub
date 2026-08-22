@@ -317,12 +317,44 @@
   .box.gone{border:2px solid var(--bad);background:#FFF6F6}
   .box.gone h2{color:var(--bad);font-size:26px}
 
+  /* ── 코드 없이 쓰는 길(간편 모드) ───────────────────────────── */
+  .ways{border:2px dashed var(--line-2);border-radius:var(--r);background:var(--cream);padding:18px;margin-top:18px}
+  .ways h3{font-family:var(--display);font-size:19px;font-weight:400;margin-bottom:4px}
+  .ways .wbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:10px;
+    border:1.5px solid var(--line-2);background:#fff;border-radius:14px;padding:13px 15px;cursor:pointer;
+    font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink);transition:.16s;min-height:56px}
+  .ways .wbtn:hover{border-color:var(--mint);box-shadow:var(--shadow)}
+  .ways .wbtn i{font-style:normal;font-size:22px;flex-shrink:0}
+  .ways .wbtn small{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-top:2px;line-height:1.5}
+
+  /* 간편 모드 띠 (작업 화면 맨 위) */
+  .simplebar{position:sticky;top:62px;z-index:40;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
+    background:#fff;border:1.5px solid var(--line-2);border-radius:14px;box-shadow:var(--shadow);
+    padding:10px 14px;margin:14px 0 2px}
+  .simplebar .sbmode{font-size:12.5px;font-weight:800;padding:5px 11px;border-radius:999px;
+    background:rgba(84,180,232,.18);color:#2A7FB0;white-space:nowrap}
+  .simplebar .sbmode.live{background:rgba(32,178,166,.16);color:var(--mint-d)}
+  .simplebar .sbstate{flex:1 1 200px;font-size:13.5px;font-weight:700;color:var(--ok)}
+  .simplebar .sbstate.warn{color:var(--warn)}
+  .simplebar .sbdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-right:7px}
+  .simplebar .sbstate.warn .sbdot{background:var(--warn)}
+
+  /* 자동저장 되살리기 물음 */
+  .askbar{border:2px solid var(--sun);background:#FFFBF0;border-radius:14px;padding:14px 16px;margin:14px 0 2px}
+  .askbar b{display:block;font-size:15px;margin-bottom:4px}
+  .askrow{display:flex;gap:8px;flex-wrap:wrap;margin-top:10px}
+
+  /* 빈칸으로 낸 문항 짚어 주기 */
+  .q.miss{border-color:var(--bad) !important;background:#FFF6F6}
+  .q.miss textarea,.q.miss input[type=text]{border-color:var(--bad)}
+
   @media (max-width:640px){
     .box{padding:16px}
     .join{margin:22px auto}
     .join .code-in{font-size:30px}
     .pinpad{gap:8px}
     .pinpad input.pinbox{width:52px;height:60px;font-size:26px}
+    .simplebar{position:static}
   }
 </style>
 </head>
@@ -364,6 +396,53 @@
       <p class="muted" style="margin-top:14px">O·0·I·1·L 은 코드에 쓰이지 않습니다. 헷갈릴 일이 없어요.</p>
       <p class="muted">코드가 없어도 실험 도감은 볼 수 있습니다.</p>
       <p class="muted"><a href="./about.html" style="color:var(--mint-d);font-weight:700">이 앱은 어떤 앱인가요? →</a></p>
+
+      <!-- 참여코드가 없어도 수업 한 차시를 그대로 할 수 있는 세 갈래 -->
+      <div class="ways">
+        <h3>참여코드가 없나요?</h3>
+        <p class="muted">아래 셋 중 하나를 고르면 <b>간편 모드</b>로 실험·보고서를 그대로 할 수 있습니다.
+          간편 모드는 인터넷 서버를 쓰지 않고, 한 것을 <b>작업 파일 하나</b>로 내려받아 선생님께 냅니다.</p>
+
+        <button id="btnSimplePick" class="wbtn" type="button"><i>🧪</i>
+          <span>코드 없이 시작하기<small>실험 도감에서 실험을 직접 골라 바로 시작합니다.</small></span></button>
+
+        <button id="btnSimplePack" class="wbtn" type="button"><i>📦</i>
+          <span>수업 꾸러미 파일 올리기<small>선생님이 준 <b>.json</b> 을 올리면 실험·절차·질문·개념 확인이 그대로 세팅됩니다.</small></span></button>
+
+        <button id="btnSimpleResume" class="wbtn" type="button"><i>📄</i>
+          <span>이어서 하기<small>전에 내려받은 내 작업 파일(<b>.html</b>)을 올리면 하던 데서 이어서 합니다.</small></span></button>
+
+        <input id="filePack" type="file" class="hidden" accept=".json,application/json" />
+        <input id="fileWork" type="file" class="hidden" accept=".html,.htm,text/html" />
+        <div id="wayErr" class="err"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ①-2 간편 모드 시작 준비 — 실험을 고르거나 꾸러미를 올린 뒤 -->
+  <section id="scSimpleSetup" class="join hidden">
+    <div class="box">
+      <span class="pill sky">간편 모드</span>
+      <h2 id="ssTitle" style="margin-top:8px">오늘의 실험</h2>
+      <p class="muted" id="ssSub"></p>
+      <p class="muted" style="margin-top:8px">서버를 쓰지 않습니다. 한 것은 이 기기에 저장되고,
+        <b>작업 파일</b>로 내려받아 선생님께 냅니다.</p>
+
+      <label class="fl" for="ssClass">반 (선택)</label>
+      <input id="ssClass" type="text" placeholder="예) 2학년 3반" maxlength="30" />
+
+      <label class="fl">우리 모둠</label>
+      <div id="ssGsel" class="gsel"></div>
+
+      <label class="fl" for="ssGroupName">모둠 이름 (선택)</label>
+      <input id="ssGroupName" type="text" placeholder="예) 3모둠 열정파" maxlength="30" />
+
+      <label class="fl" for="ssMembers">모둠원 (번호나 별명, 쉼표로 구분, 선택)</label>
+      <input id="ssMembers" type="text" placeholder="예) 3, 11, 17" maxlength="120" />
+
+      <div id="ssErr" class="err"></div>
+      <button id="btnSimpleGo" class="btn btn-solid" style="width:100%" type="button">이 모둠으로 시작하기</button>
+      <button id="btnSimpleBack" class="btn btn-sm" style="width:100%;margin-top:10px" type="button">처음으로</button>
     </div>
   </section>
 
@@ -395,6 +474,24 @@
 
   <!-- ③ 작업 화면 -->
   <section id="scWork" class="hidden">
+
+    <!-- 저장 상태 띠 — 작업 파일을 내려받았는지 늘 보여 줍니다 -->
+    <div id="simpleBar" class="simplebar hidden">
+      <span id="sbMode" class="sbmode">간편 모드</span>
+      <span id="sbState" class="sbstate warn" role="status" aria-live="polite"><span class="sbdot"></span>아직 내려받지 않았습니다</span>
+      <button id="btnWorkSave" class="btn btn-solid btn-sm" type="button" style="min-height:44px">지금까지 한 것 내려받기</button>
+    </div>
+
+    <!-- 자동저장된 내용이 있을 때 물어보는 자리 -->
+    <div id="askBar" class="askbar hidden" role="status">
+      <b>이 기기에 자동저장된 내용이 있습니다</b>
+      <span class="muted" id="askWhen"></span>
+      <div class="askrow">
+        <button id="btnAskLoad" class="btn btn-solid btn-sm" type="button" style="min-height:44px">불러오기</button>
+        <button id="btnAskNew" class="btn btn-sm" type="button" style="min-height:44px">새로 시작</button>
+      </div>
+    </div>
+
     <div class="tabs" role="tablist">
       <button class="tab on" data-tab="guide" type="button">실험 안내</button>
       <button class="tab" data-tab="data" type="button">데이터 입력</button>
@@ -644,6 +741,20 @@
   let repKeys    = [];
   let labTabState  = null;  // 데이터 실험실 탭이 열려 있었는지(바뀔 때만 알립니다)
   let tabNoteTimer = null;
+
+  // ── 간편 모드(서버 없이 쓰는 길) ───────────────────────────────
+  //  ★ 모드 판정은 여기 한 곳뿐입니다. 저장·불러오기 함수 안에서만 갈라집니다.
+  let simpleMode = false;   // true 면 Supabase 를 한 번도 부르지 않습니다
+  let pack       = null;    // 지금 쓰는 수업 꾸러미(mbl-pack)
+  let quizResult = null;    // 간편 모드에서 마지막으로 채점한 결과(작업 파일에 담습니다)
+  let feedbackIn = [];      // 다른 모둠에게 받은 별점·칭찬(실시간에서 이어받은 것)
+  let dirty      = false;   // 내려받지 않은 변경이 있는지
+  let rowsBroken = false;   // 저장본의 측정값을 읽지 못했음 — 빈 표로 덮어쓰지 않게 dirty 를 붙들어 둡니다
+  let editedAt   = 0;       // 마지막으로 입력한 시각
+  let savedFileAt= 0;       // 마지막으로 작업 파일을 내려받은 시각
+  let pendingAsk = null;    // 되살릴지 물어보는 중인 자동저장본
+  let simplePick = false;   // 도감에서 "이 실험으로 시작" 버튼을 보여 주는 중
+  function isSimple(){ return simpleMode; }
   let reportStatus = 'draft';   // 이미 제출한 보고서를 분석 저장 때문에 '작성 중'으로 되돌리지 않으려고 기억해 둡니다
 
   //  한 칸 읽기 — 배열 행([x, s1, s2…])도 {x, s0, s1…} 꼴도 받습니다.
@@ -972,12 +1083,146 @@
     return (err && err.message) || '저장하지 못했습니다.';
   }
 
+  // ═══════════════════════════════════════════════════════════════
+  //  ★ 저장 갈림길 — 여기 한 곳에서만 모드를 나눕니다.
+  //    간편 모드: localStorage + 작업 파일   ·   실시간 모드: Hub(서버)
+  //    호출부는 DB.* 만 부르면 됩니다(호출부마다 if 를 뿌리지 않습니다).
+  // ═══════════════════════════════════════════════════════════════
+  const DB = {
+    saveData: function(code, gid, rows, note, pin, pre){
+      if (isSimple()){
+        const payload = { rows: rows || [], note: note == null ? '' : String(note) };
+        if (pre !== undefined) payload.predict = Array.isArray(pre) ? pre : [];
+        Hub.saveLocal('data_' + code + '_' + gid, payload);
+        touch();
+        return Promise.resolve({ local: true, group_id: gid, rows: payload.rows, note: payload.note });
+      }
+      return Hub.saveData(code, gid, rows, note, pin, pre);
+    },
+    savePredict: function(code, gid, pre, pin){
+      if (isSimple()){
+        const old = Hub.loadLocal('data_' + code + '_' + gid, null) || { rows: [], note: '' };
+        return DB.saveData(code, gid, old.rows || [], old.note || '', pin, pre || []);
+      }
+      if (typeof Hub.savePredict === 'function') return Hub.savePredict(code, gid, pre, pin);
+      return Hub.saveData(code, gid, [], '', pin, pre);
+    },
+    saveReport: function(code, gid, answers, status, pin){
+      if (isSimple()){
+        Hub.saveLocal('report_' + code + '_' + gid, { answers: answers || {}, status: status || 'draft' });
+        Hub.saveLocal('draft_report_' + code + '_' + gid, answers || {});
+        touch();
+        return Promise.resolve({ local: true, status: status || 'draft' });
+      }
+      return Hub.saveReport(code, gid, answers, status, pin);
+    },
+    saveQuiz: function(code, gid, no, name, ans, pin){
+      if (isSimple()){
+        Hub.saveLocal('quiz_' + code + '_' + gid + '_' + no, { student_name: name, answers: ans || {} });
+        //  채점은 순수 함수 Hub.gradeQuiz 로 — 서버를 부르지 않습니다.
+        const g = (typeof Hub.gradeQuiz === 'function') ? Hub.gradeQuiz(quizList(), ans || {})
+                                                        : { score: null, max_score: null, results: [] };
+        quizResult = { no: Number(no), name: String(name || ''), score: g.score, max: g.max_score,
+                       detail: g.results, at: new Date().toISOString() };
+        touch();
+        return Promise.resolve({ local: true, score: g.score, max_score: g.max_score, results: g.results });
+      }
+      //  실시간 모드에서도 채점 결과를 붙들어 둡니다 — 작업 파일에 담기려면 필요합니다.
+      return Hub.saveQuiz(code, gid, no, name, ans, pin).then(function(r){
+        if (r && r.score != null){
+          quizResult = { no: Number(no), name: String(name || ''), score: r.score,
+                         max: (r.max_score != null ? r.max_score : r.max),
+                         detail: r.results || r.detail || [], at: new Date().toISOString() };
+        }
+        return r;
+      });
+    },
+    sendFeedback: function(code, from, to, stars, comment, pin){
+      if (isSimple()) return Promise.resolve({ local: true });   // 간편 모드에는 모둠 공유가 없습니다
+      return Hub.sendFeedback(code, from, to, stars, comment, pin);
+    }
+  };
+
+  //  ── 안전망 ────────────────────────────────────────────────────
+  //  간편 모드에서 Hub 의 통신 함수가 실수로 불리면 곧바로 막고 기록해 둡니다.
+  //  (원래 함수를 그대로 감싸기만 하므로 실시간 모드는 아무것도 달라지지 않습니다.)
+  window.__mblNetCalls = [];
+  ['saveData','saveReport','saveQuiz','savePredict','sendFeedback',
+   'watch','getBoard','sig','getLesson','joinGroup','flushOffline'].forEach(function(name){
+    const orig = Hub[name];
+    if (typeof orig !== 'function') return;
+    Hub[name] = function(){
+      if (isSimple()){
+        window.__mblNetCalls.push(name);
+        if (window.console && console.warn) console.warn('[간편 모드] Hub.' + name + ' 은 부르지 않아야 합니다.');
+        return (name === 'watch') ? function(){} : Promise.resolve(null);
+      }
+      return orig.apply(Hub, arguments);
+    };
+  });
+
+  // ── 저장 상태 띠 ───────────────────────────────────────────────
+  function hhmm(ms){
+    const d = new Date(ms || Date.now());
+    return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2);
+  }
+  //  입력이 생겼습니다 — 아직 내려받지 않은 변경이 있다고 표시합니다.
+  function touch(){
+    if (!group) return;
+    dirty = true;
+    editedAt = Date.now();
+    renderSaveBar();
+  }
+  function renderSaveBar(){
+    const bar = $('simpleBar');
+    if (!bar) return;
+    if (!group || atlasOnly || expired){ bar.classList.add('hidden'); return; }
+    bar.classList.remove('hidden');
+    const mode = $('sbMode'), st = $('sbState');
+    mode.textContent = isSimple() ? '간편 모드 · 서버를 쓰지 않습니다' : '실시간 모드 · 선생님 서버에 저장됩니다';
+    mode.className = 'sbmode' + (isSimple() ? '' : ' live');
+    let txt, warn;
+    if (dirty){
+      warn = isSimple();          // 실시간 모드는 서버에도 저장되므로 주황으로 겁주지 않습니다
+      txt = (isSimple() ? '아직 내려받지 않았습니다' : '작업 파일은 아직 내려받지 않았습니다') +
+            (editedAt ? ' · 마지막 저장 ' + hhmm(editedAt) : '');
+    } else if (savedFileAt){
+      warn = false;
+      txt = hhmm(savedFileAt) + ' 에 내려받음';
+    } else {
+      warn = false;
+      txt = '아직 적은 것이 없습니다';
+    }
+    st.className = 'sbstate' + (warn ? ' warn' : '');
+    st.innerHTML = '<span class="sbdot"></span>' + esc(txt);
+  }
+  //  작업 화면에서 무엇이든 고치면 '내려받지 않은 변경'으로 봅니다(도감 검색칸은 뺍니다).
+  (function bindDirty(){
+    const host = $('scWork');
+    if (!host) return;
+    ['input','change'].forEach(function(ev){
+      host.addEventListener(ev, function(e){
+        if (!group || atlasOnly) return;
+        if (e.target && e.target.closest && e.target.closest('#pnAtlas')) return;
+        touch();
+      }, true);
+    });
+  })();
+  //  내려받지 않은 변경이 있을 때만 붙잡습니다(그 밖에는 조용히 보내 줍니다).
+  window.addEventListener('beforeunload', function(e){
+    if (!isSimple() || !dirty || !group) return;
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  });
+
   //  모둠에서 빠져나올 때 새 기능 자리를 비웁니다(다음 모둠의 자료가 섞이지 않게).
   //  아직 화면이 만들어지기 전에 불릴 수도 있으므로 하나하나 확인합니다.
   function clearExtras(){
     predict = null;
     analyses = [];
     aiLogs = [];
+    quizResult = null;
     aiReset();
     reportStatus = 'draft';
     labReset();
@@ -1008,14 +1253,22 @@
 
   // ── 오프라인 배너 ──────────────────────────────────────────────
   Hub.onStatus(function(st){
-    const on = st.offline || Hub.pendingCount(joinCode) > 0;
+    const on = !isSimple() && (st.offline || Hub.pendingCount(joinCode) > 0);
     $('offbar').classList.toggle('hidden', !on);
   });
 
   // ── 연결 설정 안내 (학생 화면이라 한 줄만) ─────────────────────
-  (function checkSetup(){
+  let setupMsg = '';
+  //  간편 모드에서는 서버가 없어도 아무 문제가 없으므로 이 안내를 감춥니다.
+  function refreshSetupBar(){
     const bar = $('setupbar');
-    function tell(msg){ bar.textContent = msg; bar.classList.remove('hidden'); }
+    if (!bar) return;
+    const show = !!setupMsg && !isSimple();
+    bar.textContent = setupMsg;
+    bar.classList.toggle('hidden', !show);
+  }
+  (function checkSetup(){
+    function tell(msg){ setupMsg = msg; refreshSetupBar(); }
     const NO_CONF = '선생님, 서버 연결 정보가 아직 없어요. (config.js) 선생님께 알려 주세요.';
     const NO_SQL  = '선생님, 서버 준비가 아직 끝나지 않았어요. (schema.sql) 선생님께 알려 주세요.';
 
@@ -1033,11 +1286,12 @@
   function show(which){
     $('scJoin').classList.toggle('hidden',    which !== 'join');
     $('scGroup').classList.toggle('hidden',   which !== 'group');
+    $('scSimpleSetup').classList.toggle('hidden', which !== 'simple');
     $('scWork').classList.toggle('hidden',    which !== 'work');
     $('scExpired').classList.toggle('hidden', which !== 'expired');
-    $('btnLeave').classList.toggle('hidden',  which === 'join' || which === 'expired');
-    // [다른 모둠으로] 는 모둠에 들어가 있을 때만 보입니다.
-    $('btnSwitch').classList.toggle('hidden', !(which === 'work' && group && !atlasOnly));
+    $('btnLeave').classList.toggle('hidden',  which === 'join' || which === 'expired' || which === 'simple');
+    // [다른 모둠으로] 는 실시간 수업에서 모둠에 들어가 있을 때만 보입니다.
+    $('btnSwitch').classList.toggle('hidden', !(which === 'work' && group && !atlasOnly && !isSimple()));
   }
   function setPhase(ph){
     const el = $('phasePill');
@@ -1174,6 +1428,11 @@
 
   $('btnLeave').addEventListener('click', function(){
     if (atlasOnly) { backToJoin(); return; }
+    if (isSimple()){
+      if (dirty && !confirm('아직 작업 파일을 내려받지 않았습니다. 그냥 나가면 이 기기에만 남습니다. 나갈까요?')) return;
+      backToJoin();
+      return;
+    }
     if (!confirm('이 기기에서 나갈까요? 저장한 데이터는 그대로 남아 있습니다.')) return;
     if (unwatch) { unwatch(); unwatch = null; }
     stopPhaseTimer();
@@ -1184,10 +1443,609 @@
     show('join');
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  //  ★ 간편 모드 — 참여코드도 서버도 없이 수업 한 차시를 그대로
+  //    ① 수업 꾸러미(.json)  교사 → 학생
+  //    ② 작업 파일(.html)    학생의 모든 것 (제출·이어하기·합치기 겸용)
+  // ═══════════════════════════════════════════════════════════════
+
+  //  꾸러미를 안전한 모양으로 다듬습니다(모르는 값은 버립니다).
+  function normPack(p){
+    p = (p && typeof p === 'object') ? p : {};
+    const arr = v => Array.isArray(v) ? v : [];
+    const str = v => (v == null ? '' : String(v));
+    const f   = (p.features && typeof p.features === 'object') ? p.features : {};
+    return {
+      kind: 'mbl-pack', v: 1, made: str(p.made) || new Date().toISOString(),
+      title: str(p.title), expId: str(p.expId || p.exp_id),
+      vendor: str(p.vendor),
+      classLabel: str(p.classLabel || p.class_label),
+      teacherName: str(p.teacherName || p.teacher_name),
+      school: str(p.school),
+      groupCount: Math.max(1, Math.min(20, Number(p.groupCount || p.group_count) || 7)),
+      steps: arr(p.steps).map(str), prep: arr(p.prep).map(str),
+      dataSpec: (p.dataSpec && typeof p.dataSpec === 'object') ? p.dataSpec
+              : ((p.data_spec && typeof p.data_spec === 'object') ? p.data_spec : null),
+      questions: arr(p.questions),
+      quiz: arr(p.quiz),
+      aiTemplate: (p.aiTemplate && typeof p.aiTemplate === 'object') ? p.aiTemplate : null,
+      features: { lab: f.lab !== false, ai: f.ai !== false }
+    };
+  }
+
+  //  실험 도감 한 건 → 꾸러미 (expId 만 채우면 나머지는 LAB 이 채웁니다)
+  function packFromExp(e){
+    return normPack({ title: e.title, expId: e.id, groupCount: 7 });
+  }
+
+  //  지금 보고 있는 수업(실시간) → 꾸러미. 작업 파일에 함께 담아 보냅니다.
+  function packFromLesson(){
+    if (!lesson) return normPack({});
+    const form = (lesson.form && typeof lesson.form === 'object') ? lesson.form : {};
+    return normPack({
+      title: lesson.title, expId: lesson.exp_id, vendor: form.vendor,
+      classLabel: lesson.class_label, teacherName: lesson.teacher_name,
+      school: lesson.school || (typeof Hub.schoolName === 'function' ? Hub.schoolName() : ''),
+      groupCount: lesson.group_count,
+      steps: form.steps, prep: form.prep,
+      dataSpec: lesson.data_spec,
+      questions: form.questions, quiz: lesson.quiz || form.quiz,
+      aiTemplate: form.aiTemplate, features: form.features
+    });
+  }
+
+  //  꾸러미 → 화면이 읽는 수업 모양. 비어 있는 자리는 LAB 이 채웁니다.
+  function lessonFromPack(p){
+    const e = (window.LAB && p.expId) ? LAB.byId(p.expId) : null;
+    return {
+      id: 'local', join_code: joinCode,
+      title: p.title || (e && e.title) || '오늘의 실험',
+      class_label: p.classLabel, teacher_name: p.teacherName, school: p.school,
+      exp_id: p.expId, exp_title: (e && e.title) || '',
+      group_count: p.groupCount, phase: 'collect',
+      data_spec: (p.dataSpec && p.dataSpec.series) ? p.dataSpec : null,
+      quiz: p.quiz, quiz_at: '', form_at: '',
+      form: {
+        questions: p.questions, features: p.features, vendor: p.vendor,
+        steps: p.steps, prep: p.prep, aiTemplate: p.aiTemplate, quiz: p.quiz
+      }
+    };
+  }
+
+  //  간편 모드에서 쓰는 저장 열쇠 — 실험마다 따로 둡니다(서로 섞이지 않게).
+  function simpleCode(p){
+    const id = String((p && p.expId) || 'free').replace(/[^A-Za-z0-9_-]/g, '');
+    return 'SIMPLE_' + (id || 'free');
+  }
+
+  // ── 시작 준비 화면 ─────────────────────────────────────────────
+  function simpleSetup(p){
+    pack = normPack(p);
+    const e = (window.LAB && pack.expId) ? LAB.byId(pack.expId) : null;
+    $('ssTitle').textContent = pack.title || (e && e.title) || '오늘의 실험';
+    $('ssSub').textContent = [pack.school, pack.classLabel, pack.teacherName ? pack.teacherName + ' 선생님' : '',
+                              e ? '중' + e.grade + ' · ' + e.unit : ''].filter(Boolean).join(' · ')
+                          || '실험을 고르고 모둠만 정하면 바로 시작합니다.';
+    $('ssClass').value = pack.classLabel || '';
+    $('ssGroupName').value = '';      // 지난번에 적어 둔 이름이 남아 엉뚱한 모둠으로 저장되지 않게
+    $('ssMembers').value = '';
+    $('ssErr').textContent = '';
+    let h = '';
+    for (let i = 1; i <= pack.groupCount; i++){
+      h += '<button class="gbtn" type="button" data-no="' + i + '">' + i + '모둠<small>여기 눌러요</small></button>';
+    }
+    $('ssGsel').innerHTML = h;
+    let picked = 0;
+    Array.prototype.forEach.call($('ssGsel').querySelectorAll('.gbtn'), function(b){
+      b.addEventListener('click', function(){
+        picked = Number(b.dataset.no);
+        Array.prototype.forEach.call($('ssGsel').querySelectorAll('.gbtn'), function(x){
+          x.classList.remove('on'); x.style.background = '';
+        });
+        b.classList.add('on');
+        b.style.background = 'var(--g' + (((picked - 1) % 7) + 1) + ')';
+        if (!$('ssGroupName').value) $('ssGroupName').value = picked + '모둠';
+        $('ssErr').textContent = '';
+      });
+    });
+    $('btnSimpleGo').onclick = function(){
+      const no = picked || 1;
+      startSimple(pack, {
+        no: no,
+        name: $('ssGroupName').value.trim() || (no + '모둠'),
+        members: $('ssMembers').value.split(',').map(s => s.trim()).filter(Boolean)
+      }, { classLabel: $('ssClass').value.trim() });
+    };
+    show('simple');
+    window.scrollTo(0, 0);
+  }
+
+  //  간편 모드로 들어갑니다. 여기서 simpleMode 가 켜집니다.
+  function startSimple(p, g, opt){
+    opt = opt || {};
+    if (unwatch){ unwatch(); unwatch = null; }
+    stopPhaseTimer();
+    simpleMode = true;
+    refreshSetupBar();
+    pack = normPack(p);
+    if (opt.classLabel !== undefined) pack.classLabel = opt.classLabel;
+    joinCode = simpleCode(pack);
+    lesson = lessonFromPack(pack);
+    lesson.class_label = pack.classLabel;
+    const no = Math.max(1, Number(g && g.no) || 1);
+    group = { id: 'g' + no, lesson_id: 'local', group_no: no,
+              group_name: (g && g.name) || (no + '모둠'),
+              members: (g && g.members) || [] };
+    dirty = false; editedAt = 0; savedFileAt = 0;
+    board = null;                       // 실시간에서 받아 둔 남의 자료가 섞이지 않게
+    const keepQuiz = quizResult, keepFb = feedbackIn;
+    clearExtras();
+    quizResult = keepQuiz; feedbackIn = keepFb;
+    startWork(opt.startOpt || {});
+    if (opt.after) opt.after();
+    renderSaveBar();
+  }
+
+  // ── 간편 모드에서 되지 않는 것 감추기 ──────────────────────────
+  function applySimpleUI(){
+    const on = isSimple();
+    const shareTab = document.querySelector('.tab[data-tab="share"]');
+    if (shareTab) shareTab.classList.toggle('hidden', on);
+    if (on){
+      $('phasePill').classList.add('hidden');
+      $('btnSwitch').classList.add('hidden');
+      $('btnLeave').textContent = '처음으로';
+      if (curTab === 'share') selectTab('data');
+      tabNote('간편 모드입니다 — 서버를 쓰지 않아 모둠 공유·반 전체 보기·발표 모드는 열리지 않습니다. ' +
+              '다 하면 위쪽 [지금까지 한 것 내려받기]로 작업 파일을 꼭 내려받아 선생님께 내세요.');
+    } else {
+      $('btnLeave').textContent = '나가기';
+    }
+    if (on){
+      $('topSub').textContent = ['간편 모드', pack && pack.classLabel, group && group.group_name]
+        .filter(Boolean).join(' · ');
+    }
+  }
+
+  // ── ③ 자동저장 되살리기 ───────────────────────────────────────
+  //  저장본에 실제로 적힌 것이 있을 때만 묻습니다(빈 저장본은 조용히 넘어갑니다).
+  function snapshotAt(code, gid){
+    if (!code || !gid) return null;
+    const d = Hub.loadLocal('data_' + code + '_' + gid, null) ||
+              Hub.loadLocal('draft_data_' + code + '_' + gid, null);
+    const r = Hub.loadLocal('report_' + code + '_' + gid, null);
+    const dr = Hub.loadLocal('draft_report_' + code + '_' + gid, null);
+    const ans = (r && r.answers) || dr || null;
+    const rows = (d && Array.isArray(d.rows)) ? d.rows : [];
+    const hasRows = rows.some(function(row){
+      if (Array.isArray(row)){
+        return row.some(function(v){ return v !== null && v !== undefined && String(v).trim() !== ''; });
+      }
+      if (row && typeof row === 'object'){
+        return Object.keys(row).some(function(k){
+          const v = row[k];
+          return v !== null && v !== undefined && String(v).trim() !== '';
+        });
+      }
+      return false;
+    });
+    const hasAns = !!ans && Object.keys(ans).some(function(k){
+      if (k === '__qkeys') return false;
+      const v = ans[k];
+      return Array.isArray(v) ? v.length > 0 : String(v == null ? '' : v).trim() !== '';
+    });
+    if (!hasRows && !hasAns) return null;
+    return { rows: rows.length, ans: hasAns };
+  }
+  function localSnapshot(){
+    if (!group || !joinCode) return null;
+    return snapshotAt(joinCode, group.id);
+  }
+  function askOrRestore(){
+    const snap = localSnapshot();
+    $('askBar').classList.add('hidden');
+    if (!snap){ restoreLocal(); return; }
+    pendingAsk = snap;
+    $('askWhen').textContent = '측정값 ' + snap.rows + '줄' + (snap.ans ? ' · 보고서 답안 있음' : '') +
+                               ' — 불러올까요? 새로 시작하면 이 기기의 저장본은 그대로 두고 빈 화면에서 다시 시작합니다.';
+    $('askBar').classList.remove('hidden');
+  }
+  $('btnAskLoad').addEventListener('click', function(){
+    $('askBar').classList.add('hidden');
+    pendingAsk = null;
+    restoreLocal();
+    dirty = rowsBroken; renderSaveBar();
+  });
+  $('btnAskNew').addEventListener('click', function(){
+    if (!confirm('빈 화면에서 새로 시작할까요? (이 기기의 저장본은 지우지 않습니다)')) return;
+    $('askBar').classList.add('hidden');
+    pendingAsk = null;
+    gridClear();
+    $('inNote').value = '';
+    predict = null;
+    analyses = []; aiLogs = []; aiReset();
+    renderPredCard(); renderMyChart(); refreshReport();
+    dirty = false; renderSaveBar();
+  });
+
+  // ═══════════════════════════════════════════════════════════════
+  //  작업 파일 — 파일 하나가 제출·이어하기·교사 합치기를 겸합니다
+  // ═══════════════════════════════════════════════════════════════
+  const WORK_MARK = 'mbl-work';
+
+  function feedbackList(){
+    if (isSimple()) return feedbackIn.slice();
+    if (!board || !group) return feedbackIn.slice();
+    const names = {};
+    (board.groups || []).forEach(function(g){ names[g.id] = g.group_name || (g.group_no + '모둠'); });
+    return (board.feedback || []).filter(function(f){ return String(f.to_group) === String(group.id); })
+      .map(function(f){ return { from: names[f.from_group] || '어느 모둠', stars: Number(f.stars) || 0,
+                                 comment: String(f.comment || '') }; });
+  }
+
+  function workJSON(){
+    return {
+      kind: WORK_MARK, v: 1, saved: new Date().toISOString(),
+      mode: isSimple() ? 'simple' : 'live',
+      pack: pack ? normPack(pack) : packFromLesson(),
+      group: { no: Number(group.group_no) || 1,
+               name: group.group_name || (group.group_no + '모둠'),
+               members: group.members || [] },
+      rows: collectRows(),
+      note: $('inNote').value,
+      predict: predict || [],
+      answers: collectAnswers(),
+      quizResult: quizResult,
+      feedback: feedbackList()
+    };
+  }
+
+  function today8(){
+    const d = new Date();
+    return '' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2);
+  }
+  //  파일 이름은 시스템이 짓습니다 — 학생이 짓게 하면 선생님이 못 찾습니다.
+  function workFileName(w){
+    const clean = s => String(s == null ? '' : s).replace(/[\\/:*?"<>|.\s]+/g, '').slice(0, 24);
+    const cls = clean(w.pack.classLabel) || '반없음';
+    const grp = clean(w.group.name) || (w.group.no + '모둠');
+    const exp = clean(w.pack.title) || '실험';
+    return cls + '_' + grp + '_' + exp + '_' + today8() + '.html';
+  }
+
+  //  내보낸 파일은 다른 곳에서 열려야 합니다 — 색을 변수가 아닌 실제 값으로 박아 넣습니다.
+  const WORK_CSS =
+    ':root{--ink:#254753;--muted:#6E8A96;--paper:#FFFFFF;--cream:#FFFDF6;--line:#E4EFF1;--line-2:#D3E6EA;' +
+    '--mint:#20B2A6;--mint-d:#14867C;--sun:#FFC130;--coral:#FF8C6B;--sky:#54B4E8;' +
+    '--g5:#8B7FD4;--g6:#4FB477;--g7:#E88FB5;--ok:#37B58C;--warn:#E8873C;--bad:#E05A5A}' +
+    '*{box-sizing:border-box;margin:0;padding:0}' +
+    'body{font-family:-apple-system,system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);' +
+    'line-height:1.65;background:#F4FBF6;padding:24px 14px}' +
+    '.wrap{max-width:860px;margin:0 auto}' +
+    '.card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0;' +
+    'box-shadow:0 8px 22px rgba(37,71,83,.07)}' +
+    'h1{font-size:24px;margin-bottom:6px}h2{font-size:19px;margin:0 0 10px;color:var(--mint-d)}' +
+    'h3{font-size:16px;margin:14px 0 6px}' +
+    '.meta{font-size:14px;color:var(--muted);line-height:1.9}' +
+    '.meta b{color:var(--ink)}' +
+    'table{border-collapse:collapse;width:100%;font-size:14px}' +
+    'th,td{border:1px solid var(--line-2);padding:6px 8px;text-align:center}' +
+    'th{background:#F3FAFB;font-weight:700}' +
+    'ol,ul{margin:6px 0 0 20px;font-size:14.5px}li{margin-bottom:6px}' +
+    '.q{border:1.5px solid var(--line-2);border-radius:12px;padding:12px 14px;margin:10px 0;background:var(--cream)}' +
+    '.q b{display:block;margin-bottom:6px}' +
+    '.a{white-space:pre-wrap;font-size:15px}.a.empty{color:var(--bad);font-weight:700}' +
+    '.note{border-left:4px solid var(--sun);background:#FFFBF0;border-radius:0 10px 10px 0;padding:10px 12px;' +
+    'margin:8px 0;font-size:14px}' +
+    '.chart{border:1.5px solid var(--line);border-radius:12px;padding:8px;overflow-x:auto}' +
+    '.chart svg{display:block;width:100%;height:auto;max-width:620px;margin:0 auto}' +
+    '.o{color:var(--ok);font-weight:800}.x{color:var(--bad);font-weight:800}' +
+    '.tip{background:#EAF8F0;border:1.5px dashed var(--mint);border-radius:12px;padding:12px 14px;font-size:14px;margin:14px 0}' +
+    '.foot{text-align:center;font-size:12.5px;color:#8a8f98;margin-top:26px;' +
+    'border-top:1px solid rgba(128,128,128,.25);padding-top:12px}' +
+    '@media print{body{background:#fff;padding:0}.card{box-shadow:none;break-inside:avoid;page-break-inside:avoid}' +
+    '.tip{display:none}h1{font-size:20px}}';
+
+  function rowsTableHTML(w){
+    const sp = (w.pack.dataSpec && w.pack.dataSpec.series) ? w.pack.dataSpec : spec;
+    const ser = (sp && sp.series) || [];
+    if (!(w.rows || []).length) return '<p class="meta">적어 둔 측정값이 없습니다.</p>';
+    let h = '<table><thead><tr><th>#</th><th>' +
+            esc((sp.x && sp.x.label) || 'x') + (sp.x && sp.x.unit ? ' (' + esc(sp.x.unit) + ')' : '') + '</th>' +
+            ser.map(s => '<th>' + esc(s.label || '') + (s.unit ? ' (' + esc(s.unit) + ')' : '') + '</th>').join('') +
+            '</tr></thead><tbody>';
+    w.rows.forEach(function(r, i){
+      h += '<tr><td>' + (i + 1) + '</td>' +
+           r.map(v => '<td>' + esc(v === null || v === undefined ? '' : v) + '</td>').join('') + '</tr>';
+    });
+    return h + '</tbody></table>';
+  }
+
+  function answersHTML(w){
+    const qs = questions.slice();
+    const vals = alignAnswers(w.answers || {}, qs.map(qKeyOf));
+    let h = '';
+    qs.forEach(function(q, i){
+      const v = String(vals[i] == null ? '' : vals[i]).trim();
+      h += '<div class="q"><b>' + (i + 1) + '. ' + esc(q.q || q.text || '') + '</b>' +
+           '<div class="a' + (v ? '' : ' empty') + '">' + (v ? esc(v) : '(비어 있음)') + '</div></div>';
+    });
+    //  화면이 덧붙인 문항(예상과 무엇이 달랐나요) — 질문 글이 곧 열쇠입니다.
+    Object.keys(w.answers || {}).forEach(function(k){
+      if (/^q\d+$/.test(k) || k.indexOf('__') === 0) return;
+      const v = String(w.answers[k] == null ? '' : w.answers[k]).trim();
+      if (!v) return;
+      h += '<div class="q"><b>' + esc(k) + '</b><div class="a">' + esc(v) + '</div></div>';
+    });
+    return h || '<p class="meta">보고서 문항이 없습니다.</p>';
+  }
+
+  function buildWorkHTML(w){
+    const e = (window.LAB && w.pack.expId) ? LAB.byId(w.pack.expId) : null;
+    const vk = w.pack.vendor;
+    const steps = (w.pack.steps || []).length ? w.pack.steps
+                : (e && window.LAB && LAB.stepsFor ? LAB.stepsFor(e, vk) : (e && e.steps) || []);
+    const prep  = (w.pack.prep || []).length ? w.pack.prep
+                : (e && window.LAB && LAB.prepFor ? LAB.prepFor(e, vk) : (e && e.prep) || []);
+    const sp = (w.pack.dataSpec && w.pack.dataSpec.series) ? w.pack.dataSpec : spec;
+    const svg = chartSVG(sp, w.rows || [], { predict: (w.predict && w.predict.length) ? w.predict : null });
+    const d = new Date(w.saved);
+    const day = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+
+    let h = '<div class="wrap">';
+    h += '<div class="card"><h1>' + esc(w.pack.title || (e && e.title) || '실험 보고서') + '</h1>' +
+         '<div class="meta">' +
+         (w.pack.school ? '학교 · <b>' + esc(w.pack.school) + '</b><br>' : '') +
+         (w.pack.classLabel ? '반 · <b>' + esc(w.pack.classLabel) + '</b><br>' : '') +
+         '모둠 · <b>' + esc(w.group.name) + '</b>' +
+         ((w.group.members || []).length ? ' (' + w.group.members.map(esc).join(', ') + ')' : '') + '<br>' +
+         (e ? '단원 · 중' + esc(e.grade) + ' ' + esc(e.unit) + '<br>' : '') +
+         (w.pack.teacherName ? '지도 · <b>' + esc(w.pack.teacherName) + ' 선생님</b><br>' : '') +
+         '날짜 · ' + esc(day) + '<br>' +
+         '방식 · ' + (w.mode === 'simple' ? '간편 모드(서버 없이)' : '실시간 모드') +
+         '</div></div>';
+
+    h += '<div class="tip">이 파일 하나에 우리 모둠이 한 것이 모두 들어 있습니다. ' +
+         '선생님께 이 파일을 그대로 내면 됩니다. 브라우저에서 <b>인쇄(Ctrl+P) → PDF로 저장</b>도 됩니다. ' +
+         '다시 이어서 하려면 수업허브 첫 화면에서 <b>이어서 하기</b>로 이 파일을 올리세요.</div>';
+
+    if (prep.length || steps.length){
+      h += '<div class="card"><h2>준비물과 실험 순서</h2>';
+      if (prep.length) h += '<h3>준비물</h3><p class="meta">' + prep.map(esc).join(' · ') + '</p>';
+      if (steps.length) h += '<h3>실험 순서</h3><ol>' + steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
+      h += '</div>';
+    }
+
+    h += '<div class="card"><h2>측정한 값</h2>' + rowsTableHTML(w) +
+         (w.note ? '<p class="meta" style="margin-top:8px">측정 조건 · ' + esc(w.note) + '</p>' : '') + '</div>';
+
+    h += '<div class="card"><h2>우리 모둠 그래프</h2><div class="chart">' + svg + '</div>';
+    if (w.predict && w.predict.length){
+      const g = biggestGap(w.rows || [], w.predict, (sp && sp.series) || []);
+      h += '<h3>예상 vs 실제</h3>';
+      h += g && g.maxDiff !== null
+        ? '<div class="note">' + esc(g.label) + ' · 가로축 ' + esc(fmtNum(g.atX)) + ' 에서 예상 ' +
+          esc(fmtNum(g.predicted)) + esc(g.unit) + ' / 실제 ' + esc(fmtNum(g.actual)) + esc(g.unit) +
+          ' — 가장 큰 차이 <b>' + esc(fmtNum(g.maxDiff)) + esc(g.unit) + '</b></div>'
+        : '<p class="meta">예상 곡선을 점선으로 함께 그렸습니다.</p>';
+    }
+    h += '</div>';
+
+    if ((w.answers && Array.isArray(w.answers.__analysis) ? w.answers.__analysis : []).length){
+      h += '<div class="card"><h2>데이터 실험실 · 분석 기록</h2>';
+      w.answers.__analysis.forEach(function(a){
+        h += '<div class="q"><b>' + esc(a.text || '') + '</b>' +
+             '<div class="meta">' + esc([a.mode, a.when].filter(Boolean).join(' · ')) + '</div>';
+        (a.notes || []).forEach(function(n){
+          h += '<div class="a" style="margin-top:6px"><b>' + esc(n.q) + '</b><br>' + esc(n.a) + '</div>';
+        });
+        h += '</div>';
+      });
+      h += '</div>';
+    }
+
+    h += '<div class="card"><h2>모둠 보고서</h2>' + answersHTML(w) + '</div>';
+
+    if (w.quizResult){
+      const qr = w.quizResult;
+      h += '<div class="card"><h2>개념 확인 결과</h2>' +
+           '<p class="meta">' + esc(qr.no + '번 ' + qr.name) + ' · 점수 <b>' +
+           esc((qr.score == null ? '?' : qr.score) + ' / ' + (qr.max == null ? '?' : qr.max)) + '</b></p>';
+      (qr.detail || []).forEach(function(dd){
+        const mark = dd.correct === true ? '<span class="o">○</span>' :
+                     dd.correct === false ? '<span class="x">✕</span>' : '—';
+        h += '<div class="q"><b>' + mark + ' ' + esc(dd.no + '. ' + (dd.q || '')) + '</b>' +
+             '<div class="a">내 답 · ' + esc(dd.your == null || dd.your === '' ? '(비워 둠)' : dd.your) +
+             (dd.correct === false && dd.answer ? ' &nbsp;/&nbsp; 정답 · <b>' + esc(dd.answer) + '</b>' : '') + '</div>' +
+             (dd.explain ? '<div class="meta">' + esc(dd.explain) + '</div>' : '') + '</div>';
+      });
+      h += '</div>';
+    }
+
+    if ((w.answers && Array.isArray(w.answers.__ai) ? w.answers.__ai : []).length){
+      h += '<div class="card"><h2>AI 와 협업한 탐구</h2>';
+      w.answers.__ai.forEach(function(a){
+        h += '<div class="q"><b>' + esc(a.phaseName || '') + ' · ' + esc(a.when || '') + '</b>' +
+             '<div class="a"><b>우리 생각</b><br>' + esc(a.myView || '') + '</div>' +
+             (a.claim ? '<div class="a" style="margin-top:6px"><b>AI 가 한 말</b><br>' + esc(a.claim) + '</div>' : '') +
+             (a.verdict ? '<div class="a" style="margin-top:6px"><b>우리 판정</b> · ' + esc(a.verdict) +
+                          (a.why ? '<br>' + esc(a.why) : '') + '</div>' : '') + '</div>';
+      });
+      h += '</div>';
+    }
+
+    if ((w.feedback || []).length){
+      h += '<div class="card"><h2>다른 모둠에게 받은 별점·칭찬</h2>';
+      w.feedback.forEach(function(f){
+        h += '<div class="q"><b>' + esc(f.from) + ' · ' + '★'.repeat(Math.max(0, Math.min(5, f.stars))) + '</b>' +
+             (f.comment ? '<div class="a">' + esc(f.comment) + '</div>' : '') + '</div>';
+      });
+      h += '</div>';
+    }
+
+    h += '<p class="foot">MBL 수업허브 작업 파일 · 저장 ' + esc(w.saved) +
+         '<br>© 2026 조승재(과학이조선생) · 해누리중학교</p></div>';
+
+    //  ★ 심는 부분 — 이어하기·교사 합치기가 읽는 곳입니다.
+    const json = JSON.stringify(w).replace(/<\//g, '<\\/');
+    return '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8" />\n' +
+           '<meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
+           '<title>' + esc(w.group.name + ' · ' + (w.pack.title || '실험 보고서')) + '</title>\n' +
+           '<style>' + WORK_CSS + '</style>\n</head>\n<body>\n' + h + '\n' +
+           '<script type="application/json" id="' + WORK_MARK + '">' + json + '<\/script>\n' +
+           '</body>\n</html>\n';
+  }
+
+  function downloadWork(){
+    if (!group){ return; }
+    const w = workJSON();
+    const html = buildWorkHTML(w);
+    const name = workFileName(w);
+    const blob = new Blob([html], { type: 'text/html;charset=utf-8' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = name;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(function(){ URL.revokeObjectURL(url); }, 4000);
+    dirty = false; savedFileAt = Date.now();
+    renderSaveBar();
+    const kb = Math.round(blob.size / 1024);
+    tabNote('작업 파일을 내려받았습니다 — ' + name + ' (' + kb + 'KB). 이 파일 하나에 우리 모둠이 한 것이 모두 들어 있습니다.');
+  }
+  $('btnWorkSave').addEventListener('click', downloadWork);
+
+  // ── 작업 파일 다시 올리기 ─────────────────────────────────────
+  //  ★ HTML 을 통째로 파싱하지 않습니다. 심어 둔 script 태그 속 글만 뽑습니다.
+  function readWorkText(text){
+    const m = String(text).match(/<script[^>]*id=["']mbl-work["'][^>]*>([\s\S]*?)<\/script>/i);
+    if (!m) return null;
+    try { return JSON.parse(m[1].replace(/<\\\//g, '</')); } catch (e) { return null; }
+  }
+
+  //  작업 파일의 rows 는 [[x, s1…], …] 이 정상이지만, 손상되었거나 손으로 고친 파일은
+  //  [{x:0, s0:20}, …] 처럼 올 수 있습니다. Hub.cellAt 으로 배열로 바꾸고, 그래도 아니면 버립니다.
+  function normWorkRows(rows, p){
+    const cols = ((((p || {}).dataSpec || {}).series || []).length) + 1;
+    return (Array.isArray(rows) ? rows : []).map(function(row){
+      if (Array.isArray(row)) return row;
+      if (row && typeof row === 'object' && typeof Hub.cellAt === 'function'){
+        const out = [];
+        for (let c = 0; c < cols; c++){
+          const v = Hub.cellAt(row, c);
+          out.push(isFinite(v) ? v : null);
+        }
+        return out.some(function(v){ return v !== null; }) ? out : null;
+      }
+      return null;
+    }).filter(Array.isArray);
+  }
+
+  function restoreWork(w){
+    const p = normPack(w.pack || {});
+    const g = w.group || {};
+    const no = Math.max(1, Number(g.no) || 1);
+    const gid = 'g' + no;
+    const code = simpleCode(p);
+    //  이 기기에 이미 같은 실험·같은 모둠 기록이 있으면 무엇이 사라지는지 먼저 알립니다.
+    const prev = snapshotAt(code, gid);
+    if (prev && !confirm('이 기기에 저장된 ' + (g.name || (no + '모둠')) + ' 기록(측정값 ' + prev.rows + '줄' +
+                         (prev.ans ? ' · 보고서 답안 있음' : '') + ')을 이 파일로 바꿀까요?')) return;
+    simpleMode = true;
+    refreshSetupBar();
+    if (unwatch){ unwatch(); unwatch = null; }
+    stopPhaseTimer();
+    pack = p;
+    joinCode = code;
+    const safeRows = normWorkRows(w.rows, p);
+    //  되살릴 값을 먼저 이 기기에 적어 둔 뒤, 늘 쓰던 복원 길(restoreLocal)로 불러옵니다.
+    Hub.saveLocal('data_' + joinCode + '_' + gid, {
+      rows: safeRows,
+      note: String(w.note == null ? '' : w.note),
+      predict: Array.isArray(w.predict) ? w.predict : []
+    });
+    Hub.saveLocal('pred_' + joinCode + '_' + gid, Array.isArray(w.predict) ? w.predict : []);
+    Hub.saveLocal('report_' + joinCode + '_' + gid, { answers: w.answers || {}, status: 'draft' });
+    Hub.saveLocal('draft_report_' + joinCode + '_' + gid, w.answers || {});
+    quizResult = w.quizResult || null;
+    feedbackIn = Array.isArray(w.feedback) ? w.feedback : [];
+    startSimple(p, { no: no, name: g.name || (no + '모둠'), members: g.members || [] },
+                { classLabel: p.classLabel, startOpt: { noAsk: true } });
+    if (quizResult && quizResult.detail){
+      $('qzNo').value = quizResult.no || '';
+      $('qzName').value = quizResult.name || '';
+      renderQuizResult({ score: quizResult.score, max_score: quizResult.max, results: quizResult.detail });
+    }
+    dirty = rowsBroken;
+    savedFileAt = Date.parse(w.saved) || Date.now();   // 이 파일이 곧 마지막으로 내려받은 것입니다
+    renderSaveBar();
+    if (rowsBroken) return;
+    tabNote('작업 파일을 불러왔습니다 — ' + (g.name || (no + '모둠')) + ' · 측정값 ' +
+            (safeRows.length) + '줄. 하던 데서 이어서 하세요. ' +
+            (w.mode === 'live' ? '(실시간 수업에서 만든 파일이라 간편 모드로 이어 갑니다.)' : ''));
+  }
+
+  // ── 첫 화면의 세 갈래 ──────────────────────────────────────────
+  function wayErr(msg){ $('wayErr').textContent = msg || ''; }
+
+  //  ① 코드 없이 시작하기 — 도감에서 실험을 고릅니다
+  $('btnSimplePick').addEventListener('click', function(){
+    wayErr('');
+    simplePick = true;
+    openAtlas(true);
+    tabNote('실험을 하나 눌러 펼친 뒤 [이 실험으로 시작하기]를 누르세요.');
+  });
+
+  //  ② 수업 꾸러미 올리기
+  $('btnSimplePack').addEventListener('click', function(){ wayErr(''); $('filePack').click(); });
+  $('filePack').addEventListener('change', function(){
+    const f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = function(){
+      let p = null;
+      try { p = JSON.parse(String(fr.result)); } catch (e) { p = null; }
+      if (!p || p.kind !== 'mbl-pack'){
+        wayErr('수업 꾸러미 파일이 아닙니다. 선생님이 준 .json 파일인지 확인해 주세요.');
+        return;
+      }
+      wayErr('');
+      simpleSetup(p);
+    };
+    fr.onerror = function(){ wayErr('파일을 읽지 못했습니다.'); };
+    fr.readAsText(f, 'utf-8');
+  });
+
+  //  ③ 이어서 하기
+  $('btnSimpleResume').addEventListener('click', function(){ wayErr(''); $('fileWork').click(); });
+  $('fileWork').addEventListener('change', function(){
+    const f = this.files && this.files[0];
+    this.value = '';
+    if (!f) return;
+    const fr = new FileReader();
+    fr.onload = function(){
+      const w = readWorkText(fr.result);
+      if (!w || w.kind !== WORK_MARK){
+        wayErr('작업 파일이 아닙니다. 수업허브에서 내려받은 .html 파일을 골라 주세요.');
+        return;
+      }
+      if (group && dirty && !confirm('지금 화면에 적은 것을 이 파일의 내용으로 덮어쓸까요?')) return;
+      wayErr('');
+      restoreWork(w);
+    };
+    fr.onerror = function(){ wayErr('파일을 읽지 못했습니다.'); };
+    fr.readAsText(f, 'utf-8');
+  });
+
+  $('btnSimpleBack').addEventListener('click', function(){ simplePick = false; show('join'); window.scrollTo(0, 0); });
+
   // ── ③ 작업 화면 ────────────────────────────────────────────────
-  function startWork(){
+  function startWork(opt){
+    opt = opt || {};
     atlasOnly = false;
     expired = false;
+    dirty = false; editedAt = 0;
+    $('askBar').classList.add('hidden');
     showPinStep(false);
     show('work');
     spec = (lesson.data_spec && lesson.data_spec.series) ? lesson.data_spec
@@ -1210,9 +2068,10 @@
     renderReport();
     renderPredCard();
     renderQuiz();
-    restoreLocal();
+    if (opt.noAsk) restoreLocal();
+    else           askOrRestore();          // 자동저장본이 있으면 조용히 덮지 않고 물어봅니다
     setPhase(lesson.phase);
-    Hub.flushOffline(joinCode);
+    if (!isSimple()) Hub.flushOffline(joinCode);
     atlasOnly = false;
     lockTabsForAtlas(false);
     if (unwatch){ unwatch(); unwatch = null; }
@@ -1220,7 +2079,9 @@
     labTabState = null;          // 들어올 때는 알림 없이 조용히 맞춥니다
     $('tabNote').classList.add('hidden');
     applyLabTab();
+    applySimpleUI();                        // 간편 모드에서 안 되는 것은 감추고 까닭을 알립니다
     selectTab('guide');
+    renderSaveBar();
     applyWatch();
   }
 
@@ -1229,6 +2090,7 @@
   //  열지 않은 동안에는 보드를 아예 받지 않고, 단계가 바뀌었는지만 가볍게
   //  확인합니다. (전송량을 크게 줄여 주는 부분입니다.)
   function needWatch(){
+    if (isSimple()) return false;                 // 간편 모드는 서버를 보지 않습니다
     if (!joinCode || !group || atlasOnly) return false;
     const ph = (lesson && lesson.phase) || 'collect';
     if (ph !== 'collect') return true;
@@ -1294,6 +2156,7 @@
   }
 
   function startPhaseTimer(){
+    if (isSimple()) return;                       // 간편 모드는 단계 확인도 하지 않습니다
     if (phaseTimer || !joinCode || !group) return;
     phaseTimer = setInterval(checkPhase, 15000);
   }
@@ -1410,7 +2273,17 @@
     let h = '<div class="box"><h2>' + esc(lesson.title || '오늘의 실험') + '</h2>' +
             '<p class="muted">' + esc([lesson.class_label, lesson.exp_title].filter(Boolean).join(' · ')) + '</p>';
     if (!e){
+      //  도감에 없는 실험이라도 선생님이 적어 준 절차·준비물이 있으면 그대로 보여 줍니다.
+      const fm = (lesson && lesson.form) || {};
+      const oSteps = Array.isArray(fm.steps) ? fm.steps : [];
+      const oPrep  = Array.isArray(fm.prep)  ? fm.prep  : [];
       h += '<p class="lead" style="margin-top:12px">선생님이 안내하는 순서대로 실험하고, <b>데이터 입력</b> 탭에 측정값을 적으세요.</p></div>';
+      if (oSteps.length || oPrep.length){
+        h += '<div class="box"><h2>실험 순서</h2>';
+        if (oSteps.length) h += '<ol class="steps-ol">' + oSteps.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol>';
+        if (oPrep.length)  h += '<h3>준비물</h3><p class="muted">' + oPrep.map(esc).join(' · ') + '</p>';
+        h += '</div>';
+      }
       $('pnGuide').innerHTML = h;
       return;
     }
@@ -1660,7 +2533,7 @@
     this.disabled = true;
     // 비밀번호가 틀리면 다시 물어본 뒤 이 저장을 그대로 이어서 합니다.
     writeWithPin(function(pin){
-      return Hub.saveData(joinCode, group.id, rows, note, pin);
+      return DB.saveData(joinCode, group.id, rows, note, pin);
     }).then(function(res){
       if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다. 연결되면 자동으로 보냅니다.'; }
       else { msg.textContent = '저장했습니다 (' + rows.length + '줄)'; }
@@ -2335,15 +3208,45 @@
       PRED.drawing = false; PRED.last = -1;
       try { svg.releasePointerCapture(ev.pointerId); } catch (e){}
       predDraw(true);
+      predDraftSave();          // 그리다 만 것도 이 기기에 남깁니다
     }
     svg.addEventListener('pointerup', end);
     svg.addEventListener('pointercancel', end);
     svg.addEventListener('pointerleave', function(ev){ if (PRED.drawing) end(ev); });
   }
 
+  //  ── 그리다 만 예상 자동저장 ──────────────────────────────────
+  //  [예상 저장]을 누르기 전이라도 이 기기에는 남겨 둡니다(창을 닫아도 잃지 않게).
+  function predDraftKey(){ return 'preddraft_' + joinCode + '_' + group.id; }
+  function predDraftSave(){
+    if (!group || !joinCode) return;
+    try {
+      Hub.saveLocal(predDraftKey(), { at: Date.now(), n: PRED.n,
+        x0: PRED.x0, x1: PRED.x1, y0: PRED.y0, y1: PRED.y1, buckets: PRED.buckets });
+    } catch (e) {}
+    touch();
+  }
+  function predDraftLoad(){
+    if (!group || !joinCode) return null;
+    const d = Hub.loadLocal(predDraftKey(), null);
+    if (!d || !Array.isArray(d.buckets)) return null;
+    if (d.buckets.length !== (spec.series || []).length) return null;
+    const any = d.buckets.some(function(b){ return (b || []).some(function(v){ return v !== null && v !== undefined; }); });
+    return any ? d : null;
+  }
+  function predDraftDrop(){ if (group && joinCode) Hub.dropLocal(predDraftKey()); }
+
   function predOpen(){
     if (!group || expired) return;
     predReset(false);
+    //  저장한 예상보다 그리다 만 것이 더 새것이면 그 자리에서 이어 그리게 합니다.
+    const dr = predDraftLoad();
+    if (dr){
+      PRED.n = dr.n || PRED.n;
+      PRED.x0 = dr.x0; PRED.x1 = dr.x1; PRED.y0 = dr.y0; PRED.y1 = dr.y1;
+      PRED.buckets = dr.buckets.map(function(b){ return (b || []).slice(0, PRED.n); });
+      PRED.dirty = true;
+    }
     predAxToInputs();
     $('predEdit').classList.remove('hidden');
     $('predWrap').innerHTML = predSkeleton();
@@ -2407,12 +3310,12 @@
     const rows = collectRows();
     const note = $('inNote').value.trim();
     return writeWithPin(function(pin){
-      if (rows.length) return Hub.saveData(joinCode, group.id, rows, note, pin, pre);
-      if (typeof Hub.savePredict === 'function') return Hub.savePredict(joinCode, group.id, pre, pin);
-      return Hub.saveData(joinCode, group.id, rows, note, pin, pre);
+      if (rows.length) return DB.saveData(joinCode, group.id, rows, note, pin, pre);
+      return DB.savePredict(joinCode, group.id, pre, pin);
     }).then(function(res){
       predict = (pre && pre.length) ? pre : null;
       Hub.saveLocal(predKey(), pre || []);          // 데이터만 저장해도 예상이 남아 있게
+      predDraftDrop();                              // 저장했으니 그리다 만 초안은 버립니다
       renderPredCard();
       renderMyChart();
       refreshReport();
@@ -2619,9 +3522,15 @@
     msg.className = 'savemsg'; msg.textContent = '채점 중…';
     $('btnQuizSubmit').disabled = true;
     writeWithPin(function(pin){
-      return Hub.saveQuiz(joinCode, group.id, no, name, ans, pin);
+      return DB.saveQuiz(joinCode, group.id, no, name, ans, pin);
     }).then(function(res){
       renderQuizResult(res);
+      //  모드와 상관없이 작업 파일에 담을 채점 결과를 남깁니다(실시간에서 낸 것도 파일에 들어가야 합니다).
+      quizResult = (res && res.offline)
+        ? { no: no, name: name, at: new Date().toISOString() }
+        : { no: no, name: name, score: (res && res.score), max: (res && res.max_score),
+            detail: (res && res.results) || [], at: new Date().toISOString() };
+      touch();
       if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다.'; }
       else { msg.textContent = '냈습니다. 다시 풀어도 됩니다(마지막 것이 남습니다).'; }
       $('btnQuizSubmit').textContent = '다시 채점하기';
@@ -2742,17 +3651,61 @@
     renderReport();
     if (keep) fillAnswers(keep);
   }
+  //  ── 빈칸으로 제출하는 것을 막습니다(임시 저장은 빈칸이어도 됩니다) ──
+  //  어느 문항이 비었는지 짚어 주고 그 칸으로 데려갑니다.
+  function missingQs(){
+    const out = [];
+    Array.prototype.forEach.call($('qlist').querySelectorAll('.q'), function(box, i){
+      const el = box.querySelector('[data-q],[data-qk]');
+      if (!el) return;
+      const q = (el.dataset.q !== undefined) ? questions[Number(el.dataset.q)] : null;
+      if (q && q.optional === true) return;                 // 선생님이 선택 문항으로 표시한 것은 뺍니다
+      if (String(el.value == null ? '' : el.value).trim() === '') out.push({ no: i + 1, box: box, el: el });
+    });
+    return out;
+  }
+  function markMissing(list){
+    Array.prototype.forEach.call($('qlist').querySelectorAll('.q'), function(b){ b.classList.remove('miss'); });
+    list.forEach(function(m){ m.box.classList.add('miss'); });
+    if (list.length){
+      selectTab('report');
+      list[0].box.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      try { list[0].el.focus({ preventScroll: true }); } catch (e) { list[0].el.focus(); }
+    }
+  }
+
   function submitReport(status){
     if (!group || expired) return;
     const msg = $('reportMsg');
+    if (status === 'done'){
+      const miss = missingQs();
+      if (miss.length){
+        markMissing(miss);
+        msg.className = 'savemsg warn';
+        msg.textContent = '아직 비어 있는 문항이 있습니다 — ' + miss.map(function(m){ return m.no + '번'; }).join(', ') +
+                          '. 채운 뒤에 제출하세요. (지금 쓴 것은 [임시 저장]으로 남길 수 있습니다.)';
+        return;
+      }
+      Array.prototype.forEach.call($('qlist').querySelectorAll('.q'), function(b){ b.classList.remove('miss'); });
+    }
     const answers = collectAnswers();
     msg.className = 'savemsg'; msg.textContent = '저장 중…';
     writeWithPin(function(pin){
-      return Hub.saveReport(joinCode, group.id, answers, status, pin);
+      return DB.saveReport(joinCode, group.id, answers, status, pin);
     }).then(function(res){
       reportStatus = status;
       if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다. 연결되면 자동으로 보냅니다.'; }
-      else { msg.textContent = (status === 'done') ? '제출했습니다. 고칠 수 있어요.' : '임시 저장했습니다.'; }
+      else if (status === 'done'){
+        msg.textContent = '제출했습니다. 고칠 수 있어요.';
+        if (isSimple()){
+          tabNote('보고서를 제출 상태로 바꿨습니다 — 아직 선생님께 간 것이 아닙니다! ' +
+                  '위쪽 [지금까지 한 것 내려받기]로 작업 파일을 내려받아 선생님께 꼭 내세요.');
+          renderSaveBar();
+          const b = $('btnWorkSave');
+          if (b){ b.scrollIntoView({ behavior:'smooth', block:'center' }); }
+        }
+      }
+      else { msg.textContent = '임시 저장했습니다.'; }
     }, function(err){
       msg.className = 'savemsg warn'; msg.textContent = writeErrText(err);
     });
@@ -2761,9 +3714,19 @@
   $('btnDoneReport').addEventListener('click', function(){ submitReport('done'); });
 
   function restoreLocal(){
+    rowsBroken = false;
     const d = Hub.loadLocal('data_' + joinCode + '_' + group.id, null) ||
               Hub.loadLocal('draft_data_' + joinCode + '_' + group.id, null);
-    if (d){ fillRows(d.rows); if (d.note) $('inNote').value = d.note; }
+    if (d){
+      //  저장본의 측정값이 망가져 있어도 나머지(메모·보고서·분석)는 살려서 이어 갑니다.
+      try { fillRows(d.rows); }
+      catch (e){
+        rowsBroken = true; dirty = true;
+        tabNote('측정값을 읽지 못했습니다. 표는 비어 있으니 다시 채운 뒤 [지금까지 한 것 내려받기]를 눌러 주세요. ' +
+                '(이대로 내려받으면 원래 측정값이 사라집니다.)');
+      }
+      if (d.note) $('inNote').value = d.note;
+    }
     aiLoadLocal();                     // 이 기기에서 쓰던 협업 초안(고친 프롬프트 포함)
     predict = loadPredict();
     renderPredCard();
@@ -2776,6 +3739,11 @@
 
   // 모둠 공유 · 피드백
   function renderShare(){
+    if (isSimple()){
+      $('shareSub').textContent = '간편 모드에서는 모둠 공유를 쓸 수 없습니다. 서버를 쓰지 않기 때문입니다.';
+      $('shareCards').innerHTML = '';
+      return;
+    }
     if (!board || !group) return;
     const open = lesson && (lesson.phase === 'share' || lesson.phase === 'present' || lesson.phase === 'done');
     $('shareSub').textContent = open
@@ -2832,7 +3800,7 @@
         if (expired) return;
         btn.disabled = true; btn.textContent = '보내는 중';
         writeWithPin(function(pin){
-          return Hub.sendFeedback(joinCode, group.id, to, stars, comment, pin);
+          return DB.sendFeedback(joinCode, group.id, to, stars, comment, pin);
         }).then(function(){
           btn.textContent = '보냈어요';
           setTimeout(function(){ btn.disabled = false; btn.textContent = '보내기'; }, 1200);
@@ -3359,6 +4327,7 @@
 
   // ── 우리 반 전체 보기 ──────────────────────────────────────────
   function labFetchBoard(){
+    if (isSimple()) return;                       // 간편 모드에는 반 전체 자료가 없습니다
     if (LABS.fetching || !joinCode) return;
     LABS.fetching = true;
     Hub.safe(function(){ return Hub.getBoard(joinCode); }, null).then(function(b){
@@ -3369,6 +4338,12 @@
 
   function labClassHTML(myRows){
     LABS.last = null;                       // 계산하지 못한 상태에서 옛 결과를 저장하지 않도록 비웁니다
+    if (isSimple()){
+      return '<div class="box"><h3 style="margin-top:0">우리 반 전체</h3>' +
+             '<p class="lead">간편 모드에서는 다른 모둠의 자료를 모을 수 없습니다(서버를 쓰지 않기 때문입니다).</p>' +
+             '<p class="muted" style="margin-top:8px">모둠마다 작업 파일을 내려받아 내면, <b>선생님이 그 파일들을 합쳐</b> 반 전체 그래프를 보여 주십니다. ' +
+             '지금은 <b>[우리 모둠]</b>으로 분석해 두세요.</p></div>';
+    }
     if (!labClassOk()){
       return '<div class="box"><h3 style="margin-top:0">우리 반 전체</h3>' +
              '<p class="lead">아직 다른 모둠의 자료를 볼 수 없습니다. 선생님이 <b>‘모둠 공유’</b> 단계를 열면 ' +
@@ -3635,7 +4610,7 @@
     if (btn) btn.disabled = true;
     labMsg('저장 중…', '');
     writeWithPin(function(pin){
-      return Hub.saveReport(joinCode, group.id, analysisAnswers(), reportStatus, pin);
+      return DB.saveReport(joinCode, group.id, analysisAnswers(), reportStatus, pin);
     }).then(function(res){
       if (res && res.offline) labMsg('임시 저장했습니다. 연결되면 자동으로 보냅니다.', 'warn');
       else labMsg('분석을 저장했습니다 (' + analyses.length + '/5).', '');
@@ -4296,7 +5271,7 @@
     if (btn) btn.disabled = true;
     aiMsg('저장 중…', '');
     writeWithPin(function(pin){
-      return Hub.saveReport(joinCode, group.id, analysisAnswers(), reportStatus, pin);
+      return DB.saveReport(joinCode, group.id, analysisAnswers(), reportStatus, pin);
     }).then(function(res){
       if (res && res.offline) aiMsg('임시 저장했습니다. 연결되면 자동으로 보냅니다.', 'warn');
       else if (!rec.verdict)  aiMsg('저장했습니다 (' + aiLogs.length + '/5). AI 답을 받은 뒤 「판정」까지 채워 다시 저장하면 더 좋습니다.', 'warn');
@@ -4380,6 +5355,7 @@
            ' <a href="./manual.html#sources">자세한 출처 보기</a></p>';
   }
   const LEVEL_TXT = { 1:'쉬움', 2:'보통', 3:'어려움' };
+  let ATLAS_LOCK_HTML = null;   // 도감 잠금 안내의 원래 글 (고르기 모드에서 잠깐 바꿉니다)
 
   // 참여코드 없이 도감만 볼 때는 나머지 탭을 잠그고 까닭을 알려 줍니다.
   function lockTabsForAtlas(lock){
@@ -4395,6 +5371,12 @@
   function backToJoin(){
     atlasOnly = false;
     expired   = false;
+    simplePick = false;
+    if (simpleMode){ simpleMode = false; pack = null; joinCode = ''; lesson = null; refreshSetupBar(); }
+    quizResult = null; feedbackIn = [];
+    dirty = false; editedAt = 0; savedFileAt = 0;
+    if ($('simpleBar')) $('simpleBar').classList.add('hidden');
+    if ($('askBar')) $('askBar').classList.add('hidden');
     group = null; pickedNo = 0;
     clearExtras();
     if (unwatch){ unwatch(); unwatch = null; }
@@ -4414,8 +5396,23 @@
     atlasOnly = !!alone;
     show('work');
     lockTabsForAtlas(atlasOnly);
+    if ($('simpleBar')) $('simpleBar').classList.add('hidden');
     selectTab('atlas');
-    if (atlasOnly) $('topSub').textContent = '실험 도감 — 코드 없이 둘러보는 중';
+    if (atlasOnly){
+      $('topSub').textContent = simplePick ? '실험 고르기 — 코드 없이 시작하기' : '실험 도감 — 코드 없이 둘러보는 중';
+      const lockBox = $('atlasLock');
+      if (lockBox){
+        if (ATLAS_LOCK_HTML === null) ATLAS_LOCK_HTML = lockBox.innerHTML;
+        lockBox.innerHTML = simplePick
+          ? '<h2>실험을 골라 주세요</h2>' +
+            '<p class="lead">아래에서 실험 카드를 누르면 자세히 펼쳐집니다. 펼친 곳 맨 위의 ' +
+            '<b>[이 실험으로 시작하기]</b>를 누르면 참여코드 없이 바로 시작합니다.</p>' +
+            '<button class="btn" style="margin-top:12px" type="button" data-atlasback="1">처음으로</button>'
+          : ATLAS_LOCK_HTML;
+        const bb = lockBox.querySelector('[data-atlasback],#btnAtlasJoin');
+        if (bb) bb.addEventListener('click', backToJoin);
+      }
+    }
     window.scrollTo(0, 0);
   }
 
@@ -4517,6 +5514,8 @@
     boxEl.innerHTML = atlasDetailHTML(e);
     const closeBtn = $('btnAtlasClose');
     if (closeBtn) closeBtn.addEventListener('click', function(){ pickAtlas(e.id); });
+    const startBtn = $('btnAtlasStart');
+    if (startBtn) startBtn.addEventListener('click', function(){ simplePick = false; simpleSetup(packFromExp(e)); });
   }
 
   function atlasDetailHTML(e){
@@ -4528,6 +5527,11 @@
     const aprep  = (window.LAB && LAB.prepFor)  ? LAB.prepFor(e, av)  : (e.prep  || []);
 
     let h = '<div class="box" id="atlasDetailBox" tabindex="-1" role="region" aria-label="실험 자세히 보기">';
+    if (simplePick){
+      h += '<div class="note" style="margin-top:0"><b>이 실험으로 바로 시작할 수 있습니다.</b><br>' +
+           '<span class="muted">참여코드 없이 하는 <b>간편 모드</b>입니다. 서버를 쓰지 않고, 한 것은 작업 파일로 내려받아 선생님께 냅니다.</span>' +
+           '<div style="margin-top:10px"><button id="btnAtlasStart" class="btn btn-solid" type="button" style="min-height:44px">이 실험으로 시작하기</button></div></div>';
+    }
     h += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
          '<h2 style="flex:1 1 220px">' + esc(e.title) + '</h2>' +
          '<button id="btnAtlasClose" class="btn" type="button">닫기</button></div>';

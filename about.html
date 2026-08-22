@@ -4,7 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MBL 수업허브 — 측정한 숫자에 의미를 더하다</title>
-<meta name="description" content="중학교 MBL 센서 수업허브 소개. 참여코드 하나로 예상 그리기부터 측정·분석·발표까지 한 차시를 굴립니다. 실험 도감과 데이터 실험실을 담았습니다." />
+<meta name="description" content="중학교 MBL 센서 수업허브 소개. 참여코드 하나로 예상 그리기부터 측정·분석·발표까지 한 차시를 굴립니다. 설치 없이 파일 하나로 쓰는 간편 모드, 실험 도감과 데이터 실험실을 담았습니다." />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="./lab-data.js"></script>
@@ -99,6 +99,12 @@
   .fcard h3{font-family:var(--display);font-size:18px;font-weight:400;margin:6px 0}
   .fcard p{font-size:13.5px;color:var(--muted)}
 
+  /* ── 세 갈래 카드 (간편 모드) ───────────────────────── */
+  .ways3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+  .ways3 .fcard .fbody{padding:20px}
+  .ways3 .fno{color:var(--sky)}
+  .wayic{font-size:26px;line-height:1}
+
   /* ── 2열 split ──────────────────────────────────────── */
   .split{display:grid;grid-template-columns:.92fr 1.08fr;gap:40px;align-items:center}
   .split.rev{grid-template-columns:1.08fr .92fr}
@@ -185,6 +191,7 @@
   @media(max-width:900px){
     .hero-grid{grid-template-columns:1fr;gap:30px}
     .flow{grid-template-columns:1fr 1fr}
+    .ways3{grid-template-columns:1fr}
     .split,.split.rev{grid-template-columns:1fr}
     .figs{grid-template-columns:1fr}
     .banner{aspect-ratio:16/7}
@@ -213,6 +220,7 @@
     .hero{padding:0 0 14px}
     .hero-grid,.split,.split.rev,.figs{grid-template-columns:1fr 1fr;gap:16px}
     .flow{grid-template-columns:1fr 1fr 1fr 1fr}
+    .ways3{grid-template-columns:1fr 1fr 1fr}
     .fcard,.num,.note,.fig,.time,.ph{box-shadow:none !important;break-inside:avoid}
     .banner{aspect-ratio:16/5}
     a[href^="http"]::after{content:" (" attr(href) ")";font-size:10px;color:#666}
@@ -248,7 +256,8 @@
       </span>
       <h1>측정한 <span class="hl2">숫자</span>에<br /><span class="hl">의미</span>를 더하다</h1>
       <p class="lead">온도·빛·압력·전류, 센서로 직접 잰 값을 그래프로 그리고 축을 바꿔 가며 규칙을 찾습니다.
-        참여코드 여섯 자리 하나로 예상 그리기부터 측정·분석·모둠 공유·발표까지 한 차시가 굴러갑니다.</p>
+        참여코드 여섯 자리 하나로 예상 그리기부터 측정·분석·모둠 공유·발표까지 한 차시가 굴러갑니다.
+        <b>설치가 부담스러우면 준비 없이 쓰는 <a href="#simple" style="color:var(--mint-d)">간편 모드</a></b>부터 시작하세요.</p>
       <div class="cta">
         <a class="btn btn-solid btn-lg" href="./index.html">학생 입장 →</a>
         <a class="btn btn-sun btn-lg" href="./teacher.html">선생님용 →</a>
@@ -305,6 +314,84 @@
           <p>보고서를 쓰고 다른 모둠 그래프에 별점을 주며, 전자칠판으로 발표합니다.</p>
         </div>
       </article>
+    </div>
+  </div>
+</section>
+
+<!-- ── 간편 모드 ───────────────────────────────────────── -->
+<section class="section" id="simple">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="badge sun">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M13 2L4 14h6l-1 8 9-12h-6z"/></svg>
+        준비 없이 오늘 당장
+      </span>
+      <h2>설치도 계정도 없이 — 간편 모드</h2>
+      <p>서버를 쓰지 않고도 한 차시가 그대로 굴러갑니다. 교사가 <b>수업 꾸러미 파일</b> 하나를 나눠 주고,
+        학생이 <b>작업 파일</b> 하나를 내면 끝. 처음 쓰시는 분께 <b>이쪽을 먼저 권합니다.</b></p>
+    </div>
+
+    <div class="ways3">
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">🧪</div>
+          <div class="fno">WAY 01</div><h3>코드 없이 시작하기</h3>
+          <p>실험 도감에서 오늘 할 실험을 직접 골라 바로 시작합니다. 반과 모둠은 학생이 적습니다.</p>
+        </div>
+      </article>
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">📦</div>
+          <div class="fno">WAY 02</div><h3>수업 꾸러미 올리기</h3>
+          <p>선생님이 준 <b>.json</b> 파일을 올리면 실험·절차·보고서 질문·개념 확인이 그대로 세팅됩니다.</p>
+        </div>
+      </article>
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">📄</div>
+          <div class="fno">WAY 03</div><h3>이어서 하기</h3>
+          <p>전에 내려받은 내 <b>작업 파일(.html)</b>을 올리면 하던 데서 그대로 이어집니다.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="roles" style="margin-top:22px">
+      <div class="role m">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <p><b>간편 모드 — 준비 0분</b>실험 안내·데이터 표·CSV 끌어다 놓기·예상 그래프·데이터 실험실·AI와 협업 탐구·보고서·개념 확인이 <b>모두 그대로</b> 됩니다.
+          다만 <b>모둠 공유·반 전체 보기·전자칠판 발표는 되지 않습니다</b> — 서로 다른 기기의 자료를 모아야 하는 일이라, 화면에서 감추고 까닭을 알려 줍니다.</p>
+      </div>
+      <div class="role">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18l5-7 4 4 7-9"/><path d="M3 21h18"/></svg></span>
+        <p><b>실시간 모드 — 처음 한 번 10분</b>학교 Supabase 하나를 만들고 <b>config.js 두 줄</b>을 채우면 참여코드가 열립니다.
+          모둠이 저장하는 즉시 교사 화면과 전자칠판이 따라오고, <b>모둠 공유·반 전체 보기·발표 모드</b>가 살아납니다.</p>
+      </div>
+    </div>
+
+    <ul class="list" style="margin-top:20px">
+      <li><b>교사</b><span> — 평소처럼 수업을 꾸미고 <b>[수업 꾸러미 내려받기]</b>. 클래스룸·하이클래스·USB 무엇으로든 나눠 줍니다.</span></li>
+      <li><b>학생</b><span> — 링크를 열고 꾸러미를 올려 실험하고 보고서를 씁니다. 다 하면 <b>[지금까지 한 것 내려받기]</b>.</span></li>
+      <li><b>제출</b><span> — 내려받은 <b>작업 파일 하나</b>를 평소 내던 곳에 그대로 냅니다. 파일 이름은 시스템이 짓습니다.</span></li>
+      <li><b>교사</b><span> — 모인 파일들을 <b>[제출된 보고서 합치기]</b> 로 끌어다 놓으면 반 전체 산점도·모둠별 기울기·문항별 정답률·미제출 명단이 나옵니다.</span></li>
+      <li><b>마무리</b><span> — 같은 자리에서 <b>[생기부 자료 내보내기]</b> 까지 그대로 됩니다.</span></li>
+    </ul>
+
+    <div class="notes" style="margin-top:20px">
+      <div class="note">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span>
+        <p><b>작업 파일을 꼭 내려받아야 합니다</b>간편 모드는 서버로 아무것도 보내지 않습니다. 한 것은 그 기기에만 남아,
+          <b>내려받지 않고 나가면 되살릴 수 없습니다.</b> 화면 맨 위 띠가 <b>주황이면 아직 낸 것이 없고, 초록이면 파일이 저장된 것</b>입니다.</p>
+      </div>
+      <div class="note">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="4" y="3" width="16" height="18" rx="2"/><path d="M8 8h8M8 12h8M8 16h5"/></svg></span>
+        <p><b>파일 하나가 세 몫을 합니다</b>그대로 열면 표지·표·그래프·보고서가 담긴 <b>읽히는 보고서</b>이고,
+          <b>인쇄로 PDF 저장</b>이 되며, 다시 올리면 <b>이어서 하기</b>와 <b>교사 합치기</b>의 재료가 됩니다.</p>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-solid" href="./index.html">간편 모드로 시작하기 →</a>
+      <a class="btn" href="./manual.html#modes">두 가지 쓰는 법 자세히</a>
     </div>
   </div>
 </section>
@@ -367,6 +454,7 @@
       </div>
     </div>
     <p class="timenote">측정 시간이 긴 실험이면 보고서와 모둠 공유를 줄이고, 그래도 모자라면 데이터 실험실을 다음 차시 도입으로 옮기면 됩니다. 저장해 둔 값이 그대로 남아 있습니다.</p>
+    <p class="timenote"><b><a href="#simple" style="color:var(--mint-d)">간편 모드</a>로 하는 날</b>은 모둠 공유 4분과 발표 5분이 없습니다. 그 자리에 <b>작업 파일 내려받아 제출 3분</b>을 넣고, 남는 시간은 데이터 실험실에 얹으면 알맞습니다.</p>
   </div>
 </section>
 
@@ -458,6 +546,8 @@
       <p>실험을 하나 고르고 참여코드를 발급하면 준비는 끝입니다. 나머지는 화면을 보면서 수업의 속도를 조절하는 일입니다.</p>
       <ul class="list">
         <li><b>수업 열기</b><span> — 실험을 고르면 참여코드 6자리와 관리코드가 발급됩니다.</span></li>
+        <li><b>수업 꾸러미 내려받기</b><span> — 지금 화면 그대로 <b>.json</b> 한 개로. 서버 없이 쓰는 <a href="#simple" style="color:var(--mint-d);font-weight:700">간편 모드</a> 배부용이자, 다른 학교 선생님과 주고받는 파일입니다.</span></li>
+        <li><b>제출된 보고서 합치기</b><span> — 학생이 낸 작업 파일들을 끌어다 놓으면 반 전체 산점도·모둠별 기울기·문항별 정답률·미제출 명단이 나옵니다.</span></li>
         <li><b>모둠 비밀번호</b><span> — 모둠마다 4자리. 남의 모둠 자료를 건드릴 수 없습니다.</span></li>
         <li><b>실시간 현황</b><span> — 어느 모둠이 어디까지 왔는지 한 화면에서 봅니다.</span></li>
         <li><b>보고서 질문 배포</b><span> — 실험에 딸린 질문을 그대로 쓰거나 고쳐서 내보냅니다.</span></li>
@@ -546,7 +636,7 @@
   <div class="wrap">
     <div class="endcta">
       <h2>어디로 가시겠어요?</h2>
-      <p>학생은 참여코드를 들고 입장, 선생님은 수업을 열어 보세요. 코드가 없어도 실험 도감은 볼 수 있습니다.</p>
+      <p>학생은 참여코드를 들고 입장, 선생님은 수업을 열어 보세요. <b>코드가 없어도</b> 실험 도감을 보고, <a href="#simple" style="color:var(--mint-d);font-weight:700">간편 모드</a>로 실험과 보고서까지 그대로 할 수 있습니다.</p>
       <div class="cta">
         <a class="btn btn-solid btn-lg" href="./index.html">학생 입장 →</a>
         <a class="btn btn-sun btn-lg" href="./teacher.html">선생님용 →</a>
@@ -558,7 +648,7 @@
 
 </main>
 
-<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-16</span></footer>
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-22</span></footer>
 
 <script>
 (function(){
