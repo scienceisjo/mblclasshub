@@ -8,8 +8,12 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./lab-data.js"></script>
+<script src="./diagrams.js"></script>
+<script src="./graphs.js"></script>
 <script src="./config.js"></script>
 <script src="./hub.js"></script>
+<!-- 대시보드 엔진 — 외부 자원을 부르지 않습니다(학생 화면과 같은 파일을 씁니다) -->
+<script src="./dashkit.js"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -737,6 +741,26 @@
       <div id="mergeOut" style="margin-top:12px"></div>
     </div>
 
+    <!-- 대시보드 만들기 — 우리 반이 지금 모은 자료로 한 장을 짭니다 -->
+    <div class="box" id="dDashKitBox">
+      <h2>대시보드 만들기</h2>
+      <p class="muted">블록을 고르면 <b>우리 반이 지금 모은 진짜 자료</b>로 그 자리에서 한 장이 완성됩니다.
+        AI 에게 코드를 받아 붙여 넣고 파일을 어딘가에 올리는 일이 없습니다.
+        <b>[HTML 파일로 저장]</b> 을 누르면 혼자 열리는 파일 하나가 되고, 그대로 인쇄하면 PDF 가 됩니다.
+        <b>[이 구성 저장]</b> 을 누르면 짜 둔 구성이 이 수업에 남아 다음에 열 때 그대로 나옵니다.
+        고치는 동안에는 화면이 저절로 덮어써지지 않습니다.</p>
+      <div class="vrow" style="margin-top:12px">
+        <label class="fl" for="selDashKitGroup" style="margin:0">기준 모둠</label>
+        <select id="selDashKitGroup" style="width:auto;min-width:170px;min-height:44px"></select>
+        <span class="muted">모둠 하나를 보는 블록(값 카드·보고서·평가)이 이 모둠 것으로 그려집니다.
+          반 전체 블록은 기준 모둠과 상관없이 모든 모둠을 그립니다.</span>
+      </div>
+      <div id="dashKit" style="margin-top:12px"></div>
+      <p id="dashKitOff" class="muted hidden">대시보드 엔진(<code>dashkit.js</code>)을 불러오지 못했습니다.
+        이 폴더에 <code>dashkit.js</code> 가 함께 있어야 합니다.</p>
+      <div id="dashKitMsg" class="ok" style="min-height:20px;margin-top:8px"></div>
+    </div>
+
     <!-- 수업 꾸러미 — 이 수업을 파일 하나로 -->
     <div class="box">
       <h2>수업 꾸러미로 내보내기</h2>
@@ -879,6 +903,22 @@
         </div>
       </div>
 
+      <!-- 대시보드 만들기 — 올린 작업 파일로 한 장을 짭니다 -->
+      <div class="box" id="wkDashKitBox">
+        <h2>대시보드 만들기</h2>
+        <p class="muted">올린 작업 파일을 그대로 써서 한 장을 짭니다. 실시간 대시보드와 <b>같은 블록</b>입니다.
+          여기에서 짠 구성은 <b>이 화면에만</b> 남습니다 — 서버에는 아무것도 보내지 않습니다.
+          꾸러미에 대시보드 구성이 담겨 왔다면 그것이 먼저 들어옵니다.</p>
+        <div class="vrow" style="margin-top:12px">
+          <label class="fl" for="selWkKitGroup" style="margin:0">기준 모둠</label>
+          <select id="selWkKitGroup" style="width:auto;min-width:170px;min-height:44px"></select>
+          <span class="muted">모둠 하나를 보는 블록이 이 모둠 것으로 그려집니다.</span>
+        </div>
+        <div id="wkKit" style="margin-top:12px"></div>
+        <p id="wkKitOff" class="muted hidden">대시보드 엔진(<code>dashkit.js</code>)을 불러오지 못했습니다.</p>
+        <div id="wkKitMsg" class="ok" style="min-height:20px;margin-top:8px"></div>
+      </div>
+
       <div class="box">
         <h2>생기부 자료 내보내기</h2>
         <p class="muted">합친 파일들을 학생별 기록으로 묶어 내려받습니다.
@@ -961,6 +1001,7 @@
   let packQuiz  = [];     // 꾸러미가 들고 온 개념 확인 문항
   let packRub   = [];     // 꾸러미가 들고 온 평가 기준표
   let packAiTpl = null;   // 꾸러미가 들고 온 AI 프롬프트 틀
+  let packDash  = null;   // 꾸러미가 들고 온 대시보드 구성 (dashkit.js)
   let pins      = [];     // [{group_id, group_no, group_name, pin}] — 교사만 봅니다
   let pinsShown = false;  // 표에서 PIN 을 드러낼지 (평소에는 ●●●● 로 가려 둡니다)
   let pinsCode  = '';     // 지금 들고 있는 PIN 표가 어느 관리코드의 것인지
@@ -1795,7 +1836,7 @@
 
   $('btnNew').addEventListener('click', function(){
     picked = null;
-    packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = [];
+    packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = []; packDash = null;
     packNewMsg('');
     vendorMsg(''); paintVendorSW(); paintProcNew();
     fillUnits(); renderExpList();
@@ -1840,7 +1881,8 @@
                      //  꾸러미로 들어온 것들 — 스키마를 바꾸지 않으려고 form 안에 함께 담습니다
                      packQuiz.length ? { quiz: packQuiz } : {},
                      packRub.length ? { rubric: packRub } : {},
-                     packAiTpl ? { aiTemplate: packAiTpl } : {}
+                     packAiTpl ? { aiTemplate: packAiTpl } : {},
+                     packDash ? { dash: packDash } : {}
                    ),
       dataSpec   : spec,
       groupCount : Number($('inGroups').value) || 7
@@ -1858,7 +1900,7 @@
         renderQuiz();
         quizMsg('꾸러미의 개념 확인 ' + quizDraft.length + '문항을 불러왔습니다. [개념 확인 배포] 를 눌러 주세요.');
       }
-      packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = [];
+      packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = []; packDash = null;
     }, function(err){
       $('newErr').textContent = (err && err.message) || '수업을 만들지 못했습니다. 인터넷 연결을 확인해 주세요.';
     }).then(function(){
@@ -1890,6 +1932,7 @@
       formDirty = false; formSyncedSig = null; labBusy = false;
       procDirty = false; procSyncedSig = null;
       aiBusy = false; aiTplDirty = false; aiTplSyncedSig = null; aiOpen = {};
+      resetDashKit();
       resetGrading();
       $('formErr').textContent = ''; $('formMsg').textContent = ''; $('featMsg').textContent = '';
       $('procErr').textContent = ''; $('procMsg').textContent = '';
@@ -2029,6 +2072,7 @@
     syncQuizEditor(false);
     paintQuizResult();
     syncMerge();
+    syncDashKit(false);
     paintKeep();
   }
 
@@ -2165,6 +2209,9 @@
     if (patch.prep      !== undefined) next.prep      = patch.prep;
     //  평가 기준표(루브릭)도 같은 자리에 둡니다 — 스키마를 바꾸지 않으려는 것입니다.
     if (patch.rubric    !== undefined) next.rubric    = patch.rubric;
+    //  대시보드 구성(dashkit.js)도 같은 자리에 둡니다. null 을 주면 '짜 둔 것 없음' 으로 되돌립니다.
+    if (patch.dash === null)           delete next.dash;
+    else if (patch.dash !== undefined) next.dash      = patch.dash;
     //  aiTemplate 은 null 을 주면 '고쳐 둔 것 없음(기본 틀)' 으로 되돌립니다.
     if (patch.aiTemplate === null)          delete next.aiTemplate;
     else if (patch.aiTemplate !== undefined) next.aiTemplate = patch.aiTemplate;
@@ -4079,6 +4126,8 @@
       //  평가 기준표도 함께 담습니다 — 간편 모드에서도 같은 기준으로 채점할 수 있게 합니다.
       rubric: normRubric(o.rubric),
       aiTemplate: (o.aiTemplate && typeof o.aiTemplate === 'object') ? o.aiTemplate : null,
+      //  대시보드 구성도 함께 담습니다 — 간편 모드에서도 같은 짜임으로 볼 수 있게 합니다.
+      dash: (o.dash && typeof o.dash === 'object' && !Array.isArray(o.dash)) ? o.dash : null,
       features: { lab: f.lab !== false, ai: f.ai !== false }
     };
   }
@@ -4098,6 +4147,7 @@
       quiz: packQuiz,
       rubric: packRub,
       aiTemplate: packAiTpl,
+      dash: packDash,
       features: { lab: !!$('inFeatLab').checked, ai: !!$('inFeatAi').checked }
     });
   }
@@ -4118,6 +4168,7 @@
       quiz: quizItemsOf(lesson && lesson.quiz),
       rubric: formRubric(),
       aiTemplate: form.aiTemplate,
+      dash: form.dash,
       features: formFeatures()
     });
   }
@@ -4164,7 +4215,7 @@
         school: raw.school, groupCount: raw.groupCount || raw.group_count,
         steps: raw.steps, prep: raw.prep, dataSpec: raw.dataSpec || raw.data_spec,
         questions: raw.questions, quiz: raw.quiz, rubric: raw.rubric,
-        aiTemplate: raw.aiTemplate, features: raw.features
+        aiTemplate: raw.aiTemplate, dash: raw.dash, features: raw.features
       }));
     }, function(){
       alert('파일을 읽지 못했습니다.');
@@ -4177,6 +4228,7 @@
     packQuiz  = p.quiz.slice();
     packRub   = normRubric(p.rubric);
     packAiTpl = p.aiTemplate;
+    packDash  = p.dash;
     packExpId = p.expId;
     if (VENDORS.length && p.vendor && vendorInfo(p.vendor)){
       $('fVendor').value = p.vendor;
@@ -4317,6 +4369,7 @@
       wkBoard = null; wkFileByGid = {};
       gradeUI.wk.sel = ''; gradeUI.wk.dirty = false; gradeUI.wk.sig = '';
       distState.wk.qi = 0; distState.wk.open = -1; distSig.wk = '';
+      paintWkKit();
       $('wkAnalysis').classList.add('hidden');
       return;
     }
@@ -4329,6 +4382,7 @@
     paintWkQuiz();
     syncWkRubric();
     paintGrade('wk', true);
+    paintWkKit();
     wkExpMsg('');
   }
   //  꾸러미에 기준표가 담겨 왔으면 그것으로, 없으면 기본 기준표로 시작합니다.
@@ -4372,6 +4426,8 @@
               vendor: p.vendor || '', steps: p.steps || [], prep: p.prep || [],
               //  꾸러미가 평가 기준표를 들고 왔으면 그대로 씁니다(없으면 화면에서 기본 기준표로 시작합니다).
               rubric: normRubric(p.rubric),
+              //  꾸러미가 대시보드 구성을 들고 왔으면 합치기 화면의 대시보드가 그것으로 시작합니다.
+              dash: (p.dash && typeof p.dash === 'object' && !Array.isArray(p.dash)) ? p.dash : null,
               aiTemplate: p.aiTemplate || null }
     };
     const groups = [], data = [], reports = [], quiz = [], feedback = [];
@@ -4626,6 +4682,7 @@
     distState.wk.qi = 0; distState.wk.open = -1; distSig.wk = '';
     if (distBigOpen && distBigWhich === 'wk') closeDistBig();
     $('wkFiles').innerHTML = '';
+    paintWkKit();                       // 대시보드 편집기도 함께 비웁니다(앞 반 자료가 남지 않게)
     $('wkAnalysis').classList.add('hidden');
     wkMsg('올린 파일을 모두 지웠습니다.');
   });
@@ -5691,6 +5748,223 @@
   $('btnWkDistBig').addEventListener('click',   function(){ openDistBig('wk'); });
   $('btnQuizDistCsv').addEventListener('click', function(){ runDistCsv('dash'); });
   $('btnWkDistCsv').addEventListener('click',   function(){ runDistCsv('wk'); });
+
+
+  // ══════════════════════════════════════════════════════════════
+  //  대시보드 만들기 (dashkit.js) — 실시간 대시보드 · 합치기 화면 양쪽
+  //
+  //   · 설정은 lesson.form.dash 에 둡니다. schema.sql 을 바꾸지 않으려는 것입니다.
+  //     saveForm 이 form 을 통째로 합쳐 보내므로 questions·features·vendor·steps·prep·
+  //     quiz·rubric·aiTemplate 은 그대로 남습니다.
+  //   · 합치기 화면은 서버가 없습니다 — 기준표와 같이 이 화면에만 담아 둡니다.
+  //   · 폴링(Hub.watch → paintDash)이 편집 중을 덮지 않게 합니다.
+  //     편집기에 담긴 구성이 마지막으로 맞춘 것과 다르면 '고치는 중' 으로 봅니다.
+  //     (dashkit 은 onChange 를 주지 않으므로 dirty 플래그 대신 구성을 견줍니다.)
+  //   · teacher.html 의 chartSVG 는 이 화면 안(IIFE)에만 있어 window 에 나가지 않습니다.
+  //     그래서 대시보드 그래프는 dashkit 의 폴백 그림쟁이가 그립니다 — 눈금·색·범례 규칙이
+  //     맞춰져 있어 학생 화면에서 만든 것과 같은 모양이 나옵니다.
+  // ══════════════════════════════════════════════════════════════
+  let dkDash = null, dkDashSig = '', dkDashDataSig = '', dkDashGid = '';
+  let dkWk   = null, dkWkGid = '', dkWkLayout = null, dkWkLoadedFor = '';
+
+  function dashKitOn(){ return !!(window.DashKit && typeof DashKit.mount === 'function'); }
+  function dkNorm(x){
+    if (!dashKitOn()) return null;
+    return DashKit.normLayout((x && typeof x === 'object' && !Array.isArray(x)) ? x : DashKit.emptyLayout());
+  }
+  function formDash(){
+    const d = formOf().dash;
+    return (d && typeof d === 'object' && !Array.isArray(d)) ? d : null;
+  }
+  function dashKitMsg(t){
+    const el = $('dashKitMsg');
+    if (!el) return;
+    el.textContent = t || '';
+    if (t) setTimeout(function(){ if (el.textContent === t) el.textContent = ''; }, 4000);
+  }
+  function wkKitMsg(t){
+    const el = $('wkKitMsg');
+    if (!el) return;
+    el.textContent = t || '';
+    if (t) setTimeout(function(){ if (el.textContent === t) el.textContent = ''; }, 4000);
+  }
+  //  AI 에게 넘길 글 — 지금 짜 둔 구성과 실제 수치 요약이 담깁니다(값을 지어내지 못하게).
+  function dkAskAI(kit, msgFn){
+    let body = '';
+    try { body = kit.describe(); } catch (e){ body = ''; }
+    if (!body){ msgFn('설명을 만들지 못했습니다.'); return; }
+    const text =
+      '너는 중학교 과학 수업을 함께 준비하는 동료 교사다.\n' +
+      '아래는 우리 반이 실제로 모은 자료로 만든 대시보드의 구성과 수치 요약이다.\n' +
+      '이 자료에 있는 값만 근거로 삼아라 — 없는 값을 지어내지 마라.\n\n' +
+      '① 이 결과를 놓고 학생에게 던질 질문 3개\n' +
+      '② 다시 짚어야 할 개념과 그렇게 본 근거\n' +
+      '③ 다음 차시로 이어 볼 만한 탐구 한 가지\n\n' +
+      body + '\n';
+    if (navigator.clipboard && navigator.clipboard.writeText){
+      navigator.clipboard.writeText(text).then(
+        function(){ msgFn('복사했습니다 — AI 대화창에 붙여 넣으세요.'); },
+        function(){ prompt('아래 글을 복사해 AI 에게 붙여 넣으세요', text); });
+    } else {
+      prompt('아래 글을 복사해 AI 에게 붙여 넣으세요', text);
+    }
+  }
+  //  모둠 고르개 — 목록이 바뀔 때만 다시 그립니다(고르는 중에 닫히지 않게).
+  function fillKitGroups(selId, groups, cur){
+    const sel = $(selId);
+    if (!sel) return;
+    const gs = groups || [];
+    const sig = gs.map(function(g){ return String(g.id) + ':' + groupLabel(g); }).join('|');
+    if (sel.getAttribute('data-sig') !== sig){
+      sel.setAttribute('data-sig', sig);
+      sel.innerHTML = '<option value="">— 자료가 있는 첫 모둠 —</option>' + gs.map(function(g){
+        return '<option value="' + esc(g.id) + '">' + esc(groupLabel(g)) + '</option>';
+      }).join('');
+    }
+    if (sel.value !== (cur || '')) sel.value = cur || '';
+  }
+  function pickGroup(groups, gid){
+    const gs = groups || [];
+    for (let i = 0; i < gs.length; i++) if (String(gs[i].id) === String(gid)) return gs[i];
+    return null;
+  }
+
+  // ── 실시간 대시보드 쪽 ─────────────────────────────────────────
+  function dashKitCtx(){
+    return { board: board,
+             exp  : dashExp(),
+             group: pickGroup(board && board.groups, dkDashGid),
+             role : 'teacher', mode: 'live',
+             vendor: dashVendor(),
+             school: (lesson && lesson.school) || '' };
+  }
+  //  자료가 실제로 달라졌을 때만 미리보기를 다시 그립니다(폴링마다 다시 그리지 않습니다).
+  function dashKitDataSig(){
+    const b = board || {};
+    const d = (b.data || []).map(function(x){
+      return String(x.group_id) + ':' + ((x.rows || []).length) + ':' + ((x.predict || []).length) + ':' + (x.updated_at || '');
+    }).join(',');
+    const r = (b.reports || []).map(function(x){
+      return String(x.group_id) + ':' + (x.status || '') + ':' + (x.updated_at || '');
+    }).join(',');
+    return [d, r, (b.quiz || []).length, (b.feedback || []).length, (b.groups || []).length,
+            dkDashGid, (lesson && lesson.exp_id) || ''].join('|');
+  }
+  function syncDashKit(force){
+    const el = $('dashKit');
+    if (!el) return;
+    if (!dashKitOn()){ $('dashKitOff').classList.remove('hidden'); return; }
+    if (!board) return;
+    fillKitGroups('selDashKitGroup', board.groups, dkDashGid);
+
+    if (!dkDash){
+      dkDash = DashKit.mount(el, dashKitCtx(), {
+        layout: dkNorm(formDash()),
+        onSave: function(layout){ saveDashKit(layout); },
+        onAI  : function(){ dkAskAI(dkDash, dashKitMsg); }
+      });
+      if (!dkDash) return;
+      dkDashSig     = qSig(dkDash.get());
+      dkDashDataSig = dashKitDataSig();
+      return;
+    }
+    //  글자를 치는 중이면 손대지 않습니다(메모·큰 제목 칸이 다시 그려지면 안 됩니다).
+    if (!force && el.contains(document.activeElement)) return;
+
+    const dirty = (qSig(dkDash.get()) !== dkDashSig);      // 저장하지 않고 고쳐 둔 구성이 있는가
+    const saved = qSig(dkNorm(formDash()));
+    if (force || (!dirty && saved !== dkDashSig)){
+      dkDash.set(dkNorm(formDash()));
+      dkDashSig     = qSig(dkDash.get());
+      dkDashDataSig = dashKitDataSig();
+      return;
+    }
+    const ds = dashKitDataSig();
+    if (ds !== dkDashDataSig){
+      dkDashDataSig = ds;
+      dkDash.refresh(dashKitCtx());                        // 구성(L)은 그대로 두고 자료만 새로 그립니다
+    }
+  }
+  function saveDashKit(layout){
+    const L = dkNorm(layout);
+    dashKitMsg('저장하는 중…');
+    saveForm({ dash: L }).then(function(r){
+      if (r && r.ok){
+        dkDashSig = qSig(L);
+        dashKitMsg('대시보드 구성을 이 수업에 저장했습니다. 다음에 열 때 그대로 나옵니다.');
+      } else {
+        dashKitMsg('저장하지 못했습니다. 잠시 뒤 다시 눌러 주세요.');
+      }
+    }, function(){ dashKitMsg('저장하지 못했습니다.'); });
+  }
+  function resetDashKit(){
+    if (dkDash){ try { dkDash.destroy(); } catch (e){} }
+    dkDash = null; dkDashSig = ''; dkDashDataSig = ''; dkDashGid = '';
+    const sel = $('selDashKitGroup');
+    if (sel){ sel.removeAttribute('data-sig'); sel.innerHTML = ''; }
+    if ($('dashKitMsg')) $('dashKitMsg').textContent = '';
+  }
+
+  // ── 합치기 화면 쪽 ─────────────────────────────────────────────
+  //  올린 파일에 반 전체가 다 들어 있으므로 role/mode 는 실시간 대시보드와 같게 둡니다.
+  //  (dashkit 의 mode:'simple' 은 "이 기기에 우리 모둠 것만 있다" 는 뜻이라 여기에는 맞지 않습니다.)
+  function wkKitCtx(){
+    const L = wkBoard && wkBoard.lesson;
+    const e = (window.LAB && L && L.exp_id) ? LAB.byId(L.exp_id) : null;
+    return { board: wkBoard,
+             exp  : e,
+             group: pickGroup(wkBoard && wkBoard.groups, dkWkGid),
+             role : 'teacher', mode: 'live',
+             vendor: (L && L.form && L.form.vendor) || '',
+             school: (L && L.school) || '' };
+  }
+  function paintWkKit(){
+    const el = $('wkKit');
+    if (!el) return;
+    if (!dashKitOn()){ $('wkKitOff').classList.remove('hidden'); return; }
+    if (!wkBoard){
+      if (dkWk){ try { dkWk.destroy(); } catch (e){} }
+      dkWk = null; dkWkLayout = null; dkWkLoadedFor = ''; dkWkGid = '';
+      const s0 = $('selWkKitGroup');
+      if (s0){ s0.removeAttribute('data-sig'); s0.innerHTML = ''; }
+      return;
+    }
+    fillKitGroups('selWkKitGroup', wkBoard.groups, dkWkGid);
+
+    //  꾸러미가 대시보드 구성을 들고 왔으면 그것으로 시작합니다(기준표와 같은 방식).
+    //  선생님이 여기에서 고쳐 [이 구성 저장] 을 누른 뒤에는 그대로 둡니다.
+    const f   = wkBoard.lesson && wkBoard.lesson.form;
+    const pk  = dkNorm(f && f.dash);
+    const sig = qSig(pk) + '|' + ((wkBoard.lesson && wkBoard.lesson.title) || '');
+    if (dkWkLoadedFor !== sig){
+      dkWkLoadedFor = sig;
+      dkWkLayout = pk;
+      if (dkWk){ try { dkWk.destroy(); } catch (e){} dkWk = null; }
+    }
+    if (!dkWk){
+      dkWk = DashKit.mount(el, wkKitCtx(), {
+        layout: dkWkLayout,
+        onSave: function(layout){
+          dkWkLayout = dkNorm(layout);
+          wkKitMsg('이 화면에 구성을 담아 두었습니다 — 서버에는 아무것도 보내지 않습니다.');
+        },
+        onAI  : function(){ dkAskAI(dkWk, wkKitMsg); }
+      });
+      return;
+    }
+    if (el.contains(document.activeElement)) return;       // 글자를 치는 중이면 손대지 않습니다
+    dkWk.refresh(wkKitCtx());
+  }
+
+  //  모둠 고르개 — 두 화면이 같은 방식입니다.
+  if ($('selDashKitGroup')) $('selDashKitGroup').addEventListener('change', function(){
+    dkDashGid = this.value || '';
+    if (dkDash){ dkDashDataSig = dashKitDataSig(); dkDash.refresh(dashKitCtx()); }
+  });
+  if ($('selWkKitGroup')) $('selWkKitGroup').addEventListener('change', function(){
+    dkWkGid = this.value || '';
+    if (dkWk) dkWk.refresh(wkKitCtx());
+  });
 
 
   // ── 시작 ───────────────────────────────────────────────────────

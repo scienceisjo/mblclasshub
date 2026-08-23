@@ -290,14 +290,14 @@
         <figure class="ph"><img src="./assets/sensors.webp" alt="" width="800" height="600" loading="lazy" decoding="async" onerror="this.remove()" /></figure>
         <div class="fbody">
           <div class="fno">STEP 01</div><h3>센서로 재기</h3>
-          <p>온도·조도·압력·전류… 무엇을 어떤 센서로 재는지 알아보고 장치를 연결합니다.</p>
+          <p>온도·조도·압력·전류… 무엇을 어떤 센서로 재는지 알아보고 장치를 연결합니다. 센서는 <b>이 화면에 바로</b> 붙습니다(유선·무선).</p>
         </div>
       </article>
       <article class="fcard">
         <figure class="ph"><img src="./assets/activity.webp" alt="" width="800" height="600" loading="lazy" decoding="async" onerror="this.remove()" /></figure>
         <div class="fbody">
           <div class="fno">STEP 02</div><h3>데이터 모으기</h3>
-          <p>측정한 값을 표에 적거나 CSV 파일을 끌어다 놓으면 그래프가 바로 그려집니다.</p>
+          <p>연결한 센서에서 값이 <b>표로 바로 들어옵니다.</b> 손으로 적거나 CSV 를 끌어다 놓아도 되고, 어느 쪽이든 그래프가 곧바로 그려집니다.</p>
         </div>
       </article>
       <article class="fcard">
@@ -314,6 +314,83 @@
           <p>보고서를 쓰고 다른 모둠 그래프에 별점을 주며, 전자칠판으로 발표합니다.</p>
         </div>
       </article>
+    </div>
+  </div>
+</section>
+
+<!-- ── 센서를 화면에 바로 ──────────────────────────────── -->
+<section class="section" id="sensor">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="badge sky">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><path d="M7 3v5a5 5 0 0010 0V3"/><path d="M12 13v8"/><path d="M8 21h8"/></svg>
+        옮겨 적지 않습니다
+      </span>
+      <h2>센서를 이 화면에 바로 연결합니다</h2>
+      <p>업체 프로그램에서 값을 보고 표에 손으로 옮겨 적는 5~10분. 한 차시에서 가장 아까운 시간이었습니다.
+        이제 <b>[센서 연결]</b> 한 번이면 값이 <b>표에 바로 쌓이고</b>, 그래프·데이터 실험실·보고서·대시보드가 저절로 따라옵니다.</p>
+    </div>
+
+    <div class="ways3">
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">🔌</div>
+          <div class="fno">WAY 01</div><h3>유선 — 케이블로</h3>
+          <p>보드를 USB 로 꽂고 장치를 고르면 끝. <b>브라우저 표준 기능</b>만 써서 인터넷 없이도 됩니다.</p>
+        </div>
+      </article>
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">📡</div>
+          <div class="fno">WAY 02</div><h3>무선 — 블루투스로</h3>
+          <p>장치를 여럿 붙여 센서 종류와 수집 주기를 고르고 한꺼번에 시작합니다. <b>처음 한 번은 인터넷이 필요합니다.</b></p>
+        </div>
+      </article>
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">🧪</div>
+          <div class="fno">WAY 03</div><h3>시험용 모의 장치</h3>
+          <p>센서가 없어도 그럴듯한 값이 흐릅니다. 수업 전에 흐름을 익히거나 차례를 기다리는 모둠이 연습합니다.</p>
+        </div>
+      </article>
+    </div>
+
+    <div class="roles" style="margin-top:22px">
+      <div class="role m">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18l5-6 4 4 6-8"/><path d="M4 20h16"/></svg></span>
+        <p><b>흘려보내며 모으기</b>연속 측정은 값이 수백 줄이 됩니다. <b>[표에 넣기]</b> 를 누르면 실험이 정한 줄 수에 맞춰
+          <b>고르게 솎아</b> 넣습니다. 물론 <b>[전부 넣기]</b> 도 있습니다.</p>
+      </div>
+      <div class="role">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 5v14M5 12h14"/></svg></span>
+        <p><b>한 줄씩 손으로 담기</b>주사기를 한 칸 누르고 한 점, 자를 옮기고 한 점 — <b>자료집 실험의 절반쯤이 이런 수동 수집</b>입니다.
+          <b>[지금 값 한 줄 담기]</b> 로 그 순간의 값만 담습니다.</p>
+      </div>
+    </div>
+
+    <div class="notes" style="margin-top:20px">
+      <div class="note">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M8 21h8"/></svg></span>
+        <p><b>되는 기기와 안 되는 기기가 분명합니다</b><b>크롬북</b>과 <b>윈도우·맥의 Chrome·Edge</b> 는 유선·무선 둘 다 됩니다.
+          <b>안드로이드</b>는 무선만, <b>아이패드·아이폰·사파리·파이어폭스</b>는 둘 다 되지 않습니다.
+          못 하는 방식은 <b>흐리게 잠기고 까닭이 함께</b> 나오며, 어떤 기기에서든 <b>직접 입력과 CSV 는 늘 됩니다.</b></p>
+      </div>
+      <div class="note">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span>
+        <p><b>모의 값은 진짜 자료와 섞이지 않습니다</b>모의 장치를 쓰는 동안 <b>“시험용 모의 값입니다”</b> 가 계속 떠 있고,
+          그 값으로 표에 넣으면 <b>표에도 표시가 남습니다.</b></p>
+      </div>
+      <div class="note">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 11v5M12 8h.01"/></svg></span>
+        <p><b>아직 실기기로 확인하지 못했습니다</b>줄 형식은 보드에 올린 블록코딩에 따라 달라집니다.
+          컴퓨터에서 여러 형식으로 검증했지만, <b>첫 수업 전에 센서 하나로 한 번 시험해 보시기를 권합니다.</b>
+          값이 이상하면 그날은 <b>CSV 끌어다 놓기</b>로 진행하시면 수업은 그대로 됩니다.</p>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-solid" href="./manual.html#sensor">센서 연결 자세히 보기 →</a>
+      <a class="btn" href="./manual.html#dash">대시보드 만들기</a>
     </div>
   </div>
 </section>
@@ -648,7 +725,7 @@
 
 </main>
 
-<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-22</span></footer>
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-24</span></footer>
 
 <script>
 (function(){
