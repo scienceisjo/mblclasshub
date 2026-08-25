@@ -2844,7 +2844,15 @@
       if (String(c).trim() === '') return;
       t++; if (isNumCell(c)) n++;
     });
-    return t > 0 && n >= Math.max(1, Math.ceil(t * 0.6));
+    if (!t) return false;
+    if (n >= Math.max(1, Math.ceil(t * 0.6))) return true;
+    //  첫 칸이 이름이고 나머지가 모두 숫자인 줄도 자료 줄입니다.
+    //  「측정한 곳, 소리 세기」처럼 열이 둘뿐인 막대그래프 표는 숫자가 딱 절반이라
+    //  6할 규칙에 걸려 표가 통째로 버려졌습니다(색종이·용액·심박·소음 실험).
+    //  머리글은 두 번째 칸부터 글자라 여기서도 걸러지므로, 머리글이 자료로 새지 않습니다.
+    const cells = (r || []).map(c => String(c == null ? '' : c).trim()).filter(c => c !== '');
+    return cells.length >= 2 && !isNumCell(cells[0]) &&
+           cells.slice(1).every(function(c){ return isNumCell(c); });
   }
 
   function parseTable(text){
