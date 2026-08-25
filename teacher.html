@@ -437,6 +437,19 @@
       </div>
     </div>
 
+    <!-- 모둠별로 나눠 맡기 — 실험에 나눔 권장값(pool.assign)이 있을 때만 나타납니다. -->
+    <div class="box hidden" id="assignNew">
+      <h2>모둠별로 나눠 맡기</h2>
+      <p class="muted" id="assignNewSub"></p>
+      <label class="chkline" for="inAssignOn">
+        <input id="inAssignOn" type="checkbox" />
+        <span class="ct"><b>모둠마다 다른 값을 맡긴다</b>
+          <span>켜면 아래 값이 모둠별로 배정되고, 학생 화면의 실험 안내·데이터 입력에 자기 몫이 표시됩니다.
+            모두 같은 값을 재면 점이 한자리에 겹칠 뿐이지만, 나눠 맡으면 반 전체가 하나의 넓은 그래프로 이어집니다.</span></span>
+      </label>
+      <div id="assignNewList" style="margin-top:10px"></div>
+    </div>
+
     <div class="box">
       <h2>2단계 · 수업 정보</h2>
       <div class="two">
@@ -568,6 +581,13 @@
         </div>
       </div>
       <div id="dashMsg" class="ok" style="min-height:20px;margin-top:10px"></div>
+    </div>
+
+    <!-- 반 전체 한 그래프 — 자료를 올린 모둠이 2곳부터 나타납니다. -->
+    <div class="box hidden" id="boxMerged">
+      <h2>반 전체 한 그래프</h2>
+      <p class="muted" id="dMergedSub">모둠 자료를 전부 하나의 그림에 겹쳤습니다. 검은 선은 반 전체 추세선입니다.</p>
+      <div id="dMerged" style="margin-top:10px"></div>
     </div>
 
     <div class="box">
@@ -1856,6 +1876,45 @@
       ' — 이 업체의 절차입니다. 고쳐서 수업에 담을 수 있고, 수업 도중에도 다시 고칠 수 있습니다.';
   }
 
+  // ── 모둠별로 나눠 맡기 ─────────────────────────────────────────
+  //  실험의 pool.assign(권장 나눔값)을 모둠 수만큼 펼쳐 보여 주고, 고쳐서 form.assign 에 담습니다.
+  function assignSpecOf(e){
+    const a = e && e.pool && e.pool.assign;
+    return (a && Array.isArray(a.sets) && a.sets.length) ? a : null;
+  }
+  function paintAssignNew(){
+    const a = picked && assignSpecOf(picked);
+    $('assignNew').classList.toggle('hidden', !a);
+    if (!a){ $('assignNewList').innerHTML = ''; return; }
+    $('assignNewSub').textContent = (a.how ? a.how + ' ' : '') + '값은 모둠 칸에서 바로 고칠 수 있습니다.';
+    //  합치기 아주 좋은 실험(★)은 켜 둔 채로 시작합니다 — 끄는 것도 선생님 마음입니다.
+    $('inAssignOn').checked = poolFitOf(picked) >= 3;
+    fillAssignList();
+  }
+  function fillAssignList(){
+    const a = picked && assignSpecOf(picked);
+    const box = $('assignNewList');
+    if (!box) return;
+    if (!a){ box.innerHTML = ''; return; }
+    const n = Math.max(1, Math.min(20, Number($('inGroups').value) || 7));
+    let h = '<label class="fl">' + esc(a.label || '맡을 값') + (a.unit ? ' (' + esc(a.unit) + ')' : '') + '</label>';
+    for (let i = 0; i < n; i++){
+      h += '<div style="display:flex;gap:8px;align-items:center;margin-top:6px">' +
+           '<span class="pill" style="min-width:64px;text-align:center">' + (i + 1) + '모둠</span>' +
+           '<input type="text" data-asg="' + i + '" maxlength="40" style="flex:1" value="' + esc(a.sets[i % a.sets.length]) + '"/>' +
+           (a.unit ? '<span class="muted">' + esc(a.unit) + '</span>' : '') + '</div>';
+    }
+    box.innerHTML = h;
+  }
+  function assignFormValue(){
+    const a = picked && assignSpecOf(picked);
+    if (!a || $('assignNew').classList.contains('hidden') || !$('inAssignOn').checked) return null;
+    const vals = Array.prototype.map.call($('assignNewList').querySelectorAll('[data-asg]'),
+                                          function(el){ return el.value.trim(); });
+    if (!vals.some(function(v){ return !!v; })) return null;
+    return { label: a.label || '맡을 값', unit: a.unit || '', groups: vals };
+  }
+
   function fillUnits(){
     const g = $('fGrade').value;
     const units = (window.LAB ? LAB.unitList(g === '' ? null : Number(g)) : []);
@@ -1952,9 +2011,11 @@
     seNew.set(LAB.stepsFor(picked, newVendor()));
     peNew.set(LAB.prepFor(picked, newVendor()));
     paintProcNew();
+    paintAssignNew();
     renderExpList();
     $('inTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
   }
+  $('inGroups').addEventListener('input', fillAssignList);
   ['fGrade','fUnit','fSearch'].forEach(function(id){
     $(id).addEventListener('input', function(){ if (id === 'fGrade') fillUnits(); renderExpList(); });
   });
@@ -1964,6 +2025,7 @@
     packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = []; packDash = null;
     packNewMsg('');
     vendorMsg(''); paintVendorSW(); paintProcNew();
+    paintAssignNew();
     fillUnits(); renderExpList();
     $('inTeacher').value = Hub.loadLocal('teacher_name', '') || '';
     $('inClass').value = '';
@@ -2003,6 +2065,8 @@
                      { questions: qs, features: { lab: !!$('inFeatLab').checked,
                                                   ai : !!$('inFeatAi').checked } },
                      VENDORS.length ? { vendor: newVendor(), steps: seNew.get(), prep: peNew.get() } : {},
+                     //  모둠별로 나눠 맡기 — 켰을 때만 담습니다(스키마 변경 없음)
+                     (function(){ const g = assignFormValue(); return g ? { assign: g } : {}; })(),
                      //  꾸러미로 들어온 것들 — 스키마를 바꾸지 않으려고 form 안에 함께 담습니다
                      packQuiz.length ? { quiz: packQuiz } : {},
                      packRub.length ? { rubric: packRub } : {},
@@ -2152,6 +2216,18 @@
            (f ? '<span class="pill coral">별점 ' + (f.sum / f.n).toFixed(1) + ' (' + f.n + ')</span>' : '') +
            '</div>';
       if ((g.members || []).length) h += '<p class="muted" style="font-size:12.5px">' + (g.members || []).map(esc).join(', ') + '</p>';
+      //  모둠별로 나눠 맡긴 수업이면 이 모둠의 몫을 함께 보여 줍니다.
+      const asg = lesson.form && lesson.form.assign;
+      if (asg && Array.isArray(asg.groups) && asg.groups.length){
+        const ano = Number(g.group_no) || 0;
+        const amv = ano >= 1 ? String(asg.groups[(ano - 1) % asg.groups.length] || '').trim() : '';
+        if (amv){
+          const abase = String(asg.label || '값');
+          h += '<p class="muted" style="font-size:12.5px;margin:2px 0 6px">맡은 ' +
+               esc(abase.indexOf('맡을 ') === 0 ? abase.slice(3) : abase) + ' · <b>' +
+                      esc(amv) + (asg.unit ? ' ' + esc(asg.unit) : '') + '</b></p>';
+        }
+      }
       const pre = (d && Array.isArray(d.predict)) ? d.predict : [];
       if (pre.length) h += '<div class="st"><span class="pill sky">예상 그림 · ' + pre.length + '점</span></div>';
       h += '<div class="chartbox">' +
@@ -2174,6 +2250,29 @@
       return h;
     }).join('') || '<div class="empty">아직 들어온 모둠이 없습니다.</div>';
 
+    //  반 전체 한 그래프 — DashKit 의 classLines(모둠색 겹치기 + 전체 추세선)를 빌려 씁니다.
+    (function(){
+      const box = $('boxMerged');
+      if (!box) return;
+      const ok = nData >= 2 && window.DashKit;
+      box.classList.toggle('hidden', !ok);
+      if (!ok){ $('dMerged').innerHTML = ''; return; }
+      let inner = '';
+      try {
+        if (!document.getElementById('dkCssMini')){
+          const st = document.createElement('style');
+          st.id = 'dkCssMini'; st.textContent = DashKit.css('light');
+          document.head.appendChild(st);
+        }
+        inner = DashKit.renderBlock('classLines', { board: board, role: 'teacher', mode: 'live' },
+                                    { bare: true, cfg: { line: spec.chart !== 'scatter' } });
+      } catch (e) { inner = ''; }
+      $('dMerged').innerHTML = inner
+        ? '<div class="dk-root" style="padding:0;background:transparent">' + inner + '</div>' : '';
+      const asg2 = lesson.form && lesson.form.assign;
+      $('dMergedSub').textContent = '모둠 자료를 전부 하나의 그림에 겹쳤습니다. 검은 선은 반 전체 추세선입니다.' +
+        (asg2 ? ' 모둠마다 맡은 값이 달라, 넓은 구간이 하나로 이어집니다.' : '');
+    })();
     Array.prototype.forEach.call($('dGroups').querySelectorAll('[data-present]'), function(b){
       b.addEventListener('click', function(){ setDash({ presenterGroup: b.dataset.present, phase: 'present' }); });
     });

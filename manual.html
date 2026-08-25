@@ -219,7 +219,7 @@
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18l5-6 4 4 6-8"/><path d="M4 20h16"/></svg></span><b>바로 따라오는 그래프</b><p>모둠이 값을 저장하면 교사·발표 화면이 몇 초 안에 바뀝니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8"/></svg></span><b>발표 모드</b><p>전자칠판 전용 큰 글씨 화면. 발표 모둠을 눌러 전환합니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><b>끊겨도 계속</b><p>인터넷이 끊기면 임시 저장하고, 돌아오면 자동으로 보냅니다.</p></div>
-          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><b>실험 도감 48건</b><p>이지메이커·서울시교육청 사례와 2022 개정 교과서 수록 탐구를 성취기준·센서와 함께 담았습니다.</p></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><b>실험 도감 49건</b><p>이지메이커·서울시교육청 사례와 2022 개정 교과서 수록 탐구를 성취기준·센서와 함께 담았습니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span><b>무료·무서버</b><p>GitHub Pages + Supabase 무료 티어. 한 차시 전송량 10MB 안팎입니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><b>모둠 비밀번호 4자리</b><p>남의 모둠 자료를 지우거나 고칠 수 없습니다. 같은 기기는 한 번만 묻습니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>60일 뒤 정리</b><p>수업은 60일만 보관합니다. 필요하면 [30일 연장], 먼저 지우려면 [지금 삭제].</p></div>
@@ -358,7 +358,7 @@
             <tr><td><code>present.html</code></td><td><b>발표 모드.</b> 전자칠판 전용. 참여코드만 넣으면 교사 조작을 그대로 따라갑니다</td></tr>
             <tr><td><code>manual.html</code></td><td>지금 보고 계신 이 설명서</td></tr>
             <tr><td><code>hub.js</code></td><td>Supabase 데이터 레이어(전역 <code>Hub</code>). 변경 감지·오프라인 임시 저장 담당. <b>여기에는 주소·키를 적지 않습니다</b></td></tr>
-            <tr><td><code>lab-data.js</code></td><td>실험 도감(전역 <code>LAB</code>). 실험 48건 · 센서 24종 · 성취기준 87개 · 단원 23개. 실험마다 합치기 값어치(<code>pool</code>)와 분석 레시피(<code>analysis</code>) 포함</td></tr>
+            <tr><td><code>lab-data.js</code></td><td>실험 도감(전역 <code>LAB</code>). 실험 49건 · 센서 24종 · 성취기준 87개 · 단원 23개. 실험마다 합치기 값어치(<code>pool</code>)와 분석 레시피(<code>analysis</code>) 포함</td></tr>
             <tr><td><code>sensorkit.js</code></td><td>센서 연결 엔진(전역 <code>SensorKit</code>). 유선(웹 시리얼)·무선(웹 블루투스)·시험용 모의 장치와 줄 형식 자동 판별. 없으면 <b>[센서 연결]</b> 자리만 나오지 않습니다</td></tr>
             <tr><td><code>dashkit.js</code></td><td>대시보드 엔진(전역 <code>DashKit</code>). 블록을 골라 우리 반 자료로 한 장을 만들고 혼자 열리는 HTML 로 내보냅니다. 없으면 <b>대시보드 만들기</b> 자리만 나오지 않습니다</td></tr>
             <tr><td><code>schema.sql</code></td><td>Supabase 테이블·보안 정책·RPC 전체. 처음 한 번 실행합니다(여러 번 해도 안전)</td></tr>
@@ -494,7 +494,7 @@
         <p>고른 업체는 <b>이 브라우저에 기억되어</b> 다음에 수업을 만들 때도 그대로 쓰입니다. 학교 장비는 한 번 정하면 바뀌지 않으니, 처음 한 번만 고르면 됩니다. 아직 업체별 절차가 적히지 않은 실험에서는 <b>업체를 가리지 않는 기본 절차</b>가 대신 나오므로 비어 보이는 일은 없습니다.</p>
 
         <h3>센서가 없어 못 하는 실험이 있습니다</h3>
-        <p>업체마다 파는 센서가 다릅니다. 실험에 쓰이는 센서가 <b>하나라도 없으면</b> 그 실험은 그 업체 장비로 할 수 없습니다. 실험 48건 가운데 <b>이지메이커로 40건</b>, <b>사이언스큐브로 46건</b>, <b>둘 다 되는 것이 38건</b>입니다.</p>
+        <p>업체마다 파는 센서가 다릅니다. 실험에 쓰이는 센서가 <b>하나라도 없으면</b> 그 실험은 그 업체 장비로 할 수 없습니다. 실험 49건 가운데 <b>이지메이커로 41건</b>, <b>사이언스큐브로 47건</b>, <b>둘 다 되는 것이 39건</b>입니다.</p>
         <div class="tblwrap">
           <table class="files">
             <tr><th>없는 센서</th><th>어느 쪽에 없나</th><th>그래서 이 실험은</th></tr>
@@ -651,7 +651,7 @@
 
         <!-- 합치기 좋은 실험 -->
         <h3 id="pool" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">반 전체로 합치기 좋은 실험 — 실험을 고르기 전에</h3>
-        <p><b>왜 넣었나요.</b> 반 전체로 합치는 것이 <b>늘 이롭지는 않습니다.</b> 모둠마다 핫플레이트 출력과 시작 온도가 다른 실험은 곡선을 겹쳐 놓아도 그냥 흩어져 보일 뿐입니다. 반대로 <b>모둠마다 다른 조건을 골라 재는 실험</b>은 합치는 순간 점이 촘촘해지면서 규칙이 눈에 들어옵니다. 그래서 실험 도감(<code class="inline">lab-data.js</code>)의 실험 <b>48건 모두</b>에 <b>합치기 값어치</b>를 매겨 두었습니다.</p>
+        <p><b>왜 넣었나요.</b> 반 전체로 합치는 것이 <b>늘 이롭지는 않습니다.</b> 모둠마다 핫플레이트 출력과 시작 온도가 다른 실험은 곡선을 겹쳐 놓아도 그냥 흩어져 보일 뿐입니다. 반대로 <b>모둠마다 다른 조건을 골라 재는 실험</b>은 합치는 순간 점이 촘촘해지면서 규칙이 눈에 들어옵니다. 그래서 실험 도감(<code class="inline">lab-data.js</code>)의 실험 <b>49건 모두</b>에 <b>합치기 값어치</b>를 매겨 두었습니다.</p>
         <div class="tblwrap">
           <table class="files">
             <tr><th>값어치</th><th>화면에 보이는 것</th><th>뜻</th><th>건수</th></tr>
@@ -1159,7 +1159,7 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
       <!-- 출처와 저작권 -->
       <section id="sources">
         <h2><span class="no">J</span>출처와 저작권</h2>
-        <p class="lead">실험 도감 48건은 아래 자료들을 <b>참고해 다시 쓴 것</b>입니다. 어디서 왔는지 분명히 밝힙니다.</p>
+        <p class="lead">실험 도감 49건은 아래 자료들을 <b>참고해 다시 쓴 것</b>입니다. 어디서 왔는지 분명히 밝힙니다.</p>
 
         <h3>참고한 자료</h3>
         <div class="tblwrap">

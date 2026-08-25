@@ -1024,7 +1024,8 @@
         });
         if (!pts.length) return;
         allPts = allPts.concat(pts);
-        sets.push({ label: G.name, color: G.color, pts: pts, line: true, thick: G.mine, fit: null });
+        //  산점 실험(scatter)은 점을 선으로 이으면 오해를 줍니다 — cfg.line: false 로 끕니다.
+        sets.push({ label: G.name, color: G.color, pts: pts, line: !(cfg && cfg.line === false), thick: G.mine, fit: null });
       });
       if (!sets.length) return empty('이 계열에는 아직 값이 없습니다.');
       var allFit = stats(allPts, 0);

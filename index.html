@@ -775,6 +775,7 @@
         <h2>다른 모둠 결과 보기</h2>
         <p class="muted" id="shareSub">선생님이 ‘모둠 공유’ 단계를 열면 다른 모둠의 그래프가 나타납니다.</p>
       </div>
+      <div id="shareMerged"></div>
       <div id="shareCards" class="gcards"></div>
     </div>
 
@@ -2512,6 +2513,7 @@
       const fm = (lesson && lesson.form) || {};
       const oSteps = Array.isArray(fm.steps) ? fm.steps : [];
       const oPrep  = Array.isArray(fm.prep)  ? fm.prep  : [];
+      h += assignBanner();
       h += '<p class="lead" style="margin-top:12px">선생님이 안내하는 순서대로 실험하고, <b>데이터 입력</b> 탭에 측정값을 적으세요.</p></div>';
       if (oSteps.length || oPrep.length){
         h += '<div class="box"><h2>실험 순서</h2>';
@@ -2529,6 +2531,7 @@
          (e.sensors || []).map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) + ' ' + esc(s.n) + '개</span>').join('') +
          '</div>';
     h += vendorBadge(vk);
+    h += assignBanner();
     h += '<p class="lead" style="margin-top:6px">' + esc(e.why) + '</p></div>';
 
     const steps = stepsOf(e, vk), prep = prepOf(e, vk);
@@ -2589,6 +2592,48 @@
     if (LAB.vendorOk(e, 'sc')) h += '<span class="vtag sc">사이언스큐브</span>';
     return h;
   }
+  // ── 모둠별 나눠 맡기기 ────────────────────────────────────────
+  //  선생님이 수업을 열 때 켜면 lesson.form.assign 에 담겨 옵니다.
+  //  { label:'맡을 부피', unit:'mL', groups:['5 · 7', ...모둠 수만큼] }
+  function assignOf(){
+    const a = lesson && lesson.form && lesson.form.assign;
+    return (a && Array.isArray(a.groups) && a.groups.length) ? a : null;
+  }
+  function assignMine(){
+    const a = assignOf();
+    if (!a || !group) return '';
+    const no = Number(group.group_no) || 0;
+    const v = no >= 1 ? String(a.groups[(no - 1) % a.groups.length] || '').trim() : '';
+    return v ? (v + (a.unit ? ' ' + a.unit : '')) : '';
+  }
+  //  '맡을 부피' 같은 라벨을 '맡은/몫' 문장에 끼우면 말이 겹치므로 머리말을 뗍니다.
+  function assignBase(label){
+    const t = String(label || '값');
+    return t.indexOf('맡을 ') === 0 ? t.slice(3) : t;
+  }
+  function assignBanner(){
+    const a = assignOf(), mine = assignMine();
+    if (!a || !mine) return '';
+    return '<div class="note" style="margin-top:10px">📌 <b>우리 모둠이 맡은 ' + esc(assignBase(a.label)) + '</b> · ' +
+           '<b>' + esc(mine) + '</b><br><span class="muted">모둠마다 맡은 값이 다릅니다. 우리 몫만 재면, ' +
+           '반 전체를 합쳤을 때 넓은 구간이 하나의 그래프로 이어집니다.</span></div>';
+  }
+  //  반 전체 한 그래프 — DashKit 의 classLines 블록을 빌려 씁니다(모둠색 겹치기 + 전체 추세선).
+  function mergedClassChart(){
+    if (!window.DashKit || !board) return '';
+    try {
+      if (!document.getElementById('dkCssMini')){
+        const st = document.createElement('style');
+        st.id = 'dkCssMini'; st.textContent = DashKit.css('light');
+        document.head.appendChild(st);
+      }
+      const body = DashKit.renderBlock('classLines',
+        { board: board, exp: labExp(), group: group, role: 'student', mode: 'live' },
+        { bare: true, cfg: { line: !spec || spec.chart !== 'scatter' } });
+      return body ? '<div class="dk-root" style="padding:0;background:transparent">' + body + '</div>' : '';
+    } catch (e) { return ''; }
+  }
+
   //  절차·준비물 고르기 — 선생님이 직접 쓴 것 → 업체별 → 기본 순
   function stepsOf(e, vendor){
     if (lesson && lesson.form && Array.isArray(lesson.form.steps) && lesson.form.steps.length) return lesson.form.steps;
@@ -2605,7 +2650,7 @@
   //  실험 id 로 diagrams.js · graphs.js 의 그림을 찾습니다.
   //  짝이 없는 실험은 아무것도 그리지 않습니다(빈 자리를 남기지 않습니다).
   const FIG_DIAGRAM = {
-    'sm-08':'ohm',   'ez-22':'ohm',                    // 옴의 법칙 · 저항과 전류
+    'sm-08':'ohm',   'ez-22':'ohm',  'cb-11':'ohm',    // 옴의 법칙 · 저항과 전류 · 저항별 기울기
     'sm-05':'boyle', 'ez-25':'boyle', 'ez-26':'boyle', // 주사기 기체 압력
     'sm-06':'photo', 'sm-07':'photo',                  // 광합성
     'sm-09':'lux',                                     // 거리에 따른 빛의 세기
@@ -2689,7 +2734,8 @@
     tableRows = nRows;
     const ser = spec.series || [];
     $('dataTitle').textContent = '데이터 입력표';
-    $('dataSub').textContent = '가로줄 ' + nRows + '칸. 숫자만 적으면 아래 그래프가 바로 그려집니다.';
+    $('dataSub').textContent = '가로줄 ' + nRows + '칸. 숫자만 적으면 아래 그래프가 바로 그려집니다.' +
+      (assignMine() ? ' 우리 모둠 몫 · ' + assignMine() + '.' : '');
     let h = '<table><thead><tr><th></th><th>' +
             esc((spec.x && spec.x.label) || 'x') + (spec.x && spec.x.unit ? ' (' + esc(spec.x.unit) + ')' : '') + '</th>' +
             ser.map(s => '<th>' + esc(s.label || '') + (s.unit ? ' (' + esc(s.unit) + ')' : '') + '</th>').join('') +
@@ -4543,6 +4589,20 @@
       return h;
     }).join('');
 
+    //  반 전체 한 그래프 — 자료를 올린 모둠이 2곳부터 그려집니다.
+    (function(){
+      const box = $('shareMerged');
+      if (!box) return;
+      if ((board.data || []).length < 2){ box.innerHTML = ''; return; }
+      const inner = mergedClassChart();
+      const a = assignOf();
+      box.innerHTML = inner
+        ? '<div class="box"><h2>반 전체 한 그래프</h2>' +
+          '<p class="muted">모둠 자료를 전부 하나의 그림에 겹쳤습니다. 굵은 것이 우리 모둠이고, 검은 선은 반 전체 추세선입니다.' +
+          (a ? ' 모둠마다 맡은 값이 달라, 합치면 넓은 구간이 이어집니다.' : '') + '</p>' +
+          inner + '</div>'
+        : '';
+    })();
     $('shareCards').innerHTML = cards || '<div class="empty">아직 다른 모둠이 들어오지 않았습니다.</div>';
 
     Array.prototype.forEach.call($('shareCards').querySelectorAll('.stars'), function(box){
