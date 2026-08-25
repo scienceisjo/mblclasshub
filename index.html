@@ -312,6 +312,22 @@
   .fitrow{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px;margin-top:4px}
   .fitrow span b{font-family:var(--display);font-weight:400;font-size:17px}
   .r2jump{font-family:var(--display);font-size:18px;color:var(--mint-d)}
+  /*  R²·선형화 도움말 — 펼치기 전에는 한 줄만 차지합니다  */
+  .fithelp{margin-top:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--cream);overflow:hidden}
+  .fithelp>summary{cursor:pointer;padding:11px 14px;font-weight:800;font-size:14.5px;color:var(--ink);list-style:none}
+  .fithelp>summary::-webkit-details-marker{display:none}
+  .fithelp>summary::before{content:'？ ';color:var(--mint-d);font-weight:800}
+  .fithelp[open]>summary{border-bottom:1px solid var(--line)}
+  .fithelp>summary:hover{background:var(--line)}
+  .fithelp>summary:focus-visible{outline:2px solid var(--mint);outline-offset:-2px}
+  .fithelp-in{padding:4px 14px 14px}
+  .fithelp-in h4{margin:14px 0 6px;font-size:14.5px;font-weight:800;color:var(--ink)}
+  .fithelp-in p{font-size:14px;line-height:1.75;margin:0}
+  .fithelp-in .dtul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.75}
+  .fithelp-in .dtul li{margin-bottom:6px}
+  .linfig{margin:12px 0 4px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow-x:auto}
+  .linfig svg{min-width:520px}
+  .linfig figcaption{margin-top:6px;font-size:12.5px;text-align:center}
   .qcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:10px}
   .qcard{border:1.5px solid var(--line);border-radius:14px;background:var(--cream);padding:12px 14px}
   .qcard b{display:block;font-size:14.5px;margin-bottom:6px}
@@ -643,6 +659,7 @@
             <button id="btnImpFile" class="btn btn-sm" type="button">파일 불러오기</button>
             <button id="btnImpPasteOpen" class="btn btn-sm" type="button">붙여넣기로 넣기</button>
             <button id="btnImpSheetOpen" class="btn btn-sm" type="button">구글 시트에서 불러오기</button>
+            <button id="btnImpDemo" class="btn btn-sm hidden" type="button">예시 데이터 넣기</button>
           </div>
           <div id="impSheetBox" class="hidden" style="margin-top:10px">
             <label class="fl" for="impSheetURL">구글 시트 주소를 붙여넣으세요</label>
@@ -659,7 +676,6 @@
             <textarea id="impPaste" placeholder="시간,물,식용유&#10;0,20.1,20.3&#10;1,22.4,25.8"></textarea>
             <div class="improw">
               <button id="btnImpRead" class="btn btn-sm btn-solid" type="button">붙여넣은 값 읽기</button>
-              <button id="btnImpDemo" class="btn btn-sm hidden" type="button">예시 데이터 넣기</button>
             </div>
           </div>
 
@@ -2666,6 +2682,9 @@
   }
 
   function renderDataTable(nWant){
+    //  예시 데이터 단추는 표가 그려질 때마다 다시 판단합니다.
+    //  붙여넣기 상자를 펼쳐야만 보이던 탓에, 있는데도 없는 줄 알기 쉬웠습니다.
+    showDemoBtn('btnImpDemo', (lesson && lesson.exp_id) || (pack && pack.expId) || '');
     const nRows = Math.max(1, Math.min(MAX_ROWS, Number(nWant) || specRows()));
     tableRows = nRows;
     const ser = spec.series || [];
@@ -3353,8 +3372,9 @@
       if (!$('impPasteBox').classList.contains('hidden')) $('impPaste').focus();
     });
     $('btnImpDemo').addEventListener('click', function(){
-      const t = demoOf((lesson && lesson.exp_id) || '');
+      const t = demoOf((lesson && lesson.exp_id) || (pack && pack.expId) || '');
       if (!t){ impSay('이 실험은 아직 예시 데이터가 없습니다.', 'bad'); return; }
+      $('impPasteBox').classList.remove('hidden');
       $('impPaste').value = t;
       startImport(t, '예시 데이터');
       impSay('예시 데이터를 넣었습니다. 실제로 잰 값이 아니라 보여 드리기 위한 값입니다.', 'ok');
@@ -5001,6 +5021,39 @@
     return out;
   }
 
+  //  ── R² · 선형화 도움말 ────────────────────────────────────────
+  //  기울기·절편·R² 를 처음 보는 분께 그 자리에서 설명합니다.
+  //  펼치기 전에는 한 줄만 차지하도록 details 로 접어 둡니다.
+  function fitHelpHTML(){
+    const fig = (window.GRAPHS && GRAPHS.linearize)
+      ? '<figure class="linfig">' + GRAPHS.linearize +
+        '<figcaption class="muted">같은 자료입니다. 가로축만 바꿔 그린 것입니다.</figcaption></figure>' : '';
+    return '<details class="fithelp"><summary>R² 와 「직선으로 재기」 가 무엇인가요</summary>' +
+      '<div class="fithelp-in">' +
+        '<h4>R² — 점이 직선을 얼마나 잘 따라갔나</h4>' +
+        '<p>0 부터 1 까지의 숫자입니다. <b>1 에 가까울수록</b> 점들이 직선 위에 잘 얹혀 있습니다. ' +
+        '0.85 라면 “흩어짐의 85% 는 이 직선으로 설명되고, 나머지 15% 는 다른 까닭(측정 오차·새는 곳·체온 같은 것)” 이라는 뜻입니다.</p>' +
+        '<div class="note">⚠️ R² 는 <b>방향을 말해 주지 않습니다.</b> 기울기가 오르든 내리든 똑같이 높게 나옵니다. ' +
+        '오르내림은 <b>기울기의 부호</b>로 가려야 합니다. 그리고 점이 적으면 R² 는 쉽게 높아집니다.</div>' +
+        '<h4>왜 가로축을 1/부피 처럼 바꾸나요</h4>' +
+        '<p>보일의 법칙은 <b>P × V = 일정</b>, 곧 <b>P = 상수 × (1/V)</b> 입니다. ' +
+        '부피를 그대로 가로축에 두면 휘어진 곡선이 나와서, 정말 반비례인지 그냥 줄어드는 것인지 눈으로는 가릴 수 없습니다. ' +
+        '가로축을 <b>1/부피</b> 로 바꾸면 원점을 지나는 <b>직선</b>이 되고, 직선은 자로 재듯 확인할 수 있습니다. ' +
+        '이렇게 곡선을 펴서 보는 것을 <b>선형화</b> 라고 합니다.</p>' +
+        fig +
+        '<h4>세 숫자를 이렇게 읽습니다</h4>' +
+        '<ul class="dtul">' +
+          '<li><b>기울기</b> — 여기서는 P × V 값 그 자체입니다. 표에서 각 줄의 압력 × 부피를 직접 곱해 보면 비슷한 수가 나옵니다.</li>' +
+          '<li><b>절편</b> — 거의 0 이면 <b>원점을 지난다</b>는 뜻이고, 그것이 진짜 반비례라는 증거입니다. ' +
+          '절편이 눈에 띄게 크면 튜브에 남은 <b>죽은 부피</b>가 있거나 어디선가 <b>새고 있다</b>는 신호입니다. ' +
+          '“왜 0 이 아닐까?” 가 좋은 발문이 됩니다.</li>' +
+          '<li><b>R²</b> — 점들이 그 직선 위에 얼마나 잘 얹혀 있는지.</li>' +
+        '</ul>' +
+        '<div class="note plus">➕ 같은 수법을 별과 우주 단원에서 또 씁니다. 거리와 빛의 세기는 가로축을 <b>1/거리²</b> 로 바꾸면 직선이 되고, ' +
+        '그때 <b>기울기는 광원의 밝기</b>, <b>절편은 암막을 쳐도 남은 배경광</b> 이 됩니다.</div>' +
+      '</div></details>';
+  }
+
   //  기울기·절편·R² 한 덩이
   function fitLineHTML(fit, yUnit, xUnit, head){
     if (!fit || !fit.ok){
@@ -5078,6 +5131,7 @@
       h += '</div>';
     });
     h += '<p class="muted">R² 는 <b>바꾼 뒤의 좌표</b>에서 잰 값입니다. 원래 값의 R² 와는 다른 수입니다.</p>';
+    h += fitHelpHTML();
     h += '</div>';
     return h;
   }
@@ -5222,7 +5276,7 @@
     if (skipped) h += '<div class="note warn" style="margin-top:10px">값을 바꾸면서 반 전체에서 <b>' + skipped +
                       '개</b>를 뺐습니다 — ' + esc(TF_WHY[LABS.xt] || TF_WHY[LABS.yt] || '계산할 수 없는 값이라서') + '입니다.</div>';
     h += '<p class="muted" style="margin-top:10px">R² 는 <b>바꾼 뒤의 좌표</b>에서 잰 값입니다. ' +
-         '모둠마다 측정 조건이 달랐다면 기울기가 다른 것도 자연스럽습니다.</p></div>';
+         '모둠마다 측정 조건이 달랐다면 기울기가 다른 것도 자연스럽습니다.</p>' + fitHelpHTML() + '</div>';
     return h;
   }
 
@@ -6448,6 +6502,8 @@
     h += '<div class="box"><h2>차례대로 해 본 것</h2>';
     if (!res.blocks.length) h += '<div class="empty">이 실험에는 자동 분석 순서가 없습니다.</div>';
     res.blocks.forEach(function(b, i){ h += anBlockHTML(b, i); });
+    //  기울기·절편·R² 가 나온 실험에서만 도움말을 답니다.
+    if (res.blocks.some(function(b){ return b && b.kind === 'fit'; })) h += fitHelpHTML();
     h += '</div>';
 
     if (res.verdict){
