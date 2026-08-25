@@ -182,8 +182,11 @@
       <a href="#predict" style="padding-left:28px;font-size:13px">└ 예상 그래프</a>
       <a href="#sensor" style="padding-left:28px;font-size:13px">└ 센서 직접 연결</a>
       <a href="#csv" style="padding-left:28px;font-size:13px">└ CSV 불러오기</a>
+      <a href="#sheet" style="padding-left:28px;font-size:13px">└ 구글 시트로 걷기</a>
+      <a href="#paste" style="padding-left:28px;font-size:13px">└ 붙여넣기 분석 모드</a>
       <a href="#lab" style="padding-left:28px;font-size:13px">└ 데이터 실험실</a>
       <a href="#classall" style="padding-left:28px;font-size:13px">└ 반 전체로 보기</a>
+      <a href="#pool" style="padding-left:28px;font-size:13px">└ 합치기 좋은 실험</a>
       <a href="#dash" style="padding-left:28px;font-size:13px">└ 대시보드 만들기</a>
       <a href="#ai" style="padding-left:28px;font-size:13px">└ AI와 협업 탐구</a>
       <a href="#quiz" style="padding-left:28px;font-size:13px">└ 개념 확인 3문항</a>
@@ -216,7 +219,7 @@
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 18l5-6 4 4 6-8"/><path d="M4 20h16"/></svg></span><b>바로 따라오는 그래프</b><p>모둠이 값을 저장하면 교사·발표 화면이 몇 초 안에 바뀝니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="3" y="4" width="18" height="14" rx="2"/><path d="M8 20h8"/></svg></span><b>발표 모드</b><p>전자칠판 전용 큰 글씨 화면. 발표 모둠을 눌러 전환합니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><b>끊겨도 계속</b><p>인터넷이 끊기면 임시 저장하고, 돌아오면 자동으로 보냅니다.</p></div>
-          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><b>실험 도감 38건</b><p>이지메이커·서울시교육청 사례를 성취기준·센서와 함께 담았습니다.</p></div>
+          <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M4 7h16M4 12h16M4 17h10"/></svg></span><b>실험 도감 48건</b><p>이지메이커·서울시교육청 사례와 2022 개정 교과서 수록 탐구를 성취기준·센서와 함께 담았습니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M5 12h14M12 5l7 7-7 7"/></svg></span><b>무료·무서버</b><p>GitHub Pages + Supabase 무료 티어. 한 차시 전송량 10MB 안팎입니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><rect x="5" y="11" width="14" height="9" rx="2"/><path d="M8 11V8a4 4 0 018 0v3"/></svg></span><b>모둠 비밀번호 4자리</b><p>남의 모둠 자료를 지우거나 고칠 수 없습니다. 같은 기기는 한 번만 묻습니다.</p></div>
           <div class="item"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg></span><b>60일 뒤 정리</b><p>수업은 60일만 보관합니다. 필요하면 [30일 연장], 먼저 지우려면 [지금 삭제].</p></div>
@@ -355,7 +358,7 @@
             <tr><td><code>present.html</code></td><td><b>발표 모드.</b> 전자칠판 전용. 참여코드만 넣으면 교사 조작을 그대로 따라갑니다</td></tr>
             <tr><td><code>manual.html</code></td><td>지금 보고 계신 이 설명서</td></tr>
             <tr><td><code>hub.js</code></td><td>Supabase 데이터 레이어(전역 <code>Hub</code>). 변경 감지·오프라인 임시 저장 담당. <b>여기에는 주소·키를 적지 않습니다</b></td></tr>
-            <tr><td><code>lab-data.js</code></td><td>실험 도감(전역 <code>LAB</code>). 실험 38건 · 센서 24종 · 성취기준 87개 · 단원 23개</td></tr>
+            <tr><td><code>lab-data.js</code></td><td>실험 도감(전역 <code>LAB</code>). 실험 48건 · 센서 24종 · 성취기준 87개 · 단원 23개. 실험마다 합치기 값어치(<code>pool</code>)와 분석 레시피(<code>analysis</code>) 포함</td></tr>
             <tr><td><code>sensorkit.js</code></td><td>센서 연결 엔진(전역 <code>SensorKit</code>). 유선(웹 시리얼)·무선(웹 블루투스)·시험용 모의 장치와 줄 형식 자동 판별. 없으면 <b>[센서 연결]</b> 자리만 나오지 않습니다</td></tr>
             <tr><td><code>dashkit.js</code></td><td>대시보드 엔진(전역 <code>DashKit</code>). 블록을 골라 우리 반 자료로 한 장을 만들고 혼자 열리는 HTML 로 내보냅니다. 없으면 <b>대시보드 만들기</b> 자리만 나오지 않습니다</td></tr>
             <tr><td><code>schema.sql</code></td><td>Supabase 테이블·보안 정책·RPC 전체. 처음 한 번 실행합니다(여러 번 해도 안전)</td></tr>
@@ -491,7 +494,7 @@
         <p>고른 업체는 <b>이 브라우저에 기억되어</b> 다음에 수업을 만들 때도 그대로 쓰입니다. 학교 장비는 한 번 정하면 바뀌지 않으니, 처음 한 번만 고르면 됩니다. 아직 업체별 절차가 적히지 않은 실험에서는 <b>업체를 가리지 않는 기본 절차</b>가 대신 나오므로 비어 보이는 일은 없습니다.</p>
 
         <h3>센서가 없어 못 하는 실험이 있습니다</h3>
-        <p>업체마다 파는 센서가 다릅니다. 실험에 쓰이는 센서가 <b>하나라도 없으면</b> 그 실험은 그 업체 장비로 할 수 없습니다. 실험 38건 가운데 <b>이지메이커로 34건</b>, <b>사이언스큐브로 36건</b>, <b>둘 다 되는 것이 32건</b>입니다.</p>
+        <p>업체마다 파는 센서가 다릅니다. 실험에 쓰이는 센서가 <b>하나라도 없으면</b> 그 실험은 그 업체 장비로 할 수 없습니다. 실험 48건 가운데 <b>이지메이커로 40건</b>, <b>사이언스큐브로 46건</b>, <b>둘 다 되는 것이 38건</b>입니다.</p>
         <div class="tblwrap">
           <table class="files">
             <tr><th>없는 센서</th><th>어느 쪽에 없나</th><th>그래서 이 실험은</th></tr>
@@ -569,6 +572,54 @@
         <p>열 이름을 실험의 가로축·계열과 <b>이름이 비슷한 것끼리 자동으로 짝지어</b> 주고, 확실하지 않으면 <b>드롭다운으로 직접 고르게</b> 합니다. 앞 5줄 <b>미리보기</b>를 확인한 뒤 <b>[표에 넣기]</b> 를 누릅니다. 표에 이미 값이 있으면 덮어쓸지 먼저 물어봅니다.</p>
         <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>행 솎아내기를 꼭 확인하세요.</b> 자동 수집(예: 1초에 5번)은 <b>수백~수천 줄</b>이 나옵니다. 그대로 넣으면 표도 그래프도 못 볼 지경이 됩니다. 그래서 실험이 정한 줄 수(<code class="inline">dataSpec.rows</code>)에 맞춰 <b>고르게 솎아 넣는 것이 기본</b>이고, 원본이 몇 줄이었고 몇 줄로 줄었는지 화면에 알려 줍니다. 필요하면 <b>[전부 넣기]</b> 도 고를 수 있습니다.</div></div>
 
+        <!-- 구글 시트로 걷기 -->
+        <h3 id="sheet" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">구글 시트로 걷어 한 번에 분석하기</h3>
+        <p><b>왜 넣었나요.</b> 많은 선생님이 이미 <b>구글 시트 한 장</b>을 반에 열어 두고 모둠마다 자기 칸에 값을 적게 합니다. 이 방식은 잘 굴러가는데, 걷고 난 뒤가 문제였습니다 — 반 전체 산점도를 보려면 시트를 다시 손으로 갈라 옮겨야 했습니다. 그래서 <b>이미 걷은 시트를 그대로 읽어 모둠별로 갈라 주는 자리</b>를 교사 화면에 두었습니다. 학생에게 새로 시킬 일이 <b>하나도 없습니다.</b></p>
+        <p><b>어디에 있나요.</b> 교사 화면 <b>[제출된 보고서 합치기]</b> 안, 파일 끌어다 놓는 칸 바로 아래 <b>[구글 시트에서 불러오기]</b> 입니다. 작업 파일과 <b>같은 화면·같은 분석</b>을 받습니다 — 읽고 나면 반 전체 그래프·모둠별 기울기·제출 현황·평가 기준표·채점·생기부 내보내기가 그대로 이어집니다.</p>
+
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>막히는 곳은 거의 언제나 여기 하나입니다 — 시트를 공개 공유로 바꾸어야 읽힙니다.</b> 시트에서 <b>[공유] → [일반 액세스]</b> 를 <b>「링크가 있는 모든 사용자」·「뷰어」</b> 로 바꿔 주세요. 비공개 시트를 부르면 구글이 값 대신 <b>로그인 화면</b>을 돌려주기 때문에, 화면에는 “시트를 읽지 못했습니다” 라고만 나옵니다. 학교 계정 정책 때문에 공개로 바꿀 수 없다면 아래 <a href="#paste" style="color:var(--mint-d);font-weight:700">붙여넣기 분석 모드</a> 를 쓰시면 됩니다. <b>수업이 끝나면 다시 비공개로 돌려 두세요.</b></div></div>
+
+        <p><b>주소는 그대로 붙여넣으면 됩니다.</b> 시트를 열어 둔 채 주소창의 주소(<code class="inline">…/spreadsheets/d/…/edit?gid=0#gid=0</code>)를 통째로 붙여넣으세요. 화면이 그 안에서 <b>시트 번호와 탭 번호(<code class="inline">gid</code>)</b> 를 뽑아 값만 내려받는 주소로 바꿔 부릅니다. 탭이 여러 개인 문서라면 <b>그 탭을 열어 둔 채로</b> 주소를 복사해야 그 탭이 읽힙니다.</p>
+
+        <p><b>선생님이 실제로 쓰시는 모양 그대로 읽습니다.</b> 아래는 보일 법칙 수합 시트입니다 — <b>머리글이 두 줄</b>이고, 첫 열의 모둠 이름은 <b>모둠의 첫 줄에만</b> 적혀 있으며, 마지막 열은 시트 수식이 계산한 파생값입니다. 이 세 가지가 손으로 가르기 어렵게 만드는 것들인데, 그대로 처리합니다.</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>　</th><th>값을 작성하세요</th><th>값을 작성하세요</th><th>절대 건들지 말 것!</th></tr>
+            <tr><td>　</td><td><b>부피(mL)</b></td><td><b>압력(기압)</b></td><td><b>부피 X 압력</b></td></tr>
+            <tr><td><b>예시</b></td><td>60</td><td>0.5</td><td>30</td></tr>
+            <tr><td>　</td><td>42.5</td><td>0.7</td><td>29.75</td></tr>
+            <tr><td><b>1모둠</b></td><td>60</td><td>0.5</td><td>30</td></tr>
+            <tr><td>　</td><td>53</td><td>0.58</td><td>30.74</td></tr>
+            <tr><td>　</td><td>…모둠마다 7줄, 이름은 첫 줄에만</td><td>…</td><td>…</td></tr>
+            <tr><td><b>2모둠</b></td><td>60</td><td>0.51</td><td>30.6</td></tr>
+          </table>
+        </div>
+        <ul class="list">
+          <li><b>머리글이 몇 줄이든 괜찮습니다</b><span> — 「숫자가 처음 나오는 줄」을 값의 시작으로 보고, 그 위에서 <b>이름이 가장 많이 적힌 줄</b>을 열 이름으로 씁니다. 위 시트에서는 둘째 줄(<b>부피(mL)·압력(기압)</b>)이 뽑힙니다.</span></li>
+          <li><b>이름이 띄엄띄엄이어도 갈라집니다</b><span> — 첫 열에 <b>이름이 적힌 줄에서 새 모둠이 시작</b>되고, 아래 빈 줄들은 그 모둠에 딸립니다. 12모둠 + 예시 = 107줄짜리 시트가 <b>모둠 12개</b>로 정확히 갈립니다.</span></li>
+          <li><b>단위는 괄호에서 떼어 냅니다</b><span> — <code class="inline">부피(mL)</code> 는 이름 <b>부피</b> · 단위 <b>mL</b> 로 읽혀 그래프 축과 기울기 단위에 그대로 붙습니다.</span></li>
+          <li><b>예시 줄은 기본으로 뺍니다</b><span> — 이름에 <b>예시·보기·샘플</b> 이 들어간 모둠은 실제 측정값이 아니라고 보고 뺍니다. 진짜 자료라면 <b>[예시 줄도 한 모둠으로 넣기]</b> 를 켜세요.</span></li>
+          <li><b>파생열은 계열로 그대로 살립니다</b><span> — <b>부피 X 압력</b> 같은 시트 수식 열도 그리는 항목으로 나옵니다. <b>[볼 항목]</b> 에서 골라 “P×V 가 정말 일정한가” 를 반 전체로 확인할 수 있습니다.</span></li>
+        </ul>
+
+        <p><b>세 가지만 확인하면 끝입니다.</b> 읽고 나면 <b>모둠 이름이 적힌 열 · 가로축으로 쓸 열 · 이 자료의 실험</b> 세 칸이 나옵니다. 앞의 둘은 자동으로 짐작해 두므로 대개 그대로 두면 됩니다. <b>실험</b>은 골라도 되고 안 골라도 되는데, 고르면 그 실험의 <b>보고서 질문</b>과 <b>합치기 안내</b>가 함께 따라옵니다(<a href="#pool" style="color:var(--mint-d);font-weight:700">아래 합치기 좋은 실험</a>). 아래 미리보기에서 모둠이 제대로 갈렸는지 눈으로 확인한 뒤 <b>[모둠으로 갈라 합치기]</b> 를 누릅니다.</p>
+
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/></svg></span><div><b>시트를 고치지 않습니다. 서버로도 보내지 않습니다.</b> 읽기만 하고, 읽은 값은 이 브라우저 안에서만 삽니다. 시트에 쓰거나 지우는 일은 <b>없습니다</b>. 새로 고치면 사라지므로, 남길 것이 있으면 <b>[생기부 자료 내보내기]</b> 나 <b>CSV</b> 로 받아 두세요. 같은 시트를 다시 불러도 <b>겹쳐 쌓이지 않고</b> 앞서 읽은 것을 밀어내고 새로 들어갑니다.</div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>시트에서 온 모둠은 「평가 담아 파일 다시 내려받기」가 안 됩니다.</b> 되돌려 줄 <b>학생의 원본 작업 파일이 없기 때문</b>입니다. 그래서 그 단추를 아예 감춰 둡니다. 채점과 총점, <b>생기부 자료 내보내기</b>는 그대로 됩니다. 학생에게 평가를 파일로 돌려주실 생각이라면 시트가 아니라 <b>작업 파일</b>로 걷으세요(<a href="#packfile" style="color:var(--mint-d);font-weight:700">A. 오가는 파일 두 가지</a>).</div></div>
+        <p><b>시트에는 이름을 적지 마세요.</b> 학생 이름 대신 <b>모둠 이름과 번호</b>만 적게 하는 것이 이 허브 전체의 규칙입니다(<a href="#privacy" style="color:var(--mint-d);font-weight:700">E. 개인정보와 안전</a>). 시트를 공개 공유로 열어 두는 동안에는 링크를 아는 누구나 볼 수 있으므로 특히 그렇습니다.</p>
+
+        <!-- 붙여넣기 분석 모드 -->
+        <h3 id="paste" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">붙여넣기 분석 모드 — 공개 공유가 막힌 학교에서</h3>
+        <p><b>왜 넣었나요.</b> 교육청·학교 계정에서 <b>외부 공유를 정책으로 막아 둔</b> 곳이 적지 않습니다. 그런 학교에서는 시트를 아무리 잘 걷어도 주소로는 읽을 수 없습니다. 그래서 <b>주소를 쓰지 않는 길</b>을 나란히 두었습니다.</p>
+        <p><b>쓰는 법.</b> <b>[구글 시트에서 불러오기]</b> 옆 <b>[붙여넣기로 하기]</b> 를 누르면 붙여넣는 칸이 열립니다. 시트에서 표를 통째로 골라 복사(<code class="inline">Ctrl+A</code> → <code class="inline">Ctrl+C</code>)한 뒤 붙여넣고 <b>[붙여넣은 표 읽기]</b> 를 누르면 됩니다. 그 다음은 주소로 읽었을 때와 <b>완전히 같습니다</b> — 열을 확인하고 <b>[모둠으로 갈라 합치기]</b>.</p>
+        <ul class="list">
+          <li><b>탭도 쉼표도 됩니다</b><span> — 시트에서 복사하면 탭으로 나뉘고, 내려받은 CSV 는 쉼표로 나뉩니다. 어느 쪽이 더 많은지 세어 스스로 정합니다.</span></li>
+          <li><b>따옴표를 압니다</b><span> — <code class="inline">"1,200"</code> 처럼 값 안에 쉼표가 든 칸도 한 칸으로 읽습니다.</span></li>
+          <li><b>엑셀·한셀에서 복사해도 됩니다</b><span> — 구글 시트가 아니어도 표 모양이면 그대로 읽힙니다. 시트를 아예 안 쓰고 <b>엑셀로 걷는 학교</b>도 이 길로 들어옵니다.</span></li>
+          <li><b>주소로 읽다 막히면 저절로 열립니다</b><span> — 비공개 시트라 실패하면 붙여넣는 칸이 스스로 펼쳐지고 무엇을 하면 되는지 한 줄로 알려 줍니다.</span></li>
+        </ul>
+        <p>붙여넣기 쪽은 <b>인터넷으로 아무 데도 나가지 않습니다.</b> 글자를 그 자리에서 읽어 그래프로 만들 뿐입니다. 망 정책이 까다로운 학교에서 <b>가장 안전한 길</b>이기도 합니다.</p>
+
         <!-- 데이터 실험실 -->
         <h3 id="lab" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">데이터 실험실 — 축 바꾸기 · 변환 · 파생열 · 구간</h3>
         <p><b>왜 넣었나요.</b> 센서로 모은 값은 대개 <b>시간에 대한 곡선</b>으로 그려집니다. 그런데 과학에서 뜻을 읽어 내는 순간은 대부분 <b>축을 바꾸거나 값을 변환해 곡선이 직선이 될 때</b>입니다. 서울시교육청 자료집의 수업 사례 가운데 여럿이 바로 이 분석을 요구하는데, 그림만 보고서는 할 수 없는 일이었습니다. 그래서 학생 화면에 <b>데이터 실험실</b> 탭을 두었습니다. <b>모둠에 들어와야</b> 열립니다.</p>
@@ -597,6 +648,39 @@
         <p><b>전자칠판.</b> 발표 화면에도 <b>[👥 반 전체 속 우리 모둠]</b> 한 장이 붙습니다. 반 전체 점을 찍고 <b>발표 모둠만 크게</b> 강조해, 반 전체 추세선과 그 모둠 추세선을 나란히 보여 줍니다. <b>자료를 낸 모둠이 두 모둠 미만이면 이 장은 아예 만들어지지 않아</b>, 넘기는 장 수가 흔들리지 않습니다(예상 vs 실제와 같은 방식입니다).</p>
         <p><b>교사 화면 — 여러 반 묶어보기.</b> 대시보드에서 <b>이 브라우저에 보관된 관리코드</b> 가운데 <b>같은 실험</b>인 수업들을 골라 한 그래프에 겹쳐 볼 수 있습니다. 반별 색으로 점을 찍고, 반별 기울기·R² 표와 <b>전체 통합 추세선</b>, “표본이 <b>n개에서 m개로</b> 늘었습니다” 안내가 나옵니다. 3반·5반·7반을 같은 실험으로 했다면 <b>반 사이의 차이</b>가 그대로 드러납니다. <b>수업이 하나뿐이면 이 영역은 나오지 않습니다.</b></p>
         <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>기울기가 다르다고 틀린 것이 아닙니다.</b> 모둠·반마다 광원 밝기, 주변 조도, 센서를 대는 위치가 달랐다면 기울기와 절편이 다른 것이 자연스럽습니다. <b>왜 달랐을까</b>를 묻는 것이 이 화면의 목적입니다. 관리코드를 지운 브라우저에서는 그 수업이 목록에 없으니, 학기 중에는 관리코드를 지우지 마세요.</div></div>
+
+        <!-- 합치기 좋은 실험 -->
+        <h3 id="pool" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">반 전체로 합치기 좋은 실험 — 실험을 고르기 전에</h3>
+        <p><b>왜 넣었나요.</b> 반 전체로 합치는 것이 <b>늘 이롭지는 않습니다.</b> 모둠마다 핫플레이트 출력과 시작 온도가 다른 실험은 곡선을 겹쳐 놓아도 그냥 흩어져 보일 뿐입니다. 반대로 <b>모둠마다 다른 조건을 골라 재는 실험</b>은 합치는 순간 점이 촘촘해지면서 규칙이 눈에 들어옵니다. 그래서 실험 도감(<code class="inline">lab-data.js</code>)의 실험 <b>48건 모두</b>에 <b>합치기 값어치</b>를 매겨 두었습니다.</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>값어치</th><th>화면에 보이는 것</th><th>뜻</th><th>건수</th></tr>
+            <tr><td><b>3</b></td><td><b>합치기 아주 좋음 ★</b> (노란 뱃지)</td><td>모둠마다 다른 조건을 재므로, 합치면 점이 이어져 규칙이 훨씬 또렷해집니다</td><td><b>14건</b></td></tr>
+            <tr><td><b>2</b></td><td><b>합치기 좋음</b> (초록 뱃지)</td><td>곡선이 겹치지는 않아도, 어느 모둠에서나 같은 경향이 나오면 결론이 단단해집니다</td><td><b>25건</b></td></tr>
+            <tr><td><b>1</b></td><td>뱃지 없음</td><td>조건 차이가 커서 합쳐도 크게 이롭지 않습니다. <b>실험이 나쁘다는 뜻이 아닙니다</b></td><td>9건</td></tr>
+          </table>
+        </div>
+        <p><b>어디에서 보이나요.</b> 세 자리입니다.</p>
+        <ul class="list">
+          <li><b>실험 고르기 목록</b><span> — 카드마다 학년·단원 뱃지 옆에 <b>[합치기 아주 좋음 ★]</b> · <b>[합치기 좋음]</b> 이 붙습니다. 뱃지에 마우스를 올리면 그 실험을 왜 그렇게 봤는지가 뜹니다. 목록 위 숫자 줄에도 “<b>반 전체로 합치기 아주 좋은 실험 n건</b>” 이 함께 나옵니다.</span></li>
+          <li><b>[제출된 보고서 합치기] 의 반 전체 그래프</b><span> — 그래프 바로 위에 <b>왜 합치면 좋은지</b>와 <b>어디를 볼지</b>가 상자로 나옵니다.</span></li>
+          <li><b>대시보드의 [여러 반 묶어보기]</b><span> — 같은 상자가 반을 고르는 자리 위에 나옵니다(<a href="#classall" style="color:var(--mint-d);font-weight:700">위 반 전체로 보기</a>).</span></li>
+        </ul>
+        <p><b>「어디를 볼지」가 실은 수업의 핵심입니다.</b> 합쳐 놓으면 <b>눈에 띄게 어긋난 모둠</b>이 반드시 하나둘 나옵니다. 그것을 틀렸다고 넘기지 않고 <b>왜 그랬을까</b>를 묻는 자리를 만들어 두려고, 실험마다 <b>흔히 어긋나는 지점과 그 까닭</b>을 미리 적어 두었습니다. 아래는 <b>합치기 값어치 3</b> 인 실험 몇 가지입니다.</p>
+        <div class="tblwrap">
+          <table class="files">
+            <tr><th>실험</th><th>합칠 때의 가로축</th><th>왜 합치면 좋은가</th><th>어긋난 모둠에게 물을 것</th></tr>
+            <tr><td><b>전압과 전류의 관계 알아보기(옴의 법칙)</b><br />중2 · 전기와 자기</td><td>전압 (V)</td><td>모둠마다 고른 전압 구간이 달라, 합치면 점이 이어져 <b>하나의 긴 직선</b>이 됩니다</td><td>기울기가 다른 모둠은 <b>저항판을 다른 값으로 썼거나</b> 니크롬선이 뜨거워져 저항이 커진 것</td></tr>
+            <tr><td><b>광원으로부터의 거리에 따른 빛의 세기</b><br />중2 · 별과 우주</td><td>거리 (cm)</td><td>모둠마다 다른 거리를 재므로 가까운 곳부터 먼 곳까지 점이 촘촘해져 <b>역제곱 관계</b>가 드러납니다</td><td>먼 거리에서 값이 바닥에 깔린 모둠은 <b>창가 빛</b>이 들어온 것</td></tr>
+            <tr><td><b>주사기를 누르면 압력은 얼마나 커질까</b><br />중1 · 기체의 성질</td><td>기체의 부피 (mL)</td><td>모둠마다 다른 부피를 골라 재므로 합치면 <b>P×V 가 일정</b>하다는 것이 훨씬 뚜렷해집니다</td><td>많이 누른 모둠일수록 P×V 가 작아지면 <b>밀폐가 새는</b> 것</td></tr>
+            <tr><td><b>용수철에 추를 매달면 얼마나 늘어날까</b><br />중1 · 힘의 작용</td><td>매단 추의 무게 (N)</td><td>기울기는 제각각이어도 <b>모두 원점을 지나는 직선</b>이라는 것이 드러납니다</td><td>뒷부분이 아래로 꺾인 모둠은 <b>탄성 한계</b>를 넘긴 것</td></tr>
+            <tr><td><b>마찰력은 무엇에 따라 달라질까</b><br />중1 · 힘의 작용</td><td>나무토막 개수 (개)</td><td>점이 수십 개로 늘어 <b>도화지와 사포의 두 직선</b>이 뚜렷하게 갈라집니다</td><td>원점보다 한참 위에서 출발한 모둠은 <b>센서를 당긴 채 영점</b>을 잡은 것</td></tr>
+            <tr><td><b>빛의 세기에 따른 광합성량의 변화</b><br />중2 · 식물과 에너지</td><td>밝기 (lx)</td><td>광원 종류·거리가 달라 실제 밝기가 제각각인데, 밝기를 가로축에 두면 <b>한 줄로</b> 모입니다</td><td>감소량이 유난히 작은 모둠은 <b>용기 안 온도</b>가 올라간 것</td></tr>
+            <tr><td><b>자유 낙하하는 쇠구슬의 순간 속력 재기</b><br />중3 · 운동과 에너지</td><td>낙하 거리 (cm)</td><td>모둠마다 포토게이트 높이를 달리 걸어, 합치면 <b>속력 ∝ √거리</b> 가 훨씬 뚜렷해집니다</td><td>값이 조금씩 작게 나오는 것은 공기 저항 — <b>어느 모둠이나 같은 쪽으로</b> 어긋나는 것이 중요</td></tr>
+          </table>
+        </div>
+        <div class="callout"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 8v5M12 16h.01"/><circle cx="12" cy="12" r="9"/></svg></span><div><b>합치기 좋은 실험을 고르면 시간표가 편해집니다.</b> 값어치 3 인 실험은 <b>모둠마다 다른 조건을 나눠 주는 것</b>이 곧 설계입니다. 7모둠에 서로 다른 전압 구간·거리·부피를 배정하면 <b>모둠당 재는 양은 줄고</b> 반 전체 표본은 일곱 배가 됩니다. 한 모둠이 8점을 재면 반 전체는 56점입니다. 남는 시간을 <a href="#lab" style="color:var(--mint-d);font-weight:700">데이터 실험실</a> 에 얹으세요.</div></div>
+        <div class="callout warn"><span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span><div><b>값어치 1 이라고 피하지 마세요.</b> 물과 식용유의 비열 비교처럼 <b>합치기에는 안 맞아도 한 모둠 안에서 결론이 분명한</b> 실험이 많습니다. 이 표시는 “반 전체로 겹쳐 볼 만한가” 하나만 말할 뿐, 실험의 좋고 나쁨과는 관계가 없습니다. 그런 차시에는 반 전체 그래프 대신 <b>모둠별 기울기 표</b>를 칠판에 띄우면 됩니다.</div></div>
 
         <!-- 대시보드 만들기 -->
         <h3 id="dash" style="scroll-margin-top:88px;font-size:20px;margin-top:34px">대시보드 만들기 — 블록을 고르면 한 장이 됩니다</h3>
@@ -1075,7 +1159,7 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
       <!-- 출처와 저작권 -->
       <section id="sources">
         <h2><span class="no">J</span>출처와 저작권</h2>
-        <p class="lead">실험 도감 38건은 아래 두 자료집을 <b>참고해 다시 쓴 것</b>입니다. 어디서 왔는지 분명히 밝힙니다.</p>
+        <p class="lead">실험 도감 48건은 아래 자료들을 <b>참고해 다시 쓴 것</b>입니다. 어디서 왔는지 분명히 밝힙니다.</p>
 
         <h3>참고한 자료</h3>
         <div class="tblwrap">
@@ -1093,6 +1177,12 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
                   <b>최효석</b>(영서중학교)</td>
             </tr>
             <tr>
+              <td>교과서 수록 탐구 · 센서 기초 측정법</td>
+              <td>『사이언스큐브 무선센서 카탈로그 v9』의 2022 개정 중등교과서 수록 탐구목록,<br />
+                  클래스보드 무선·유선 기초 측정 자료,<br />
+                  <b>최효석</b>(영서중학교) 공기압 연수 자료</td>
+            </tr>
+            <tr>
               <td>성취기준 87개</td>
               <td>2022 개정 교육과정 과학과 성취기준 — <b>교육부 고시 제2022-33호 [별책 9]</b></td>
             </tr>
@@ -1101,7 +1191,8 @@ delete from mbl_lessons where created_at &lt; '2026-09-01';</code></pre>
 
         <h3>어떻게 썼나</h3>
         <p><b>실험 절차와 해설은 위 자료를 참고해 다시 쓴 것이며, 원문을 그대로 옮기지 않았습니다.</b> 어떤 센서로 무엇을 재는 실험인지, 어느 성취기준에 닿는지를 참고한 뒤, 중학생이 읽을 문장과 이 허브의 데이터 입력표·보고서 질문 형식에 맞게 <b>새로 작성</b>했습니다. 자료집의 사진·표·문장을 복사해 넣은 곳은 없습니다. 성취기준은 고시 원문 그대로이며(공공저작물), 코드와 원문을 함께 표시해 출처를 알 수 있게 했습니다.</p>
-        <p>실험 하나하나의 출처는 <code class="inline">lab-data.js</code> 의 <code class="inline">src</code> 값(<code class="inline">seoul</code> = 서울시교육청 자료집, <code class="inline">ez</code> = 이지메이커 수업사례집)으로 남아 있습니다. 두 자료집에 함께 실린 실험은 <code class="inline">src:'seoul'</code> 로 합치고 <code class="inline">altSrc:'ez'</code> 를 남겨 <b>두 곳을 모두</b> 표시합니다. 학생 화면의 실험 도감과 상세 시트에도 이 정식 명칭이 한 줄로 나옵니다.</p>
+        <p>실험 하나하나의 출처는 <code class="inline">lab-data.js</code> 의 <code class="inline">src</code> 값(<code class="inline">seoul</code> = 서울시교육청 자료집, <code class="inline">ez</code> = 이지메이커 수업사례집, <code class="inline">cb</code> = 교과서 수록표·클래스보드 자료, <code class="inline">own</code> = 자료집에 없어 새로 구성한 실험)으로 남아 있습니다. 두 자료집에 함께 실린 실험은 <code class="inline">src:'seoul'</code> 로 합치고 <code class="inline">altSrc:'ez'</code> 를 남겨 <b>두 곳을 모두</b> 표시합니다. 학생 화면의 실험 도감과 상세 시트에도 이 정식 명칭이 한 줄로 나옵니다.</p>
+        <p>실험마다 <code class="inline">srcRef</code> 에 <b>원자료에서의 위치</b>(예: <code class="inline">이지메이커 사례집 19번</code>)를 적어 두었고, 도감 상세에 <b>자료집에서 찾기</b> 한 줄로 나옵니다. 자료집을 손에 들고 같은 실험을 바로 펴 보시라는 뜻입니다. 실험 id 의 번호(<code class="inline">ez-19</code> 의 19)는 <b>이 앱의 일련번호일 뿐 사례집 번호가 아니므로</b>, 자료집을 찾을 때는 반드시 이 줄을 보세요.</p>
 
         <h3>이 앱에 대해</h3>
         <p>이 허브는 <b>해누리중학교 조승재</b>가 <b>학교 수업 목적</b>으로 만들었습니다. 상업적 목적이 없고, 어느 업체와도 관계가 없습니다. 화면·코드(<code class="inline">index.html · teacher.html · present.html · manual.html · hub.js · schema.sql</code>)의 저작권은 제작자에게 있으며, 다른 학교가 자기 수업에 쓰는 것은 환영합니다(<a href="#share" style="color:var(--mint-d);font-weight:700">H. 다른 학교에 배포하기</a>).</p>

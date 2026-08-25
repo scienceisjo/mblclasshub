@@ -297,6 +297,14 @@
   .ycheck i{width:11px;height:11px;border-radius:3px;display:inline-block}
   .labsvg{display:block;width:100%;height:auto;touch-action:none;-webkit-user-select:none;user-select:none;
     border:1px solid var(--line);border-radius:12px;background:#fff;cursor:col-resize}
+  /* ── 붙여넣기 분석 화면 ─────────────────────────── */
+  .anstep{border-left:3px solid var(--mint);padding-left:13px;margin:16px 0}
+  .anstep>b{display:block;font-size:15px;margin-bottom:4px}
+  .ansay{font-size:15.5px;color:var(--ink);margin:4px 0 8px}
+  .anverdict{border:2px solid var(--mint);background:var(--cream);border-radius:14px;padding:14px 16px;
+    font-size:16.5px;line-height:1.7;margin:12px 0}
+  .anpair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .anpair figcaption{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:4px}
   .fitcard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px 14px;margin-bottom:10px}
   .fitcard>b{display:block;font-size:15px;margin-bottom:6px}
   .fitrow{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px;margin-top:4px}
@@ -427,6 +435,10 @@
         <button id="btnSimplePick" class="wbtn" type="button"><i>🧪</i>
           <span>코드 없이 시작하기<small>실험 도감에서 실험을 직접 골라 바로 시작합니다.</small></span></button>
 
+        <button id="btnAnalyzeOpen" class="wbtn" type="button"><i>📈</i>
+          <span>데이터 붙여넣고 분석하기<small>이미 모아 둔 값을 <b>붙여넣기만</b> 하면 그 실험의 목적에 맞는 분석이 바로 나옵니다.
+            참여코드도, 저장도 필요 없습니다.</small></span></button>
+
         <button id="btnSimplePack" class="wbtn" type="button"><i>📦</i>
           <span>수업 꾸러미 파일 올리기<small>선생님이 준 <b>.json</b> 을 올리면 실험·절차·질문·개념 확인이 그대로 세팅됩니다.</small></span></button>
 
@@ -465,6 +477,55 @@
       <button id="btnSimpleGo" class="btn btn-solid" style="width:100%" type="button">이 모둠으로 시작하기</button>
       <button id="btnSimpleBack" class="btn btn-sm" style="width:100%;margin-top:10px" type="button">처음으로</button>
     </div>
+  </section>
+
+  <!-- ①-3 붙여넣기 분석 — 참여코드도 저장도 없이, 모은 값만 있으면 되는 독립 화면 -->
+  <section id="scAnalyze" class="hidden">
+    <div class="box">
+      <span class="pill sky">붙여넣기 분석</span>
+      <h2 style="margin-top:8px">데이터 붙여넣고 분석하기</h2>
+      <p class="lead">모은 값을 그대로 붙여넣으면, 고른 실험이 <b>무엇을 보려는 실험인지</b>에 맞추어
+        파생열·기울기·R²·결론까지 한 화면에 펼쳐 드립니다.</p>
+      <p class="muted" style="margin-top:6px">서버에 아무것도 보내지 않습니다. 이 기기 안에서만 계산합니다.</p>
+
+      <label class="fl" for="anExp">① 어떤 실험인가요?</label>
+      <select id="anExp" aria-describedby="anGoal"><option value="">— 실험을 고르세요 —</option></select>
+      <div id="anGoal"></div>
+
+      <label class="fl" for="anPaste">② 모은 값을 붙여넣으세요</label>
+      <textarea id="anPaste" placeholder="엑셀·구글 시트·센서 프로그램에서 복사한 표를 그대로 붙여넣으세요.&#10;부피(mL),압력(기압)&#10;60,0.5&#10;53,0.58"></textarea>
+      <div class="improw">
+        <button id="btnAnFile" class="btn btn-sm" type="button">파일 불러오기</button>
+        <button id="btnAnSheetOpen" class="btn btn-sm" type="button">구글 시트에서 불러오기</button>
+        <button id="btnAnClear" class="btn btn-sm" type="button">지우기</button>
+      </div>
+      <input id="anFile" type="file" class="hidden"
+             accept=".csv,.tsv,.txt,text/csv,text/plain,text/tab-separated-values" />
+      <div id="anSheetBox" class="hidden" style="margin-top:10px">
+        <label class="fl" for="anSheetURL">구글 시트 주소를 붙여넣으세요</label>
+        <input id="anSheetURL" type="url" inputmode="url" autocomplete="off"
+               placeholder="https://docs.google.com/spreadsheets/d/…/edit?gid=0#gid=0" />
+        <p class="muted" style="margin-top:6px">시트가 <b>링크가 있는 모든 사용자에게 공개</b>여야 읽을 수 있습니다.
+          편집 주소를 그대로 붙여넣어도 됩니다.</p>
+        <div class="improw"><button id="btnAnSheetGo" class="btn btn-sm btn-solid" type="button">시트 읽기</button></div>
+      </div>
+
+      <div id="anPanel" class="hidden">
+        <h3>③ 어느 열이 무엇인가요?</h3>
+        <p class="muted" id="anFound"></p>
+        <div id="anMap" class="maptbl"></div>
+        <div id="anGroupBox"></div>
+        <div id="anPrev" class="prevwrap"></div>
+      </div>
+
+      <div class="savebar">
+        <button id="btnAnRun" class="btn btn-solid" type="button" style="min-height:48px">분석하기</button>
+        <button id="btnAnBack" class="btn btn-sm" type="button" style="min-height:44px">처음으로</button>
+        <span id="anMsg" class="impmsg" aria-live="polite"></span>
+      </div>
+    </div>
+
+    <div id="anOut"></div>
   </section>
 
   <!-- ② 모둠 고르기 -->
@@ -578,6 +639,17 @@
           <div class="improw">
             <button id="btnImpFile" class="btn btn-sm" type="button">파일 불러오기</button>
             <button id="btnImpPasteOpen" class="btn btn-sm" type="button">붙여넣기로 넣기</button>
+            <button id="btnImpSheetOpen" class="btn btn-sm" type="button">구글 시트에서 불러오기</button>
+          </div>
+          <div id="impSheetBox" class="hidden" style="margin-top:10px">
+            <label class="fl" for="impSheetURL">구글 시트 주소를 붙여넣으세요</label>
+            <input id="impSheetURL" type="url" inputmode="url" autocomplete="off"
+                   placeholder="https://docs.google.com/spreadsheets/d/…/edit?gid=0#gid=0" />
+            <p class="muted" style="margin-top:6px">시트가 <b>링크가 있는 모든 사용자에게 공개</b>여야 읽을 수 있습니다.
+              편집 주소를 그대로 붙여넣어도 됩니다.</p>
+            <div class="improw">
+              <button id="btnImpSheetGo" class="btn btn-sm btn-solid" type="button">시트 읽기</button>
+            </div>
           </div>
           <div id="impPasteBox" class="hidden" style="margin-top:10px">
             <label class="fl" for="impPaste">엑셀·메모장에서 복사한 표를 여기에 붙여 넣으세요</label>
@@ -590,6 +662,7 @@
           <div id="impPanel" class="hidden" style="margin-top:12px">
             <h3 style="margin-top:4px">어느 열을 어디에 넣을까요?</h3>
             <p class="muted" id="impFound"></p>
+            <div id="impGroupBox"></div>
             <div id="impMap" class="maptbl"></div>
             <label class="chk" for="impThin">
               <input id="impThin" type="checkbox" checked /> 행 솎아내기 (골고루 뽑아서 줄이기)
@@ -721,6 +794,9 @@
             <option value="ez">이지메이커</option><option value="sc">사이언스큐브</option>
           </select>
           <input id="aSearch" type="text" placeholder="제목·센서로 찾기" aria-label="실험 찾기" />
+          <label class="chk" for="aPool" style="flex:0 0 auto">
+            <input id="aPool" type="checkbox" /> 반 전체 합치기 좋은 실험
+          </label>
           <span id="aCount" class="pill" aria-live="polite"></span>
         </div>
         <div id="atlasList" class="atlaslist"></div>
@@ -1359,9 +1435,11 @@
     $('scJoin').classList.toggle('hidden',    which !== 'join');
     $('scGroup').classList.toggle('hidden',   which !== 'group');
     $('scSimpleSetup').classList.toggle('hidden', which !== 'simple');
+    $('scAnalyze').classList.toggle('hidden', which !== 'analyze');
     $('scWork').classList.toggle('hidden',    which !== 'work');
     $('scExpired').classList.toggle('hidden', which !== 'expired');
-    $('btnLeave').classList.toggle('hidden',  which === 'join' || which === 'expired' || which === 'simple');
+    $('btnLeave').classList.toggle('hidden',
+      which === 'join' || which === 'expired' || which === 'simple' || which === 'analyze');
     // [다른 모둠으로] 는 실시간 수업에서 모둠에 들어가 있을 때만 보입니다.
     $('btnSwitch').classList.toggle('hidden', !(which === 'work' && group && !atlasOnly && !isSimple()));
   }
@@ -2809,6 +2887,126 @@
     return { head: head, body: body, width: width, cols: cols, delim: d };
   }
 
+  // ── 첫 열이 모둠 이름인 수합 시트 ──────────────────────────────
+  //  선생님이 나눠 주는 수합 시트는 머리글이 두 줄이고, 모둠 이름이 그 모둠의 첫 줄에만 적혀 있습니다.
+  //     (예) 1모둠 60 0.5 / (빈칸) 53 0.58 / … 7줄 뒤에 2모둠
+  //  이름이 적힌 줄부터 다음 이름 전까지를 그 모둠 것으로 봅니다(아래로 채워 읽기).
+  //  parseTable 은 그대로 두고, 그 결과만 들여다봅니다.
+  const GNAME_RE = /(모둠|조|반|팀|group|team)/i;
+  function findGroupCol(P){
+    if (!P || !P.body || P.body.length < 4) return null;
+    for (let c = 0; c < Math.min(2, P.width); c++){
+      const names = [], count = {};
+      let filled = 0, bad = false;
+      for (let r = 0; r < P.body.length && !bad; r++){
+        const v = String(P.body[r][c] == null ? '' : P.body[r][c]).trim();
+        if (!v) continue;
+        if (isNumCell(v)){ bad = true; break; }              // 숫자가 섞이면 이름 열이 아닙니다
+        filled++;
+        if (names.indexOf(v) < 0) names.push(v);
+      }
+      if (bad || names.length < 2) continue;
+      if (names.length > Math.max(2, P.body.length / 2)) continue;   // 줄마다 다른 글이면 이름 열이 아닙니다
+      const sparse  = filled <= P.body.length * 0.6;
+      const looksSo = names.some(n => GNAME_RE.test(n));
+      if (!sparse && !looksSo) continue;
+      //  아래로 채워 읽기 — 이름이 나오기 전 줄은 임자가 없습니다.
+      const owner = [];
+      let cur = '';
+      for (let r = 0; r < P.body.length; r++){
+        const v = String(P.body[r][c] == null ? '' : P.body[r][c]).trim();
+        if (v) cur = v;
+        owner.push(cur);
+        if (cur) count[cur] = (count[cur] || 0) + 1;
+      }
+      return { col: c, names: names, owner: owner, count: count };
+    }
+    return null;
+  }
+  //  모둠 고르기 상자 — CSV 카드와 붙여넣기 분석 화면이 같은 글을 씁니다.
+  function groupBoxHTML(g, cur, selId){
+    if (!g) return '';
+    const head = g.names.slice(0, 4).join(' · ') + (g.names.length > 4 ? ' … 모두 ' + g.names.length + '개' : '');
+    let h = '<div class="note" style="margin:10px 0"><b>첫 열이 모둠 이름으로 보입니다.</b> ' + esc(head) + '<br>' +
+            '<span class="muted">모둠별로 갈라 담을까요? 고르면 그 모둠의 줄만 씁니다.</span>' +
+            '<div class="improw"><select id="' + esc(selId) + '" style="flex:1 1 220px;min-height:44px" ' +
+            'aria-label="모둠 고르기">' +
+            '<option value="">갈라 담지 않기 (모든 줄)</option>';
+    g.names.forEach(function(n){
+      h += '<option value="' + esc(n) + '"' + (n === cur ? ' selected' : '') + '>' +
+           esc(n) + ' (' + (g.count[n] || 0) + '줄)</option>';
+    });
+    h += '</select></div></div>';
+    return h;
+  }
+
+  // ═══════════════════════════════════════════════════════════════
+  //  ①-b 구글 시트에서 바로 읽기
+  //     공개 공유된 시트는 브라우저가 그대로 받아 옵니다(CORS 허용).
+  //     편집 주소에서 시트 ID 와 gid 만 뽑아 CSV 주소로 바꿔 부릅니다.
+  //     export?format=csv 가 막히면 gviz/tq?tqx=out:csv 로 한 번 더 두드립니다.
+  //     ★ 받은 글은 새 파서를 만들지 않고 기존 parseTable 로 그대로 흘려보냅니다.
+  // ═══════════════════════════════════════════════════════════════
+  const SHEET_HELP = '시트를 열고 오른쪽 위 [공유] → [일반 액세스] 를 ' +
+                     '“링크가 있는 모든 사용자” 로 바꿔 주세요.';
+  function sheetIds(url){
+    const s = String(url == null ? '' : url).trim();
+    if (!s) return null;
+    const m = /docs\.google\.com\/spreadsheets\/d\/(?:e\/)?([A-Za-z0-9_-]{10,})/.exec(s);
+    if (!m) return null;
+    const g = /[#?&]gid=(\d+)/.exec(s);
+    return { id: m[1], gid: g ? g[1] : '' };
+  }
+  function sheetURLs(ids){
+    const q = ids.gid ? ('&gid=' + encodeURIComponent(ids.gid)) : '';
+    return [
+      'https://docs.google.com/spreadsheets/d/' + ids.id + '/export?format=csv' + q,
+      'https://docs.google.com/spreadsheets/d/' + ids.id + '/gviz/tq?tqx=out:csv' + q
+    ];
+  }
+  function looksLikeHTML(t){
+    const h = String(t || '').slice(0, 500).toLowerCase();
+    return h.indexOf('<!doctype html') >= 0 || h.indexOf('<html') >= 0;
+  }
+  //  성공하면 {text, via}, 실패하면 사람 말로 된 까닭을 담아 거절합니다.
+  function fetchSheet(url){
+    const raw = String(url == null ? '' : url).trim();
+    const ids = sheetIds(raw);
+    if (!ids){
+      return Promise.reject(new Error(raw
+        ? '구글 시트 주소가 아닙니다. 시트를 연 뒤 주소창의 주소를 통째로 붙여넣어 주세요.'
+        : '시트 주소를 붙여넣어 주세요.'));
+    }
+    if (typeof fetch !== 'function') return Promise.reject(new Error('이 브라우저에서는 시트를 바로 읽을 수 없습니다. 시트를 CSV 로 내려받아 파일로 올려 주세요.'));
+    const list = sheetURLs(ids);
+    let netErr = false;
+    const tryAt = function(i){
+      if (i >= list.length){
+        const offline = (typeof navigator !== 'undefined' && navigator.onLine === false);
+        if (offline) return Promise.reject(new Error('인터넷이 끊겨 있습니다. 연결한 뒤 다시 눌러 주세요.'));
+        return Promise.reject(new Error(netErr
+          ? '시트를 읽지 못했습니다. 아직 공개 공유가 아닌 시트이거나, 인터넷이 막혀 있습니다. ' + SHEET_HELP
+          : '시트를 읽지 못했습니다. 공개 공유가 안 된 시트일 가능성이 가장 큽니다. ' + SHEET_HELP));
+      }
+      return fetch(list[i], { credentials:'omit', redirect:'follow' })
+        .then(function(r){
+          if (!r.ok) throw new Error('status ' + r.status);
+          return r.text();
+        })
+        .then(function(t){
+          if (!t || !t.trim()) throw new Error('empty');
+          if (looksLikeHTML(t)) throw new Error('html');       // 로그인 쪽지가 돌아온 것입니다
+          return { text: t, via: (i === 0 ? '구글 시트' : '구글 시트(gviz)') };
+        })
+        .catch(function(e){
+          const msg = String((e && e.message) || e);
+          if ((e && e.name === 'TypeError') || /failed to fetch|networkerror|load failed|cors/i.test(msg)) netErr = true;
+          return tryAt(i + 1);
+        });
+    };
+    return tryAt(0);
+  }
+
   // ── 열 이름 짝짓기 ────────────────────────────────────────────
   const SYN = [
     ['시간','time','sec','second','초','ms','elapsed','경과','타임','t'],
@@ -2892,16 +3090,21 @@
   //      (업체 파일은 Ch1·Ch2 처럼 우리 계열 이름과 아주 다르게 나오는 일이 흔합니다.)
   //   ③ 그래도 알 수 없으면 비워 두고 직접 고르게 합니다.
   //  IMP.guess[k] = 이름이 아니라 순서로 짐작한 자리
-  function autoPick(){
-    const ser = spec.series || [];
-    const targets = [ (spec.x && spec.x.label) || '가로축' ].concat(ser.map((s, i) => s.label || ('계열 ' + (i + 1))));
+  //  cols(파싱한 열 목록)와 sp(dataSpec)만 있으면 되는 순수 함수 — 붙여넣기 분석 화면도 그대로 씁니다.
+  //  skip 에 넣은 열 번호는 처음부터 없는 셈 칩니다 — 모둠 이름 열('1모둠' → 숫자 1 로 읽힙니다)을 빼려고 씁니다.
+  function pickCols(cols, sp, skip){
+    const off = {};
+    (skip || []).forEach(function(i){ off[i] = true; });
+    cols = (cols || []).filter(function(c){ return !off[c.idx]; });
+    const ser = (sp && sp.series) || [];
+    const targets = [ (sp && sp.x && sp.x.label) || '가로축' ].concat(ser.map((s, i) => s.label || ('계열 ' + (i + 1))));
     const pick  = targets.map(() => -1);
     const guess = targets.map(() => false);
     const used  = {};
 
     targets.forEach(function(t, k){
       let best = -1, bestSc = 0;
-      IMP.cols.forEach(function(c){
+      (cols || []).forEach(function(c){
         if (used[c.idx]) return;
         if (k > 0 && c.ratio < 0.5) return;                 // 계열 자리는 숫자 열만
         const sc = matchScore(c.name, t);
@@ -2910,14 +3113,18 @@
       if (best >= 0 && bestSc >= MATCH_OK){ pick[k] = best; used[best] = true; }
     });
 
-    const left    = IMP.cols.filter(c => c.ratio >= 0.5 && !used[c.idx]).map(c => c.idx);
+    const left    = (cols || []).filter(c => c.ratio >= 0.5 && !used[c.idx]).map(c => c.idx);
     const holes   = [];
     for (let k = 0; k < pick.length; k++) if (pick[k] < 0) holes.push(k);
     if (holes.length && left.length === holes.length){
       holes.forEach(function(k, i){ pick[k] = left[i]; guess[k] = true; used[left[i]] = true; });
     }
-    IMP.guess = guess;
-    return pick;
+    return { pick: pick, guess: guess };
+  }
+  function autoPick(){
+    const r = pickCols(IMP.cols, spec, IMP.gsplit ? [IMP.gsplit.col] : []);
+    IMP.guess = r.guess;
+    return r.pick;
   }
 
   function impSay(text, cls){
@@ -2933,9 +3140,18 @@
     $('impFile').value = '';
     $('impMap').innerHTML = '';
     $('impPrev').innerHTML = '';
+    if ($('impGroupBox')) $('impGroupBox').innerHTML = '';
     $('impThinMsg').textContent = '';
     $('impFound').textContent = '';
     impSay('');
+  }
+
+  //  모둠으로 갈라 담기를 고른 상태라면 그 모둠의 줄만 돌려줍니다.
+  function impBody(){
+    if (!IMP) return [];
+    if (!IMP.gsplit || !IMP.gpick) return IMP.body;
+    const g = IMP.gsplit;
+    return IMP.body.filter(function(r, i){ return g.owner[i] === IMP.gpick; });
   }
 
   function startImport(text, from){
@@ -2943,17 +3159,26 @@
     const r = parseTable(text);
     if (r.err){ resetImport(); impSay(r.err + ' 표는 그대로 두었습니다.', 'bad'); return; }
     IMP = r;
+    IMP.gsplit = findGroupCol(IMP);
+    IMP.gpick  = '';
     IMP.pick = autoPick();
     const dName = { '\t':'탭', ';':'세미콜론', '|':'막대(|)', ',':'쉼표', 'WS':'빈칸' }[r.delim] || r.delim;
     $('impFound').textContent =
       (from ? from + ' · ' : '') + '자료 ' + r.body.length.toLocaleString() + '행 · 열 ' + r.width + '개 · ' +
-      dName + ' 기준으로 나뉘어 있습니다.' + (r.head ? '' : ' (머리글 줄이 없어 순서대로 맞췄습니다)');
+      dName + ' 기준으로 나뉘어 있습니다.' + (r.head ? '' : ' (머리글 줄이 없어 순서대로 맞췄습니다)') +
+      (IMP.gsplit ? ' 첫 열에 모둠 이름이 보입니다.' : '');
     $('impPanel').classList.remove('hidden');
     renderImpMap();
     impSay('');
   }
 
   function renderImpMap(){
+    const gbox = $('impGroupBox');
+    if (gbox){
+      gbox.innerHTML = groupBoxHTML(IMP.gsplit, IMP.gpick, 'impGSel');
+      const gsel = $('impGSel');
+      if (gsel) gsel.addEventListener('change', function(){ IMP.gpick = gsel.value; renderImpPreview(); });
+    }
     const ser = spec.series || [];
     const labels = [ ((spec.x && spec.x.label) || '가로축') + ((spec.x && spec.x.unit) ? ' (' + spec.x.unit + ')' : '') ]
       .concat(ser.map((s, i) => (s.label || ('계열 ' + (i + 1))) + (s.unit ? ' (' + s.unit + ')' : '')));
@@ -2999,21 +3224,22 @@
     return out;
   }
   function impTargetRows(){
-    const n = IMP ? IMP.body.length : 0;
+    const n = IMP ? impBody().length : 0;
     if ($('impThin').checked) return Math.min(specRows(), n || specRows());
     return Math.min(MAX_ROWS, n);
   }
   //  고른 열로 실제 넣을 값 만들기
   function impBuild(){
     const cols = (spec.series || []).length + 1;
-    const idx = pickIdx(IMP.body.length, impTargetRows());
+    const body = impBody();
+    const idx = pickIdx(body.length, impTargetRows());
     return idx.map(function(bi, i){
       const row = [];
       for (let c = 0; c < cols; c++){
         const src = IMP.pick[c];
         if (src === -2){ row.push(String(i + 1)); continue; }         // 순번
         if (src === undefined || src < 0){ row.push(''); continue; }
-        const v = toNum(IMP.body[bi][src]);
+        const v = toNum(body[bi][src]);
         row.push(isFinite(v) ? fmtNum(v) : '');
       }
       return row;
@@ -3021,7 +3247,7 @@
   }
 
   function renderImpPreview(){
-    const n = IMP.body.length, want = impTargetRows();
+    const n = impBody().length, want = impTargetRows();
     $('impThinMsg').textContent = $('impThin').checked
       ? (n > want ? '원본 ' + n.toLocaleString() + '행 → ' + want + '행으로 줄여서 넣습니다. (처음·끝을 포함해 골고루 뽑습니다)'
                   : '원본 ' + n.toLocaleString() + '행 — 줄일 것이 없어 그대로 넣습니다.')
@@ -3053,13 +3279,14 @@
       impSay('그대로 두었습니다.', 'warn'); return;
     }
     const rows = impBuild();
+    const n = impBody().length;
+    const gTxt = (IMP.gsplit && IMP.gpick) ? (IMP.gpick + ' 것만 골라 ') : '';
     setTableRows(Math.max(specRows(), rows.length));
     gridClear();
     gridWrite(rows);
     renderMyChart();
     saveDataLocal();
-    const n = IMP.body.length;
-    impSay('표에 넣었습니다. 원본 ' + n.toLocaleString() + '행 → ' + rows.length + '행. ' +
+    impSay('표에 ' + gTxt + '넣었습니다. 원본 ' + n.toLocaleString() + '행 → ' + rows.length + '행. ' +
            '값을 확인한 뒤 아래 [데이터 저장]을 눌러 주세요.', 'ok');
     $('impPanel').classList.add('hidden');
     $('impPasteBox').classList.add('hidden');
@@ -3111,6 +3338,26 @@
       $('impPasteBox').classList.toggle('hidden');
       if (!$('impPasteBox').classList.contains('hidden')) $('impPaste').focus();
     });
+    //  구글 시트에서 바로 — 받은 CSV 는 붙여넣은 표와 똑같은 길(startImport)로 갑니다.
+    $('btnImpSheetOpen').addEventListener('click', function(){
+      $('impSheetBox').classList.toggle('hidden');
+      if (!$('impSheetBox').classList.contains('hidden')) $('impSheetURL').focus();
+    });
+    const impSheetGo = function(){
+      const btn = $('btnImpSheetGo');
+      btn.disabled = true;
+      impSay('구글 시트를 읽는 중입니다…', 'warn');
+      fetchSheet($('impSheetURL').value).then(function(r){
+        btn.disabled = false;
+        startImport(r.text, r.via);
+        $('impSheetBox').classList.add('hidden');
+      }).catch(function(e){
+        btn.disabled = false;
+        impSay(String((e && e.message) || e), 'bad');
+      });
+    };
+    $('btnImpSheetGo').addEventListener('click', impSheetGo);
+    $('impSheetURL').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); impSheetGo(); } });
     $('btnImpRead').addEventListener('click', function(){
       const t = $('impPaste').value;
       if (!t.trim()){ impSay('붙여 넣은 값이 없습니다.', 'bad'); return; }
@@ -4412,14 +4659,21 @@
   }
 
   //  한 줄에서 그 열의 "원래 값" 꺼내기 (파생열은 그 자리에서 계산합니다)
-  function rawVal(row, k){
+  //  ds 를 주면 LABS.derived 대신 그 목록에서 파생열을 찾습니다 —
+  //  붙여넣기 분석 화면이 데이터 실험실의 상태를 건드리지 않고 같은 계산을 쓰기 위함입니다.
+  function derivedIn(ds, k){
+    const list = ds || LABS.derived;
+    for (let i = 0; i < list.length; i++) if (list[i].id === k) return list[i];
+    return null;
+  }
+  function rawVal(row, k, ds){
     if (!k) return NaN;
     if (k === 'x') return cell(row, 0);
     if (k.charAt(0) === 's') return cell(row, Number(k.slice(1)) + 1);
     if (k.charAt(0) === 'd'){
-      const d = labDerived(k);
+      const d = derivedIn(ds, k);
       if (!d) return NaN;
-      const a = rawVal(row, d.a), b = rawVal(row, d.b);
+      const a = rawVal(row, d.a, ds), b = rawVal(row, d.b, ds);
       if (!isFinite(a) || !isFinite(b)) return NaN;
       if (d.op === '×') return a * b;
       if (d.op === '÷') return (b === 0) ? NaN : (a / b);   // 0 으로 나누는 칸은 건너뜁니다
@@ -4428,10 +4682,10 @@
     }
     return NaN;
   }
-  function colMin(rows, k){
+  function colMin(rows, k, ds){
     let m = null;
     (rows || []).forEach(function(r){
-      const v = rawVal(r, k);
+      const v = rawVal(r, k, ds);
       if (isFinite(v) && (m === null || v < m)) m = v;
     });
     return (m === null) ? 0 : m;
@@ -4441,13 +4695,13 @@
   //  raw     는 값이 있는 모든 줄의 변환 전 좌표,
   //  rawKept 는 "변환에 성공해 pts 에 남은 점"의 변환 전 좌표입니다 (변환 전후 R² 를 같은 점끼리 견주려고 따로 모읍니다).
   //  minX·minY 를 주면 그 값을 '최솟값 빼기' 변환에 씁니다 — 반 전체 보기에서 모둠마다 다른 값을 빼지 않도록 하기 위함입니다.
-  function labPoints(rows, xk, xt, yk, yt, minX, minY){
+  function labPoints(rows, xk, xt, yk, yt, minX, minY, ds){
     const tx = LAB_TF[xt] || LAB_TF.none, ty = LAB_TF[yt] || LAB_TF.none;
-    const mx = tx.needMin ? ((minX === undefined || minX === null || !isFinite(minX)) ? colMin(rows, xk) : minX) : 0;
-    const my = ty.needMin ? ((minY === undefined || minY === null || !isFinite(minY)) ? colMin(rows, yk) : minY) : 0;
+    const mx = tx.needMin ? ((minX === undefined || minX === null || !isFinite(minX)) ? colMin(rows, xk, ds) : minX) : 0;
+    const my = ty.needMin ? ((minY === undefined || minY === null || !isFinite(minY)) ? colMin(rows, yk, ds) : minY) : 0;
     const out = { pts: [], raw: [], rawKept: [], skipped: 0, missing: 0, minX: mx, minY: my };
     (rows || []).forEach(function(r){
-      const a = rawVal(r, xk), b = rawVal(r, yk);
+      const a = rawVal(r, xk, ds), b = rawVal(r, yk, ds);
       if (!isFinite(a) || !isFinite(b)){ out.missing++; return; }   // 빈 칸 — 원래 없는 값입니다
       out.raw.push({ x:a, y:b });
       if (!tx.ok(a) || !ty.ok(b)){ out.skipped++; return; }
@@ -4514,11 +4768,14 @@
     const px = function(v){ return LP.l + (v - x0) / (x1 - x0) * (LW - LP.l - LP.r); };
     const py = function(v){ return LH - LP.b - (v - y0) / (y1 - y0) * (LH - LP.t - LP.b); };
 
-    let s = '<svg id="labSvg" class="labsvg" viewBox="0 0 ' + LW + ' ' + LH + '" width="100%" role="img" ' +
-            'aria-label="' + esc((opt.xLabel || 'x') + ' 대 ' + (opt.yLabel || 'y') + ' 그래프. 드래그하면 구간을 고를 수 있습니다.') + '">';
+    //  opt.noId 는 데이터 실험실 밖(붙여넣기 분석 화면)에서 쓸 때 — id 가 겹치지 않게, 구간 고르기도 빼고 그립니다.
+    let s = '<svg' + (opt.noId ? '' : ' id="labSvg"') + ' class="labsvg" viewBox="0 0 ' + LW + ' ' + LH + '" width="100%" role="img" ' +
+            'aria-label="' + esc((opt.xLabel || 'x') + ' 대 ' + (opt.yLabel || 'y') + ' 그래프' +
+                                 (opt.noId ? '.' : '. 드래그하면 구간을 고를 수 있습니다.')) + '">';
     // 고른 구간(뒤에 깔립니다) — 드래그 중에는 이 사각형만 고쳐 그립니다.
-    s += '<rect id="labSel" x="0" y="' + LP.t + '" width="0" height="' + (LH - LP.t - LP.b) +
-         '" fill="var(--sun)" opacity=".18"/>';
+    if (!opt.noId)
+      s += '<rect id="labSel" x="0" y="' + LP.t + '" width="0" height="' + (LH - LP.t - LP.b) +
+           '" fill="var(--sun)" opacity=".18"/>';
     for (let i = 0; i <= 4; i++){
       const v = y0 + (y1 - y0) * i / 4, y = py(v);
       s += '<line x1="' + LP.l + '" y1="' + y.toFixed(1) + '" x2="' + (LW - LP.r) + '" y2="' + y.toFixed(1) +
@@ -4706,10 +4963,13 @@
   }
 
   //  변환 때문에 빠진 점을 알려 주는 한 줄
-  function skipNoteHTML(P){
+  //  xt·yt 를 주면 그 변환을 기준으로 까닭을 적습니다(주지 않으면 데이터 실험실이 고른 변환).
+  function skipNoteHTML(P, xt, yt){
+    const tx = (xt === undefined) ? LABS.xt : xt;
+    const ty = (yt === undefined) ? LABS.yt : yt;
     let out = '';
     if (P.skipped){
-      const why = TF_WHY[LABS.xt] || TF_WHY[LABS.yt] || '계산할 수 없는 값이라서';
+      const why = TF_WHY[tx] || TF_WHY[ty] || '계산할 수 없는 값이라서';
       out += '<div class="note warn">값을 바꾸면서 <b>' + P.skipped + '개</b>를 뺐습니다 — ' + esc(why) + '입니다. ' +
              '뺀 점은 기울기·R² 계산에도 들어가지 않습니다.</div>';
     }
@@ -4906,9 +5166,14 @@
       sets.push({ label: '반 전체 추세선', color: 'var(--ink)', pts: [], line: false, big: false, thick: true, fit: allFit });
     }
 
+    //  이 실험을 합쳤을 때 무엇을 눈여겨봐야 하는지 — lab-data.js 의 pool 이 알려 줍니다.
+    const pe = labExp(), pp = pe && pe.pool;
     let h = '<div class="box"><h3 style="margin-top:0">우리 반 전체</h3>' +
             '<p class="lead">표본이 <b>' + (mine ? mine.pts.length : 0) + '개</b>에서 <b>' + allPts.length + '개</b>로 늘었습니다 (' +
             parts.length + '모둠).</p>' +
+            (pe ? poolBadgeHTML(pe, false) : '') +
+            (pp && pp.watch ? '<div class="note">👀 <b>여기서 눈여겨볼 것</b><br>' + esc(pp.watch) + '</div>' : '') +
+            (pp && pp.axis ? '<p class="muted">합칠 때 가로축 · <b>' + esc(pp.axis) + '</b></p>' : '') +
             '<div class="chartbox">' +
             labChart(sets, { xLabel: xLabel + (xUnit ? ' (' + xUnit + ')' : ''),
                              yLabel: yLabel + (yUnit ? ' (' + yUnit + ')' : '') }) + '</div>';
@@ -5821,22 +6086,711 @@
   }
 
   // ── 실험 도감 ──────────────────────────────────────────────────
-  const SRC_NAME  = { seoul:'서울시교육청 자료집', ez:'이지메이커 사례집' };
+  // ═══════════════════════════════════════════════════════════════
+  //  ⑥ 붙여넣기 분석 — 참여코드도 저장도 없는 독립 화면
+  //
+  //  ★ 계산은 새로 만들지 않습니다. labPoints · labFit · Hub.stats 를 그대로 씁니다.
+  //  ★ 무엇을 볼지는 lab-data.js 의 exp.analysis(goal · steps · verdict) 가 정합니다.
+  //  ★ 서버를 한 번도 부르지 않습니다 (Supabase 와 아무 상관이 없습니다).
+  // ═══════════════════════════════════════════════════════════════
+  const AN = { exp:null, imp:null, pick:[], guess:[], gpick:'', res:null, rows:[], groups:[], when:null };
+  const AN_OPS = { '*':'×', '/':'÷', '+':'+', '-':'−', '×':'×', '÷':'÷', '−':'−' };
+
+  function anMsg(text, cls){
+    const el = $('anMsg');
+    if (!el) return;
+    el.className = 'impmsg' + (cls ? ' ' + cls : '');
+    el.textContent = text || '';
+  }
+  function anSpec(){
+    return (AN.exp && AN.exp.dataSpec) ? AN.exp.dataSpec : { x:{ label:'가로축' }, series:[] };
+  }
+  function anColName(sp, ds, k){
+    if (k === 'x') return (sp.x && sp.x.label) || '가로축';
+    if (String(k).charAt(0) === 's'){
+      const i = Number(String(k).slice(1)), s = (sp.series || [])[i];
+      return s ? (s.label || ('계열 ' + (i + 1))) : String(k);
+    }
+    const d = derivedIn(ds, k);
+    return d ? d.name : String(k);
+  }
+  function anColUnit(sp, ds, k){
+    if (k === 'x') return (sp.x && sp.x.unit) || '';
+    if (String(k).charAt(0) === 's'){
+      const s = (sp.series || [])[Number(String(k).slice(1))];
+      return s ? (s.unit || '') : '';
+    }
+    const d = derivedIn(ds, k);
+    return d ? (d.unit || '') : '';
+  }
+  //  통계는 Hub.stats 한 곳에서 — 한 열을 [[x, 값], …] 로 만들어 그대로 넘깁니다.
+  function anStat(rows, k, ds){
+    const list = [];
+    (rows || []).forEach(function(r){
+      const v = rawVal(r, k, ds);
+      if (!isFinite(v)) return;
+      const x = rawVal(r, 'x', ds);
+      list.push([isFinite(x) ? x : list.length, v]);
+    });
+    const st = Hub.stats(list, 0);
+    st.range = (st.max === null || st.min === null) ? null : (st.max - st.min);
+    return st;
+  }
+  //  {mean} {r2} {r2Min} {slope} {intercept} {range} {delta} {n} 를 실제 값으로 채웁니다.
+  //   · range 는 max−min 이라 늘 0 이상입니다(방향이 없습니다).
+  //   · delta 는 last−first 라 부호가 살아 있습니다(오름/내림을 가릴 때 이 값을 쓰세요).
+  //   · r2Min 은 그 실험에서 나온 모든 fit 의 R² 가운데 가장 작은 값입니다.
+  function anFill(text, v){
+    return String(text == null ? '' : text).replace(/\{(mean|r2Min|r2|slope|intercept|range|delta|n)\}/g, function(m, k){
+      const x = v ? v[k] : null;
+      if (x === null || x === undefined || !isFinite(x)) return '—';
+      if (k === 'n') return String(x);
+      if (k === 'r2' || k === 'r2Min') return fmtR2(x);
+      return labNum(x);
+    });
+  }
+  //  verdict 의 when 은 'always' 아니면 '이름 비교식 숫자' 한 줄뿐입니다.
+  function anVerdict(list, v){
+    const arr = list || [];
+    for (let i = 0; i < arr.length; i++){
+      const w = String(arr[i].when || '').trim();
+      if (w === 'always') return arr[i];
+      const m = /^(r2Min|r2|slope|intercept|mean|range|delta|n)\s*(>=|<=|==|!=|>|<)\s*(-?[0-9.]+)$/.exec(w);
+      if (!m) continue;
+      const a = v[m[1]], b = Number(m[3]), op = m[2];
+      if (a === null || a === undefined || !isFinite(a)) continue;
+      const hit = (op === '>=') ? (a >= b) : (op === '<=') ? (a <= b) :
+                  (op === '>')  ? (a >  b) : (op === '<')  ? (a <  b) :
+                  (op === '==') ? (a === b) : (a !== b);
+      if (hit) return arr[i];
+    }
+    return arr.length ? arr[arr.length - 1] : null;
+  }
+
+  //  레시피를 차례로 실행합니다. 값만 만들고, 그리는 일은 anBlockHTML 이 합니다.
+  function runAnalysis(exp, rows){
+    const sp = (exp && exp.dataSpec) || { x:{}, series:[] };
+    const A  = (window.LAB && LAB.analysisOf) ? LAB.analysisOf(exp) : (exp && exp.analysis);
+    const ds = [];
+    const out = { goal:(A && A.goal) || '', blocks:[], ds:ds, sp:sp,
+                  vals:{ mean:null, r2:null, r2Min:null, slope:null, intercept:null,
+                         range:null, delta:null, n:null },
+                  mainFit:null, verdict:null };
+    ((A && A.steps) || []).forEach(function(st){
+      if (!st || !st.kind) return;
+
+      if (st.kind === 'derive'){
+        const d = { id:'d' + ds.length, name: st.name || ('만든 열 ' + (ds.length + 1)),
+                    unit: st.unit || '', a: st.a, b: st.b, op: AN_OPS[st.op] || '×' };
+        ds.push(d);
+        const s = anStat(rows, d.id, ds);
+        out.blocks.push({ kind:'derive', d:d, st:s,
+                          formula: anColName(sp, ds, d.a) + ' ' + d.op + ' ' + anColName(sp, ds, d.b) });
+        return;
+      }
+
+      if (st.kind === 'stat'){
+        const s = anStat(rows, st.of, ds);
+        out.vals.mean = s.mean; out.vals.range = s.range; out.vals.n = s.n;
+        out.vals.delta = s.delta;                //  last−first (부호가 살아 있는 변화량)
+        const v = { mean:s.mean, range:s.range, n:s.n, delta:s.delta,
+                    r2:out.vals.r2, r2Min:out.vals.r2Min,
+                    slope:out.vals.slope, intercept:out.vals.intercept };
+        out.blocks.push({ kind:'stat', st:s, want:(st.want || ['mean','min','max','n']),
+                          name:anColName(sp, ds, st.of), unit:anColUnit(sp, ds, st.of),
+                          say:anFill(st.say, v) });
+        return;
+      }
+
+      if (st.kind === 'fit'){
+        const xt = st.xt || 'none', yt = st.yt || 'none';
+        const P  = labPoints(rows, st.x, xt, st.y, yt, undefined, undefined, ds);
+        const f  = labFit(P.pts);
+        const tf = (xt !== 'none' || yt !== 'none');
+        const P0 = tf ? labPoints(rows, st.x, 'none', st.y, 'none', undefined, undefined, ds) : null;
+        out.vals.r2 = f.ok ? f.r2 : null;
+        out.vals.slope = f.ok ? f.slope : null;
+        out.vals.intercept = f.ok ? f.intercept : null;
+        //  r2 · slope 는 '마지막 fit' 값만 남습니다. 계열이 여럿인 실험의 판정에는
+        //  지금까지 나온 fit 들의 가장 낮은 R²(r2Min)를 쓰세요.
+        if (f.ok && isFinite(f.r2)) out.vals.r2Min = (out.vals.r2Min === null) ? f.r2 : Math.min(out.vals.r2Min, f.r2);
+        out.vals.delta = anStat(rows, st.y, ds).delta;   //  세로축 열의 last−first (부호 있음)
+        const v = { mean:out.vals.mean, range:out.vals.range, n:f.n, delta:out.vals.delta,
+                    r2:out.vals.r2, r2Min:out.vals.r2Min,
+                    slope:out.vals.slope, intercept:out.vals.intercept };
+        const b = { kind:'fit', x:st.x, y:st.y, xt:xt, yt:yt, P:P, P0:P0, fit:f,
+                    fit0: P0 ? labFit(P0.pts) : null,
+                    xName:anColName(sp, ds, st.x), xUnit:anColUnit(sp, ds, st.x),
+                    yName:anColName(sp, ds, st.y), yUnit:anColUnit(sp, ds, st.y),
+                    say:anFill(st.say, v) };
+        out.blocks.push(b);
+        out.mainFit = b;                       // 마지막 회귀를 반 전체 보기의 기준 축으로 씁니다
+        return;
+      }
+
+      if (st.kind === 'compare'){
+        const of = (st.of || []).slice(), by = st.by || 'mean';
+        if (by === 'rank' || of.length < 2){
+          const k = of[0];
+          const list = [];
+          (rows || []).forEach(function(r, i){
+            const val = rawVal(r, k, ds);
+            if (!isFinite(val)) return;
+            const raw = (r && r[0] !== null && r[0] !== undefined) ? String(r[0]).trim() : '';
+            list.push({ label: raw || ('줄 ' + (i + 1)), v: val });
+          });
+          list.sort(function(a, b){ return b.v - a.v; });
+          out.blocks.push({ kind:'rank', list:list, name:anColName(sp, ds, k), unit:anColUnit(sp, ds, k),
+                            xName:anColName(sp, ds, 'x'), say:anFill(st.say, out.vals) });
+          return;
+        }
+        const items = of.map(function(k){
+          let val = null;
+          if (by === 'slope'){
+            const f = labFit(labPoints(rows, 'x', 'none', k, 'none', undefined, undefined, ds).pts);
+            val = f.ok ? f.slope : null;
+          } else {
+            const s = anStat(rows, k, ds);
+            val = (by === 'range') ? s.range : s[by];
+          }
+          return { key:k, name:anColName(sp, ds, k), unit:anColUnit(sp, ds, k), v:val };
+        });
+        out.blocks.push({ kind:'compare', by:by, items:items, say:anFill(st.say, out.vals) });
+        return;
+      }
+    });
+    out.verdict = anVerdict((A && A.verdict) || [], out.vals);
+    return out;
+  }
+
+  // ── 결과 그리기 ────────────────────────────────────────────────
+  const BY_TXT = { slope:'기울기', mean:'평균', max:'가장 큰 값', min:'가장 작은 값',
+                   range:'가장 큰 값 − 가장 작은 값', last:'마지막 값', rank:'큰 값 차례' };
+  const WANT_TXT = { mean:'평균', min:'가장 작은 값', max:'가장 큰 값', n:'값이 있는 줄 수',
+                     range:'가장 큰 값 − 가장 작은 값', first:'첫 값', last:'마지막 값' };
+
+  function anAxText(name, unit, tf){
+    const t = LAB_TF[tf] || LAB_TF.none;
+    const u = t.unit(unit);
+    return t.lab(name) + (u ? ' (' + u + ')' : '');
+  }
+  function anChart(pts, xTxt, yTxt, fit, color){
+    return '<div class="chartbox">' +
+      labChart([{ label:yTxt, color: color || 'var(--mint)', pts: pts, line:false, big:false,
+                  fit: (fit && fit.ok) ? fit : null }],
+               { xLabel:xTxt, yLabel:yTxt, noId:true }) + '</div>';
+  }
+
+  function anBlockHTML(b, i){
+    let h = '<div class="anstep"><b>' + (i + 1) + '단계 · ';
+    if (b.kind === 'derive'){
+      h += '열 만들기 — ' + esc(b.d.name) + (b.d.unit ? ' (' + esc(b.d.unit) + ')' : '') + '</b>';
+      h += '<p class="ansay">' + esc(b.formula) + ' 를 줄마다 계산했습니다.</p>';
+      h += '<div class="fitrow">' +
+           '<span>평균 <b>' + esc(labNum(b.st.mean)) + '</b></span>' +
+           '<span>가장 작은 값 <b>' + esc(labNum(b.st.min)) + '</b></span>' +
+           '<span>가장 큰 값 <b>' + esc(labNum(b.st.max)) + '</b></span>' +
+           '<span class="muted">값이 있는 줄 ' + b.st.n + '개</span></div>';
+      return h + '</div>';
+    }
+    if (b.kind === 'stat'){
+      h += '값 재기 — ' + esc(b.name) + (b.unit ? ' (' + esc(b.unit) + ')' : '') + '</b>';
+      if (b.say) h += '<p class="ansay">' + esc(b.say) + '</p>';
+      h += '<div class="fitrow">';
+      (b.want || []).forEach(function(w){
+        const v = (w === 'range') ? b.st.range : b.st[w];
+        h += '<span>' + esc(WANT_TXT[w] || w) + ' <b>' +
+             esc(w === 'n' ? String(b.st.n) : labNum(v)) + '</b>' +
+             esc(w === 'n' ? '' : unitTxt(b.unit)) + '</span>';
+      });
+      h += '</div>';
+      return h + '</div>';
+    }
+    if (b.kind === 'fit'){
+      const xTxt = anAxText(b.xName, b.xUnit, b.xt), yTxt = anAxText(b.yName, b.yUnit, b.yt);
+      h += '직선으로 재기 — ' + esc(yTxt) + ' ↔ ' + esc(xTxt) + '</b>';
+      if (b.say) h += '<p class="ansay">' + esc(b.say) + '</p>';
+      h += fitLineHTML(b.fit, LAB_TF[b.yt].unit(b.yUnit), LAB_TF[b.xt].unit(b.xUnit), '');
+      if (b.P0){
+        //  바꾸기 전과 바꾼 뒤를 나란히 — 어느 쪽이 더 직선인지 눈으로 보게 합니다.
+        const x0Txt = anAxText(b.xName, b.xUnit, 'none'), y0Txt = anAxText(b.yName, b.yUnit, 'none');
+        h += '<div class="anpair">' +
+             '<figure><figcaption>바꾸기 전 · ' + esc(y0Txt) + ' ↔ ' + esc(x0Txt) + '</figcaption>' +
+             anChart(b.P0.pts, x0Txt, y0Txt, b.fit0, 'var(--sky)') + '</figure>' +
+             '<figure><figcaption>바꾼 뒤 · ' + esc(yTxt) + ' ↔ ' + esc(xTxt) + '</figcaption>' +
+             anChart(b.P.pts, xTxt, yTxt, b.fit, 'var(--mint)') + '</figure></div>';
+        if (b.fit.ok && b.fit0 && b.fit0.ok){
+          const up = b.fit.r2 - b.fit0.r2;
+          h += '<p class="muted">R² ' + esc(fmtR2(b.fit0.r2)) + ' → <b>' + esc(fmtR2(b.fit.r2)) + '</b> · ' +
+               (up > 0.02 ? '직선에 더 가까워졌습니다.' : (up < -0.02 ? '오히려 덜 직선이 됐습니다.' : '거의 그대로입니다.')) + '</p>';
+        }
+      } else {
+        h += anChart(b.P.pts, xTxt, yTxt, b.fit, 'var(--mint)');
+      }
+      h += skipNoteHTML(b.P, b.xt, b.yt);
+      return h + '</div>';
+    }
+    if (b.kind === 'compare'){
+      h += '견주기 — ' + esc(BY_TXT[b.by] || b.by) + '</b>';
+      if (b.say) h += '<p class="ansay">' + esc(b.say) + '</p>';
+      h += '<div class="tblwrap"><table><thead><tr><th>계열</th><th>' + esc(BY_TXT[b.by] || b.by) + '</th></tr></thead><tbody>';
+      b.items.forEach(function(it){
+        h += '<tr><td>' + esc(it.name) + '</td><td>' + esc(it.v === null || !isFinite(it.v) ? '—' : labNum(it.v)) +
+             esc(b.by === 'slope' ? '' : unitTxt(it.unit)) + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+      return h + '</div>';
+    }
+    if (b.kind === 'rank'){
+      h += '큰 값 차례로 — ' + esc(b.name) + '</b>';
+      if (b.say) h += '<p class="ansay">' + esc(b.say) + '</p>';
+      h += '<div class="tblwrap"><table><thead><tr><th>순위</th><th>' + esc(b.xName) + '</th><th>' +
+           esc(b.name) + (b.unit ? ' (' + esc(b.unit) + ')' : '') + '</th></tr></thead><tbody>';
+      b.list.slice(0, 20).forEach(function(it, k){
+        h += '<tr><td>' + (k + 1) + '</td><td>' + esc(it.label) + '</td><td>' + esc(labNum(it.v)) + '</td></tr>';
+      });
+      h += '</tbody></table></div>';
+      return h + '</div>';
+    }
+    return h + '</b></div>';
+  }
+
+  //  모둠별로 갈라 담긴 자료 → 반 전체 산점도 + 모둠별 기울기 표
+  function anClassHTML(res, groups){
+    if (!groups || groups.length < 2) return '';
+    const mf = res.mainFit;
+    const xk = mf ? mf.x : 'x', yk = mf ? mf.y : 's0';
+    const xt = mf ? mf.xt : 'none', yt = mf ? mf.yt : 'none';
+    const xName = mf ? mf.xName : anColName(res.sp, res.ds, 'x');
+    const xUnit = mf ? mf.xUnit : anColUnit(res.sp, res.ds, 'x');
+    const yName = mf ? mf.yName : anColName(res.sp, res.ds, 's0');
+    const yUnit = mf ? mf.yUnit : anColUnit(res.sp, res.ds, 's0');
+    const xTxt = anAxText(xName, xUnit, xt), yTxt = anAxText(yName, yUnit, yt);
+
+    //  '최솟값 빼기' 변환은 반 전체에서 한 번만 구한 값을 씁니다(모둠마다 다른 값을 빼면 점이 겹칩니다).
+    const txC = LAB_TF[xt] || LAB_TF.none, tyC = LAB_TF[yt] || LAB_TF.none;
+    let allRows = [];
+    groups.forEach(function(g){ allRows = allRows.concat(g.rows || []); });
+    const mnX = txC.needMin ? colMin(allRows, xk, res.ds) : undefined;
+    const mnY = tyC.needMin ? colMin(allRows, yk, res.ds) : undefined;
+
+    const parts = [];
+    let allPts = [];
+    groups.forEach(function(g, i){
+      const P = labPoints(g.rows, xk, xt, yk, yt, mnX, mnY, res.ds);
+      if (!P.pts.length) return;
+      allPts = allPts.concat(P.pts);
+      parts.push({ name:g.name, color:'var(--g' + ((i % 7) + 1) + ')', pts:P.pts, fit:labFit(P.pts) });
+    });
+    if (!parts.length) return '';
+    const allFit = labFit(allPts);
+
+    const sets = parts.map(function(p){
+      return { label:p.name, color:p.color, pts:p.pts, line:false, big:false, faint:true, fit:null };
+    });
+    if (allFit.ok) sets.push({ label:'반 전체 추세선', color:'var(--ink)', pts:[], line:false, thick:true, fit:allFit });
+
+    let h = '<div class="box"><h2>반 전체 경향</h2>' +
+            '<p class="lead">모둠 <b>' + parts.length + '개</b>의 점 <b>' + allPts.length + '개</b>를 한 그래프에 모았습니다. ' +
+            '모둠 하나로는 안 보이던 관계가 여기서 드러납니다.</p>' +
+            '<div class="chartbox">' + labChart(sets, { xLabel:xTxt, yLabel:yTxt, noId:true }) + '</div>';
+    h += '<div class="fitcard"><b>반 전체를 하나로 봤을 때</b>' +
+         fitLineHTML(allFit, LAB_TF[yt].unit(yUnit), LAB_TF[xt].unit(xUnit), '') + '</div>';
+    h += '<div class="tblwrap"><table><thead><tr><th>모둠</th><th>점</th><th>기울기' +
+         (slopeUnit(LAB_TF[yt].unit(yUnit), LAB_TF[xt].unit(xUnit))
+            ? ' (' + esc(slopeUnit(LAB_TF[yt].unit(yUnit), LAB_TF[xt].unit(xUnit))) + ')' : '') +
+         '</th><th>R²</th></tr></thead><tbody>';
+    parts.forEach(function(p){
+      h += '<tr><td><span style="display:inline-block;width:10px;height:10px;border-radius:3px;background:' +
+           p.color + '"></span> ' + esc(p.name) + '</td><td>' + p.pts.length + '</td><td>' +
+           esc(p.fit.ok ? labNum(p.fit.slope) : '—') + '</td><td>' +
+           esc(p.fit.ok ? fmtR2(p.fit.r2) : '—') + '</td></tr>';
+    });
+    h += '</tbody></table></div>';
+    h += '<p class="muted" style="margin-top:10px">모둠마다 기울기가 조금씩 다른 것은 자연스럽습니다. ' +
+         '<b>기울기가 크게 벗어난 모둠</b>이 있다면 무엇이 달랐는지 이야기해 보세요.</p>';
+    h += '</div>';
+    return h;
+  }
+
+  function anResultHTML(exp, res, rows, groups, forFile){
+    const e = exp;
+    let h = '<div class="box"><span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+            '<h2 style="margin-top:8px">' + esc(e.title) + ' — 분석 결과</h2>';
+    if (res.goal) h += '<div class="dtquote"><b>무엇을 보려는 실험인가요</b><br>' + esc(res.goal) + '</div>';
+    h += '<p class="muted">쓴 줄 ' + rows.length + '개' +
+         (groups && groups.length > 1 ? ' · 모둠 ' + groups.length + '개' : '') +
+         (AN.when ? ' · ' + esc(AN.when) : '') + '</p>';
+    h += poolBadgeHTML(e, true);
+    h += '</div>';
+
+    h += '<div class="box"><h2>차례대로 해 본 것</h2>';
+    if (!res.blocks.length) h += '<div class="empty">이 실험에는 자동 분석 순서가 없습니다.</div>';
+    res.blocks.forEach(function(b, i){ h += anBlockHTML(b, i); });
+    h += '</div>';
+
+    if (res.verdict){
+      h += '<div class="box"><h2>그래서 무엇을 말할 수 있나요</h2>' +
+           '<div class="anverdict">' + esc(anFill(res.verdict.text, res.vals)) + '</div>' +
+           '<p class="muted">이 문장은 <b>지금 붙여넣은 값</b>을 보고 고른 것입니다. ' +
+           '값이 달라지면 다른 문장이 나옵니다.</p></div>';
+    }
+
+    h += anClassHTML(res, groups);
+
+    if (e.read) h += '<div class="box"><h2>결과를 이렇게 읽어요</h2><p class="lead">' + esc(e.read) + '</p></div>';
+
+    if ((e.std || []).length && window.LAB){
+      h += '<div class="box"><h2>성취기준</h2>' + e.std.map(function(c){
+        return '<div class="stdrow"><span class="pill">' + esc(c) + '</span><span>' + esc(LAB.stdText(c)) + '</span></div>';
+      }).join('') + srcLine([e.src, e.altSrc].filter(Boolean), e.srcRef) + '</div>';
+    }
+
+    if (!forFile){
+      h += '<div class="box"><div class="improw">' +
+           '<button id="btnAnSave" class="btn btn-solid" type="button" style="min-height:48px">HTML 파일로 저장</button>' +
+           '<button id="btnAnAgain" class="btn btn-sm" type="button" style="min-height:44px">다른 값으로 다시</button>' +
+           '</div><p class="muted" style="margin-top:8px">저장한 파일은 인터넷 없이도 열리고, 인쇄하면 그대로 보고서가 됩니다.</p></div>';
+    }
+    return h;
+  }
+
+  //  혼자 열리는 HTML — 작업 파일과 같은 방식(WORK_CSS)을 그대로 씁니다.
+  const AN_CSS = WORK_CSS +
+    ':root{--g1:#20B2A6;--g2:#54B4E8;--g3:#FFC130;--g4:#FF8C6B;--g5:#8B7FD4;--g6:#4FB477;--g7:#E88FB5}' +
+    '.box{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0;' +
+    'box-shadow:0 8px 22px rgba(37,71,83,.07)}' +
+    '.box h2{font-size:19px;margin:0 0 10px;color:var(--mint-d)}' +
+    '.pill{display:inline-block;font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;' +
+    'background:rgba(32,178,166,.14);color:var(--mint-d)}' +
+    '.pill.sun{background:rgba(255,193,48,.24);color:#9A6B00}' +
+    '.pill.coral{background:rgba(255,140,107,.2);color:#C9542F}' +
+    '.pill.sky{background:rgba(84,180,232,.18);color:#2A7FB0}' +
+    '.muted{color:var(--muted);font-size:14px}.lead{color:#4C6B78;font-size:15px}' +
+    '.fitcard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px 14px;margin-bottom:10px}' +
+    '.fitcard>b{display:block;font-size:15px;margin-bottom:6px}' +
+    '.fitrow{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px;margin-top:4px}' +
+    '.fitrow span b{font-size:17px}' +
+    '.tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}' +
+    '.chartbox{width:100%;overflow-x:auto}.chartbox svg{display:block;max-width:100%;height:auto}' +
+    '.labsvg{display:block;width:100%;height:auto}' +
+    '.anstep{border-left:3px solid var(--mint);padding-left:13px;margin:16px 0}' +
+    '.anstep>b{display:block;font-size:15px;margin-bottom:4px}' +
+    '.ansay{font-size:15.5px;margin:4px 0 8px}' +
+    '.anverdict{border:2px solid var(--mint);background:var(--cream);border-radius:14px;padding:14px 16px;' +
+    'font-size:16.5px;line-height:1.7;margin:12px 0}' +
+    '.anpair{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}' +
+    '.anpair figcaption{font-size:13px;color:var(--muted);font-weight:700;margin-bottom:4px}' +
+    '.stdrow{display:flex;gap:8px;align-items:flex-start;margin-bottom:8px;font-size:14px}' +
+    '.dtquote{border-left:4px solid var(--mint);background:var(--cream);border-radius:0 12px 12px 0;' +
+    'padding:12px 14px;margin:10px 0;font-size:14.5px}' +
+    '.empty{color:var(--muted);font-size:14px;text-align:center;padding:24px 10px}' +
+    '.srcline{font-size:12.5px;color:var(--muted);line-height:1.7;margin-top:14px;' +
+    'border-top:1px solid var(--line);padding-top:10px}';
+
+  function anSaveFile(){
+    if (!AN.exp || !AN.res) return;
+    const body = anResultHTML(AN.exp, AN.res, AN.rows, AN.groups, true);
+    const html = '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8" />\n' +
+      '<meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
+      '<title>' + esc(AN.exp.title + ' 분석 결과') + '</title>\n<style>\n' + AN_CSS + '\n</style>\n</head>\n<body>\n' +
+      '<div class="wrap"><h1>' + esc(AN.exp.title) + ' — 분석 결과</h1>' +
+      '<p class="meta">MBL 센서 수업허브 · 붙여넣기 분석' + (AN.when ? ' · ' + esc(AN.when) : '') + '</p>' +
+      body +
+      '<p class="foot">© 2026 조승재(과학이조선생) · MBL 센서 수업허브<br>' +
+      '이 파일은 붙여넣은 값으로 이 기기 안에서 계산한 것입니다.</p></div>\n</body>\n</html>\n';
+    const clean = s => String(s == null ? '' : s).replace(/[\\/:*?"<>|.\s]+/g, '').slice(0, 24);
+    const name = '분석_' + (clean(AN.exp.title) || '실험') + '_' + today8() + '.html';
+    try {
+      const url = URL.createObjectURL(new Blob([html], { type:'text/html;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      anMsg('내려받았습니다 — ' + name, 'ok');
+    } catch (err){ anMsg('파일로 저장하지 못했습니다. 이 화면을 인쇄(Ctrl+P)해도 됩니다.', 'bad'); }
+  }
+
+  // ── 화면 다루기 ────────────────────────────────────────────────
+  function anFillExpList(){
+    const sel = $('anExp');
+    if (!sel || sel.dataset.ready === '1') return;
+    if (!window.LAB){ sel.innerHTML = '<option value="">실험 자료를 읽지 못했습니다</option>'; return; }
+    let h = '<option value="">— 실험을 고르세요 —</option>';
+    [1, 2, 3].forEach(function(g){
+      const list = LAB.byGrade(g);
+      if (!list.length) return;
+      h += '<optgroup label="중' + g + '">';
+      list.forEach(function(e){
+        h += '<option value="' + esc(e.id) + '">' + esc(e.unit + ' · ' + e.title) + '</option>';
+      });
+      h += '</optgroup>';
+    });
+    sel.innerHTML = h;
+    sel.dataset.ready = '1';
+  }
+  function anPickExp(){
+    const id = $('anExp').value;
+    AN.exp = (id && window.LAB) ? LAB.byId(id) : null;
+    const box = $('anGoal');
+    if (!AN.exp){ box.innerHTML = ''; }
+    else {
+      const A = LAB.analysisOf ? LAB.analysisOf(AN.exp) : AN.exp.analysis;
+      const sp = anSpec();
+      const cols = [((sp.x && sp.x.label) || '가로축') + ((sp.x && sp.x.unit) ? ' (' + sp.x.unit + ')' : '')]
+        .concat((sp.series || []).map(s => (s.label || '') + (s.unit ? ' (' + s.unit + ')' : '')));
+      box.innerHTML = '<div class="note"><b>이 실험이 보려는 것</b><br>' + esc((A && A.goal) || AN.exp.why || '') +
+        '<br><span class="muted">필요한 열 · ' + esc(cols.join(' / ')) + '</span></div>' + poolBadgeHTML(AN.exp, true);
+    }
+    if (AN.imp) anRenderMap();
+  }
+  function anRead(text, from){
+    const r = parseTable(text);
+    if (r.err){ AN.imp = null; $('anPanel').classList.add('hidden'); anMsg(r.err, 'bad'); return; }
+    AN.imp = r;
+    AN.imp.gsplit = findGroupCol(r);
+    AN.gpick = '';
+    AN.pickFor = '';                       // 새 표를 읽었으니 열 짝짓기를 처음부터 다시 합니다
+    const dName = { '\t':'탭', ';':'세미콜론', '|':'막대(|)', ',':'쉼표', 'WS':'빈칸' }[r.delim] || r.delim;
+    $('anFound').textContent = (from ? from + ' · ' : '') + '자료 ' + r.body.length.toLocaleString() +
+      '행 · 열 ' + r.width + '개 · ' + dName + ' 기준으로 나뉘어 있습니다.' +
+      (AN.imp.gsplit ? ' 첫 열에 모둠 이름이 보입니다.' : '');
+    $('anPanel').classList.remove('hidden');
+    anRenderMap();
+    anMsg('읽었습니다. 열이 맞는지 보고 [분석하기]를 눌러 주세요.', 'ok');
+  }
+  function anRenderMap(){
+    if (!AN.imp) return;
+    const sp = anSpec();
+    const r = pickCols(AN.imp.cols, sp, AN.imp.gsplit ? [AN.imp.gsplit.col] : []);
+    //  같은 실험 · 같은 표일 때만 직접 고른 자리를 지킵니다(모둠을 바꿔도 그대로).
+    const key = ((AN.exp && AN.exp.id) || '') + '#' + AN.imp.cols.map(function(c){ return c.name; }).join('|');
+    if (AN.pickFor !== key){ AN.pick = r.pick; AN.guess = r.guess; AN.pickFor = key; }
+    const labels = [ ((sp.x && sp.x.label) || '가로축') + ((sp.x && sp.x.unit) ? ' (' + sp.x.unit + ')' : '') ]
+      .concat((sp.series || []).map((s, i) => (s.label || ('계열 ' + (i + 1))) + (s.unit ? ' (' + s.unit + ')' : '')));
+
+    let h = '';
+    labels.forEach(function(lb, k){
+      const sel = (AN.pick[k] === undefined) ? -1 : AN.pick[k];
+      const iffy = (sel < 0) || !!(AN.guess && AN.guess[k]);
+      h += '<div class="ml"><label for="anSel' + k + '">' + esc(lb) + '</label></div>';
+      h += '<div><select id="anSel' + k + '" data-k="' + k + '"' + (iffy ? ' class="need"' : '') + '>';
+      h += '<option value="-1">— 안 넣음 —</option>';
+      if (k === 0) h += '<option value="-2"' + (sel === -2 ? ' selected' : '') + '>순번으로 채우기 (1, 2, 3…)</option>';
+      AN.imp.cols.forEach(function(c){
+        h += '<option value="' + c.idx + '"' + (sel === c.idx ? ' selected' : '') + '>' +
+             esc(c.name) + (c.ratio >= 0.5 ? '' : ' (숫자 아님)') + '</option>';
+      });
+      h += '</select></div>';
+    });
+    $('anMap').innerHTML = h;
+    Array.prototype.forEach.call($('anMap').querySelectorAll('select'), function(sl){
+      sl.addEventListener('change', function(){
+        AN.pick[Number(sl.dataset.k)] = Number(sl.value);
+        if (AN.guess) AN.guess[Number(sl.dataset.k)] = false;
+        anRenderMap();
+      });
+    });
+
+    const gbox = $('anGroupBox');
+    gbox.innerHTML = AN.imp.gsplit
+      ? groupBoxHTML(AN.imp.gsplit, AN.gpick, 'anGSel') +
+        '<p class="muted">갈라 담지 않으면 <b>모둠별 기울기 표와 반 전체 산점도</b>까지 함께 보여 드립니다.</p>'
+      : '';
+    const gs = $('anGSel');
+    if (gs) gs.addEventListener('change', function(){ AN.gpick = gs.value; anRenderMap(); });
+
+    //  미리보기 — 실제로 분석에 들어갈 줄 몇 개
+    const built = anBuildRows(AN.gpick);
+    let p = '<table><thead><tr><th></th>' + labels.map(l => '<th>' + esc(l) + '</th>').join('') + '</tr></thead><tbody>';
+    built.slice(0, 5).forEach(function(r, i){
+      p += '<tr><td class="rowno">' + (i + 1) + '</td>' +
+           r.map(v => '<td>' + (v === null || v === undefined || v === '' ? '<span class="muted">—</span>' : esc(v)) + '</td>').join('') + '</tr>';
+    });
+    p += '</tbody></table>';
+    $('anPrev').innerHTML = built.length ? p : '<div class="empty">넣을 줄이 없습니다. 열을 다시 골라 주세요.</div>';
+  }
+  //  고른 열로 분석에 쓸 줄 만들기 — 데이터 입력표와 같은 모양([x, s0, s1…])입니다.
+  //  가로축이 글자(물질 이름 등)이면 그대로 둡니다(순위 견주기에 씁니다).
+  function anBuildRows(gname){
+    if (!AN.imp || !AN.exp) return [];
+    const sp = anSpec();
+    const cols = (sp.series || []).length + 1;
+    const g = AN.imp.gsplit;
+    const out = [];
+    AN.imp.body.forEach(function(br, bi){
+      if (gname && g && g.owner[bi] !== gname) return;
+      const row = [];
+      let any = false;
+      for (let c = 0; c < cols; c++){
+        const src = AN.pick[c];
+        if (src === -2){ row.push(out.length + 1); any = true; continue; }
+        if (src === undefined || src < 0){ row.push(null); continue; }
+        const raw = br[src];
+        const v = toNum(raw);
+        if (isFinite(v)){ row.push(v); any = true; }
+        else if (c === 0 && String(raw == null ? '' : raw).trim() !== ''){ row.push(String(raw).trim()); any = true; }
+        else row.push(null);
+      }
+      if (any) out.push(row);
+    });
+    return out;
+  }
+  function anGroupsOf(){
+    const g = AN.imp && AN.imp.gsplit;
+    if (!g || AN.gpick) return [];
+    return g.names.map(function(n){ return { name:n, rows:anBuildRows(n) }; })
+                  .filter(function(x){ return x.rows.length >= 2; });
+  }
+
+  function anRun(){
+    if (!AN.exp){ anMsg('먼저 실험을 골라 주세요.', 'bad'); return; }
+    if (!AN.imp){ anMsg('분석할 값을 붙여넣어 주세요.', 'bad'); return; }
+    const rows = anBuildRows(AN.gpick);
+    if (rows.length < 2){ anMsg('값이 있는 줄이 2개 이상이어야 합니다. 열을 다시 골라 보세요.', 'bad'); return; }
+    const sp = anSpec();
+    const okSeries = (sp.series || []).some(function(s, i){ return AN.pick[i + 1] !== undefined && AN.pick[i + 1] >= 0; });
+    if (!okSeries){ anMsg('측정값 열을 적어도 하나는 골라 주세요.', 'bad'); return; }
+
+    const d = new Date();
+    AN.when = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+    AN.rows = rows;
+    AN.groups = anGroupsOf();
+    AN.res = runAnalysis(AN.exp, rows);
+    $('anOut').innerHTML = anResultHTML(AN.exp, AN.res, rows, AN.groups, false);
+    const bs = $('btnAnSave'); if (bs) bs.addEventListener('click', anSaveFile);
+    const ba = $('btnAnAgain');
+    if (ba) ba.addEventListener('click', function(){
+      $('anOut').innerHTML = '';
+      $('anPaste').focus();
+      window.scrollTo(0, 0);
+    });
+    anMsg('분석했습니다. 아래를 보세요.', 'ok');
+    const out = $('anOut');
+    if (out.firstChild) out.firstChild.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  function openAnalyze(){
+    anFillExpList();
+    show('analyze');
+    $('topSub').textContent = '데이터 붙여넣고 분석하기';
+    anMsg('');
+    window.scrollTo(0, 0);
+    $('anExp').focus();
+  }
+
+  (function bindAnalyze(){
+    const ob = $('btnAnalyzeOpen');
+    if (!ob) return;
+    ob.addEventListener('click', openAnalyze);
+    $('anExp').addEventListener('change', anPickExp);
+    $('btnAnBack').addEventListener('click', function(){
+      $('anOut').innerHTML = '';
+      show('join');
+      $('topSub').textContent = '참여코드를 입력하고 들어오세요';
+      window.scrollTo(0, 0);
+    });
+    $('btnAnFile').addEventListener('click', function(){ $('anFile').click(); });
+    $('anFile').addEventListener('change', function(){
+      const f = this.files && this.files[0];
+      if (!f) return;
+      if (f.size > 8 * 1024 * 1024){ anMsg('파일이 너무 큽니다(8MB 넘음).', 'bad'); return; }
+      const fr = new FileReader();
+      fr.onload = function(){ $('anPaste').value = String(fr.result || ''); anRead($('anPaste').value, f.name); };
+      fr.onerror = function(){ anMsg('파일을 읽지 못했습니다.', 'bad'); };
+      fr.readAsText(f, 'utf-8');
+    });
+    $('btnAnClear').addEventListener('click', function(){
+      $('anPaste').value = ''; AN.imp = null; AN.pickFor = '';
+      $('anPanel').classList.add('hidden'); $('anOut').innerHTML = '';
+      anMsg('지웠습니다.');
+    });
+    $('btnAnSheetOpen').addEventListener('click', function(){
+      $('anSheetBox').classList.toggle('hidden');
+      if (!$('anSheetBox').classList.contains('hidden')) $('anSheetURL').focus();
+    });
+    const anSheetGo = function(){
+      const btn = $('btnAnSheetGo');
+      btn.disabled = true;
+      anMsg('구글 시트를 읽는 중입니다…', 'warn');
+      fetchSheet($('anSheetURL').value).then(function(r){
+        btn.disabled = false;
+        $('anPaste').value = r.text;
+        $('anSheetBox').classList.add('hidden');
+        anRead(r.text, r.via);
+      }).catch(function(e){
+        btn.disabled = false;
+        anMsg(String((e && e.message) || e), 'bad');
+      });
+    };
+    $('btnAnSheetGo').addEventListener('click', anSheetGo);
+    $('anSheetURL').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); anSheetGo(); } });
+    $('anPaste').addEventListener('paste', function(){
+      const el = this;
+      setTimeout(function(){ if (el.value.trim()) anRead(el.value, '붙여넣은 표'); }, 0);
+    });
+    $('anPaste').addEventListener('change', function(){ if (this.value.trim()) anRead(this.value, '붙여넣은 표'); });
+    $('btnAnRun').addEventListener('click', function(){
+      if (!AN.imp && $('anPaste').value.trim()) anRead($('anPaste').value, '붙여넣은 표');
+      anRun();
+    });
+  })();
+
+  const SRC_NAME  = { seoul:'서울시교육청 자료집', ez:'이지메이커 사례집', cb:'교과서 수록표·클래스보드', own:'이 앱에서 새로 구성' };
   //  자료집 정식 명칭 — 설명서(manual.html#sources)의 출처 절과 같은 표기를 씁니다.
   const SRC_FULL  = {
     seoul: '『2026 교구 및 디지털 도구 활용 과학 교수학습자료(중등 과학)』 서울특별시교육청 창의미래교육과, 2026년 7월',
-    ez   : '『AI-STEAM 교육을 위한 디지털 과학실험 따라하기 — 이지메이커 수업사례집(중학 합본 V1)』 최효석(영서중)'
+    ez   : '『AI-STEAM 교육을 위한 디지털 과학실험 따라하기 — 이지메이커 수업사례집(중학 합본 V1)』 최효석(영서중)',
+    cb   : '『사이언스큐브 무선센서 카탈로그 v9』의 2022 개정 중등교과서 수록 탐구목록 · 클래스보드 무선 기초측정 자료 · 최효석(영서중) 공기압 연수 자료',
+    own  : '자료집에 같은 실험이 없어, 2022 개정 교육과정 성취기준을 바탕으로 이 앱에서 새로 구성했습니다'
   };
   const SRC_NOTE  = '실험 절차와 해설은 위 자료를 참고해 다시 쓴 것이며, 원문을 그대로 옮기지 않았습니다. ' +
                     '성취기준은 2022 개정 교육과정(교육부 고시 제2022-33호 [별책 9])을 따릅니다.';
-  function srcLine(keys){
+  //  ref 는 원자료에서의 위치(예: '이지메이커 사례집 19번')입니다.
+  //  자료집을 손에 든 선생님이 같은 실험을 바로 펴 볼 수 있게 하려는 것입니다.
+  function srcLine(keys, ref){
     const list = (keys || []).filter(k => SRC_FULL[k]);
-    if (!list.length) return '';
-    return '<p class="srcline">출처 · ' + list.map(k => esc(SRC_FULL[k])).join('<br>출처 · ') +
-           '<br>' + esc(SRC_NOTE) +
-           ' <a href="./manual.html#sources">자세한 출처 보기</a></p>';
+    if (!list.length && !ref) return '';
+    let h = '<p class="srcline">';
+    if (ref) h += '자료집에서 찾기 · <b>' + esc(ref) + '</b><br>';
+    if (list.length){
+      h += '출처 · ' + list.map(k => esc(SRC_FULL[k])).join('<br>출처 · ');
+      //  참고한 자료가 아예 없는 실험(own)에는 "위 자료를 참고해 다시 썼다"는 말이 맞지 않습니다.
+      if (!(list.length === 1 && list[0] === 'own')) h += '<br>' + esc(SRC_NOTE);
+      h += ' <a href="./manual.html#sources">자세한 출처 보기</a>';
+    }
+    return h + '</p>';
   }
   const LEVEL_TXT = { 1:'쉬움', 2:'보통', 3:'어려움' };
+
+  // ── 합치기 값어치(pool.fit) ────────────────────────────────────
+  //  3 = 반 전체로 합치면 관계가 뚜렷해짐 · 2 = 표본이 늘어 도움이 됨 · 1 = 합쳐도 크게 이롭지 않음
+  const POOL_TXT = {
+    3: { pill:'coral', short:'반 전체로 합치면 좋아요', long:'모둠마다 다른 조건을 골라 재고, 반 전체로 합치면 관계식이 뚜렷하게 드러납니다.' },
+    2: { pill:'sun',   short:'합치면 도움이 돼요',       long:'표본이 늘어 경향이 또렷해지거나, 모둠 사이의 차이 자체가 좋은 이야깃거리가 됩니다.' },
+    1: { pill:'sky',   short:'모둠 자료만으로 충분해요',  long:'모둠마다 조건이 같아 곡선이 겹칩니다. 합쳐도 새로 보이는 것이 적습니다(실험이 나쁘다는 뜻이 아닙니다).' }
+  };
+  function poolOf(e){ return (e && e.pool) ? e.pool : null; }
+  function poolFitOf(e){
+    if (window.LAB && LAB.poolFit) return LAB.poolFit(e);
+    const p = poolOf(e);
+    return (p && Number(p.fit)) ? Number(p.fit) : 1;
+  }
+  function poolPillHTML(e){
+    const t = POOL_TXT[poolFitOf(e)];
+    return t ? '<span class="pill ' + t.pill + '">🧩 ' + esc(t.short) + '</span>' : '';
+  }
+  function poolBadgeHTML(e, withWhy){
+    const p = poolOf(e), t = POOL_TXT[poolFitOf(e)];
+    if (!t) return '';
+    let h = '<div class="taglist">' + poolPillHTML(e) + '</div>';
+    if (!withWhy) return h;
+    h += '<div class="note"><b>반 전체로 합치면?</b> ' + esc(t.long);
+    if (p && p.why)  h += '<br>' + esc(p.why);
+    if (p && p.axis) h += '<br><span class="muted">합칠 때 가로축 · ' + esc(p.axis) + '</span>';
+    h += '</div>';
+    return h;
+  }
   let ATLAS_LOCK_HTML = null;   // 도감 잠금 안내의 원래 글 (고르기 모드에서 잠깐 바꿉니다)
 
   // 참여코드 없이 도감만 볼 때는 나머지 탭을 잠그고 까닭을 알려 줍니다.
@@ -5910,7 +6864,7 @@
     if (vsel && !(LAB.VENDORS && LAB.vendorOk)) vsel.classList.add('hidden');
     atlasFillUnits();
     renderAtlasList();
-    ['aGrade','aUnit','aVendor','aSearch'].forEach(function(id){
+    ['aGrade','aUnit','aVendor','aSearch','aPool'].forEach(function(id){
       const el = $(id);
       if (!el) return;
       el.addEventListener('input', function(){
@@ -5942,6 +6896,7 @@
     if (g) list = list.filter(e => Number(e.grade) === Number(g));
     if (u) list = list.filter(e => e.unit === u);
     if (v && LAB.vendorOk) list = list.filter(e => LAB.vendorOk(e, v));
+    if ($('aPool') && $('aPool').checked) list = list.filter(e => poolFitOf(e) >= 3);
     $('aCount').textContent = list.length + '건';
 
     // 걸러낸 결과에서 사라진 실험은 펼침을 접습니다.
@@ -5960,7 +6915,7 @@
              '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
              '<b>' + esc(e.title) + '</b>' +
              '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div>' +
-             vendorTags(e) + '</div>';
+             vendorTags(e) + poolPillHTML(e) + '</div>';
     }).join('');
 
     Array.prototype.forEach.call($('atlasList').querySelectorAll('.exp'), function(el){
@@ -6027,6 +6982,13 @@
     if (vt) h += '<p class="muted" style="font-size:13px">이 실험을 할 수 있는 장비 · ' + vt + '</p>';
     h += vendorBadge(av);
     if (e.why) h += '<div class="dtquote">' + esc(e.why) + '</div>';
+    h += poolBadgeHTML(e, true);
+    if (e.pool && e.pool.watch)
+      h += '<div class="note">👀 <b>합쳐 놓으면 눈에 띄는 것</b><br>' + esc(e.pool.watch) + '</div>';
+    if (e.analysis && e.analysis.goal)
+      h += '<h3>이 실험이 보려는 것</h3><p class="lead">' + esc(e.analysis.goal) + '</p>' +
+           '<p class="muted" style="margin-top:6px">모은 값을 붙여넣으면 이 순서대로 분석해 드립니다 — 첫 화면의 ' +
+           '<b>[데이터 붙여넣고 분석하기]</b>.</p>';
 
     if ((e.sensors || []).length){
       h += '<h3>필요한 센서</h3><div class="taglist">' +
@@ -6059,7 +7021,7 @@
       }).join('');
     }
     if (e.textbook) h += '<h3>교과서</h3><p class="muted">' + esc(e.textbook) + '</p>';
-    h += srcLine([e.src, e.altSrc].filter(Boolean));
+    h += srcLine([e.src, e.altSrc].filter(Boolean), e.srcRef);
     h += '</div>';
     return h;
   }

@@ -1,4 +1,5 @@
-# 빌드 중간 산출물 — 내용은 lab-data.js 에 모두 합쳐져 있습니다
+# 실험 38건 시점의 낡은 원본 조각 — 지금 쓰이는 자료는 lab-data.js(48건) 하나뿐입니다.
+# 다시 합치면 cb-01~cb-10 과 판정 레시피 손질이 사라지니, 자료는 lab-data.js 를 직접 고치세요.
 lab-part-*.js
 vendor-steps-*.js
 .claude/

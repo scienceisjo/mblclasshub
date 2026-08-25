@@ -142,6 +142,15 @@
   .vpill.b i{color:#2A7FB0}
   .src{margin-top:14px;font-size:12.5px;color:var(--muted)}
 
+  /* ── 절 안 소제목 · 표 ──────────────────────────────── */
+  h3.sub{font-family:var(--display);font-size:20px;font-weight:400;margin:30px 0 8px;color:var(--ink)}
+  .tblwrap{margin-top:14px;overflow-x:auto;border:1px solid var(--line);border-radius:var(--r);background:var(--paper)}
+  .tbl{border-collapse:collapse;width:100%;min-width:560px;font-size:13.5px}
+  .tbl th,.tbl td{border-bottom:1px solid var(--line);padding:10px 13px;text-align:left;vertical-align:top;line-height:1.6}
+  .tbl th{background:var(--cream);font-weight:800;color:var(--ink);font-size:13px}
+  .tbl tr:last-child td{border-bottom:none}
+  .tbl td b{color:var(--ink)}
+
   /* ── 그림 설명(SVG) ─────────────────────────────────── */
   .figs{display:grid;grid-template-columns:1.25fr .75fr;gap:20px;margin-top:22px;align-items:start}
   .fig{border:1px solid var(--line);border-radius:var(--r);background:var(--paper);
@@ -557,6 +566,7 @@
       <div class="vendors">
         <span class="vpill">이지메이커로 가능 <i id="nEz">—</i></span>
         <span class="vpill b">사이언스큐브로 가능 <i id="nSc">—</i></span>
+        <span class="vpill">반 전체로 합치기 아주 좋음 <i id="nPoolTop">—</i></span>
       </div>
       <p class="src">출처 — 서울시교육청 MBL 교수학습자료집 · 이지메이커 수업사례집. 같은 실험이라도 업체마다 장비 다루는 법이 달라 절차를 따로 실었습니다.</p>
       <div class="cta">
@@ -611,6 +621,139 @@
   </div>
 </section>
 
+<!-- ── 구글 시트로 걷기 · 붙여넣기 · 합치기 좋은 실험 ──── -->
+<section class="section" id="collect">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="badge sky">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 9h18M9 9v11M15 9v11"/></svg>
+        걷은 자료를 그대로
+      </span>
+      <h2>구글 시트로 걷었다면, 그대로 합쳐 봅니다</h2>
+      <p>이미 시트 한 장에 모둠별로 값을 받아 두셨나요. 손으로 갈라 옮기지 마세요.
+        주소만 붙여넣으면 <b>모둠별로 갈라</b> 반 전체 그래프까지 그대로 이어집니다.</p>
+    </div>
+
+    <div class="ways3">
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">🔗</div>
+          <div class="fno">STEP 01</div><h3>시트를 공개 공유로</h3>
+          <p><b>[공유] → 「링크가 있는 모든 사용자」·「뷰어」</b>. 여기서 막히는 분이 가장 많습니다. 비공개 시트는 값 대신 로그인 화면이 돌아와 읽히지 않습니다.</p>
+        </div>
+      </article>
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">📋</div>
+          <div class="fno">STEP 02</div><h3>주소를 그대로 붙여넣기</h3>
+          <p>주소창의 <b>…/spreadsheets/d/…</b> 를 통째로. 시트 번호와 열어 둔 탭을 알아서 뽑아 값만 내려받습니다.</p>
+        </div>
+      </article>
+      <article class="fcard">
+        <div class="fbody">
+          <div class="wayic">📈</div>
+          <div class="fno">STEP 03</div><h3>모둠으로 갈라 합치기</h3>
+          <p>반 전체 산점도·모둠별 기울기·제출 현황·채점·생기부까지, 작업 파일로 걷었을 때와 <b>똑같은 화면</b>입니다.</p>
+        </div>
+      </article>
+    </div>
+
+    <h3 class="sub">선생님이 쓰시던 그 모양 그대로 읽습니다</h3>
+    <p>수합 시트는 대개 이렇게 생겼습니다 — <b>머리글이 두 줄</b>, 모둠 이름은 <b>모둠의 첫 줄에만</b>, 마지막 열은 시트 수식이 만든 값.
+      손으로 가르기 성가신 이 세 가지를 그대로 처리합니다.</p>
+    <div class="tblwrap">
+      <table class="tbl">
+        <tr><th>　</th><th>값을 작성하세요</th><th>값을 작성하세요</th><th>절대 건들지 말 것!</th></tr>
+        <tr><td>　</td><td><b>부피(mL)</b></td><td><b>압력(기압)</b></td><td><b>부피 X 압력</b></td></tr>
+        <tr><td><b>예시</b></td><td>60</td><td>0.5</td><td>30</td></tr>
+        <tr><td>　</td><td>42.5</td><td>0.7</td><td>29.75</td></tr>
+        <tr><td><b>1모둠</b></td><td>60</td><td>0.5</td><td>30</td></tr>
+        <tr><td>　</td><td>53</td><td>0.58</td><td>30.74</td></tr>
+        <tr><td><b>2모둠</b></td><td>60</td><td>0.51</td><td>30.6</td></tr>
+      </table>
+    </div>
+    <ul class="list">
+      <li><b>머리글이 두 줄이어도</b><span> — 숫자가 처음 나오는 줄을 값의 시작으로 보고, 그 위에서 이름이 가장 많이 적힌 줄을 열 이름으로 씁니다.</span></li>
+      <li><b>이름이 띄엄띄엄이어도</b><span> — 이름이 적힌 줄에서 새 모둠이 시작되고 아래 빈 줄은 그 모둠에 딸립니다. <b>12모둠 + 예시 = 107줄</b> 짜리 시트가 정확히 12모둠으로 갈립니다.</span></li>
+      <li><b>단위는 괄호에서 떼어</b><span> — <b>부피(mL)</b> 는 이름 <b>부피</b> · 단위 <b>mL</b> 로 읽혀 축과 기울기 단위에 그대로 붙습니다.</span></li>
+      <li><b>예시 줄은 기본으로 뺍니다</b><span> — 이름에 예시·보기·샘플이 들어간 모둠은 실제 측정값이 아니라고 봅니다. 진짜 자료라면 한 번 눌러 넣습니다.</span></li>
+    </ul>
+
+    <h3 class="sub">공개 공유가 막힌 학교라면 — 붙여넣기 분석 모드</h3>
+    <p>교육청·학교 계정이 외부 공유를 정책으로 막아 둔 곳이 많습니다. 그래서 <b>주소를 쓰지 않는 길</b>을 나란히 두었습니다.
+      시트에서 표를 통째로 복사(<b>Ctrl+A → Ctrl+C</b>)해 붙여넣기만 하면, 그 다음은 주소로 읽었을 때와 완전히 같습니다.
+      탭으로 나뉜 것도 쉼표로 나뉜 것도 알아서 읽고, 엑셀·한셀에서 복사한 표도 그대로 들어옵니다.</p>
+
+    <div class="notes">
+      <div class="note">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l7 3v6c0 4-3 7-7 9-4-2-7-5-7-9V6z"/><path d="M9 12l2 2 4-4"/></svg></span>
+        <p><b>읽기만 합니다</b>시트에 쓰거나 지우지 않고, 읽은 값은 그 브라우저 안에서만 삽니다.
+          붙여넣기 쪽은 인터넷으로 아예 나가지 않습니다. 시트에는 <b>학생 이름 대신 모둠 이름</b>만 적게 하세요.</p>
+      </div>
+      <div class="note">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span>
+        <p><b>수업이 끝나면 다시 비공개로</b>공개 공유로 열어 둔 동안에는 링크를 아는 누구나 볼 수 있습니다.
+          시트로 걷은 모둠은 <b>돌려줄 원본 파일이 없어</b> 「평가 담아 파일 다시 내려받기」만 되지 않습니다. 채점과 생기부는 그대로 됩니다.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ── 합치기 좋은 실험 ────────────────────────────────── -->
+<section class="section" id="pool">
+  <div class="wrap">
+    <div class="section-head">
+      <span class="badge coral">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><circle cx="7" cy="16" r="2.4"/><circle cx="13" cy="10" r="2.4"/><circle cx="19" cy="6" r="2.4"/><path d="M3 20h18"/></svg>
+        실험을 고르기 전에
+      </span>
+      <h2>반 전체로 합치기 좋은 실험이 따로 있습니다</h2>
+      <p>합치는 것이 늘 이롭지는 않습니다. 모둠마다 <b>다른 조건을 골라 재는 실험</b>은 합치는 순간 점이 촘촘해지며 규칙이 드러나고,
+        시작 조건이 제각각인 실험은 겹쳐 놓아도 흩어져 보일 뿐입니다. 그래서 실험 <b>48건 모두</b>에 합치기 값어치를 매겨 두었습니다.</p>
+    </div>
+
+    <div class="nums">
+      <div class="num"><b id="nPool3">14</b><span>합치기 아주 좋음</span></div>
+      <div class="num c2"><b id="nPool2">25</b><span>합치기 좋음</span></div>
+      <div class="num c3"><b id="nPool1">9</b><span>합쳐도 그대로</span></div>
+    </div>
+    <p class="src">실험을 고르는 목록에서 카드마다 <b>[합치기 아주 좋음 ★]</b> · <b>[합치기 좋음]</b> 뱃지로 바로 보입니다.
+      합치기 화면과 <b>여러 반 묶어보기</b> 에는 왜 합치면 좋은지와 <b>어디를 볼지</b>가 상자로 함께 나옵니다.</p>
+
+    <h3 class="sub">합치기 아주 좋은 실험 — 왜 좋고, 무엇을 물을까</h3>
+    <div class="tblwrap">
+      <table class="tbl">
+        <tr><th>실험</th><th>합칠 때의 가로축</th><th>합치면 보이는 것</th><th>어긋난 모둠에게 물을 것</th></tr>
+        <tr><td><b>전압과 전류의 관계<br />(옴의 법칙)</b><br />중2 · 전기와 자기</td><td>전압 (V)</td><td>모둠마다 고른 전압 구간이 달라 점이 이어져 <b>하나의 긴 직선</b>이 됩니다</td><td>기울기가 다르면 저항판이 다른 값이거나 니크롬선이 <b>뜨거워진</b> 것</td></tr>
+        <tr><td><b>거리에 따른 빛의 세기</b><br />중2 · 별과 우주</td><td>거리 (cm)</td><td>가까운 곳부터 먼 곳까지 점이 촘촘해져 <b>역제곱 관계</b>가 드러납니다</td><td>먼 거리에서 값이 바닥에 깔린 모둠은 <b>창가 빛</b>이 들어온 것</td></tr>
+        <tr><td><b>주사기를 누르면 압력은</b><br />중1 · 기체의 성질</td><td>기체의 부피 (mL)</td><td>모둠마다 다른 부피를 재므로 <b>P×V 가 일정</b>하다는 것이 뚜렷해집니다</td><td>많이 누른 모둠일수록 P×V 가 작아지면 <b>밀폐가 새는</b> 것</td></tr>
+        <tr><td><b>용수철에 추를 매달면</b><br />중1 · 힘의 작용</td><td>매단 추의 무게 (N)</td><td>기울기는 제각각이어도 <b>모두 원점을 지나는 직선</b>임이 드러납니다</td><td>뒷부분이 아래로 꺾인 모둠은 <b>탄성 한계</b>를 넘긴 것</td></tr>
+        <tr><td><b>마찰력은 무엇에 따라</b><br />중1 · 힘의 작용</td><td>나무토막 개수 (개)</td><td>점이 수십 개로 늘어 <b>도화지와 사포의 두 직선</b>이 갈라집니다</td><td>원점보다 한참 위에서 출발한 모둠은 <b>당긴 채 영점</b>을 잡은 것</td></tr>
+        <tr><td><b>빛의 세기와 광합성량</b><br />중2 · 식물과 에너지</td><td>밝기 (lx)</td><td>광원과 거리가 달라도 밝기를 가로축에 두면 <b>한 줄로</b> 모입니다</td><td>감소량이 유난히 작은 모둠은 <b>용기 안 온도</b>가 올라간 것</td></tr>
+        <tr><td><b>자유 낙하하는 쇠구슬의<br />순간 속력</b><br />중3 · 운동과 에너지</td><td>낙하 거리 (cm)</td><td>낙하 구간이 넓게 이어져 <b>속력 ∝ √거리</b> 가 뚜렷해집니다</td><td>값이 조금씩 작은 것은 공기 저항 — <b>어느 모둠이나 같은 쪽</b>으로 어긋남</td></tr>
+      </table>
+    </div>
+
+    <div class="roles">
+      <div class="role m">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16h.01"/></svg></span>
+        <p><b>모둠마다 다른 조건을 주는 것이 곧 설계입니다</b>7모둠에 서로 다른 전압 구간·거리·부피를 배정하면 모둠이 재는 양은 줄고
+          반 전체 표본은 일곱 배가 됩니다. 한 모둠 8점이 반 전체 <b>56점</b>이 됩니다.</p>
+      </div>
+      <div class="role">
+        <span class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M12 3l9 16H3z"/><path d="M12 10v4M12 17h.01"/></svg></span>
+        <p><b>「합쳐도 그대로」가 나쁜 실험이라는 뜻은 아닙니다</b>물과 식용유의 비열 비교처럼 <b>한 모둠 안에서 결론이 분명한</b> 실험이 많습니다.
+          그런 차시에는 반 전체 그래프 대신 <b>모둠별 기울기 표</b>를 띄우면 됩니다.</p>
+      </div>
+    </div>
+
+    <div class="cta">
+      <a class="btn btn-solid" href="./teacher.html">선생님용에서 실험 고르기 →</a>
+      <a class="btn" href="./manual.html#pool">설명서에서 자세히</a>
+    </div>
+  </div>
+</section>
+
 <!-- ── 선생님이 하는 일 ────────────────────────────────── -->
 <section class="section" id="teacher">
   <div class="wrap split rev">
@@ -625,6 +768,7 @@
         <li><b>수업 열기</b><span> — 실험을 고르면 참여코드 6자리와 관리코드가 발급됩니다.</span></li>
         <li><b>수업 꾸러미 내려받기</b><span> — 지금 화면 그대로 <b>.json</b> 한 개로. 서버 없이 쓰는 <a href="#simple" style="color:var(--mint-d);font-weight:700">간편 모드</a> 배부용이자, 다른 학교 선생님과 주고받는 파일입니다.</span></li>
         <li><b>제출된 보고서 합치기</b><span> — 학생이 낸 작업 파일들을 끌어다 놓으면 반 전체 산점도·모둠별 기울기·문항별 정답률·미제출 명단이 나옵니다.</span></li>
+        <li><b>구글 시트에서 불러오기</b><span> — 이미 시트로 걷었다면 주소만 붙여넣으면 <b>모둠별로 갈라</b> 같은 화면으로 들어옵니다. 공개 공유가 막힌 학교는 <a href="#collect" style="color:var(--mint-d);font-weight:700">붙여넣기</a>로 합니다.</span></li>
         <li><b>모둠 비밀번호</b><span> — 모둠마다 4자리. 남의 모둠 자료를 건드릴 수 없습니다.</span></li>
         <li><b>실시간 현황</b><span> — 어느 모둠이 어디까지 왔는지 한 화면에서 봅니다.</span></li>
         <li><b>보고서 질문 배포</b><span> — 실험에 딸린 질문을 그대로 쓰거나 고쳐서 내보냅니다.</span></li>
@@ -750,6 +894,11 @@
     put('nStd',    counts.standards);
     put('nEz',     counts.ezOk);
     put('nSc',     counts.scOk);
+    put('nPoolTop', counts.pool3);
+    //  반 전체로 합쳤을 때의 값어치 — 3 아주 좋음 · 2 좋음 · 1 합쳐도 그대로
+    put('nPool3',  counts.pool3);
+    put('nPool2',  counts.pool2);
+    put('nPool1',  counts.pool1);
   }
 
   // ── 설명 모식도 — graphs.js / diagrams.js 의 인라인 SVG ──

@@ -84,6 +84,7 @@
   .exp{border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:14px;cursor:pointer;transition:.16s;box-shadow:var(--shadow)}
   .exp:hover{transform:translateY(-2px);border-color:var(--mint)}
   .exp.on{border-color:var(--mint);box-shadow:0 0 0 3px rgba(32,178,166,.18)}
+  .exp .pill+.pill{margin-left:5px}
   .exp b{display:block;font-family:var(--display);font-size:16px;font-weight:400;margin:6px 0 4px;line-height:1.35}
   .exp .m{font-size:12px;color:var(--muted);font-weight:700}
   /* 고른 업체로 못 하는 실험 — 숨기지 않고 흐리게 두고 까닭을 보여 줍니다 */
@@ -127,6 +128,25 @@
   .err{color:var(--bad);font-size:14px;font-weight:700;min-height:20px;margin-top:8px}
   .ok{color:var(--ok);font-size:14px;font-weight:700}
   .empty{color:var(--muted);font-size:14px;text-align:center;padding:24px 10px}
+
+  /* 반 전체로 합치기 안내 (실험 도감의 pool) */
+  .poolnote{margin-top:12px;border:1px solid var(--line-2);border-left:4px solid var(--mint);
+    border-radius:14px;background:var(--cream);padding:13px 15px;font-size:13.5px;line-height:1.65}
+  .poolnote.good{border-left-color:var(--sun)}
+  .poolnote.weak{border-left-color:var(--line-2)}
+  .poolnote b.t{display:block;font-size:14.5px;color:var(--ink)}
+  .poolnote p{margin-top:6px;color:var(--muted)}
+  .poolnote p.watch{color:var(--ink)}
+  .poolnote p.watch b{color:var(--warn)}
+
+  /* 구글 시트에서 불러오기 */
+  .sheetgrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:12px;margin-top:10px}
+  .sheetprev{margin-top:12px;overflow:auto;max-height:280px;border:1px solid var(--line);border-radius:12px;background:#fff}
+  .sheetprev table{border-collapse:collapse;width:100%;font-size:12.5px}
+  .sheetprev th,.sheetprev td{border-bottom:1px solid var(--line);padding:6px 9px;text-align:left;white-space:nowrap}
+  .sheetprev th{background:var(--cream);font-weight:800;position:sticky;top:0}
+  .sheetprev td.gname{font-weight:800;color:var(--mint-d)}
+  .sheetprev tr.skip{opacity:.5}
 
   /* 모둠 비밀번호(PIN) */
   .toolrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
@@ -729,6 +749,7 @@
       <h2>여러 반 묶어보기</h2>
       <p class="muted">이 브라우저로 만든 <b>같은 실험</b> 수업을 골라 한 그래프에 겹칩니다.
         반이 늘수록 표본이 커져 규칙이 또렷해집니다. 합치는 일은 이 화면에서만 하며 <b>서버에 새로 저장하지 않습니다</b>.</p>
+      <div id="mergePoolNote" class="poolnote hidden"></div>
       <div id="mergeList" class="mergelist"></div>
       <div class="toolrow">
         <span id="mergeSeriesWrap" style="display:flex;align-items:center;gap:8px">
@@ -831,11 +852,68 @@
       <div id="wkFiles" class="filelist"></div>
     </div>
 
+    <!-- 구글 시트로 걷은 자료 바로 합치기 — 작업 파일과 같은 자리에서 같은 분석을 받습니다 -->
+    <div class="box" id="wkSheetBox">
+      <h2>구글 시트에서 불러오기</h2>
+      <p class="muted">모둠이 <b>구글 시트 한 장에 나란히 적어 낸 자료</b>라면, 작업 파일을 모으지 않고도 그대로 합쳐 볼 수 있습니다.
+        시트를 <b>[공유] → 링크가 있는 모든 사용자 → 뷰어</b> 로 바꾼 뒤 주소창의 주소를 그대로 붙여넣으세요.
+        <b>비공개 시트는 읽히지 않습니다</b> — 이때는 아래 <b>[붙여넣기로 하기]</b> 를 쓰면 됩니다.
+        읽어 온 자료는 이 브라우저 안에만 있고 <b>서버에는 아무것도 보내지 않습니다</b>.</p>
+      <label class="fl" for="wkSheetUrl">시트 주소</label>
+      <input id="wkSheetUrl" type="text" spellcheck="false" placeholder="https://docs.google.com/spreadsheets/d/…/edit?gid=0#gid=0" />
+      <div class="toolrow">
+        <button id="btnWkSheetGet"   class="btn btn-solid tap" type="button">구글 시트에서 불러오기</button>
+        <button id="btnWkSheetPaste" class="btn btn-sm tap"    type="button">붙여넣기로 하기</button>
+        <span id="wkSheetMsg" class="muted"></span>
+      </div>
+      <div id="wkSheetErr" class="err"></div>
+
+      <div id="wkSheetPasteBox" class="hidden">
+        <label class="fl" for="wkSheetPaste">시트 내용 붙여넣기</label>
+        <p class="muted">시트에서 표를 통째로 골라 복사(<code>Ctrl+A</code> → <code>Ctrl+C</code>)한 뒤 여기에 붙여넣고 아래 단추를 누르세요.
+          쉼표로 나뉜 CSV 도 그대로 읽습니다.</p>
+        <textarea id="wkSheetPaste" spellcheck="false" placeholder="부피(mL)&#9;압력(기압)&#9;부피 X 압력&#10;1모둠&#9;60&#9;0.5&#9;30"></textarea>
+        <div class="toolrow">
+          <button id="btnWkSheetRead" class="btn btn-solid tap" type="button">붙여넣은 표 읽기</button>
+        </div>
+      </div>
+
+      <div id="wkSheetMap" class="hidden">
+        <div class="sheetgrid">
+          <div>
+            <label class="fl" for="selSheetName">모둠 이름이 적힌 열</label>
+            <select id="selSheetName"></select>
+          </div>
+          <div>
+            <label class="fl" for="selSheetX">가로축으로 쓸 열</label>
+            <select id="selSheetX"></select>
+          </div>
+          <div>
+            <label class="fl" for="selSheetExp">이 자료의 실험 (고르면 보고서 질문·합치기 안내가 따라옵니다)</label>
+            <select id="selSheetExp"></select>
+          </div>
+        </div>
+        <div class="toolrow">
+          <label class="chkline" for="chkSheetExample" style="margin:0;flex:1 1 260px">
+            <input id="chkSheetExample" type="checkbox" />
+            <span class="ct"><b>예시 줄도 한 모둠으로 넣기</b>
+              <span>시트 맨 위 <b>예시</b>·<b>보기</b> 줄은 기본으로 뺍니다. 실제 측정값이라면 켜 주세요.</span></span>
+          </label>
+        </div>
+        <div id="wkSheetPrev" class="sheetprev"></div>
+        <div class="toolrow">
+          <button id="btnWkSheetGo" class="btn btn-solid tap" type="button">모둠으로 갈라 합치기</button>
+          <span id="wkSheetGoMsg" class="muted"></span>
+        </div>
+      </div>
+    </div>
+
     <div id="wkAnalysis" class="hidden">
       <div class="box">
         <h2>반 전체 그래프</h2>
         <p class="muted">모둠마다 색이 다릅니다. 연한 선은 모둠별 추세선, 굵은 선은 반 전체 추세선입니다.
           기울기가 유난히 다른 모둠은 측정 방법이 달랐는지 물어보기 좋은 자리입니다.</p>
+        <div id="wkPoolNote" class="poolnote hidden"></div>
         <div class="toolrow">
           <span id="wkSeriesWrap" style="display:flex;align-items:center;gap:8px">
             <label class="fl" for="selWkSeries" style="margin:0">볼 항목</label>
@@ -1784,6 +1862,50 @@
     $('fUnit').innerHTML = '<option value="">모든 단원</option>' +
       units.map(u => '<option value="' + esc(u.title) + '">' + esc(u.title) + '</option>').join('');
   }
+  // ── 반 전체로 합치기 값어치 (실험 도감의 pool) ─────────────────
+  //   lab-data.js 의 LAB.poolFit 을 그대로 씁니다. 도감이 낡아 함수가 없으면 pool.fit 을 직접 봅니다.
+  function poolFitOf(exp){
+    const e = (typeof exp === 'string') ? (window.LAB && LAB.byId(exp)) : exp;
+    if (!e) return 1;
+    if (window.LAB && typeof LAB.poolFit === 'function') return LAB.poolFit(e);
+    const n = Number(e.pool && e.pool.fit);
+    return (n >= 1 && n <= 3) ? n : 1;
+  }
+  function poolOf(exp){
+    const e = (typeof exp === 'string') ? (window.LAB && LAB.byId(exp)) : exp;
+    return (e && e.pool && typeof e.pool === 'object') ? e.pool : null;
+  }
+  const POOL_WORD = { 3:'합치기 아주 좋음', 2:'합치기 좋음', 1:'합쳐도 그대로' };
+  const POOL_TITLE = {
+    3: '반 전체 자료를 합치면 규칙이 훨씬 또렷해지는 실험입니다.',
+    2: '반 전체 자료를 합치면 결론이 단단해지는 실험입니다.',
+    1: '모둠마다 조건이 달라 합쳐도 크게 이롭지 않은 실험입니다. 실험이 나쁘다는 뜻은 아닙니다.'
+  };
+  //  실험 카드에 붙일 뱃지 — 1 은 붙이지 않습니다(카드가 시끄러워집니다).
+  function poolPill(e){
+    const fit = poolFitOf(e);
+    if (fit < 2) return '';
+    const p = poolOf(e);
+    const tip = (p && p.why) ? p.why : POOL_TITLE[fit];
+    return '<span class="pill' + (fit >= 3 ? ' sun' : '') + '" title="' + esc(tip) + '">' +
+           esc(POOL_WORD[fit]) + (fit >= 3 ? ' ★' : '') + '</span>';
+  }
+  //  합치기 안내 상자 채우기 (합치기 화면 · 여러 반 묶어보기가 같은 함수를 씁니다)
+  function paintPoolNote(boxId, expId){
+    const box = $(boxId);
+    if (!box) return;
+    const e = (window.LAB && expId) ? LAB.byId(expId) : null;
+    const p = poolOf(e);
+    if (!p){ box.className = 'poolnote hidden'; box.innerHTML = ''; return; }
+    const fit = poolFitOf(e);
+    box.className = 'poolnote' + (fit >= 3 ? ' good' : (fit <= 1 ? ' weak' : ''));
+    let h = '<b class="t">' + esc(POOL_WORD[fit] || POOL_WORD[1]) + ' · ' + esc(e.title) + '</b>';
+    if (p.why)   h += '<p>' + esc(p.why) + '</p>';
+    if (p.watch) h += '<p class="watch"><b>볼 곳</b> · ' + esc(p.watch) + '</p>';
+    if (p.axis)  h += '<p>합칠 때의 가로축 · ' + esc(p.axis) + '</p>';
+    box.innerHTML = h;
+  }
+
   function renderExpList(){
     if (!window.LAB){ $('explist').innerHTML = '<div class="empty">lab-data.js 를 읽지 못했습니다.</div>'; return; }
     const g = $('fGrade').value, u = $('fUnit').value, q = $('fSearch').value.trim();
@@ -1793,8 +1915,10 @@
     const v = newVendor();
     //  못 하는 실험도 목록에 그대로 둡니다 — 흐리게 두고 까닭을 보여 주는 편이 공부가 됩니다.
     const nOk = VENDORS.length ? list.filter(function(e){ return !vendorBlock(e, v); }).length : list.length;
+    const nPool = list.filter(function(e){ return poolFitOf(e) >= 3; }).length;
     $('expCount').textContent = list.length + '건' +
-      ((VENDORS.length && nOk !== list.length) ? (' · ' + vendorName(v) + ' 가능 ' + nOk + '건') : '');
+      ((VENDORS.length && nOk !== list.length) ? (' · ' + vendorName(v) + ' 가능 ' + nOk + '건') : '') +
+      (nPool ? (' · 반 전체로 합치기 아주 좋은 실험 ' + nPool + '건') : '');
     if (!list.length){ $('explist').innerHTML = '<div class="empty">조건에 맞는 실험이 없습니다.</div>'; return; }
     $('explist').innerHTML = list.map(function(e){
       const sensors = (e.sensors || []).map(s => LAB.sensorName(s.key) + ' ' + s.n).join(' · ');
@@ -1802,6 +1926,7 @@
       return '<div class="exp' + (why ? ' off' : ((picked && picked.id === e.id) ? ' on' : '')) + '" data-id="' + esc(e.id) + '"' +
              (why ? ' aria-disabled="true"' : ' tabindex="0" role="button"') + '>' +
              '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+             poolPill(e) +
              '<b>' + esc(e.title) + '</b>' +
              '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div>' +
              (why ? '<div class="no">' + esc(why) + '</div>' : '') + '</div>';
@@ -3257,6 +3382,8 @@
       mergeFor = adminCode; mergeSig = '';
       $('mergeOut').innerHTML = ''; $('mergeMsg').textContent = '';
     }
+    //  이 실험을 여러 반으로 묶으면 무엇이 좋고 어디를 봐야 하는지 (실험 도감의 pool)
+    paintPoolNote('mergePoolNote', (lesson && lesson.exp_id) || '');
     const cands = mergeCandidates();
     if (cands.length < 2 || typeof Hub.adminLoad !== 'function' ||
         typeof Hub.stats !== 'function' || typeof Hub.cellAt !== 'function'){
@@ -4493,6 +4620,8 @@
   //  반 전체 산점도 — '여러 반 묶어보기' 의 그림·회귀를 그대로 씁니다(반 자리에 모둠을 넣습니다).
   function paintWkChart(){
     const host = $('wkChart');
+    //  이 실험을 반 전체로 합치면 무엇이 좋고 어디를 봐야 하는지 (실험 도감의 pool)
+    paintPoolNote('wkPoolNote', (wkBoard && wkBoard.lesson && wkBoard.lesson.exp_id) || '');
     const sp   = wkSpec();
     const si   = Math.max(0, Math.min(sp.series.length - 1, Number($('selWkSeries').value) || 0));
     const se   = sp.series[si] || { label: '측정값', unit: '' };
@@ -4684,6 +4813,8 @@
     $('wkFiles').innerHTML = '';
     paintWkKit();                       // 대시보드 편집기도 함께 비웁니다(앞 반 자료가 남지 않게)
     $('wkAnalysis').classList.add('hidden');
+    closeSheetMap();                    // 구글 시트로 읽어 둔 것도 함께 비웁니다
+    wkSheetMsg(''); wkSheetErr('');
     wkMsg('올린 파일을 모두 지웠습니다.');
   });
   $('wkFile').addEventListener('change', function(){
@@ -4721,6 +4852,374 @@
       });
     });
   })();
+
+  // ════════════════════════════════════════════════════════════════
+  //  ③ 구글 시트에서 불러오기
+  //   모둠이 한 시트에 나란히 적어 낸 자료를 모둠별로 갈라, 작업 파일과 똑같은 모양
+  //   (buildWorkBoard 가 받는 모양)으로 바꿔 넘깁니다.
+  //   ★ 공개 공유된 시트는 export?format=csv 와 gviz/tq 두 주소 모두 CORS 를 허용합니다.
+  //     비공개 시트는 로그인 화면 HTML 이 돌아오므로, 그때는 붙여넣기로 안내합니다.
+  //   ★ 새 라이브러리를 쓰지 않습니다. 파서·모둠 가르기 모두 이 파일 안에 있습니다.
+  //   ★ 읽어 온 자료는 이 브라우저 안에만 있습니다. 서버로 아무것도 보내지 않습니다.
+  // ════════════════════════════════════════════════════════════════
+  let SHEET = null;               // { rows, head, body, cols, width, from }
+  const SHEET_EXAMPLE = /(예시|보기|샘플|예제|sample|example)/i;
+
+  function wkSheetMsg(t){ $('wkSheetMsg').textContent = t || ''; }
+  function wkSheetErr(t){ $('wkSheetErr').textContent = t || ''; }
+
+  //  편집 주소에서 시트 ID 와 gid 를 뽑아 CSV 주소 두 개를 만듭니다.
+  function sheetUrlsOf(raw){
+    const s = String(raw == null ? '' : raw).trim();
+    if (!s) return { why: '시트 주소를 붙여넣어 주세요.' };
+    const m = s.match(/\/spreadsheets\/d\/([A-Za-z0-9_-]{20,})/);
+    if (!m) return { why: '구글 시트 주소가 아닙니다. 시트를 열어 둔 채 주소창의 주소를 그대로 붙여넣어 주세요 (…/spreadsheets/d/… 가 들어 있는 주소입니다).' };
+    const g = s.match(/[#&?]gid=([0-9]+)/);
+    const gid = g ? g[1] : '0';
+    const base = 'https://docs.google.com/spreadsheets/d/' + m[1];
+    return { list: [ base + '/export?format=csv&gid=' + gid,
+                     base + '/gviz/tq?tqx=out:csv&gid=' + gid ] };
+  }
+  //  두 주소를 차례로 시도합니다. 로그인 화면(HTML)이 돌아오면 비공개로 봅니다.
+  function sheetFetch(urls, i){
+    const k = i || 0;
+    if (k >= urls.length) return Promise.reject(new Error('private'));
+    return fetch(urls[k], { credentials: 'omit', redirect: 'follow' }).then(function(r){
+      if (!r.ok) throw new Error('http ' + r.status);
+      return r.text();
+    }).then(function(t){
+      if (/^\s*<(!doctype|html)\b/i.test(String(t))) throw new Error('private');
+      return String(t);
+    }).catch(function(){ return sheetFetch(urls, k + 1); });
+  }
+
+  //  따옴표를 아는 CSV·TSV 파서 (붙여넣기는 탭, 내려받은 시트는 쉼표)
+  function sheetSplit(text){
+    let s = String(text == null ? '' : text);
+    if (s.charCodeAt(0) === 0xFEFF) s = s.slice(1);
+    s = s.replace(/\u0000/g, '').replace(/\r\n?/g, '\n');
+    const nTab = (s.match(/\t/g) || []).length, nCom = (s.match(/,/g) || []).length;
+    const d = (nTab > nCom) ? '\t' : ',';
+    const rows = []; let row = [], cell = '', q = false;
+    for (let i = 0; i < s.length; i++){
+      const c = s.charAt(i);
+      if (q){
+        if (c !== '"') cell += c;
+        else if (s.charAt(i + 1) === '"'){ cell += '"'; i++; }
+        else q = false;
+      }
+      else if (c === '"') q = true;
+      else if (c === d){ row.push(cell); cell = ''; }
+      else if (c === '\n'){ row.push(cell); rows.push(row); row = []; cell = ''; }
+      else cell += c;
+    }
+    row.push(cell); rows.push(row);
+    return rows.filter(function(r){
+      return r.some(function(x){ return String(x == null ? '' : x).trim() !== ''; });
+    });
+  }
+  function sheetNum(v){
+    let s = String(v == null ? '' : v).trim();
+    if (!s) return NaN;
+    s = s.replace(/,/g, '').replace(/\s/g, '').replace(/%$/, '');
+    const n = Number(s);
+    return isFinite(n) ? n : NaN;
+  }
+  //  머리글이 몇 줄이든 상관없이 「값이 시작되는 첫 줄」을 찾고, 그 위를 머리글로 봅니다.
+  function sheetLooksData(r, width, skipCol){
+    let t = 0, n = 0;
+    for (let c = 0; c < width; c++){
+      if (c === skipCol) continue;
+      const v = String(r[c] == null ? '' : r[c]).trim();
+      if (!v) continue;
+      t++; if (isFinite(sheetNum(v))) n++;
+    }
+    return t > 0 && n >= Math.max(1, Math.ceil(t * 0.6));
+  }
+  function sheetLabelUnit(name){
+    const s = String(name == null ? '' : name).trim();
+    const m = s.match(/^(.*?)\s*[（(]\s*([^)）]*)\s*[)）]\s*$/);
+    if (m && m[1].trim()) return { label: m[1].trim(), unit: m[2].trim() };
+    return { label: s, unit: '' };
+  }
+  //  글자 → { head, body, cols }. 머리글이 두 줄이어도 값이 시작되는 자리를 기준으로 잡습니다.
+  function sheetParse(text, from){
+    const rows = sheetSplit(text);
+    if (rows.length < 2) return { why: '읽을 줄이 너무 적습니다. 머리글과 값이 함께 들어 있는지 확인해 주세요.' };
+    const width = Math.max.apply(null, rows.map(function(r){ return r.length; }));
+    if (width < 2) return { why: '칸을 나누지 못했습니다. 시트를 통째로 복사했는지, 공개 공유로 바꾸었는지 확인해 주세요.' };
+
+    //  0열은 모둠 이름 자리라 값 줄에서도 대개 비어 있습니다 — 0열을 빼고 숫자 줄을 찾습니다.
+    let first = -1;
+    for (let i = 0; i < rows.length; i++){
+      if (sheetLooksData(rows[i], width, 0)){ first = i; break; }
+    }
+    if (first < 0) return { why: '숫자가 들어 있는 줄을 찾지 못했습니다. 값이 적힌 시트인지 확인해 주세요.' };
+
+    //  머리글 — 값 줄 위쪽 가운데 이름이 가장 많이 적힌 줄. 같으면 값에 가까운 아래쪽 줄을 씁니다.
+    let head = null, bestN = 0;
+    for (let i = 0; i < first; i++){
+      let n = 0;
+      for (let c = 1; c < width; c++){ if (String(rows[i][c] == null ? '' : rows[i][c]).trim()) n++; }
+      if (n >= bestN){ bestN = n; head = rows[i]; }
+    }
+    const body = rows.slice(first);
+    const cols = [];
+    for (let c = 0; c < width; c++){
+      let t = 0, n = 0, named = 0;
+      for (let r = 0; r < body.length; r++){
+        const v = String(body[r][c] == null ? '' : body[r][c]).trim();
+        if (!v) continue;
+        t++; if (isFinite(sheetNum(v))) n++; else named++;
+      }
+      const nm = (head && head[c] && String(head[c]).trim()) ? String(head[c]).trim() : ('열 ' + (c + 1));
+      const lu = sheetLabelUnit(nm);
+      cols.push({ idx: c, name: nm, label: lu.label, unit: lu.unit,
+                  filled: t, nums: n, texts: named, ratio: t ? (n / t) : 0 });
+    }
+    return { rows: rows, head: head, body: body, width: width, cols: cols, from: from || '' };
+  }
+  //  모둠 이름 열 짐작 — 글자가 「띄엄띄엄」 들어 있는 열(첫 줄에만 이름이 적힌 모양)을 고릅니다.
+  function sheetGuessNameCol(S){
+    let best = -1, score = -1;
+    S.cols.forEach(function(c){
+      if (c.ratio >= 0.5) return;                         // 숫자 열은 모둠 이름 열이 아닙니다
+      const s = c.texts - (c.nums * 2) - (c.idx * 0.01);  // 왼쪽 열을 조금 더 좋아합니다
+      if (s > score){ score = s; best = c.idx; }
+    });
+    return (best < 0) ? 0 : best;
+  }
+  //  가로축으로 쓸 열 짐작 — 모둠 이름 열이 아닌 첫 숫자 열
+  function sheetGuessXCol(S, nameCol){
+    for (let i = 0; i < S.cols.length; i++){
+      const c = S.cols[i];
+      if (c.idx === nameCol) continue;
+      if (c.ratio >= 0.5) return c.idx;
+    }
+    return (nameCol === 0) ? 1 : 0;
+  }
+  //  이름 열에 값이 적힌 줄에서 새 모둠이 시작됩니다(첫 줄에만 이름이 적힌 시트를 이렇게 가릅니다).
+  function sheetGroupsOf(S, nameCol){
+    const out = [];
+    let cur = null;
+    S.body.forEach(function(r){
+      const nm = String(r[nameCol] == null ? '' : r[nameCol]).trim();
+      if (nm || !cur){
+        cur = { name: nm || '이름 없는 모둠', rows: [], example: SHEET_EXAMPLE.test(nm) };
+        out.push(cur);
+      }
+      cur.rows.push(r);
+    });
+    return out.filter(function(g){ return g.rows.length; });
+  }
+  function sheetGroupNo(name, i){
+    const m = String(name == null ? '' : name).match(/([0-9]{1,2})/);
+    const n = m ? Number(m[1]) : 0;
+    return (n >= 1 && n <= 99) ? n : (i + 1);
+  }
+  function sheetValueCols(S, nameCol){
+    return S.cols.filter(function(c){ return c.idx !== nameCol; });
+  }
+  function sheetPick(){
+    return { nameCol: Number($('selSheetName').value) || 0,
+             xCol   : Number($('selSheetX').value) || 0,
+             expId  : String($('selSheetExp').value || ''),
+             example: !!$('chkSheetExample').checked };
+  }
+  function sheetColOptions(list, cur){
+    return list.map(function(c){
+      return '<option value="' + c.idx + '"' + (c.idx === cur ? ' selected' : '') + '>' +
+             esc(c.name) + (c.ratio >= 0.5 ? '' : ' (숫자 아님)') + '</option>';
+    }).join('');
+  }
+  function fillSheetSelects(S){
+    const nameCol = sheetGuessNameCol(S);
+    $('selSheetName').innerHTML = sheetColOptions(S.cols, nameCol);
+    $('selSheetX').innerHTML    = sheetColOptions(sheetValueCols(S, nameCol), sheetGuessXCol(S, nameCol));
+    //  실험 고르기 — 합치기 값어치가 큰 실험을 앞에 세워 눈에 띄게 합니다.
+    if (!$('selSheetExp').options.length){
+      const list = (window.LAB && LAB.experiments) ? LAB.experiments.slice() : [];
+      list.sort(function(a, b){
+        return (poolFitOf(b) - poolFitOf(a)) || (Number(a.grade) - Number(b.grade));
+      });
+      $('selSheetExp').innerHTML = '<option value="">— 고르지 않음 —</option>' + list.map(function(e){
+        const fit = poolFitOf(e);
+        return '<option value="' + esc(e.id) + '">중' + esc(e.grade) + ' · ' + esc(e.title) +
+               (fit >= 2 ? (' · ' + esc(POOL_WORD[fit])) : '') + '</option>';
+      }).join('');
+    }
+  }
+  function paintSheetPrev(){
+    const S = SHEET;
+    if (!S){ $('wkSheetPrev').innerHTML = ''; return; }
+    const pick = sheetPick();
+    const gs   = sheetGroupsOf(S, pick.nameCol);
+    const cols = sheetValueCols(S, pick.nameCol);
+    const use  = gs.filter(function(g){ return pick.example || !g.example; });
+
+    let h = '<table><thead><tr><th>모둠</th>' +
+            cols.map(function(c){ return '<th>' + esc(c.name) + (c.idx === pick.xCol ? ' · 가로축' : '') + '</th>'; }).join('') +
+            '</tr></thead><tbody>';
+    let shown = 0;
+    gs.forEach(function(g){
+      const skip = (!pick.example && g.example);
+      g.rows.forEach(function(r, i){
+        if (shown >= 24) return;
+        shown++;
+        h += '<tr' + (skip ? ' class="skip"' : '') + '><td class="gname">' +
+             (i === 0 ? (esc(g.name) + (skip ? ' (뺌)' : '')) : '') + '</td>' +
+             cols.map(function(c){ return '<td>' + esc(String(r[c.idx] == null ? '' : r[c.idx]).trim()) + '</td>'; }).join('') +
+             '</tr>';
+      });
+    });
+    h += '</tbody></table>';
+    $('wkSheetPrev').innerHTML = h;
+    $('wkSheetGoMsg').textContent =
+      '모둠 ' + use.length + '개 · 값 줄 ' + use.reduce(function(a, g){ return a + g.rows.length; }, 0) + '개' +
+      ((gs.length !== use.length) ? (' · 예시로 보이는 ' + (gs.length - use.length) + '개는 뺐습니다') : '') +
+      ((shown >= 24) ? ' · 미리보기는 앞 24줄까지만 보여 줍니다' : '');
+  }
+  function openSheetMap(S, note){
+    SHEET = S;
+    fillSheetSelects(S);
+    $('wkSheetMap').classList.remove('hidden');
+    paintSheetPrev();
+    wkSheetErr('');
+    wkSheetMsg((note ? (note + ' · ') : '') + '값 ' + S.body.length + '줄 · 열 ' + S.width +
+               '개를 읽었습니다. 아래에서 열을 확인하고 합치세요.');
+  }
+  function closeSheetMap(){
+    SHEET = null;
+    $('wkSheetMap').classList.add('hidden');
+    $('wkSheetPrev').innerHTML = '';
+    $('wkSheetGoMsg').textContent = '';
+  }
+
+  //  ★ 여기가 핵심 — 시트 한 장을 작업 파일 여러 개와 똑같은 모양으로 바꿉니다.
+  //    buildWorkBoard(works, files) 가 그대로 받아 반 전체 그래프·채점·생기부까지 이어집니다.
+  function sheetToWorks(){
+    const S = SHEET;
+    if (!S) return { why: '먼저 시트를 읽어 주세요.' };
+    const pick = sheetPick();
+    const cols = sheetValueCols(S, pick.nameCol);
+    if (!cols.length) return { why: '값이 담긴 열이 없습니다. 모둠 이름 열을 다시 골라 주세요.' };
+    const xc  = cols.filter(function(c){ return c.idx === pick.xCol; })[0] || cols[0];
+    const ser = cols.filter(function(c){ return c.idx !== xc.idx; });
+    if (!ser.length) return { why: '가로축 말고 그릴 값이 하나도 없습니다. 가로축 열을 다시 골라 주세요.' };
+
+    const gs = sheetGroupsOf(S, pick.nameCol).filter(function(g){ return pick.example || !g.example; });
+    if (!gs.length) return { why: '모둠으로 가를 줄을 찾지 못했습니다. 모둠 이름 열을 다시 골라 주세요.' };
+
+    const e = (window.LAB && pick.expId) ? LAB.byId(pick.expId) : null;
+    let maxRows = 0;
+    const got = [];
+    gs.forEach(function(g, i){
+      //  행은 [가로축, 계열1, 계열2 …] 차례의 배열입니다 — Hub.cellAt 이 그대로 읽습니다.
+      const rows = [];
+      g.rows.forEach(function(r){
+        const x  = sheetNum(r[xc.idx]);
+        const ys = ser.map(function(c){ return sheetNum(r[c.idx]); });
+        if (!isFinite(x) && !ys.some(function(v){ return isFinite(v); })) return;
+        rows.push([isFinite(x) ? x : null].concat(ys.map(function(v){ return isFinite(v) ? v : null; })));
+      });
+      if (!rows.length) return;
+      if (rows.length > maxRows) maxRows = rows.length;
+      got.push({ no: sheetGroupNo(g.name, i), name: g.name, rows: rows });
+    });
+    if (!got.length) return { why: '숫자로 읽을 수 있는 값이 없습니다. 열을 다시 골라 주세요.' };
+
+    const spec = {
+      x     : { label: xc.label || '가로축', unit: xc.unit || '' },
+      series: ser.map(function(c){ return { label: c.label || '측정값', unit: c.unit || '' }; }),
+      rows  : Math.max(4, Math.min(40, maxRows)),
+      chart : 'scatter'
+    };
+    const now = new Date().toISOString();
+    //  buildWorkBoard 는 works[0].pack 하나만 봅니다 — 한 벌을 만들어 모두에게 물려 줍니다.
+    const pack = {
+      title      : (e && e.title) || ('구글 시트 자료 — ' + (xc.label || '측정')),
+      expId      : (e && e.id) || '',
+      classLabel : '',
+      teacherName: Hub.loadLocal('teacher_name', '') || '',
+      school     : '',
+      groupCount : got.length,
+      made       : now,
+      dataSpec   : spec,
+      questions  : (e && Array.isArray(e.questions)) ? e.questions : [],
+      features   : { lab: true, ai: false },
+      vendor     : '', steps: [], prep: [], quiz: [], rubric: [], dash: null, aiTemplate: null
+    };
+    return { works: got.map(function(w){
+      return {
+        kind: WORK_KIND, mode: 'sheet', saved: now, pack: pack,
+        group  : { no: w.no, name: w.name, members: [] },
+        rows   : w.rows,
+        note   : '구글 시트에서 불러온 자료입니다' + (S.from ? (' · ' + S.from) : '') + '.',
+        predict: [], answers: {}, feedback: []
+      };
+    }) };
+  }
+
+  function runSheetMerge(){
+    const r = sheetToWorks();
+    if (r.why){ wkSheetErr(r.why); return; }
+    wkSheetErr('');
+    //  같은 시트를 두 번 불러도 겹치지 않게, 앞서 넣은 시트 모둠을 먼저 빼고 새로 넣습니다.
+    wkFiles = wkFiles.filter(function(f){ return !f.sheet; });
+    r.works.forEach(function(w){
+      wkFiles.push({ name: '구글 시트 · ' + w.group.name, ok: true, sheet: true, raw: null, work: w });
+    });
+    paintWork();
+    wkSheetMsg('모둠 ' + r.works.length + '개로 갈라 합쳤습니다. 아래 [반 전체 그래프] 부터 보세요.');
+    const box = $('wkAnalysis');
+    if (box && !box.classList.contains('hidden')) box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }
+
+  $('btnWkSheetGet').addEventListener('click', function(){
+    const u = sheetUrlsOf($('wkSheetUrl').value);
+    if (u.why){ wkSheetErr(u.why); return; }
+    wkSheetErr(''); wkSheetMsg('시트를 읽는 중…');
+    const btn  = this;
+    const done = function(){ btn.disabled = false; };
+    btn.disabled = true;
+    sheetFetch(u.list, 0).then(function(text){
+      const S = sheetParse(text, '구글 시트');
+      if (S.why){ wkSheetMsg(''); wkSheetErr(S.why); closeSheetMap(); return; }
+      openSheetMap(S, '구글 시트');
+    }, function(){
+      wkSheetMsg('');
+      wkSheetErr('시트를 읽지 못했습니다. 거의 언제나 시트가 아직 비공개라서 그렇습니다 — ' +
+                 '시트에서 [공유] → [일반 액세스] 를 「링크가 있는 모든 사용자」·「뷰어」 로 바꾼 뒤 다시 눌러 주세요. ' +
+                 '학교 계정 정책 때문에 공개로 바꿀 수 없다면 [붙여넣기로 하기] 를 쓰시면 됩니다.');
+      $('wkSheetPasteBox').classList.remove('hidden');
+    }).then(done, done);
+  });
+  $('btnWkSheetPaste').addEventListener('click', function(){
+    $('wkSheetPasteBox').classList.toggle('hidden');
+    if (!$('wkSheetPasteBox').classList.contains('hidden')) $('wkSheetPaste').focus();
+  });
+  $('btnWkSheetRead').addEventListener('click', function(){
+    const t = $('wkSheetPaste').value;
+    if (!String(t).trim()){ wkSheetErr('붙여넣은 것이 없습니다.'); return; }
+    const S = sheetParse(t, '붙여넣기');
+    if (S.why){ wkSheetErr(S.why); closeSheetMap(); return; }
+    openSheetMap(S, '붙여넣기');
+  });
+  ['selSheetName','selSheetX','chkSheetExample'].forEach(function(id){
+    $(id).addEventListener('change', function(){
+      if (!SHEET) return;
+      if (id === 'selSheetName'){                     // 이름 열이 바뀌면 가로축 후보도 다시 만듭니다
+        const nameCol = Number($('selSheetName').value) || 0;
+        const cur     = Number($('selSheetX').value);
+        const list    = sheetValueCols(SHEET, nameCol);
+        const keep    = list.some(function(c){ return c.idx === cur; }) ? cur : sheetGuessXCol(SHEET, nameCol);
+        $('selSheetX').innerHTML = sheetColOptions(list, keep);
+      }
+      paintSheetPrev();
+    });
+  });
+  $('selSheetExp').addEventListener('change', function(){ paintSheetPrev(); });
+  $('btnWkSheetGo').addEventListener('click', function(){ runSheetMerge(); });
 
   // ════════════════════════════════════════════════════════════════
   //  평가 기준표(루브릭) · 보고서 채점 · 학생에게 돌려주기
@@ -5098,7 +5597,9 @@
          '학생 화면에는 등수도 반 평균도 나오지 않습니다.</p>';
     h += '<div class="toolrow">' +
          '<button class="btn btn-solid tap" type="button" data-gsave="1">평가 저장</button>' +
-         (which === 'wk' ? '<button class="btn btn-sm tap" type="button" data-gfile="1">평가 담아 이 모둠 파일 다시 내려받기</button>' : '') +
+         //  되돌려 줄 원본 파일이 있는 모둠에만 — 구글 시트에서 불러온 모둠은 원본 파일이 없습니다.
+         ((which === 'wk' && wkFileByGid[String(g.id)] && wkFileByGid[String(g.id)].raw)
+            ? '<button class="btn btn-sm tap" type="button" data-gfile="1">평가 담아 이 모둠 파일 다시 내려받기</button>' : '') +
          (ev ? '<span class="muted" style="font-size:12.5px">마지막 저장 ' + esc(fmtWhen(ev.at) || '') +
                (ev.by ? (' · ' + esc(ev.by)) : '') + '</span>' : '') +
          '</div>';
