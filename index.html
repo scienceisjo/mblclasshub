@@ -8,6 +8,8 @@
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <script src="./lab-data.js"></script>
+<!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
+<script src="./demo-data.js"></script>
 <script src="./diagrams.js"></script>
 <script src="./graphs.js"></script>
 <script src="./config.js"></script>
@@ -497,6 +499,7 @@
       <div class="improw">
         <button id="btnAnFile" class="btn btn-sm" type="button">파일 불러오기</button>
         <button id="btnAnSheetOpen" class="btn btn-sm" type="button">구글 시트에서 불러오기</button>
+        <button id="btnAnDemo" class="btn btn-sm hidden" type="button">예시 데이터 넣기</button>
         <button id="btnAnClear" class="btn btn-sm" type="button">지우기</button>
       </div>
       <input id="anFile" type="file" class="hidden"
@@ -656,6 +659,7 @@
             <textarea id="impPaste" placeholder="시간,물,식용유&#10;0,20.1,20.3&#10;1,22.4,25.8"></textarea>
             <div class="improw">
               <button id="btnImpRead" class="btn btn-sm btn-solid" type="button">붙여넣은 값 읽기</button>
+              <button id="btnImpDemo" class="btn btn-sm hidden" type="button">예시 데이터 넣기</button>
             </div>
           </div>
 
@@ -3336,7 +3340,16 @@
     $('impFile').addEventListener('change', function(){ readFile(this.files && this.files[0]); });
     $('btnImpPasteOpen').addEventListener('click', function(){
       $('impPasteBox').classList.toggle('hidden');
+      //  이 수업의 실험에 예시 데이터가 있을 때만 단추를 보입니다.
+      showDemoBtn('btnImpDemo', (lesson && lesson.exp_id) || '');
       if (!$('impPasteBox').classList.contains('hidden')) $('impPaste').focus();
+    });
+    $('btnImpDemo').addEventListener('click', function(){
+      const t = demoOf((lesson && lesson.exp_id) || '');
+      if (!t){ impSay('이 실험은 아직 예시 데이터가 없습니다.', 'bad'); return; }
+      $('impPaste').value = t;
+      startImport(t, '예시 데이터');
+      impSay('예시 데이터를 넣었습니다. 실제로 잰 값이 아니라 보여 드리기 위한 값입니다.', 'ok');
     });
     //  구글 시트에서 바로 — 받은 CSV 는 붙여넣은 표와 똑같은 길(startImport)로 갑니다.
     $('btnImpSheetOpen').addEventListener('click', function(){
@@ -6529,9 +6542,22 @@
     sel.innerHTML = h;
     sel.dataset.ready = '1';
   }
+  //  예시 데이터 — demo-data.js 가 있을 때만 씁니다.
+  //  센서를 아직 못 만져 본 자리(연수·수업 준비)에서 기능을 그대로 보여 주려는 것입니다.
+  function demoOf(id){
+    const D = window.__LAB_DEMO;
+    const t = (D && id) ? D[id] : '';
+    return (typeof t === 'string' && t.trim()) ? t.trim() : '';
+  }
+  function showDemoBtn(btnId, expId){
+    const b = $(btnId);
+    if (!b) return;
+    b.classList.toggle('hidden', !demoOf(expId));
+  }
   function anPickExp(){
     const id = $('anExp').value;
     AN.exp = (id && window.LAB) ? LAB.byId(id) : null;
+    showDemoBtn('btnAnDemo', id);
     const box = $('anGoal');
     if (!AN.exp){ box.innerHTML = ''; }
     else {
@@ -6689,6 +6715,13 @@
       show('join');
       $('topSub').textContent = '참여코드를 입력하고 들어오세요';
       window.scrollTo(0, 0);
+    });
+    $('btnAnDemo').addEventListener('click', function(){
+      const t = demoOf($('anExp').value);
+      if (!t){ anMsg('이 실험은 아직 예시 데이터가 없습니다.', 'bad'); return; }
+      $('anPaste').value = t;
+      anRead(t, '예시 데이터');
+      anMsg('예시 데이터를 넣었습니다. 실제로 잰 값이 아니라 보여 드리기 위한 값입니다. [분석하기]를 눌러 보세요.', 'ok');
     });
     $('btnAnFile').addEventListener('click', function(){ $('anFile').click(); });
     $('anFile').addEventListener('change', function(){
