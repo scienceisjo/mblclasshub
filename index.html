@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js"></script>
+<script src="./lab-data.js?v=20260826a"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js"></script>
-<script src="./diagrams.js"></script>
-<script src="./graphs.js"></script>
-<script src="./config.js"></script>
-<script src="./hub.js"></script>
+<script src="./demo-data.js?v=20260826a"></script>
+<script src="./diagrams.js?v=20260826a"></script>
+<script src="./graphs.js?v=20260826a"></script>
+<script src="./config.js?v=20260826a"></script>
+<script src="./hub.js?v=20260826a"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js"></script>
-<script src="./dashkit.js"></script>
+<script src="./sensorkit.js?v=20260826a"></script>
+<script src="./dashkit.js?v=20260826a"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -403,6 +403,11 @@
     .pinpad input.pinbox{width:52px;height:60px;font-size:26px}
     .simplebar{position:static}
   }
+.ytrow{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px}
+.ytlink{display:inline-flex;align-items:center;gap:5px;font-size:.86rem;font-weight:600;color:#b3271a;
+  background:#fdeceb;border:1px solid #f3c3bd;border-radius:8px;padding:6px 11px;text-decoration:none}
+.ytlink::before{content:"\25B6";font-size:.72em}
+.ytlink:hover{background:#b3271a;color:#fff;border-color:#b3271a}
 </style>
 </head>
 <body>
@@ -2541,6 +2546,11 @@
          '<ol class="steps-ol">' + steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
     if (prep.length){
       h += '<h3>준비물</h3><p class="muted">' + prep.map(esc).join(' · ') + '</p>';
+    }
+    if ((e.videos || []).length){
+      h += '<h3>영상으로 보기</h3><p class="muted" style="margin-bottom:6px">사이언스큐브 공식 채널입니다. 새 창으로 열립니다.</p><div class="ytrow">' +
+        e.videos.map(v => '<a class="ytlink" href="https://youtu.be/' + esc(v[1]) + '" target="_blank" rel="noopener">' + esc(v[0]) + '</a>').join('') +
+        '</div>';
     }
     h += figDiagram(e);
     h += '</div>';
@@ -7154,6 +7164,13 @@
     }
     if (aprep.length){
       h += '<h3>준비물</h3><ul class="dtul">' + aprep.map(p => '<li>' + esc(p) + '</li>').join('') + '</ul>';
+    }
+    if ((e.videos || []).length){
+      h += '<h3>영상으로 보기</h3>' +
+           '<p class="muted" style="font-size:13px;margin-bottom:6px">사이언스큐브 공식 채널입니다. 새 창으로 열립니다.</p>' +
+           '<div class="ytrow">' +
+           e.videos.map(v => '<a class="ytlink" href="https://youtu.be/' + esc(v[1]) + '" target="_blank" rel="noopener">' + esc(v[0]) + '</a>').join('') +
+           '</div>';
     }
     if (asteps.length){
       h += '<h3>실험 순서' + (avi ? ' · ' + esc(avi.name) : '') + '</h3>' +
