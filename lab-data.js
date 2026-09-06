@@ -6522,7 +6522,10 @@ window.__LAB_PARTS['g3'] = ([
     if (!e) return [];
     var base = (e.prep || []).slice();
     var alt  = altFor(e, vendor);
-    var add  = (e.setupBy && e.setupBy[vendor]) || (alt ? alt.prep : []) || [];
+    //  ⚠ 빈 배열도 truthy 라 || 로 이으면 setupBy[vendor] 가 [] 인 실험에서 대체 준비물이 사라집니다.
+    //     길이를 보고 고릅니다.
+    var vs   = (e.setupBy && e.setupBy[vendor]) || [];
+    var add  = vs.length ? vs : ((alt && alt.prep) || []);
     for (var i = 0; i < add.length; i++) {
       if (base.indexOf(add[i]) < 0) base.push(add[i]);
     }
