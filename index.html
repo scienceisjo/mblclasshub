@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=20260826b"></script>
+<script src="./lab-data.js?v=202609070757"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=20260826b"></script>
-<script src="./diagrams.js?v=20260826b"></script>
-<script src="./graphs.js?v=20260826b"></script>
-<script src="./config.js?v=20260826b"></script>
-<script src="./hub.js?v=20260826b"></script>
+<script src="./demo-data.js?v=202609070757"></script>
+<script src="./diagrams.js?v=202609070757"></script>
+<script src="./graphs.js?v=202609070757"></script>
+<script src="./config.js?v=202609070757"></script>
+<script src="./hub.js?v=202609070757"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=20260826b"></script>
-<script src="./dashkit.js?v=20260826b"></script>
+<script src="./sensorkit.js?v=202609070757"></script>
+<script src="./dashkit.js?v=202609070757"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -145,6 +145,7 @@
   .vtag{display:inline-block;font-size:11px;font-weight:800;padding:2px 8px;border-radius:999px;margin:4px 4px 0 0}
   .vtag.ez{background:rgba(84,180,232,.18);color:#2A7FB0}
   .vtag.sc{background:rgba(139,127,212,.2);color:#5B4FB0}
+  .vtag.alt{background:#FFF4DE;color:#8A6516;border-color:#F0D9A8}
   .note.warn{border-color:var(--bad);background:#FFF4F4}
 
   /* 데이터 표 */
@@ -312,6 +313,21 @@
   .fitrow{display:flex;flex-wrap:wrap;gap:8px 16px;font-size:14px;margin-top:4px}
   .fitrow span b{font-family:var(--display);font-weight:400;font-size:17px}
   .r2jump{font-family:var(--display);font-size:18px;color:var(--mint-d)}
+  /*  학생이 먼저 — 관문과 견주기  */
+  .sfgate{border:2px solid var(--sun);background:#FFFBEF}
+  .sfq{margin-top:14px}
+  .sfq>b{display:block;margin-bottom:6px;font-size:15px}
+  .sfq textarea{min-height:64px;width:100%}
+  .sfrow{display:flex;align-items:center;gap:10px;margin-top:6px;flex-wrap:wrap}
+  .sfrow span{font-size:14.5px;min-width:180px}
+  .sfrow input{width:130px;min-height:44px}
+  .sfopt{display:flex;align-items:center;gap:8px;padding:8px 10px;border:1.5px solid var(--line);border-radius:10px;margin-top:6px;background:#fff;cursor:pointer;font-size:14.5px}
+  .sfopt:has(input:checked){border-color:var(--mint);background:#F0FBFA}
+  .sfpair{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:8px}
+  .sfpair>div{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--cream)}
+  .sfpair>div>b{display:block;margin-bottom:4px;color:var(--mint-d)}
+  .sfpair p{font-size:14.5px;line-height:1.7}
+  .o{color:var(--ok);font-weight:800}.x{color:var(--bad);font-weight:800}
   /*  R²·선형화 도움말 — 펼치기 전에는 한 줄만 차지합니다  */
   .fithelp{margin-top:12px;border:1.5px solid var(--line);border-radius:14px;background:var(--cream);overflow:hidden}
   .fithelp>summary{cursor:pointer;padding:11px 14px;font-weight:800;font-size:14.5px;color:var(--ink);list-style:none}
@@ -366,6 +382,30 @@
 
   /* ── 코드 없이 쓰는 길(간편 모드) ───────────────────────────── */
   .ways{border:2px dashed var(--line-2);border-radius:var(--r);background:var(--cream);padding:18px;margin-top:18px}
+  /*  첫 화면 아래쪽 — 이 앱이 하는 일  */
+  .homeplus{margin-top:22px}
+  .hkicker{font-family:var(--display);font-size:20px;color:var(--ink);text-align:center;margin:6px 0 12px}
+  .hkicker b{color:var(--mint-d);font-weight:400}
+  .htiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  .htile{background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px 15px;box-shadow:var(--shadow)}
+  .htile i{font-style:normal;font-size:24px;display:block;margin-bottom:6px}
+  .htile b{display:block;font-size:15.5px;margin-bottom:4px}
+  .htile span{display:block;font-size:13.5px;color:var(--muted);line-height:1.6}
+  .htry{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;
+    background:var(--cream);border:2px solid var(--sun);border-radius:16px;padding:14px 16px}
+  .htry>div b{display:block;font-size:16px}
+  .htry>div span{display:block;font-size:13.5px;margin-top:2px}
+  .hsub{font-family:var(--display);font-size:19px;font-weight:400;margin:22px 0 8px}
+  .hsub .muted{font-family:var(--sans);font-size:13px}
+  .hcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+  .hcard{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 13px;cursor:pointer;
+    font-family:var(--sans);color:var(--ink);transition:.16s}
+  .hcard:hover{border-color:var(--mint);box-shadow:var(--shadow)}
+  .hcard .g{font-size:12px;color:var(--muted);font-weight:700}
+  .hcard b{display:block;font-size:14.5px;line-height:1.45;margin-top:3px}
+  .hteacher{margin-top:18px;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px 16px}
+  .hteacher b{display:block;font-size:15.5px;margin-bottom:4px}
+  .hteacher .muted{display:block;font-size:13.5px}
   .ways h3{font-family:var(--display);font-size:19px;font-weight:400;margin-bottom:4px}
   .ways .wbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:10px;
     border:1.5px solid var(--line-2);background:#fff;border-radius:14px;padding:13px 15px;cursor:pointer;
@@ -471,6 +511,38 @@
         <input id="filePack" type="file" class="hidden" accept=".json,application/json" />
         <input id="fileWork" type="file" class="hidden" accept=".html,.htm,text/html" />
         <div id="wayErr" class="err"></div>
+      </div>
+    </div>
+
+    <!-- 이 앱이 하는 일 — 센서 프로그램은 재고, 수업허브는 수업을 합니다 -->
+    <div class="homeplus">
+      <p class="hkicker">센서 프로그램은 재고, 수업허브는 <b>수업</b>을 합니다</p>
+      <div class="htiles">
+        <div class="htile"><i>🧩</i><b>반 전체를 한 그래프로</b>
+          <span>모둠마다 다른 값을 나눠 맡고, 합치면 곡선이 완성됩니다. 노트북 한 대짜리 프로그램은 못 하는 일입니다.</span></div>
+        <div class="htile"><i>🧭</i><b>학생이 먼저, 앱은 나중에</b>
+          <span>예상을 적고 직접 계산해 보고 축을 골라야 앱의 판정이 열립니다. 숫자 대신 결론 문장과 오류 진단이 나옵니다.</span></div>
+        <div class="htile"><i>📝</i><b>보고서 · 별점 · 발표 · 기록</b>
+          <span>양식 배포, 모둠 공유, 발표 모드, 개념 확인 채점, 생기부 문장까지 한 흐름입니다.</span></div>
+        <div class="htile"><i>🔌</i><b>센서가 없는 날도 수업</b>
+          <span>예시 데이터·CSV 붙여넣기·손 입력으로 분석은 그대로 됩니다. 두 업체 절차를 나란히 실었습니다.</span></div>
+      </div>
+      <div class="htry">
+        <div><b>30초 체험</b><span class="muted">예시 값을 넣고 관문을 지나 판정까지 — 로그인도 센서도 없이.</span></div>
+        <button id="btnTry30" class="btn btn-solid" type="button" style="min-height:46px">보일의 법칙으로 해 보기</button>
+      </div>
+      <h3 class="hsub">실험 도감 · 49건 <span class="muted">학년별로 두 개씩</span></h3>
+      <div id="homeCards" class="hcards"></div>
+      <div class="improw" style="margin-top:8px">
+        <button id="btnAtlasHome" class="btn" type="button" style="min-height:44px">도감 전체 보기</button>
+      </div>
+      <div class="hteacher">
+        <b>선생님이신가요?</b>
+        <span class="muted">수업을 열어 참여코드를 만들고, 절차·질문을 고쳐 꾸러미로 나눠 주고, 반 전체를 한 화면에서 봅니다.</span>
+        <span style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
+          <a class="btn btn-sm" href="./teacher.html">교사용 화면</a>
+          <a class="btn btn-sm" href="./manual.html">사용 설명서</a>
+          <a class="btn btn-sm" href="./about.html">이 앱 소개</a></span>
       </div>
     </div>
   </section>
@@ -1656,6 +1728,20 @@
   function packFromExp(e){
     return normPack({ title: e.title, expId: e.id, groupCount: 7 });
   }
+  //  꾸러미를 .json 파일로 내려 줍니다 — 학생은 첫 화면 [수업 꾸러미 파일 올리기] 에 이 파일을 올립니다.
+  function downloadPackJSON(p){
+    const pk = normPack(p);
+    const clean = s => String(s == null ? '' : s).replace(/[\\/:*?"<>|.\s]+/g, '').slice(0, 24);
+    const name = '수업꾸러미_' + (clean(pk.title) || pk.expId || '실험') + '_' + today8() + '.json';
+    try {
+      const url = URL.createObjectURL(new Blob([JSON.stringify(pk, null, 2)], { type:'application/json;charset=utf-8' }));
+      const a = document.createElement('a');
+      a.href = url; a.download = name;
+      document.body.appendChild(a); a.click(); document.body.removeChild(a);
+      setTimeout(function(){ URL.revokeObjectURL(url); }, 1500);
+      return name;
+    } catch (err){ alert('꾸러미 파일을 내려받지 못했습니다.'); return ''; }
+  }
 
   //  지금 보고 있는 수업(실시간) → 꾸러미. 작업 파일에 함께 담아 보냅니다.
   function packFromLesson(){
@@ -2536,6 +2622,7 @@
          (e.sensors || []).map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) + ' ' + esc(s.n) + '개</span>').join('') +
          '</div>';
     h += vendorBadge(vk);
+    h += altNoteHTML(e, vk);
     h += assignBanner();
     h += '<p class="lead" style="margin-top:6px">' + esc(e.why) + '</p></div>';
 
@@ -2600,6 +2687,11 @@
     let h = '';
     if (LAB.vendorOk(e, 'ez')) h += '<span class="vtag ez">이지메이커</span>';
     if (LAB.vendorOk(e, 'sc')) h += '<span class="vtag sc">사이언스큐브</span>';
+    //  센서가 없어 다른 도구로 재는 실험 — 어느 업체 쪽이 대체 절차인지 알려 줍니다.
+    if (LAB.altFor){
+      if (LAB.altFor(e, 'ez')) h += '<span class="vtag alt">이지메이커 · 대체 절차</span>';
+      if (LAB.altFor(e, 'sc')) h += '<span class="vtag alt">사이언스큐브 · 대체 절차</span>';
+    }
     return h;
   }
   // ── 모둠별 나눠 맡기기 ────────────────────────────────────────
@@ -2644,6 +2736,12 @@
     } catch (e) { return ''; }
   }
 
+  //  대체 절차 안내 — 그 업체에 센서가 없어 다른 도구로 재는 실험이면 까닭을 한 상자로 보여 줍니다.
+  function altNoteHTML(e, vendor){
+    const a = (window.LAB && LAB.altFor && e && vendor) ? LAB.altFor(e, vendor) : null;
+    if (!a || (LAB.vendorOk && LAB.vendorOk(e, vendor))) return '';
+    return '<div class="note warn" style="margin-top:8px">🔁 <b>대체 절차</b> · ' + esc(a.why) + '</div>';
+  }
   //  절차·준비물 고르기 — 선생님이 직접 쓴 것 → 업체별 → 기본 순
   function stepsOf(e, vendor){
     if (lesson && lesson.form && Array.isArray(lesson.form.steps) && lesson.form.steps.length) return lesson.form.steps;
@@ -6238,7 +6336,12 @@
   //  ★ 무엇을 볼지는 lab-data.js 의 exp.analysis(goal · steps · verdict) 가 정합니다.
   //  ★ 서버를 한 번도 부르지 않습니다 (Supabase 와 아무 상관이 없습니다).
   // ═══════════════════════════════════════════════════════════════
-  const AN = { exp:null, imp:null, pick:[], guess:[], gpick:'', res:null, rows:[], groups:[], when:null };
+  const AN = { exp:null, imp:null, pick:[], guess:[], gpick:'', res:null, rows:[], groups:[], when:null,
+               //  학생이 먼저 — 앱의 분석을 보기 전에 학생이 채우는 칸들
+               sf: { revealed:false, guess:'', d:['',''], axis:'', cmp:'', slopeM:'', intM:'' } };
+  //  선생님 시연처럼 관문 없이 바로 보려면 이 기기에 '0' 을 남깁니다.
+  function sfOn(){ try { return localStorage.getItem('mbl_an_sf') !== '0'; } catch (e) { return true; } }
+  function sfReset(){ AN.sf = { revealed:false, guess:'', d:['',''], axis:'', cmp:'', slopeM:'', intM:'' }; }
   const AN_OPS = { '*':'×', '/':'÷', '+':'+', '-':'−', '×':'×', '÷':'÷', '−':'−' };
 
   function anMsg(text, cls){
@@ -6560,7 +6663,8 @@
 
   function anResultHTML(exp, res, rows, groups, forFile){
     const e = exp;
-    let h = '<div class="box"><span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+    let h = sfPanelHTML(e, res, rows, forFile);
+    h += '<div class="box"><span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
             '<h2 style="margin-top:8px">' + esc(e.title) + ' — 분석 결과</h2>';
     if (res.goal) h += '<div class="dtquote"><b>무엇을 보려는 실험인가요</b><br>' + esc(res.goal) + '</div>';
     h += '<p class="muted">쓴 줄 ' + rows.length + '개' +
@@ -6711,6 +6815,7 @@
     AN.imp.gsplit = findGroupCol(r);
     AN.gpick = '';
     AN.pickFor = '';                       // 새 표를 읽었으니 열 짝짓기를 처음부터 다시 합니다
+    sfReset();
     const dName = { '\t':'탭', ';':'세미콜론', '|':'막대(|)', ',':'쉼표', 'WS':'빈칸' }[r.delim] || r.delim;
     $('anFound').textContent = (from ? from + ' · ' : '') + '자료 ' + r.body.length.toLocaleString() +
       '행 · 열 ' + r.width + '개 · ' + dName + ' 기준으로 나뉘어 있습니다.' +
@@ -6817,17 +6922,150 @@
     AN.rows = rows;
     AN.groups = anGroupsOf();
     AN.res = runAnalysis(AN.exp, rows);
+    //  학생이 먼저 — 예상·계산·축 고르기를 적어야 앱의 분석이 열립니다.
+    //  (그래프를 넣으면 앱이 다 해 주는 느낌을 줄이려는 것입니다. 답이 틀려도 견주는 것이 목적입니다.)
+    if (sfOn() && !AN.sf.revealed){
+      $('anOut').innerHTML = sfGateHTML(AN.exp, AN.res, rows);
+      sfBindGate();
+      anMsg('먼저 내 생각을 적어 주세요. 적으면 앱의 분석이 열립니다.', 'ok');
+      const g = $('anOut'); if (g.firstChild) g.firstChild.scrollIntoView({ behavior:'smooth', block:'start' });
+      return;
+    }
+    anShowResults();
+  }
+  function anShowResults(){
+    const rows = AN.rows;
     $('anOut').innerHTML = anResultHTML(AN.exp, AN.res, rows, AN.groups, false);
+    sfBindPanel();
     const bs = $('btnAnSave'); if (bs) bs.addEventListener('click', anSaveFile);
     const ba = $('btnAnAgain');
     if (ba) ba.addEventListener('click', function(){
       $('anOut').innerHTML = '';
+      sfReset();
       $('anPaste').focus();
       window.scrollTo(0, 0);
     });
     anMsg('분석했습니다. 아래를 보세요.', 'ok');
     const out = $('anOut');
     if (out.firstChild) out.firstChild.scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+
+  // ── 학생이 먼저 — 관문과 견주기 ────────────────────────────────
+  //  관문: ① 예상 한 문장 ② 파생열 첫 두 줄 직접 계산 ③ 직선으로 펴는 가로축 고르기
+  //  공개 뒤: 내 예상 vs 앱 판정, 내 계산 vs 앱 값, 내 축 vs 앱 축, 같은 점·다른 점, 기울기·절편의 뜻
+  const SF_AXES = ['none', 'inv', 'sq', 'sqrt', 'inv2'];
+  function sfDerive(res){ return (res.blocks || []).filter(function(b){ return b.kind === 'derive'; })[0] || null; }
+  function sfFitTf(res){
+    return (res.blocks || []).filter(function(b){ return b.kind === 'fit' && b.xt && b.xt !== 'none'; })[0] || null;
+  }
+  function sfFitAny(res){ return (res.blocks || []).filter(function(b){ return b.kind === 'fit'; })[0] || null; }
+  function sfNum(v){ const n = Number(String(v == null ? '' : v).replace(/,/g, '').trim()); return isFinite(n) ? n : NaN; }
+  function sfClose(a, b){ if (!isFinite(a) || !isFinite(b)) return false; const t = Math.max(Math.abs(b) * 0.03, 0.01); return Math.abs(a - b) <= t; }
+
+  function sfGateHTML(e, res, rows){
+    const dv = sfDerive(res), ft = sfFitTf(res);
+    let h = '<div class="box sfgate"><span class="pill sun">학생이 먼저</span>' +
+            '<h2 style="margin-top:8px">앱보다 먼저 생각해 보기</h2>' +
+            '<p class="muted">아래를 적으면 앱의 분석이 열립니다. <b>틀려도 괜찮습니다</b> — 내 생각과 앱의 계산을 견주는 것이 목적입니다.</p>';
+    if (res.goal) h += '<div class="dtquote"><b>이 실험이 보려는 것</b><br>' + esc(res.goal) + '</div>';
+    let n = 1;
+    h += '<div class="sfq"><b>' + (n++) + '. 붙여넣은 값을 훑어 보고 — 무엇을 말할 수 있을 것 같나요?</b>' +
+         '<textarea id="sfGuess" placeholder="예) 부피가 커질수록 압력이 작아지는 것 같다">' + esc(AN.sf.guess) + '</textarea></div>';
+    if (dv){
+      const r0 = rows[0] || [], r1 = rows[1] || [];
+      const a0 = rawVal(r0, dv.d.a, res.ds), b0 = rawVal(r0, dv.d.b, res.ds);
+      const a1 = rawVal(r1, dv.d.a, res.ds), b1 = rawVal(r1, dv.d.b, res.ds);
+      h += '<div class="sfq"><b>' + (n++) + '. ' + esc(dv.d.name) + ' 을(를) 첫 두 줄만 직접 계산해 보세요</b>' +
+           '<p class="muted">' + esc(dv.formula) + (dv.d.unit ? ' → 단위 ' + esc(dv.d.unit) : '') + '</p>' +
+           '<div class="sfrow"><span>1줄 · ' + esc(labNum(a0)) + ' ' + esc(dv.d.op) + ' ' + esc(labNum(b0)) + ' =</span>' +
+           '<input id="sfD0" type="text" inputmode="decimal" value="' + esc(AN.sf.d[0]) + '" /></div>' +
+           '<div class="sfrow"><span>2줄 · ' + esc(labNum(a1)) + ' ' + esc(dv.d.op) + ' ' + esc(labNum(b1)) + ' =</span>' +
+           '<input id="sfD1" type="text" inputmode="decimal" value="' + esc(AN.sf.d[1]) + '" /></div></div>';
+    }
+    if (ft){
+      h += '<div class="sfq"><b>' + (n++) + '. 그래프를 직선으로 펴려면 가로축을 무엇으로 바꿔야 할까요?</b>' +
+           '<p class="muted">곡선은 눈대중밖에 못 하지만 직선은 자로 잴 수 있습니다. 하나만 고르세요.</p>';
+      SF_AXES.forEach(function(k){
+        h += '<label class="sfopt"><input type="radio" name="sfAxis" value="' + k + '"' + (AN.sf.axis === k ? ' checked' : '') + ' /> ' +
+             esc(anAxText(ft.xName, ft.xUnit, k)) + (k === 'none' ? ' (그대로)' : '') + '</label>';
+      });
+      h += '</div>';
+    }
+    h += '<div class="improw" style="margin-top:14px">' +
+         '<button id="btnSfReveal" class="btn btn-solid" type="button" style="min-height:48px">내 생각을 적었어요 — 앱의 분석 보기</button></div>' +
+         '<label class="chkline" for="sfSkip" style="margin-top:12px"><input id="sfSkip" type="checkbox" />' +
+         '<span class="ct"><b>선생님 시연 — 이 기기에서는 관문 없이 바로 보기</b>' +
+         '<span>연수나 시범 수업에서 결과부터 보여 줄 때 켭니다. 학생 기기에서는 끄세요.</span></span></label>';
+    return h + '</div>';
+  }
+  function sfBindGate(){
+    const g = $('sfGuess'); if (g) g.addEventListener('input', function(){ AN.sf.guess = this.value; });
+    ['sfD0', 'sfD1'].forEach(function(id, i){ const el = $(id); if (el) el.addEventListener('input', function(){ AN.sf.d[i] = this.value; }); });
+    Array.prototype.forEach.call(document.querySelectorAll('input[name="sfAxis"]'), function(r){
+      r.addEventListener('change', function(){ AN.sf.axis = this.value; });
+    });
+    const sk = $('sfSkip');
+    if (sk) sk.addEventListener('change', function(){
+      try { localStorage.setItem('mbl_an_sf', this.checked ? '0' : '1'); } catch (e) {}
+      if (this.checked){ AN.sf.revealed = true; anShowResults(); }
+    });
+    const b = $('btnSfReveal');
+    if (b) b.addEventListener('click', function(){
+      const dv = sfDerive(AN.res), ft = sfFitTf(AN.res);
+      if (AN.sf.guess.trim().length < 4){ anMsg('1번 — 예상을 한 문장 적어 주세요. 틀려도 됩니다.', 'bad'); const el = $('sfGuess'); if (el) el.focus(); return; }
+      if (dv && (!isFinite(sfNum(AN.sf.d[0])) || !isFinite(sfNum(AN.sf.d[1])))){ anMsg('2번 — 두 줄 다 숫자로 계산해 적어 주세요.', 'bad'); const el = $('sfD0'); if (el) el.focus(); return; }
+      if (ft && !AN.sf.axis){ anMsg('3번 — 가로축을 하나 골라 주세요.', 'bad'); return; }
+      AN.sf.revealed = true;
+      anShowResults();
+    });
+  }
+  //  공개 뒤 맨 위에 붙는 견주기 상자 (파일로 저장할 때는 글로만)
+  function sfPanelHTML(e, res, rows, forFile){
+    if (!sfOn() && !AN.sf.guess) return '';
+    const dv = sfDerive(res), ft = sfFitTf(res), fa = sfFitAny(res);
+    const verdict = res.verdict ? anFill(res.verdict.text, res.vals) : '';
+    let h = '<div class="box"><span class="pill sun">학생이 먼저</span><h2 style="margin-top:8px">내 생각과 견주기</h2>';
+    h += '<div class="sfpair"><div><b>내가 적은 예상</b><p>' + (AN.sf.guess ? esc(AN.sf.guess) : '<span class="muted">(적지 않음)</span>') + '</p></div>' +
+         '<div><b>앱의 판정</b><p>' + (verdict ? esc(verdict) : '<span class="muted">(판정 없음)</span>') + '</p></div></div>';
+    if (dv){
+      const vals = [0, 1].map(function(i){ return rawVal(rows[i] || [], dv.d.id, res.ds); });
+      h += '<div class="sfq"><b>' + esc(dv.d.name) + ' — 내 계산 vs 앱</b><div class="fitrow">';
+      [0, 1].forEach(function(i){
+        const mine = sfNum(AN.sf.d[i]), ok = sfClose(mine, vals[i]);
+        h += '<span>' + (i + 1) + '줄 · 나 <b>' + esc(isFinite(mine) ? labNum(mine) : '—') + '</b> · 앱 <b>' + esc(labNum(vals[i])) + '</b> ' +
+             (isFinite(mine) ? (ok ? '<span class="o">맞음</span>' : '<span class="x">다름</span>') : '') + '</span>';
+      });
+      h += '</div><p class="muted">3% 안쪽이면 맞음으로 봅니다. 다르면 소수점 자리나 곱·나눗셈 순서를 다시 보세요.</p></div>';
+    }
+    if (ft){
+      const mineTxt = AN.sf.axis ? anAxText(ft.xName, ft.xUnit, AN.sf.axis) : '(고르지 않음)';
+      const appTxt = anAxText(ft.xName, ft.xUnit, ft.xt);
+      const same = AN.sf.axis === ft.xt;
+      h += '<div class="sfq"><b>직선으로 펴는 가로축 — 내 선택 vs 앱</b>' +
+           '<div class="fitrow"><span>나 <b>' + esc(mineTxt) + '</b></span><span>앱 <b>' + esc(appTxt) + '</b> ' +
+           (AN.sf.axis ? (same ? '<span class="o">같음</span>' : '<span class="x">다름</span>') : '') + '</span></div>' +
+           (ft.fit && ft.fit.ok && ft.fit0 && ft.fit0.ok
+              ? '<p class="muted">앱이 고른 축으로 바꾸면 R² 가 ' + esc(fmtR2(ft.fit0.r2)) + ' → <b>' + esc(fmtR2(ft.fit.r2)) + '</b> 이 됩니다. ' +
+                (same ? '같은 축을 골랐습니다.' : '내가 고른 축으로 바꾸면 어떻게 될지, 데이터 실험실에서 직접 확인해 보세요.') + '</p>' : '') +
+           '</div>';
+    }
+    const ta = function(id, label, val, ph){
+      return '<div class="sfq"><b>' + esc(label) + '</b>' +
+             (forFile ? '<p>' + (val ? esc(val) : '<span class="muted">(적지 않음)</span>') + '</p>'
+                      : '<textarea id="' + id + '" placeholder="' + esc(ph) + '">' + esc(val) + '</textarea>') + '</div>';
+    };
+    h += ta('sfCmp', '내 예상과 앱의 판정 — 같은 점과 다른 점을 한 줄로', AN.sf.cmp, '예) 반비례라는 건 같았는데, 곱이 일정하다는 말은 내가 못 했다');
+    if (fa){
+      h += ta('sfSlope', '기울기 ' + labNum(fa.fit && fa.fit.slope) + ' 는 무엇을 뜻하나요?', AN.sf.slopeM, '예) 압력 × 부피의 값, 즉 일정한 상수');
+      h += ta('sfInt', '절편 ' + labNum(fa.fit && fa.fit.intercept) + ' 이 0에 가깝다면(또는 아니라면) 무슨 뜻인가요?', AN.sf.intM, '예) 원점을 지나니 진짜 반비례. 크면 새는 곳이 있다는 뜻');
+    }
+    if (!forFile) h += '<p class="muted">여기 적은 것은 [HTML 파일로 저장] 에 함께 담깁니다.</p>';
+    return h + '</div>';
+  }
+  function sfBindPanel(){
+    [['sfCmp', 'cmp'], ['sfSlope', 'slopeM'], ['sfInt', 'intM']].forEach(function(pair){
+      const el = $(pair[0]); if (el) el.addEventListener('input', function(){ AN.sf[pair[1]] = this.value; });
+    });
   }
 
   function openAnalyze(){
@@ -7062,7 +7300,9 @@
     let list = q ? LAB.search(q) : LAB.experiments.slice();
     if (g) list = list.filter(e => Number(e.grade) === Number(g));
     if (u) list = list.filter(e => e.unit === u);
-    if (v && LAB.vendorOk) list = list.filter(e => LAB.vendorOk(e, v));
+    //  센서가 없어도 대체 절차가 있으면 그 업체 목록에 남깁니다(카드에 표시가 붙습니다).
+    if (v && LAB.vendorWay) list = list.filter(e => LAB.vendorWay(e, v) !== 'no');
+    else if (v && LAB.vendorOk) list = list.filter(e => LAB.vendorOk(e, v));
     if ($('aPool') && $('aPool').checked) list = list.filter(e => poolFitOf(e) >= 3);
     $('aCount').textContent = list.length + '건';
 
@@ -7120,6 +7360,10 @@
     if (closeBtn) closeBtn.addEventListener('click', function(){ pickAtlas(e.id); });
     const startBtn = $('btnAtlasStart');
     if (startBtn) startBtn.addEventListener('click', function(){ simplePick = false; simpleSetup(packFromExp(e)); });
+    //  꾸러미 받기 — 선생님이 절차·질문을 고치지 않고도 이 실험을 그대로 나눠 줄 수 있습니다.
+    //  고쳐서 나눠 주려면 교사용 화면의 수업 만들기에서 편집한 뒤 [수업 꾸러미 내려받기] 를 씁니다.
+    const packBtn = $('btnAtlasPack');
+    if (packBtn) packBtn.addEventListener('click', function(){ downloadPackJSON(packFromExp(e)); });
   }
 
   function atlasDetailHTML(e){
@@ -7138,7 +7382,9 @@
     }
     h += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
          '<h2 style="flex:1 1 220px">' + esc(e.title) + '</h2>' +
-         '<button id="btnAtlasClose" class="btn" type="button">닫기</button></div>';
+         '<span style="display:flex;gap:8px;flex-wrap:wrap">' +
+         '<button id="btnAtlasPack" class="btn btn-sm" type="button" title="이 실험의 절차·준비물·보고서 질문이 담긴 수업 꾸러미(.json)">📦 꾸러미 받기</button>' +
+         '<button id="btnAtlasClose" class="btn" type="button">닫기</button></span></div>';
     h += '<div class="taglist">' +
          '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
          '<span class="pill">' + esc(e.minutes) + '분</span>' +
@@ -7173,7 +7419,7 @@
            '</div>';
     }
     if (asteps.length){
-      h += '<h3>실험 순서' + (avi ? ' · ' + esc(avi.name) : '') + '</h3>' +
+      h += '<h3>실험 순서' + (avi ? ' · ' + esc(avi.name) : '') + '</h3>' + altNoteHTML(e, av) +
            '<ol class="steps-ol">' + asteps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
     }
     h += figDiagram(e);
@@ -7201,6 +7447,38 @@
   }
 
   $('btnAtlas').addEventListener('click', function(){ openAtlas(true); });
+  //  첫 화면 — 도감 미리보기(학년별 둘씩) · 30초 체험 · 도감 전체 보기
+  function renderHomeCards(){
+    const box = $('homeCards');
+    if (!box || !window.LAB) return;
+    let h = '';
+    [1, 2, 3].forEach(function(g){
+      const list = LAB.byGrade(g);
+      //  합치기 ★ 실험을 먼저 보여 줍니다 — 이 앱다운 실험이 앞에 오게.
+      const sorted = list.slice().sort(function(a, b){ return (LAB.poolFit(b) || 0) - (LAB.poolFit(a) || 0); });
+      sorted.slice(0, 2).forEach(function(e){
+        h += '<button class="hcard" type="button" data-hexp="' + esc(e.id) + '">' +
+             '<span class="g">중' + esc(e.grade) + ' · ' + esc(e.unit) + (LAB.poolFit(e) >= 3 ? ' · 합치기 ★' : '') + '</span>' +
+             '<b>' + esc(e.title) + '</b></button>';
+      });
+    });
+    box.innerHTML = h;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-hexp]'), function(b){
+      b.addEventListener('click', function(){ openAtlas(true); pickAtlas(b.dataset.hexp); });
+    });
+  }
+  renderHomeCards();
+  const bah = $('btnAtlasHome'); if (bah) bah.addEventListener('click', function(){ openAtlas(true); });
+  const bt = $('btnTry30');
+  if (bt) bt.addEventListener('click', function(){
+    openAnalyze();
+    const sel = $('anExp');
+    if (sel){ sel.value = 'sm-05'; sel.dispatchEvent(new Event('change', { bubbles:true })); }
+    const t = demoOf('sm-05');
+    if (t){ $('anPaste').value = t; anRead(t, '예시 데이터'); }
+    anMsg('예시 값을 넣었습니다. [분석하기]를 누르면 먼저 내 생각을 적는 관문이 열립니다.', 'ok');
+    const b = $('btnAnRun'); if (b) b.scrollIntoView({ behavior:'smooth', block:'center' });
+  });
   $('btnAtlasJoin').addEventListener('click', backToJoin);
 
   // ── 시작할 때: 지난번 코드 되살리기 ────────────────────────────
