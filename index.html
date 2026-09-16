@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609070811"></script>
+<script src="./lab-data.js?v=202609170142"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609070811"></script>
-<script src="./diagrams.js?v=202609070811"></script>
-<script src="./graphs.js?v=202609070811"></script>
-<script src="./config.js?v=202609070811"></script>
-<script src="./hub.js?v=202609070811"></script>
+<script src="./demo-data.js?v=202609170142"></script>
+<script src="./diagrams.js?v=202609170142"></script>
+<script src="./graphs.js?v=202609170142"></script>
+<script src="./config.js?v=202609170142"></script>
+<script src="./hub.js?v=202609170142"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609070811"></script>
-<script src="./dashkit.js?v=202609070811"></script>
+<script src="./sensorkit.js?v=202609170142"></script>
+<script src="./dashkit.js?v=202609170142"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -385,10 +385,59 @@
   .box.gone{border:2px solid var(--bad);background:#FFF6F6}
   .box.gone h2{color:var(--bad);font-size:26px}
 
-  /* ── 코드 없이 쓰는 길(간편 모드) ───────────────────────────── */
-  .ways{border:2px dashed var(--line-2);border-radius:var(--r);background:var(--cream);padding:18px;margin-top:18px}
+  /* ── 첫 화면 — 노트북 한 화면에 들어가는 길 네 가지 ───────────── */
+  .join.home{max-width:none;margin:18px auto 26px}
+  .hero{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:6px 4px 14px}
+  .hero-txt{min-width:0}
+  .hero-k{font-size:12.5px;font-weight:700;color:var(--mint-d);letter-spacing:.02em;margin-bottom:4px}
+  .hero-t{font-family:var(--display);font-size:31px;font-weight:400;line-height:1.25;color:var(--ink);margin:0}
+  .hero-t b{font-weight:400;color:var(--mint-d)}
+  .hero-s{font-size:14.5px;color:#4C6B78;margin-top:6px;line-height:1.6}
+  .hero-s a{color:var(--mint-d);font-weight:700;white-space:nowrap}
+  .hero-img{flex:0 0 auto;width:150px;height:auto;border-radius:14px;opacity:.95}
+  .entry{display:grid;grid-template-columns:1.22fr 1fr 1fr 1fr;gap:14px;align-items:stretch}
+  .ecard{position:relative;overflow:hidden;background:var(--paper);border:1.5px solid var(--line);border-radius:var(--r);
+    box-shadow:var(--shadow);padding:18px 18px 16px;display:flex;flex-direction:column;gap:10px;min-width:0;
+    transition:transform .22s cubic-bezier(.2,.7,.2,1),box-shadow .22s,border-color .22s}
+  .ecard::before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--ac,var(--mint))}
+  .ecard:hover{transform:translateY(-3px);box-shadow:var(--shadow-lg);border-color:var(--ac,var(--mint))}
+  .ec-code{--ac:var(--mint)} .ec-simple{--ac:var(--sky)} .ec-quick{--ac:var(--sun)} .ec-atlas{--ac:var(--coral)}
+  .ehead{display:flex;gap:10px;align-items:flex-start}
+  .ehead i{font-style:normal;font-size:26px;line-height:1;flex-shrink:0;margin-top:2px}
+  .ehead b{display:block;font-family:var(--display);font-size:19px;font-weight:400;line-height:1.25}
+  .ehead span{display:block;font-size:13px;color:var(--muted);line-height:1.55;margin-top:3px}
+  .ehead span b{display:inline;font-family:var(--sans);font-size:inherit;font-weight:700;color:var(--ink)}
+  .ecard .btn{width:100%;min-height:46px}
+  .ecard .code-in{font-size:32px;padding:12px 10px;margin-top:2px}
+  .ecard .err{margin-top:0;min-height:0}
+  .ecard .err:empty{display:none}
+  .enote{font-size:12px;color:var(--muted);line-height:1.5;margin-top:auto}
+  .esub{display:flex;flex-direction:column;gap:4px;margin-top:auto}
+  .lnk{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:5px 6px;margin:0 -6px;border-radius:9px;
+    font-family:var(--sans);font-size:13px;font-weight:700;color:var(--mint-d);cursor:pointer;text-align:left;line-height:1.35}
+  .lnk:hover{background:rgba(32,178,166,.1)}
+  /* 등장 — 처음엔 조금 아래에서 흐리게, 보이는 순서대로 올라옵니다 */
+  .reveal{opacity:0;transform:translateY(16px);
+    transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*80ms)}
+  .reveal.in{opacity:1;transform:none}
+  .ecard.reveal.in:hover{transform:translateY(-3px)}
+  @media (prefers-reduced-motion:reduce){
+    .reveal{opacity:1;transform:none;transition:none}
+    .ecard,.ecard:hover{transform:none;transition:none}
+  }
+  @media (max-width:1080px){
+    .entry{grid-template-columns:1fr 1fr}
+    .hero-img{width:120px}
+  }
+  @media (max-width:640px){
+    .join.home{margin:10px auto 20px}
+    .hero{flex-direction:column;align-items:flex-start;gap:8px;padding-bottom:8px}
+    .hero-img{display:none}
+    .hero-t{font-size:25px}
+    .entry{grid-template-columns:1fr;gap:12px}
+  }
   /*  첫 화면 아래쪽 — 이 앱이 하는 일  */
-  .homeplus{margin-top:22px}
+  .homeplus{margin-top:30px}
   .hkicker{font-family:var(--display);font-size:20px;color:var(--ink);text-align:center;margin:6px 0 12px}
   .hkicker b{color:var(--mint-d);font-weight:400}
   .htiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
@@ -396,10 +445,6 @@
   .htile i{font-style:normal;font-size:24px;display:block;margin-bottom:6px}
   .htile b{display:block;font-size:15.5px;margin-bottom:4px}
   .htile span{display:block;font-size:13.5px;color:var(--muted);line-height:1.6}
-  .htry{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:14px;
-    background:var(--cream);border:2px solid var(--sun);border-radius:16px;padding:14px 16px}
-  .htry>div b{display:block;font-size:16px}
-  .htry>div span{display:block;font-size:13.5px;margin-top:2px}
   .hsub{font-family:var(--display);font-size:19px;font-weight:400;margin:22px 0 8px}
   .hsub .muted{font-family:var(--sans);font-size:13px}
   .hcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
@@ -411,13 +456,11 @@
   .hteacher{margin-top:18px;background:#fff;border:1.5px solid var(--line);border-radius:16px;padding:14px 16px}
   .hteacher b{display:block;font-size:15.5px;margin-bottom:4px}
   .hteacher .muted{display:block;font-size:13.5px}
-  .ways h3{font-family:var(--display);font-size:19px;font-weight:400;margin-bottom:4px}
-  .ways .wbtn{display:flex;align-items:center;gap:12px;width:100%;text-align:left;margin-top:10px;
-    border:1.5px solid var(--line-2);background:#fff;border-radius:14px;padding:13px 15px;cursor:pointer;
-    font-family:var(--sans);font-size:15px;font-weight:700;color:var(--ink);transition:.16s;min-height:56px}
-  .ways .wbtn:hover{border-color:var(--mint);box-shadow:var(--shadow)}
-  .ways .wbtn i{font-style:normal;font-size:22px;flex-shrink:0}
-  .ways .wbtn small{display:block;font-size:12.5px;font-weight:600;color:var(--muted);margin-top:2px;line-height:1.5}
+
+  /* 분석 화면 — 어느 모드인지 맨 위에 띠로 */
+  .anmode{display:flex;align-items:center;gap:10px;flex-wrap:wrap;border:1.5px solid var(--line-2);background:var(--cream);
+    border-radius:14px;padding:10px 14px;margin:-4px 0 14px;font-size:14px}
+  .anmode .lnk{margin:0}
 
   /* 간편 모드 띠 (작업 화면 맨 위) */
   .simplebar{position:sticky;top:62px;z-index:40;display:flex;align-items:center;gap:10px;flex-wrap:wrap;
@@ -464,7 +507,7 @@
   <div class="wrap row">
     <div class="brand">
       <b>MBL 수업허브</b>
-      <span id="topSub">참여코드를 입력하고 들어오세요</span>
+      <span id="topSub">참여코드 · 코드 없이 · 그래프만 빠르게 · 실험 도감</span>
     </div>
     <div class="topright">
       <span id="phasePill" class="pill hidden"></span>
@@ -476,72 +519,82 @@
 
 <main class="wrap">
 
-  <!-- ① 참여코드 -->
-  <section id="scJoin" class="join">
-    <div class="box">
-      <img class="illus" src="./assets/hero.webp" alt="" width="1000" height="750"
-           decoding="async" onerror="this.remove()" />
-      <h2>참여코드 6자리</h2>
-      <p class="muted">선생님이 칠판에 적어 주신 코드를 그대로 입력하세요.</p>
-      <div style="margin-top:14px">
+  <!-- ① 첫 화면 — 노트북 한 화면에 들어가는 길 네 가지 -->
+  <section id="scJoin" class="join home">
+    <div class="hero reveal" style="--i:0">
+      <div class="hero-txt">
+        <p class="hero-k">이지메이커 · 사이언스큐브 실험 49건 · 2022 개정 성취기준</p>
+        <h1 class="hero-t">재는 건 센서 프로그램이, <b>그다음</b>은 여기서</h1>
+        <p class="hero-s">해석하고 · 반 전체를 한 그래프로 합치고 · 보고서 쓰고 · 발표하기 — 설치도 계정도 없이.
+          <a href="./about.html">이 앱은 어떤 앱인가요? →</a></p>
+      </div>
+      <img class="hero-img" src="./assets/hero.webp" alt="" width="1000" height="750" decoding="async" onerror="this.remove()" />
+    </div>
+
+    <div class="entry">
+      <!-- ⓐ 참여코드 -->
+      <div class="ecard ec-code reveal" style="--i:1">
+        <div class="ehead"><i>🔑</i><div><b>참여코드로 들어가기</b><span>선생님이 칠판에 적어 준 6자리를 그대로</span></div></div>
         <input id="inCode" class="code-in" type="text" inputmode="latin" autocomplete="off"
                maxlength="6" placeholder="ABC234" aria-label="참여코드 6자리" />
+        <div id="joinErr" class="err"></div>
+        <button id="btnJoin" class="btn btn-solid" type="button">들어가기</button>
+        <p class="enote">O·0·I·1·L 은 코드에 쓰이지 않습니다. 모둠을 고른 뒤 모둠 비밀번호 4자리를 넣습니다.</p>
       </div>
-      <div id="joinErr" class="err"></div>
-      <button id="btnJoin" class="btn btn-solid" style="width:100%;margin-top:6px" type="button">들어가기</button>
-      <button id="btnAtlas" class="btn" style="width:100%;margin-top:10px" type="button">참여 없이 실험 도감 보기</button>
-      <p class="muted" style="margin-top:14px">O·0·I·1·L 은 코드에 쓰이지 않습니다. 헷갈릴 일이 없어요.</p>
-      <p class="muted">코드가 없어도 실험 도감은 볼 수 있습니다.</p>
-      <p class="muted"><a href="./about.html" style="color:var(--mint-d);font-weight:700">이 앱은 어떤 앱인가요? →</a></p>
 
-      <!-- 참여코드가 없어도 수업 한 차시를 그대로 할 수 있는 세 갈래 -->
-      <div class="ways">
-        <h3>참여코드가 없나요?</h3>
-        <p class="muted">아래 셋 중 하나를 고르면 <b>간편 모드</b>로 실험·보고서를 그대로 할 수 있습니다.
-          간편 모드는 인터넷 서버를 쓰지 않고, 한 것을 <b>작업 파일 하나</b>로 내려받아 선생님께 냅니다.</p>
-
-        <button id="btnSimplePick" class="wbtn" type="button"><i>🧪</i>
-          <span>코드 없이 시작하기<small>실험 도감에서 실험을 직접 골라 바로 시작합니다.</small></span></button>
-
-        <button id="btnAnalyzeOpen" class="wbtn" type="button"><i>📈</i>
-          <span>데이터 붙여넣고 분석하기<small>이미 모아 둔 값을 <b>붙여넣기만</b> 하면 그 실험의 목적에 맞는 분석이 바로 나옵니다.
-            참여코드도, 저장도 필요 없습니다.</small></span></button>
-
-        <button id="btnSimplePack" class="wbtn" type="button"><i>📦</i>
-          <span>수업 꾸러미 파일 올리기<small>선생님이 준 <b>.json</b> 을 올리면 실험·절차·질문·개념 확인이 그대로 세팅됩니다.</small></span></button>
-
-        <button id="btnSimpleResume" class="wbtn" type="button"><i>📄</i>
-          <span>이어서 하기<small>전에 내려받은 내 작업 파일(<b>.html</b>)을 올리면 하던 데서 이어서 합니다.</small></span></button>
-
+      <!-- ⓑ 코드 없이 -->
+      <div class="ecard ec-simple reveal" style="--i:2">
+        <div class="ehead"><i>🧪</i><div><b>코드 없이 하기</b><span>참여코드가 없나요? 실험을 골라 바로 시작하고, 한 것을 <b>작업 파일 하나</b>로 선생님께 냅니다. 서버를 쓰지 않습니다.</span></div></div>
+        <button id="btnSimplePick" class="btn btn-solid" type="button">코드 없이 시작하기</button>
+        <div class="esub">
+          <button id="btnSimplePack" class="lnk" type="button">📦 수업 꾸러미 파일 올리기</button>
+          <button id="btnSimpleResume" class="lnk" type="button">📄 이어서 하기</button>
+        </div>
         <input id="filePack" type="file" class="hidden" accept=".json,application/json" />
         <input id="fileWork" type="file" class="hidden" accept=".html,.htm,text/html" />
         <div id="wayErr" class="err"></div>
+      </div>
+
+      <!-- ⓒ 그래프만 빠르게 -->
+      <div class="ecard ec-quick reveal" style="--i:3">
+        <div class="ehead"><i>📈</i><div><b>그래프만 빠르게</b><span>모아 둔 값을 붙여넣으면 그래프·기울기·R²·결론 문장까지. <b>예상 적기나 질문 없이</b> 결과만 봅니다.</span></div></div>
+        <button id="btnQuickOpen" class="btn btn-solid" type="button">데이터 붙여넣고 분석하기</button>
+        <div class="esub">
+          <button id="btnAnalyzeOpen" class="lnk" type="button">🧭 학생용 — 내 생각 먼저 적고 견주기</button>
+          <button id="btnTry30" class="lnk" type="button">⏱ 30초 체험 — 예시 값으로</button>
+        </div>
+      </div>
+
+      <!-- ⓓ 실험 도감 -->
+      <div class="ecard ec-atlas reveal" style="--i:4">
+        <div class="ehead"><i>📚</i><div><b>실험 도감 49건</b><span>중1·2·3 단원별로, 이지메이커·사이언스큐브 절차를 따로. 준비물·절차·성취기준·예시 데이터까지.</span></div></div>
+        <button id="btnAtlas" class="btn btn-solid" type="button">참여 없이 실험 도감 보기</button>
+        <div class="esub">
+          <a class="lnk" href="./teacher.html">🧑‍🏫 교사용 화면</a>
+          <a class="lnk" href="./manual.html">📖 사용 설명서</a>
+        </div>
       </div>
     </div>
 
     <!-- 이 앱이 하는 일 — 센서 프로그램은 재고, 수업허브는 수업을 합니다 -->
     <div class="homeplus">
-      <p class="hkicker">센서 프로그램은 재고, 수업허브는 <b>수업</b>을 합니다</p>
+      <p class="hkicker reveal">센서 프로그램은 재고, 수업허브는 <b>수업</b>을 합니다</p>
       <div class="htiles">
-        <div class="htile"><i>🧩</i><b>반 전체를 한 그래프로</b>
+        <div class="htile reveal" style="--i:0"><i>🧩</i><b>반 전체를 한 그래프로</b>
           <span>모둠마다 다른 값을 나눠 맡고, 합치면 곡선이 완성됩니다. 노트북 한 대짜리 프로그램은 못 하는 일입니다.</span></div>
-        <div class="htile"><i>🧭</i><b>학생이 먼저, 앱은 나중에</b>
-          <span>예상을 적고 직접 계산해 보고 축을 골라야 앱의 판정이 열립니다. 숫자 대신 결론 문장과 오류 진단이 나옵니다.</span></div>
-        <div class="htile"><i>📝</i><b>보고서 · 별점 · 발표 · 기록</b>
+        <div class="htile reveal" style="--i:1"><i>🧭</i><b>학생이 먼저, 앱은 나중에</b>
+          <span>학생용 분석은 예상을 적고 직접 계산해 보고 축을 골라야 앱의 판정이 열립니다. 숫자 대신 결론 문장과 오류 진단이 나옵니다.</span></div>
+        <div class="htile reveal" style="--i:2"><i>📝</i><b>보고서 · 별점 · 발표 · 기록</b>
           <span>양식 배포, 모둠 공유, 발표 모드, 개념 확인 채점, 생기부 문장까지 한 흐름입니다.</span></div>
-        <div class="htile"><i>🔌</i><b>센서가 없는 날도 수업</b>
+        <div class="htile reveal" style="--i:3"><i>🔌</i><b>센서가 없는 날도 수업</b>
           <span>예시 데이터·CSV 붙여넣기·손 입력으로 분석은 그대로 됩니다. 두 업체 절차를 나란히 실었습니다.</span></div>
       </div>
-      <div class="htry">
-        <div><b>30초 체험</b><span class="muted">예시 값을 넣고 관문을 지나 판정까지 — 로그인도 센서도 없이.</span></div>
-        <button id="btnTry30" class="btn btn-solid" type="button" style="min-height:46px">보일의 법칙으로 해 보기</button>
-      </div>
-      <h3 class="hsub">실험 도감 · 49건 <span class="muted">학년별로 두 개씩</span></h3>
+      <h3 class="hsub reveal">실험 도감 · 49건 <span class="muted">학년별로 두 개씩</span></h3>
       <div id="homeCards" class="hcards"></div>
-      <div class="improw" style="margin-top:8px">
+      <div class="improw reveal" style="margin-top:8px">
         <button id="btnAtlasHome" class="btn" type="button" style="min-height:44px">도감 전체 보기</button>
       </div>
-      <div class="hteacher">
+      <div class="hteacher reveal">
         <b>선생님이신가요?</b>
         <span class="muted">수업을 열어 참여코드를 만들고, 절차·질문을 고쳐 꾸러미로 나눠 주고, 반 전체를 한 화면에서 봅니다.</span>
         <span style="display:flex;gap:8px;flex-wrap:wrap;margin-top:8px">
@@ -588,6 +641,7 @@
         파생열·기울기·R²·결론까지 한 화면에 펼쳐 드립니다.</p>
       <p class="muted" style="margin-top:6px">서버에 아무것도 보내지 않습니다. 이 기기 안에서만 계산합니다.</p>
 
+      <div id="anMode" class="anmode"></div>
       <label class="fl" for="anExp">① 어떤 실험인가요?</label>
       <select id="anExp" aria-describedby="anGoal"><option value="">— 실험을 고르세요 —</option></select>
       <div id="anGoal"></div>
@@ -783,7 +837,7 @@
         <div class="imp" id="sensorCard" style="margin-top:12px">
           <h3 style="margin:2px 0 6px">센서를 이 화면에 바로 잇기</h3>
           <p class="muted" style="margin:0 0 10px">
-            케이블(유선)이나 블루투스(무선)로 이으면 값이 <b>이 표에 바로</b> 들어옵니다.
+            케이블(유선)로 이으면 값이 <b>이 표에 바로</b> 들어옵니다. 무선(블루투스)은 지금 고치는 중이라 잠시 닫아 두었습니다.
             센서가 없으면 <b>시험용 모의 장치</b>로 흐름을 익혀 볼 수 있습니다.
           </p>
           <div id="sensorHost"></div>
@@ -1534,6 +1588,8 @@
   })();
 
   // ── 화면 전환 ──────────────────────────────────────────────────
+  //  첫 화면으로 돌아올 때 상단바에 쓰는 한 줄 — 마크업(topSub)과 같은 말입니다.
+  const HOME_SUB = '참여코드 · 코드 없이 · 그래프만 빠르게 · 실험 도감';
   function show(which){
     $('scJoin').classList.toggle('hidden',    which !== 'join');
     $('scGroup').classList.toggle('hidden',   which !== 'group');
@@ -1692,7 +1748,7 @@
     group = null; lesson = null; joinCode = '';
     clearExtras();
     $('phasePill').classList.add('hidden');
-    $('topSub').textContent = '참여코드를 입력하고 들어오세요';
+    $('topSub').textContent = HOME_SUB;
     show('join');
   });
 
@@ -6344,6 +6400,8 @@
   //  ★ 서버를 한 번도 부르지 않습니다 (Supabase 와 아무 상관이 없습니다).
   // ═══════════════════════════════════════════════════════════════
   const AN = { exp:null, imp:null, pick:[], guess:[], gpick:'', res:null, rows:[], groups:[], when:null,
+               //  그래프만 빠르게 — 관문도 견주기도 없이 그래프·기울기·R²·판정만. 이 세션에서만 살고 저장하지 않습니다.
+               quick:false,
                //  학생이 먼저 — 앱의 분석을 보기 전에 학생이 채우는 칸들
                sf: { revealed:false, guess:'', d:['',''], axis:'', cmp:'', slopeM:'', intM:'' } };
   //  선생님 시연처럼 관문 없이 바로 보려면 이 기기에 '0' 을 남깁니다.
@@ -6768,7 +6826,7 @@
       '<meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
       '<title>' + esc(AN.exp.title + ' 분석 결과') + '</title>\n<style>\n' + AN_CSS + '\n</style>\n</head>\n<body>\n' +
       '<div class="wrap"><h1>' + esc(AN.exp.title) + ' — 분석 결과</h1>' +
-      '<p class="meta">MBL 센서 수업허브 · 붙여넣기 분석' + (AN.when ? ' · ' + esc(AN.when) : '') + '</p>' +
+      '<p class="meta">MBL 센서 수업허브 · 붙여넣기 분석' + (AN.quick ? ' · 그래프만 빠르게' : '') + (AN.when ? ' · ' + esc(AN.when) : '') + '</p>' +
       body +
       '<p class="foot">© 2026 조승재(과학이조선생) · MBL 센서 수업허브<br>' +
       '이 파일은 붙여넣은 값으로 이 기기 안에서 계산한 것입니다.</p></div>\n</body>\n</html>\n';
@@ -6947,7 +7005,7 @@
     AN.res = runAnalysis(AN.exp, rows);
     //  학생이 먼저 — 예상·계산·축 고르기를 적어야 앱의 분석이 열립니다.
     //  (그래프를 넣으면 앱이 다 해 주는 느낌을 줄이려는 것입니다. 답이 틀려도 견주는 것이 목적입니다.)
-    if (sfOn() && !AN.sf.revealed){
+    if (!AN.quick && sfOn() && !AN.sf.revealed){
       $('anOut').innerHTML = sfGateHTML(AN.exp, AN.res, rows);
       sfBindGate();
       anMsg('먼저 내 생각을 적어 주세요. 적으면 앱의 분석이 열립니다.', 'ok');
@@ -7046,6 +7104,7 @@
   }
   //  공개 뒤 맨 위에 붙는 견주기 상자 (파일로 저장할 때는 글로만)
   function sfPanelHTML(e, res, rows, forFile){
+    if (AN.quick) return '';          // 빠른 모드 — 화면에도 저장 파일에도 견주기 상자를 남기지 않습니다
     //  관문을 꺼 둔 기기에서는 적은 것이 없어도 '다시 켜기' 만 담은 상자를 보입니다.
     //  저장 파일에는 적은 것이 있을 때만 넣습니다(빈 상자를 남기지 않게).
     if (!sfOn() && !AN.sf.guess){
@@ -7115,24 +7174,46 @@
     });
   }
 
-  function openAnalyze(){
+  function openAnalyze(quick){
+    AN.quick = !!quick;
+    sfReset();
     anFillExpList();
     show('analyze');
-    $('topSub').textContent = '데이터 붙여넣고 분석하기';
+    $('topSub').textContent = AN.quick ? '그래프만 빠르게 — 붙여넣기 분석' : '데이터 붙여넣고 분석하기 — 학생용';
+    anPaintMode();
     anMsg('');
     window.scrollTo(0, 0);
     $('anExp').focus();
+  }
+  //  어느 모드로 들어왔는지 맨 위에 띠로 보입니다. 빠른 모드에서만 학생용으로 바꾸는 단추를 둡니다 —
+  //  학생용에서 빠른 모드로 가는 단추는 두지 않습니다(학생이 관문을 스스로 건너뛰지 않게).
+  function anPaintMode(){
+    const m = $('anMode');
+    if (!m) return;
+    m.innerHTML = AN.quick
+      ? '<span class="pill sun">그래프만 빠르게</span><span>예상·계산·질문 없이 <b>그래프 · 기울기 · R² · 결론 문장</b>만 봅니다.</span>' +
+        '<button id="btnAnModeStudent" class="lnk" type="button">🧭 학생용(내 생각 먼저)으로 바꾸기</button>'
+      : '<span class="pill sky">학생용</span><span>먼저 <b>내 생각</b>을 적어야 앱의 분석이 열립니다. 틀려도 됩니다 — 견주는 것이 목적입니다.</span>';
+    const b = $('btnAnModeStudent');
+    if (b) b.addEventListener('click', function(){
+      AN.quick = false; sfReset(); $('anOut').innerHTML = '';
+      $('topSub').textContent = '데이터 붙여넣고 분석하기 — 학생용';
+      anPaintMode();
+      anMsg('학생용으로 바꿨습니다. [분석하기]를 누르면 먼저 내 생각을 적는 화면이 나옵니다.', 'ok');
+    });
   }
 
   (function bindAnalyze(){
     const ob = $('btnAnalyzeOpen');
     if (!ob) return;
-    ob.addEventListener('click', openAnalyze);
+    ob.addEventListener('click', function(){ openAnalyze(false); });
+    const qb = $('btnQuickOpen'); if (qb) qb.addEventListener('click', function(){ openAnalyze(true); });
     $('anExp').addEventListener('change', anPickExp);
     $('btnAnBack').addEventListener('click', function(){
       $('anOut').innerHTML = '';
+      AN.quick = false;
       show('join');
-      $('topSub').textContent = '참여코드를 입력하고 들어오세요';
+      $('topSub').textContent = HOME_SUB;
       window.scrollTo(0, 0);
     });
     $('btnAnDemo').addEventListener('click', function(){
@@ -7275,7 +7356,7 @@
     $('tabLab').classList.remove('hidden');
     $('tabNote').classList.add('hidden');
     $('phasePill').classList.add('hidden');
-    $('topSub').textContent = '참여코드를 입력하고 들어오세요';
+    $('topSub').textContent = HOME_SUB;
     show('join');
     window.scrollTo(0, 0);
     $('inCode').focus();
@@ -7504,8 +7585,9 @@
       const list = LAB.byGrade(g);
       //  합치기 ★ 실험을 먼저 보여 줍니다 — 이 앱다운 실험이 앞에 오게.
       const sorted = list.slice().sort(function(a, b){ return (LAB.poolFit(b) || 0) - (LAB.poolFit(a) || 0); });
-      sorted.slice(0, 2).forEach(function(e){
-        h += '<button class="hcard" type="button" data-hexp="' + esc(e.id) + '">' +
+      sorted.slice(0, 2).forEach(function(e, j){
+        const i = (g - 1) * 2 + j;
+        h += '<button class="hcard reveal" type="button" style="--i:' + (i % 6) + '" data-hexp="' + esc(e.id) + '">' +
              '<span class="g">중' + esc(e.grade) + ' · ' + esc(e.unit) + (LAB.poolFit(e) >= 3 ? ' · 합치기 ★' : '') + '</span>' +
              '<b>' + esc(e.title) + '</b></button>';
       });
@@ -7517,10 +7599,19 @@
     });
   }
   renderHomeCards();
+  //  등장 애니메이션 — 화면에 들어온 것부터 차례로 올라옵니다. 지원하지 않는 브라우저는 바로 보입니다.
+  (function reveal(){
+    const els = document.querySelectorAll('#scJoin .reveal');
+    if (!('IntersectionObserver' in window)){ els.forEach(function(el){ el.classList.add('in'); }); return; }
+    const io = new IntersectionObserver(function(entries){
+      entries.forEach(function(en){ if (en.isIntersecting){ en.target.classList.add('in'); io.unobserve(en.target); } });
+    }, { threshold:0.08, rootMargin:'0px 0px -6% 0px' });
+    els.forEach(function(el){ io.observe(el); });
+  })();
   const bah = $('btnAtlasHome'); if (bah) bah.addEventListener('click', function(){ openAtlas(true); });
   const bt = $('btnTry30');
   if (bt) bt.addEventListener('click', function(){
-    openAnalyze();
+    openAnalyze(false);
     const sel = $('anExp');
     if (sel){ sel.value = 'sm-05'; sel.dispatchEvent(new Event('change', { bubbles:true })); }
     const t = demoOf('sm-05');
@@ -7539,6 +7630,7 @@
     show('join');
     if (q && Hub.norm(q).length === 6) { $('btnJoin').click(); return; }
     // 코드 없이 도감으로 바로 들어오는 주소: ?atlas=1 · ?exp=sm-01
+    if (sp.get('quick') === '1'){ openAnalyze(true); return; }
     const wantExp = sp.get('exp');
     if (wantExp || sp.get('atlas') === '1'){
       openAtlas(true);

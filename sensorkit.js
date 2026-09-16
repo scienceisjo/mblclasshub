@@ -39,6 +39,12 @@
 
   var W = (typeof window !== 'undefined') ? window : null;
 
+  // ★ 무선(웹 블루투스)은 2026-09-16 실제 센서로 시험해 보니 연결이 되지 않아 고치는 중입니다.
+  //   고쳐지면 BLE_OFF.on 을 false 로 바꾸면 그만입니다. 유선·모의 장치·CSV·직접 입력은 그대로 됩니다.
+  //   support() 가 이 값을 보고 ble:false 와 사유를 돌려주므로, 연결 단추와 connectBle 둘 다 같은 말을 합니다.
+  var BLE_OFF = { on: true,
+    why: '지금은 안 됩니다 — 실제 센서와 이어 보니 연결이 되지 않아 고치는 중입니다. 케이블 · 직접 입력 · CSV 를 써 주세요.' };
+
   // ─────────────────────────────────────────────────────────────────
   //  0. 아주 작은 도구들
   // ─────────────────────────────────────────────────────────────────
@@ -375,7 +381,7 @@
     else if (isIOS)       { sw = '아이폰·아이패드는 케이블 연결을 지원하지 않습니다.'; }
     else if (isSafari)    { sw = '사파리는 케이블 연결을 지원하지 않습니다. 크롬·엣지를 써 주세요.'; }
     else if (isFirefox)   { sw = '파이어폭스는 케이블 연결을 지원하지 않습니다. 크롬·엣지를 써 주세요.'; }
-    else if (isAndroid)   { sw = '안드로이드는 케이블 연결을 지원하지 않습니다. 무선(블루투스)을 써 주세요.'; }
+    else if (isAndroid)   { sw = '안드로이드는 케이블 연결을 지원하지 않습니다. 노트북·크롬북을 써 주세요.'; }
     else                  { sw = '이 브라우저는 웹 시리얼을 지원하지 않습니다. 크롬·엣지·크롬북을 써 주세요.'; }
 
     if (!secure)          { /* 위에서 채웠습니다 */ }
@@ -386,8 +392,10 @@
     else                  { bw = '이 브라우저는 웹 블루투스를 지원하지 않습니다. 크롬·엣지·크롬북·안드로이드를 써 주세요.'; }
 
     var serial = !!(hasSerial && secure);
-    var ble    = !!(hasBle && secure);
-    var why = serial && ble ? '케이블·블루투스 둘 다 됩니다.'
+    var ble    = !!(hasBle && secure) && !BLE_OFF.on;
+    if (BLE_OFF.on) bw = BLE_OFF.why;   // 고치는 중이면 브라우저 사정보다 이 사유가 먼저입니다
+    var why = BLE_OFF.on   ? (serial ? '케이블은 됩니다. 무선(블루투스)은 고치는 중이라 잠시 닫아 두었습니다.' : sw)
+            : serial && ble ? '케이블·블루투스 둘 다 됩니다.'
             : serial ? ('케이블은 됩니다. 블루투스는 안 됩니다 — ' + bw)
             : ble    ? ('블루투스는 됩니다. 케이블은 안 됩니다 — ' + sw)
             : (sw || bw);
@@ -1007,6 +1015,8 @@
     'padding:12px;cursor:pointer;font:inherit;color:var(--ink,#254753)}',
     '.sk-way:hover:not([disabled]){border-color:var(--mint,#20B2A6);box-shadow:var(--shadow,0 10px 28px rgba(37,71,83,.09))}',
     '.sk-way[disabled]{opacity:.5;cursor:not-allowed;background:#FAFCFC}',
+    '.sk-way.sk-fixing{opacity:1;background:#FFF6F2;border-color:#F5C9B8}',
+    '.sk-way.sk-fixing span{color:#C9542F;font-weight:600}',
     '.sk-way b{display:block;font-size:15px;margin-bottom:3px}',
     '.sk-way span{display:block;font-size:12.5px;color:var(--muted,#6E8A96);line-height:1.5}',
     '.sk-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin:10px 0}',
@@ -1088,7 +1098,7 @@
             '<button type="button" class="sk-way" data-sk="way-ble"><b>📶 무선(블루투스)</b><span data-sk="why-ble"></span></button>' +
             '<button type="button" class="sk-way" data-sk="way-mock"><b>🧪 시험용 모의 장치</b><span>센서가 없어도 흐름을 익혀 볼 수 있습니다. 진짜 값이 아닙니다.</span></button>' +
           '</div>' +
-          '<p class="sk-muted">무선은 처음 한 번 인터넷이 필요합니다. 케이블·직접 입력·CSV 는 인터넷 없이도 됩니다.</p>' +
+          '<p class="sk-muted">케이블·직접 입력·CSV 는 인터넷 없이도 됩니다. 무선(블루투스)은 지금 고치는 중이라 잠시 닫아 두었습니다.</p>' +
         '</div>' +
 
         '<div class="sk-hide" data-sk="live">' +
@@ -1176,7 +1186,7 @@
         ? '블루투스로 잇습니다. 처음 한 번 인터넷이 필요합니다. (크롬·엣지·크롬북·안드로이드)'
         : (sup.bleWhy || '이 기기에서는 쓸 수 없습니다.');
       if (b1) b1.disabled = !sup.serial;
-      if (b2) b2.disabled = !sup.ble;
+      if (b2) { b2.disabled = !sup.ble; b2.classList.toggle('sk-fixing', !!BLE_OFF.on); }   // 고치는 중이면 흐리지 않고 또렷하게 사유를 보입니다
     }
 
     function fillSensorSelect() {
@@ -1369,7 +1379,10 @@
         if (show) say(sup.why || '', (sup.serial || sup.ble) ? '' : 'warn');
       });
       on('way-serial', function () { q('ways').classList.add('sk-hide'); openWith('serial'); });
-      on('way-ble',    function () { q('ways').classList.add('sk-hide'); openWith('ble'); });
+      on('way-ble',    function () {
+        if (BLE_OFF.on) { say(BLE_OFF.why, 'warn'); return; }   // disabled 를 풀고 눌러도 막습니다
+        q('ways').classList.add('sk-hide'); openWith('ble');
+      });
       on('way-mock',   function () { q('ways').classList.add('sk-hide'); openWith('mock'); });
 
       on('run', function () {
@@ -1425,6 +1438,7 @@
   // ─────────────────────────────────────────────────────────────────
   return {
     version: '1.0.0',
+    BLE_OFF: BLE_OFF,                                    // 무선 잠금 스위치 — 고쳐지면 on:false
     SENSORS: SENSORS,
     SENSOR_ORDER: SENSOR_ORDER,
     EZON_SVC: EZON_SVC,
