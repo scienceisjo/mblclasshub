@@ -485,6 +485,7 @@
       evalObj: (ans.__eval && typeof ans.__eval === 'object' && !Array.isArray(ans.__eval)) ? ans.__eval : null,
       analysis: (ans.__analysis && typeof ans.__analysis === 'object') ? ans.__analysis : null,
       lab: ctx.lab || ((ans.__dash && ans.__dash.lab) || null),   // 데이터 실험실 설정
+      labs: (Array.isArray(ctx.labs) && ctx.labs.length) ? ctx.labs : null,   // 실험실 그래프 여러 장(있으면 tf 블록이 전부 그립니다)
       myQuiz: myQuiz, fbIn: fbIn, withRows: withRows,
       vendor: ctx.vendor || lesson.vendor || 'ez',
       title: lesson.exp_title || (exp && exp.title) || lesson.title || '실험 대시보드',
@@ -968,7 +969,13 @@
 
     tf: function (C, cfg) {
       if (!C.rows.length) return empty('측정값이 있어야 축을 바꿔 볼 수 있습니다.');
-      var L = (cfg && (cfg.xk || cfg.ys || cfg.yk)) ? cfg : (C.lab || {});
+      //  블록에 직접 정한 축이 없으면 데이터 실험실의 그래프를 전부 — 한 장이면 한 장, 여러 장이면 차례로 — 그립니다.
+      var panes = (cfg && (cfg.xk || cfg.ys || cfg.yk)) ? [cfg] : (C.labs || [C.lab || {}]);
+      return panes.map(function (L, i) {
+        return (panes.length > 1 ? '<p class="dk-sub" style="margin:.2em 0 .3em"><b>그래프 ' + (i + 1) + '</b></p>' : '') + BODY.tfOne(C, L);
+      }).join('');
+    },
+    tfOne: function (C, L) {
       var xk = L.xk || 'x', xt = TF[L.xt] ? L.xt : 'none';
       var yt = TF[L.yt] ? L.yt : 'none';
       var yks = (Array.isArray(L.ys) && L.ys.length) ? L.ys
@@ -1494,8 +1501,8 @@
       inner += '</div>';
     }
     if (opt.foot !== false) {
-      inner += '<div class="dk-foot">MBL 센서 수업허브 · 이 대시보드는 우리 반이 실제로 모은 자료로 만들었습니다.<br />' +
-               '© 2026 조승재(과학이조선생)' + (C.school ? ' · ' + esc(C.school) : '') + '</div>';
+      inner += '<div class="dk-foot">MBL 센서 수업허브 · 이 대시보드는 우리 반이 실제로 모은 자료로 만들었습니다.' +
+               (C.school ? ' · ' + esc(C.school) : '') + '</div>';
     }
     return '<div class="dk-root dk-t-' + esc(T.key) + '" style="' + themeVars(T) + '">' + inner + '</div>';
   }
