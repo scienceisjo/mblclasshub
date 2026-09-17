@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609170142"></script>
+<script src="./lab-data.js?v=202609170921"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609170142"></script>
-<script src="./diagrams.js?v=202609170142"></script>
-<script src="./graphs.js?v=202609170142"></script>
-<script src="./config.js?v=202609170142"></script>
-<script src="./hub.js?v=202609170142"></script>
+<script src="./demo-data.js?v=202609170921"></script>
+<script src="./diagrams.js?v=202609170921"></script>
+<script src="./graphs.js?v=202609170921"></script>
+<script src="./config.js?v=202609170921"></script>
+<script src="./hub.js?v=202609170921"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609170142"></script>
-<script src="./dashkit.js?v=202609170142"></script>
+<script src="./sensorkit.js?v=202609170921"></script>
+<script src="./dashkit.js?v=202609170921"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -474,6 +474,7 @@
   .simplebar .sbdot{display:inline-block;width:9px;height:9px;border-radius:50%;background:var(--ok);margin-right:7px}
   .simplebar .sbstate.warn .sbdot{background:var(--warn)}
 
+  #dataTbl input.calc{background:#F2FBFA;color:var(--mint-d);font-weight:700}
   /* 자동저장 되살리기 물음 */
   .askbar{border:2px solid var(--sun);background:#FFFBF0;border-radius:14px;padding:14px 16px;margin:14px 0 2px}
   .askbar b{display:block;font-size:15px;margin-bottom:4px}
@@ -2257,8 +2258,7 @@
       h += '</div>';
     }
 
-    h += '<p class="foot">MBL 수업허브 작업 파일 · 저장 ' + esc(w.saved) +
-         '<br>© 2026 조승재(과학이조선생) · 해누리중학교</p></div>';
+    h += '<p class="foot">MBL 수업허브 작업 파일 · 저장 ' + esc(w.saved) + '</p></div>';
 
     //  ★ 심는 부분 — 이어하기·교사 합치기가 읽는 곳입니다.
     const json = JSON.stringify(w).replace(/<\//g, '<\\/');
@@ -2915,6 +2915,7 @@
       h += '<tr><td class="rowno">' + (r + 1) + '</td>' +
            '<td><input type="text" inputmode="decimal" data-r="' + r + '" data-c="0" aria-label="' + (r+1) + '행 x"/></td>' +
            ser.map((s, i) => '<td><input type="text" inputmode="decimal" data-r="' + r + '" data-c="' + (i + 1) +
+                             (calcCols().some(cc => cc.c === i + 1) ? '" class="calc" readonly tabindex="-1" title="다른 칸으로 자동 계산됩니다' : '') +
                              '" aria-label="' + (r+1) + '행 ' + esc(s.label || '') + '"/></td>').join('') + '</tr>';
     }
     $('dataTbl').innerHTML = h + '</tbody></table>';
@@ -2950,7 +2951,49 @@
     });
     renderMyChart();
   }
+  //  계산 열 — 라벨에 × ÷ 가 든 계열(예: 압력 × 부피)은 학생이 적는 칸이 아니라 다른 칸으로 만드는 칸입니다.
+  //  실험의 분석 규칙(derive)에서 같은 두 인자를 찾아 식으로 삼고, 값이 바뀔 때마다 다시 채웁니다.
+  //  센서로 잰 뒤 부피만 고쳐도 곱이 따라오게 하려는 것입니다.
+  function calcCols(){
+    const ser = spec.series || [];
+    const e = window.LAB ? LAB.byId((lesson && lesson.exp_id) || (pack && pack.expId) || '') : null;
+    const A = e ? (LAB.analysisOf ? LAB.analysisOf(e) : e.analysis) : null;
+    const out = [];
+    if (!A || !A.steps) return out;
+    const norm = t => String(t || '').replace(/\s/g, '');
+    const nameOf = k => k === 'x' ? norm(spec.x && spec.x.label) : (String(k).charAt(0) === 's' ? norm((ser[Number(String(k).slice(1))] || {}).label) : '');
+    const same = (a, b) => !!a && !!b && (a === b || a.includes(b) || b.includes(a));
+    ser.forEach((s, i) => {
+      if (!/[×÷/]/.test(String(s.label || ''))) return;
+      const parts = String(s.label).split(/[×÷/]/).map(norm).filter(Boolean);
+      const d = A.steps.find(st => st && st.kind === 'derive' && parts.some(p => same(p, nameOf(st.a))) && parts.some(p => same(p, nameOf(st.b))));
+      if (!d) return;
+      const col = k => k === 'x' ? 0 : Number(String(k).slice(1)) + 1;
+      out.push({ c: i + 1, a: col(d.a), b: col(d.b), op: d.op || '*' });
+    });
+    return out;
+  }
+  function fillCalcCols(){
+    const cc = calcCols();
+    if (!cc.length) return;
+    const nRows = Math.max(1, Math.min(MAX_ROWS, tableRows || specRows()));
+    for (let r = 0; r < nRows; r++){
+      cc.forEach(k => {
+        const ea = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + k.a + '"]');
+        const eb = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + k.b + '"]');
+        const ec = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + k.c + '"]');
+        if (!ea || !eb || !ec) return;
+        const a = nnum(ea.value), b = nnum(eb.value);
+        if (!isFinite(a) || !isFinite(b)){ ec.value = ''; return; }
+        let v = (k.op === '/' || k.op === '÷') ? (b === 0 ? NaN : a / b) : (k.op === '+') ? a + b : (k.op === '-' || k.op === '−') ? a - b : a * b;
+        if (!isFinite(v)){ ec.value = ''; return; }
+        const m = Math.abs(v); const d = m >= 100 ? 1 : m >= 10 ? 2 : 3;
+        ec.value = String(Number(v.toFixed(d)));
+      });
+    }
+  }
   function renderMyChart(){
+    fillCalcCols();
     const rows = collectRows();
     $('myChart').innerHTML = chartSVG(spec, rows, { predict: predict });
     renderGapNote(rows);
@@ -6828,8 +6871,7 @@
       '<div class="wrap"><h1>' + esc(AN.exp.title) + ' — 분석 결과</h1>' +
       '<p class="meta">MBL 센서 수업허브 · 붙여넣기 분석' + (AN.quick ? ' · 그래프만 빠르게' : '') + (AN.when ? ' · ' + esc(AN.when) : '') + '</p>' +
       body +
-      '<p class="foot">© 2026 조승재(과학이조선생) · MBL 센서 수업허브<br>' +
-      '이 파일은 붙여넣은 값으로 이 기기 안에서 계산한 것입니다.</p></div>\n</body>\n</html>\n';
+      '<p class="foot">MBL 센서 수업허브 · 이 파일은 붙여넣은 값으로 이 기기 안에서 계산한 것입니다.</p></div>\n</body>\n</html>\n';
     const clean = s => String(s == null ? '' : s).replace(/[\\/:*?"<>|.\s]+/g, '').slice(0, 24);
     const name = '분석_' + (clean(AN.exp.title) || '실험') + '_' + today8() + '.html';
     try {
