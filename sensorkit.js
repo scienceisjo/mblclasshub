@@ -1180,7 +1180,7 @@
       var s1 = q('why-serial'), s2 = q('why-ble');
       var b1 = q('way-serial'), b2 = q('way-ble');
       if (s1) s1.textContent = sup.serial
-        ? 'USB 케이블로 잇습니다. 인터넷이 없어도 됩니다. (크롬·엣지·크롬북)'
+        ? 'USB 케이블로 잇습니다. 인터넷이 없어도 됩니다. (크롬·엣지·크롬북) ★ 이지메이커는 먼저 ezon.ai 에서 센서 값을 시리얼로 내보내는 코드를 보드에 올려 둔 뒤에 여기서 연결하세요.'
         : (sup.serialWhy || '이 기기에서는 쓸 수 없습니다.');
       if (s2) s2.textContent = sup.ble
         ? '블루투스로 잇습니다. 처음 한 번 인터넷이 필요합니다. (크롬·엣지·크롬북·안드로이드)'
