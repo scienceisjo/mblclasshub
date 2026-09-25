@@ -18,7 +18,7 @@
     앱은 '정답을 보여 주는 것'이 아니라 '학생이 한 것을 확인해 주는 것'만 합니다.
 
   ▣ 재료(모두 기존 것)
-    · lab-data.js       실험 49건(제목·dataSpec·분석 규칙·보고서 질문)
+    · lab-data.js       실험 75건 — 센서 49 · 센서 없이 26(제목·dataSpec·분석 규칙·보고서 질문)
     · lab-engine.js     붙여넣기 분석과 같은 계산(runAnalysis · labPoints · labFit · rawVal · LAB_TF …)
     · hand-data.js      실험마다 「센서 없이 재는 법」(도구·절차·반복·한계). 없으면 '자료 받기' 로만 진행합니다.
     · demo-data.js      손으로 못 재는 실험(이산화 탄소 농도 등)에 '자료 받기' 로 넣는 예시 표
@@ -28,11 +28,11 @@
     작업 파일(.html) — index.html 의 작업 파일과 같은 <script id="mbl-work"> 기록을 품으므로
     교사 화면의 [학생이 낸 작업 파일 모아 합치기] 에 그대로 올라갑니다(mode:'inquiry').
 -->
-<script src="./hub.js?v=202609181458"></script>
-<script src="./lab-data.js?v=202609181458"></script>
-<script src="./lab-engine.js?v=202609181458"></script>
-<script src="./demo-data.js?v=202609181458"></script>
-<script src="./hand-data.js?v=202609181458"></script>
+<script src="./hub.js?v=202609260016"></script>
+<script src="./lab-data.js?v=202609260016"></script>
+<script src="./lab-engine.js?v=202609260016"></script>
+<script src="./demo-data.js?v=202609260016"></script>
+<script src="./hand-data.js?v=202609260016"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0; --paper:#FFFFFF; --cream:#FFFDF6;
@@ -529,7 +529,7 @@
       if (hand.tips) h += '<p class="muted" style="margin-top:8px"><b>요령</b> ' + esc(hand.tips) + '</p>';
       if (hand.limit) h += '<p class="muted"><b>센서판과 다른 점</b> ' + esc(hand.limit) + '</p>';
     } else {
-      h += '<div class="note sun"><b>이 실험은 손으로 재기 어렵습니다</b><br>' + esc(hand.why || '') +
+      h += '<div class="note sun"><b>' + (exp.kind === 'data' ? '공공 자료를 받아 분석하는 탐구입니다' : '이 실험은 손으로 재기 어렵습니다') + '</b><br>' + esc(hand.why || '') +
            '<br>대신 — ' + esc(hand.alt || '예시 자료를 받아 변환·그래프·해석만 직접 합니다.') + '</div>';
       if (!demoOf(exp.id)) h += '<p class="err">이 실험은 예시 자료도 없어 이 화면에서는 진행할 수 없습니다.</p>';
     }
@@ -610,7 +610,9 @@
       h += '<div class="note"><b>재는 법</b> ' + esc(hand.measure) + (hand.tips ? '<br><span class="muted">' + esc(hand.tips) + '</span>' : '') + '</div>';
       h += '<details><summary style="cursor:pointer;font-weight:700;color:var(--mint-d)">순서 다시 보기</summary><ol class="proc">' + (hand.steps || []).map(s => '<li>' + esc(s) + '</li>').join('') + '</ol></details>';
     } else {
-      h += '<div class="note sun">이 실험은 손으로 재기 어려워 <b>[자료 받기]</b> 로 예시 값을 넣습니다. 그다음 걸음(값 바꾸기·그래프·해석)은 직접 합니다.</div>';
+      h += '<div class="note sun">' + (exp.kind === 'data'
+        ? '공공 자료를 받아 쓰는 탐구입니다. <b>[자료 받기]</b> 로 예시 자료를 넣거나, 원자료에서 옮긴 값을 표에 직접 적습니다. '
+        : '이 실험은 손으로 재기 어려워 <b>[자료 받기]</b> 로 예시 값을 넣습니다. ') + '그다음 걸음(값 바꾸기·그래프·해석)은 직접 합니다.</div>';
     }
     $('howBox').innerHTML = h;
     $('repSel').value = String(S.reps);
@@ -1117,6 +1119,13 @@
       m.className = 'msg ok'; m.textContent = '점을 차례로 이었습니다. 직선이 되는지, 휘는지, 멈춘 구간이 있는지 보세요.';
       unlock(5); save(); paintGReport(); return;
     }
+    //  회귀가 없는 분석 규칙 — 직선 하나로 나타내는 관계가 아닙니다(경도–위도 지도, 평균만 보는 자료).
+    const An = LAB.analysisOf ? LAB.analysisOf(exp) : exp.analysis;
+    if (!((An && An.steps) || []).some(st => st.kind === 'fit')){
+      S.g.lnScore = null;
+      m.className = 'msg warn'; m.textContent = '이 자료는 직선 하나로 나타내는 관계가 아닙니다. 직선을 지우고 점이 모인 모양(분포)을 보거나, 차례가 있는 자료라면 [점 잇기]를 쓰세요.';
+      markDone(4, true); unlock(5); save(); paintGReport(); return;
+    }
     const L = lineOf();
     if (!L || cx.text){ m.className = 'msg bad'; m.textContent = cx.text ? '글자 축에는 직선을 긋지 않습니다. [점 잇기]를 쓰세요.' : '직선의 두 손잡이가 같은 자리에 있습니다.'; return; }
     const f = E.labFit(ep);
@@ -1131,6 +1140,7 @@
     if (r2s >= f.r2 - 0.02 && slopeErr <= 0.1){ word = '잘 그었습니다 — 앱의 최소제곱 직선과 거의 같습니다.'; cls = 'ok'; }
     else if (r2s >= f.r2 - 0.1){ word = '괜찮습니다. 점들 사이를 고르게 지나도록 조금만 더 돌려 보세요.'; cls = 'warn'; }
     else { word = '점들에서 많이 벗어났습니다. 위아래로 점이 비슷하게 남도록 그어 보세요.'; cls = 'warn'; }
+    if (expectRel() === 'flat') word += ' 다만 이 자료는 도중에 멈추거나 꺾이는 구간이 있어, [점 잇기]로 모양을 보면 더 잘 드러납니다.';
     m.className = 'msg ' + cls; m.textContent = word;
     markDone(4, true); unlock(5); save(); paintGReport();
   });
@@ -1146,6 +1156,9 @@
   // ── ⑥ 해석 ────────────────────────────────────────────────────
   //  앱이 기대하는 관계 — 분석 규칙(변환축·기울기·절편)에서 어림합니다. 학생이 고른 것과 다르면 '다시 생각' 만 합니다.
   function expectRel(){
+    //  분석 규칙이 관계를 직접 적었으면 그것을 씁니다(두 무리로 나뉘는 자료·해마다 들쭉날쭉한 자료처럼 R² 로는 가를 수 없을 때). '' = 한 가지로 정하지 않음.
+    const A = LAB.analysisOf ? LAB.analysisOf(exp) : exp.analysis;
+    if (A && typeof A.rel === 'string') return A.rel;
     if (!res) res = E.runAnalysis(exp, rowsAvg());
     const mf = res.mainFit, v = res.vals;
     if (mf && mf.xt === 'inv') return 'inv';

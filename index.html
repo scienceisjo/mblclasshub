@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609181458"></script>
+<script src="./lab-data.js?v=202609260016"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609181458"></script>
-<script src="./diagrams.js?v=202609181458"></script>
-<script src="./graphs.js?v=202609181458"></script>
-<script src="./config.js?v=202609181458"></script>
-<script src="./hub.js?v=202609181458"></script>
+<script src="./demo-data.js?v=202609260016"></script>
+<script src="./diagrams.js?v=202609260016"></script>
+<script src="./graphs.js?v=202609260016"></script>
+<script src="./config.js?v=202609260016"></script>
+<script src="./hub.js?v=202609260016"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609181458"></script>
-<script src="./dashkit.js?v=202609181458"></script>
+<script src="./sensorkit.js?v=202609260016"></script>
+<script src="./dashkit.js?v=202609260016"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -146,6 +146,7 @@
   .vtag.ez{background:rgba(84,180,232,.18);color:#2A7FB0}
   .vtag.sc{background:rgba(139,127,212,.2);color:#5B4FB0}
   .vtag.alt{background:#FFF4DE;color:#8A6516;border-color:#F0D9A8}
+  .vtag.hand{background:rgba(55,181,140,.14);color:#1E7F5F;border-color:rgba(55,181,140,.35)}
   .note.warn{border-color:var(--bad);background:#FFF4F4}
 
   /* 데이터 표 */
@@ -544,7 +545,7 @@
   <section id="scJoin" class="join home">
     <div class="hero reveal" style="--i:0">
       <div class="hero-txt">
-        <p class="hero-k">이지메이커 · 사이언스큐브 실험 49건 · 2022 개정 성취기준</p>
+        <p class="hero-k" id="heroK">이지메이커 · 사이언스큐브 센서 실험 49건 · 센서 없이 26건 · 2022 개정 성취기준</p>
         <h1 class="hero-t">재는 건 센서 프로그램이, <b>그다음</b>은 여기서</h1>
         <p class="hero-s">해석하고 · 반 전체를 한 그래프로 합치고 · 보고서 쓰고 · 발표하기 — 설치도 계정도 없이.
           <a href="./about.html">이 앱은 어떤 앱인가요? →</a></p>
@@ -589,7 +590,7 @@
 
       <!-- ⓓ 실험 도감 -->
       <div class="ecard ec-atlas reveal" style="--i:4">
-        <div class="ehead"><i>📚</i><div><b>실험 도감 49건</b><span>중1·2·3 단원별로, 이지메이커·사이언스큐브 절차를 따로. 준비물·절차·성취기준·예시 데이터까지.</span></div></div>
+        <div class="ehead"><i>📚</i><div><b>실험 도감 <span data-expcount>49</span>건</b><span>중1·2·3 단원별로, 이지메이커·사이언스큐브 절차를 따로. 준비물·절차·성취기준·예시 데이터까지.</span></div></div>
         <button id="btnAtlas" class="btn btn-solid" type="button">참여 없이 실험 도감 보기</button>
         <div class="esub">
           <a class="lnk" href="./teacher.html">🧑‍🏫 교사용 화면</a>
@@ -611,7 +612,7 @@
         <div class="htile reveal" style="--i:3"><i>🔌</i><b>센서가 없는 날도 수업</b>
           <span>예시 데이터·CSV 붙여넣기·손 입력으로 분석은 그대로 됩니다. 두 업체 절차를 나란히 실었습니다.</span></div>
       </div>
-      <h3 class="hsub reveal">실험 도감 · 49건 <span class="muted">학년별로 두 개씩</span></h3>
+      <h3 class="hsub reveal">실험 도감 · <span data-expcount>49</span>건 <span class="muted">학년별로 두 개씩</span></h3>
       <div id="homeCards" class="hcards"></div>
       <div class="improw reveal" style="margin-top:8px">
         <button id="btnAtlasHome" class="btn" type="button" style="min-height:44px">도감 전체 보기</button>
@@ -980,7 +981,7 @@
           <select id="aUnit" aria-label="단원 고르기"><option value="">모든 단원</option></select>
           <select id="aVendor" aria-label="업체 고르기">
             <option value="">모든 업체</option>
-            <option value="ez">이지메이커</option><option value="sc">사이언스큐브</option>
+            <option value="ez">이지메이커</option><option value="sc">사이언스큐브</option><option value="none">센서 없이 하는 실험</option>
           </select>
           <input id="aSearch" type="text" placeholder="제목·센서로 찾기" aria-label="실험 찾기" />
           <label class="chk" for="aPool" style="flex:0 0 auto">
@@ -2779,6 +2780,9 @@
   function vendorTags(e){
     if (!window.LAB || !LAB.vendorOk) return '';
     let h = '';
+    //  센서 없이 하는 실험 — 업체와 상관없이 교실 도구나 공공 자료로 합니다.
+    if (LAB.kindOf && LAB.kindOf(e) !== 'sensor')
+      return '<span class="vtag hand">센서 없이</span>';
     if (LAB.vendorOk(e, 'ez')) h += '<span class="vtag ez">이지메이커</span>';
     if (LAB.vendorOk(e, 'sc')) h += '<span class="vtag sc">사이언스큐브</span>';
     //  센서가 없어 다른 도구로 재는 실험 — 어느 업체 쪽이 대체 절차인지 알려 줍니다.
@@ -3894,6 +3898,11 @@
   function mountSensor(){
     const host = $('sensorHost');
     if (!host) return;
+    //  센서 없이 하는 실험이면 센서 연결 칸을 접어 둡니다(업체 장비가 필요 없습니다).
+    const ce  = (window.LAB && LAB.kindOf) ? LAB.byId((lesson && lesson.exp_id) || (pack && pack.expId) || '') : null;
+    const noS = !!(ce && LAB.kindOf(ce) !== 'sensor');
+    if ($('sensorCard')) $('sensorCard').classList.toggle('hidden', noS);
+    if (noS){ unmountSensor(); return; }
     if (!window.SensorKit){
       host.innerHTML = '<p class="muted">센서 연결 기능을 불러오지 못했습니다(sensorkit.js). ' +
                        'CSV 끌어다 놓기와 직접 입력은 그대로 됩니다.</p>';
@@ -6756,6 +6765,14 @@
         return;
       }
 
+      if (st.kind === 'plot'){
+        //  점만 찍기 — 회귀를 하지 않습니다. 경도–위도처럼 모양(분포) 자체를 보는 자료에 씁니다.
+        const P = labPoints(rows, st.x, 'none', st.y, 'none', undefined, undefined, ds);
+        out.blocks.push({ kind:'plot', P:P, xName:anColName(sp, ds, st.x), xUnit:anColUnit(sp, ds, st.x),
+                          yName:anColName(sp, ds, st.y), yUnit:anColUnit(sp, ds, st.y), say:anFill(st.say, out.vals) });
+        return;
+      }
+
       if (st.kind === 'compare'){
         const of = (st.of || []).slice(), by = st.by || 'mean';
         if (by === 'rank' || of.length < 2){
@@ -6856,6 +6873,14 @@
         h += anChart(b.P.pts, xTxt, yTxt, b.fit, 'var(--mint)');
       }
       h += skipNoteHTML(b.P, b.xt, b.yt);
+      return h + '</div>';
+    }
+    if (b.kind === 'plot'){
+      const xTxt = anAxText(b.xName, b.xUnit, 'none'), yTxt = anAxText(b.yName, b.yUnit, 'none');
+      h += '점 찍어 보기 — ' + esc(yTxt) + ' ↔ ' + esc(xTxt) + '</b>';
+      if (b.say) h += '<p class="ansay">' + esc(b.say) + '</p>';
+      h += anChart(b.P.pts, xTxt, yTxt, null, 'var(--coral)');
+      h += '<p class="muted">점이 ' + b.P.pts.length + '개입니다. 추세선은 긋지 않으니 점이 모인 모양(분포)을 보세요.</p>';
       return h + '</div>';
     }
     if (b.kind === 'compare'){
@@ -7634,6 +7659,8 @@
     let list = q ? LAB.search(q) : LAB.experiments.slice();
     if (g) list = list.filter(e => Number(e.grade) === Number(g));
     if (u) list = list.filter(e => e.unit === u);
+    //  「센서 없이 하는 실험」 — 업체가 아니라 갈래로 거릅니다.
+    if ($('aVendor') && $('aVendor').value === 'none') list = list.filter(e => LAB.kindOf && LAB.kindOf(e) !== 'sensor');
     //  센서가 없어도 대체 절차가 있으면 그 업체 목록에 남깁니다(카드에 표시가 붙습니다).
     if (v && LAB.vendorWay) list = list.filter(e => LAB.vendorWay(e, v) !== 'no');
     else if (v && LAB.vendorOk) list = list.filter(e => LAB.vendorOk(e, v));
@@ -7648,7 +7675,9 @@
       return;
     }
     $('atlasList').innerHTML = list.map(function(e){
-      const sensors = (e.sensors || []).map(s => LAB.sensorName(s.key) + ' ' + s.n + '개').join(' · ');
+      const sensors = (LAB.kindOf && LAB.kindOf(e) !== 'sensor')
+        ? (LAB.kindOf(e) === 'data' ? '공공 자료 분석' : '교실 도구로')
+        : (e.sensors || []).map(s => LAB.sensorName(s.key) + ' ' + s.n + '개').join(' · ');
       const open = (atlasPick === e.id);
       return '<div class="exp' + (open ? ' on' : '') + '" data-id="' + esc(e.id) + '" tabindex="0" role="button"' +
              ' aria-expanded="' + (open ? 'true' : 'false') + '"' +
@@ -7707,6 +7736,7 @@
     const av  = atlasVendor(), avi = vendorInfo(av);
     const asteps = (window.LAB && LAB.stepsFor) ? LAB.stepsFor(e, av) : (e.steps || []);
     const aprep  = (window.LAB && LAB.prepFor)  ? LAB.prepFor(e, av)  : (e.prep  || []);
+    const noS    = !!(window.LAB && LAB.kindOf && LAB.kindOf(e) !== 'sensor');
 
     let h = '<div class="box" id="atlasDetailBox" tabindex="-1" role="region" aria-label="실험 자세히 보기">';
     if (simplePick){
@@ -7727,7 +7757,7 @@
          srcs + '</div>';
     const vt = vendorTags(e);
     if (vt) h += '<p class="muted" style="font-size:13px">이 실험을 할 수 있는 장비 · ' + vt + '</p>';
-    h += vendorBadge(av);
+    if (!noS) h += vendorBadge(av);
     if (e.why) h += '<div class="dtquote">' + esc(e.why) + '</div>';
     h += poolBadgeHTML(e, true);
     if (e.pool && e.pool.watch)
@@ -7737,6 +7767,12 @@
            '<p class="muted" style="margin-top:6px">모은 값을 붙여넣으면 이 순서대로 분석해 드립니다 — 첫 화면의 ' +
            '<b>[데이터 붙여넣고 분석하기]</b>.</p>';
 
+    if (noS){
+      h += '<div class="note plus">✍ <b>' + (LAB.kindOf(e) === 'data' ? '공공 자료를 받아 분석하는 탐구' : '센서 없이 교실 도구로 하는 실험') +
+           '입니다.</b> 센서도 업체 프로그램도 필요 없습니다. ' +
+           '<a href="./inquiry.html?exp=' + encodeURIComponent(e.id) + '" style="color:var(--mint-d);font-weight:700">손으로 탐구에서 하기 →</a> ' +
+           '표 채우기·값 바꾸기·그래프 그리기를 학생이 직접 하고, 참여코드·간편 모드에서도 그대로 모둠 자료를 모읍니다.</div>';
+    }
     if ((e.sensors || []).length){
       h += '<h3>필요한 센서</h3><div class="taglist">' +
            e.sensors.map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) +
@@ -7753,7 +7789,7 @@
            '</div>';
     }
     if (asteps.length){
-      h += '<h3>실험 순서' + (avi ? ' · ' + esc(avi.name) : '') + '</h3>' + altNoteHTML(e, av) +
+      h += '<h3>실험 순서' + ((avi && !noS) ? ' · ' + esc(avi.name) : '') + '</h3>' + (noS ? '' : altNoteHTML(e, av)) +
            '<ol class="steps-ol">' + asteps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
     }
     h += figDiagram(e);
@@ -7804,6 +7840,15 @@
     });
   }
   renderHomeCards();
+  //  첫 화면의 실험 건수는 LAB 에서 셉니다(실험이 늘어도 글자를 고칠 일이 없게).
+  (function homeCounts(){
+    if (!window.LAB) return;
+    const all = LAB.experiments.length;
+    const noS = LAB.kindOf ? LAB.experiments.filter(e => LAB.kindOf(e) !== 'sensor').length : 0;
+    const k = $('heroK');
+    if (k) k.textContent = '이지메이커 · 사이언스큐브 센서 실험 ' + (all - noS) + '건' + (noS ? ' · 센서 없이 ' + noS + '건' : '') + ' · 2022 개정 성취기준';
+    Array.prototype.forEach.call(document.querySelectorAll('[data-expcount]'), function(el){ el.textContent = String(all); });
+  })();
   //  등장 애니메이션 — 화면에 들어온 것부터 차례로 올라옵니다. 지원하지 않는 브라우저는 바로 보입니다.
   (function reveal(){
     const els = document.querySelectorAll('#scJoin .reveal');

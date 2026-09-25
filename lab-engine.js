@@ -329,6 +329,14 @@
         return;
       }
 
+      if (st.kind === 'plot'){
+        //  점만 찍기 — 회귀를 하지 않습니다. 경도–위도처럼 모양(분포) 자체를 보는 자료에 씁니다.
+        const P = labPoints(rows, st.x, 'none', st.y, 'none', undefined, undefined, ds);
+        out.blocks.push({ kind:'plot', P:P, xName:anColName(sp, ds, st.x), xUnit:anColUnit(sp, ds, st.x),
+                          yName:anColName(sp, ds, st.y), yUnit:anColUnit(sp, ds, st.y), say:anFill(st.say, out.vals) });
+        return;
+      }
+
       if (st.kind === 'compare'){
         const of = (st.of || []).slice(), by = st.by || 'mean';
         if (by === 'rank' || of.length < 2){
