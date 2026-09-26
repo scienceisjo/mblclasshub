@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609260016"></script>
+<script src="./lab-data.js?v=202609270035"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609260016"></script>
-<script src="./diagrams.js?v=202609260016"></script>
-<script src="./graphs.js?v=202609260016"></script>
-<script src="./config.js?v=202609260016"></script>
-<script src="./hub.js?v=202609260016"></script>
+<script src="./demo-data.js?v=202609270035"></script>
+<script src="./diagrams.js?v=202609270035"></script>
+<script src="./graphs.js?v=202609270035"></script>
+<script src="./config.js?v=202609270035"></script>
+<script src="./hub.js?v=202609270035"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609260016"></script>
-<script src="./dashkit.js?v=202609260016"></script>
+<script src="./sensorkit.js?v=202609270035"></script>
+<script src="./dashkit.js?v=202609270035"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -545,7 +545,7 @@
   <section id="scJoin" class="join home">
     <div class="hero reveal" style="--i:0">
       <div class="hero-txt">
-        <p class="hero-k" id="heroK">이지메이커 · 사이언스큐브 센서 실험 49건 · 센서 없이 26건 · 2022 개정 성취기준</p>
+        <p class="hero-k" id="heroK">이지메이커 · 사이언스큐브 센서 실험 50건 · 센서 없이 26건 · 2022 개정 성취기준</p>
         <h1 class="hero-t">재는 건 센서 프로그램이, <b>그다음</b>은 여기서</h1>
         <p class="hero-s">해석하고 · 반 전체를 한 그래프로 합치고 · 보고서 쓰고 · 발표하기 — 설치도 계정도 없이.
           <a href="./about.html">이 앱은 어떤 앱인가요? →</a></p>
@@ -1113,8 +1113,10 @@
     const pts = [];   // [{x, ys:[]}]
     (rows || []).forEach(function(r){
       if (!Array.isArray(r)) return;
-      const x = Number(r[0]);
-      const ys = series.map((_, i) => { const v = Number(r[i+1]); return isFinite(v) ? v : null; });
+      //  빈 칸(null·'')은 점을 찍지 않습니다 — Number(null) 은 0 이라 그대로 두면 바닥에 점이 생깁니다.
+      const nv = v => (v === null || v === undefined || String(v).trim() === '') ? NaN : Number(v);
+      const x = nv(r[0]);
+      const ys = series.map((_, i) => { const v = nv(r[i+1]); return isFinite(v) ? v : null; });
       if (ys.every(v => v === null)) return;
       pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
     });
@@ -1642,6 +1644,7 @@
     if (ph === 'present') el.classList.add('coral');
     if (ph === 'done')    el.classList.add('sun');
     el.textContent = PHASE_TEXT[ph] || '수업 중';
+    syncReadLock();
   }
 
   // ── ① 참여코드 ─────────────────────────────────────────────────
@@ -2563,6 +2566,7 @@
       refreshReport();
     }
     if (nq !== quizAt){ quizAt = nq; renderQuiz(); }
+    syncReadLock();
   }
 
   function applyWatch(){
@@ -2635,6 +2639,21 @@
   // ── 데이터 실험실 탭 열기·닫기 ────────────────────────────────
   //  선생님이 lesson.form.features.lab 로 정합니다. false 일 때만 숨깁니다.
   //  features 가 아예 없는 예전 수업은 '열려 있음'으로 봅니다(탭을 잃지 않게).
+  //  결과 해설 가리기(features.readLater) — 선생님이 수업을 만들 때 켜 두면, 수집 단계 동안
+  //  「결과를 이렇게 읽어요」와 결과 그래프 예시를 가립니다. 학생이 먼저 예상하고 재 보게 하려는 것입니다.
+  //  간편 모드·꾸러미에는 단계를 열어 줄 선생님이 없고, 값이 없는 예전 수업도 그대로 보여 줍니다.
+  var guideLockShown = null;       // 안내 탭을 마지막으로 그릴 때 가렸는지
+  function readLocked(){
+    if (isSimple() || !joinCode || !lesson) return false;
+    const f = lesson.form && lesson.form.features;
+    if (!(f && typeof f === 'object' && f.readLater === true)) return false;
+    return (lesson.phase || 'collect') === 'collect';
+  }
+  //  단계가 바뀌었거나 선생님이 스위치를 바꿨으면 안내 탭을 다시 그립니다.
+  function syncReadLock(){
+    if (!lesson || !group || guideLockShown === null) return;
+    if (readLocked() !== guideLockShown) renderGuide();
+  }
   function labOn(){
     const f = lesson && lesson.form && lesson.form.features;
     return !(f && typeof f === 'object' && f.lab === false);
@@ -2737,9 +2756,14 @@
     h += figDiagram(e);
     h += '</div>';
 
-    h += '<div class="box">' + illus('analysis') + '<h2>결과를 이렇게 읽어요</h2><p class="lead">' + esc(e.read) + '</p>';
+    const rl = readLocked();
+    guideLockShown = rl;
+    h += '<div class="box">' + illus('analysis') + '<h2>결과를 이렇게 읽어요</h2>' +
+         (rl ? '<p class="lead muted">🔒 결과를 읽는 법은 선생님이 <b>공유 단계</b>를 열면 여기에 나타납니다. ' +
+               '먼저 결과를 예상하고, 잰 값으로 스스로 설명해 보세요.</p>'
+             : '<p class="lead">' + esc(e.read) + '</p>');
     (e.tips || []).forEach(t => { h += '<div class="note">' + esc(t) + '</div>'; });
-    h += figGraph(e);
+    if (!rl) h += figGraph(e);
     h += '</div>';
 
     if ((e.caution || []).length){
@@ -2857,6 +2881,7 @@
   //  짝이 없는 실험은 아무것도 그리지 않습니다(빈 자리를 남기지 않습니다).
   const FIG_DIAGRAM = {
     'sm-08':'ohm',   'ez-22':'ohm',  'cb-11':'ohm',    // 옴의 법칙 · 저항과 전류 · 저항별 기울기
+    'cb-12':'lead',                                    // 샤프심의 길이·굵기와 저항
     'sm-05':'boyle', 'ez-25':'boyle', 'ez-26':'boyle', // 주사기 기체 압력
     'sm-06':'photo', 'sm-07':'photo',                  // 광합성
     'sm-09':'lux',                                     // 거리에 따른 빛의 세기
@@ -7793,8 +7818,11 @@
            '<ol class="steps-ol">' + asteps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
     }
     h += figDiagram(e);
-    if (e.read) h += '<h3>결과를 이렇게 읽어요</h3><p class="lead">' + esc(e.read) + '</p>';
-    h += figGraph(e);
+    //  이 수업의 실험이고 결과 해설을 가리는 중이면 도감에서도 가립니다.
+    const rlA = readLocked() && !!lesson && e.id === lesson.exp_id;
+    if (e.read) h += '<h3>결과를 이렇게 읽어요</h3>' + (rlA ? '<p class="lead muted">🔒 이 수업에서는 선생님이 공유 단계를 열면 보입니다.</p>'
+                                                          : '<p class="lead">' + esc(e.read) + '</p>');
+    if (!rlA) h += figGraph(e);
     if ((e.tips || []).length){
       h += '<h3>도움말</h3>' + e.tips.map(t => '<div class="note">💡 ' + esc(t) + '</div>').join('');
     }

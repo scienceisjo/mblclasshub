@@ -18,7 +18,7 @@
     앱은 '정답을 보여 주는 것'이 아니라 '학생이 한 것을 확인해 주는 것'만 합니다.
 
   ▣ 재료(모두 기존 것)
-    · lab-data.js       실험 75건 — 센서 49 · 센서 없이 26(제목·dataSpec·분석 규칙·보고서 질문)
+    · lab-data.js       실험 76건 — 센서 50 · 센서 없이 26(제목·dataSpec·분석 규칙·보고서 질문)
     · lab-engine.js     붙여넣기 분석과 같은 계산(runAnalysis · labPoints · labFit · rawVal · LAB_TF …)
     · hand-data.js      실험마다 「센서 없이 재는 법」(도구·절차·반복·한계). 없으면 '자료 받기' 로만 진행합니다.
     · demo-data.js      손으로 못 재는 실험(이산화 탄소 농도 등)에 '자료 받기' 로 넣는 예시 표
@@ -28,11 +28,11 @@
     작업 파일(.html) — index.html 의 작업 파일과 같은 <script id="mbl-work"> 기록을 품으므로
     교사 화면의 [학생이 낸 작업 파일 모아 합치기] 에 그대로 올라갑니다(mode:'inquiry').
 -->
-<script src="./hub.js?v=202609260016"></script>
-<script src="./lab-data.js?v=202609260016"></script>
-<script src="./lab-engine.js?v=202609260016"></script>
-<script src="./demo-data.js?v=202609260016"></script>
-<script src="./hand-data.js?v=202609260016"></script>
+<script src="./hub.js?v=202609270035"></script>
+<script src="./lab-data.js?v=202609270035"></script>
+<script src="./lab-engine.js?v=202609270035"></script>
+<script src="./demo-data.js?v=202609270035"></script>
+<script src="./hand-data.js?v=202609270035"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0; --paper:#FFFFFF; --cream:#FFFDF6;
@@ -705,6 +705,8 @@
       filled++;
       if (xs === '' || (!isFinite(num(xs)) && !xIsText())) bad++;
       mc.forEach((o, j) => {
+        //  비워 둬도 되는 열(optional) — 이 줄에서 재지 않았으면 빈 칸이 맞습니다.
+        if (o.s.optional && row.s[j].slice(0, Math.max(1, S.reps)).every(v => String(v).trim() === '')) return;
         if (S.reps > 1){
           const vals = row.s[j].slice(0, S.reps).map(num).filter(isFinite);
           need++;
@@ -782,6 +784,7 @@
         const v = (S.tf[k] === undefined) ? '' : S.tf[k];
         const tries = S.tfTries[k] || 0;
         const truth = c.ans ? c.ans(row) : NaN;
+        if (c.ans && !isFinite(truth) && (S.tf[k] === undefined || String(S.tf[k]).trim() === '')){ tb += '<td class="muted" style="text-align:center">—</td>'; return; }
         tb += '<td><input type="text" inputmode="decimal" class="calc" data-k="' + esc(k) + '" value="' + esc(v) + '" />' +
               ((tries >= 2 && isFinite(truth)) ? '<span class="ans">답 ' + esc(fmtCell(truth)) + '</span>' : '') + '</td>';
       });
@@ -803,9 +806,11 @@
         const k = r + ':' + c.key;
         const el = $('tfTbl').querySelector('input[data-k="' + k + '"]');
         const mine = num(S.tf[k]);
-        if (S.tf[k] === undefined || String(S.tf[k]).trim() === ''){ empty++; return; }
+        const blank = (S.tf[k] === undefined || String(S.tf[k]).trim() === '');
         const truth = c.ans ? c.ans(row) : NaN;
-        if (!isFinite(truth)){ unknown++; return; }         // 정답을 낼 수 없는 칸(0 으로 나누기 등)은 그대로 둡니다
+        //  정답을 낼 수 없는 칸(비워 둔 칸에서 나온 칸·0 으로 나누기 등)은 비워 둬도 되고, 적었으면 그대로 둡니다.
+        if (!isFinite(truth)){ if (!blank) unknown++; return; }
+        if (blank){ empty++; return; }
         const ok = close(mine, truth);
         if (el){ el.classList.toggle('ok', ok); el.classList.toggle('bad', !ok); }
         if (!ok){ wrong++; wrongKeys.push(k); S.tfTries[k] = (S.tfTries[k] || 0) + 1; }
@@ -837,10 +842,12 @@
   function axisCols(){
     const sp = spec(), rows = rowsAvg(), cols = [];
     const xt = xIsText();
-    cols.push({ key:'x', name: sp.x.label || '가로축', unit: sp.x.unit || '', text: xt, vals: rows.map(r => r[0]) });
+    //  빈 칸(null)은 0 이 아니라 '값 없음'(NaN)입니다 — isFinite(null) 이 참이라 그대로 두면 0 에 점이 찍힙니다.
+    const nn = v => (v === null || v === undefined || v === '') ? NaN : v;
+    cols.push({ key:'x', name: sp.x.label || '가로축', unit: sp.x.unit || '', text: xt, vals: rows.map(r => xt ? r[0] : nn(r[0])) });
     (sp.series || []).forEach((s, i) => {
       if (isCalcSeries(s)) return;
-      cols.push({ key:'s' + i, name: s.label, unit: s.unit || '', vals: rows.map(r => r[i + 1]) });
+      cols.push({ key:'s' + i, name: s.label, unit: s.unit || '', vals: rows.map(r => nn(r[i + 1])) });
     });
     tfCols().forEach(c => { cols.push({ key: c.key, name: c.name, unit: c.unit, vals: rows.map(r => c.ans ? c.ans(r) : NaN), tf: c.tf }); });
     return cols;

@@ -7,13 +7,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609260016"></script>
-<script src="./diagrams.js?v=202609260016"></script>
-<script src="./graphs.js?v=202609260016"></script>
-<script src="./config.js?v=202609260016"></script>
-<script src="./hub.js?v=202609260016"></script>
+<script src="./lab-data.js?v=202609270035"></script>
+<script src="./diagrams.js?v=202609270035"></script>
+<script src="./graphs.js?v=202609270035"></script>
+<script src="./config.js?v=202609270035"></script>
+<script src="./hub.js?v=202609270035"></script>
 <!-- 대시보드 엔진 — 외부 자원을 부르지 않습니다(학생 화면과 같은 파일을 씁니다) -->
-<script src="./dashkit.js?v=202609260016"></script>
+<script src="./dashkit.js?v=202609270035"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -484,6 +484,12 @@
           <span>학생이 <b>자기 해석을 먼저 적어야</b> 프롬프트가 완성되고, 받은 답을 우리 데이터로 검증하는 자리입니다.
             데이터 실험실 탭 안에 있어서 실험실을 끄면 함께 닫힙니다.</span></span>
       </label>
+      <label class="chkline" for="inFeatRead" style="margin-top:8px">
+        <input id="inFeatRead" type="checkbox" checked />
+        <span class="ct"><b>결과 해설은 공유 단계부터 보여 주기</b>
+          <span>실험 안내 탭의 「결과를 이렇게 읽어요」와 결과 그래프 예시를 <b>수집 단계 동안 가립니다</b>.
+            학생이 먼저 예상하고 재 본 뒤, 공유 단계를 열면 나타납니다.</span></span>
+      </label>
 
       <div id="newErr" class="err"></div>
       <div style="display:flex;gap:8px;flex-wrap:wrap">
@@ -688,6 +694,11 @@
         <span class="ct"><b>AI와 협업 탐구 열기</b>
           <span>학생이 <b>자기 해석을 먼저 적어야</b> 프롬프트가 완성됩니다. 데이터 실험실 탭 안에 있어서
             실험실을 끄면 이것도 함께 닫힙니다.</span></span>
+      </label>
+      <label class="chkline" for="dFeatRead" style="margin-top:8px">
+        <input id="dFeatRead" type="checkbox" />
+        <span class="ct"><b>결과 해설은 공유 단계부터 보여 주기</b>
+          <span>켜 두면 수집 단계 동안 학생 화면의 「결과를 이렇게 읽어요」가 가려집니다. 끄면 곧바로 보입니다.</span></span>
       </label>
       <div id="featMsg" class="ok" style="min-height:20px;margin-top:8px"></div>
     </div>
@@ -1131,8 +1142,10 @@
     const pts = [];
     (rows || []).forEach(function(r){
       if (!Array.isArray(r)) return;
-      const x = Number(r[0]);
-      const ys = series.map((_, i) => { const v = Number(r[i+1]); return isFinite(v) ? v : null; });
+      //  빈 칸(null·'')은 점을 찍지 않습니다 — Number(null) 은 0 이라 그대로 두면 바닥에 점이 생깁니다.
+      const nv = v => (v === null || v === undefined || String(v).trim() === '') ? NaN : Number(v);
+      const x = nv(r[0]);
+      const ys = series.map((_, i) => { const v = nv(r[i+1]); return isFinite(v) ? v : null; });
       if (ys.every(v => v === null)) return;
       pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
     });
@@ -1521,6 +1534,7 @@
   let procDirty     = false;  // 실험 절차 편집기를 손대는 중
   let procSyncedSig = null;
   let aiBusy        = false;  // AI와 협업 탐구 켜기·끄기를 보내는 중
+  let readBusy      = false;  // 결과 해설 가리기 켜기·끄기를 보내는 중
   let aiTplDirty    = false;  // 프롬프트 틀 편집기를 손대는 중
   let aiTplSyncedSig= null;
 
@@ -1594,6 +1608,8 @@
   //  AI와 협업 탐구도 같은 규칙입니다 — false 라고 못 박았을 때만 닫습니다.
   //  학생 화면에서는 데이터 실험실 탭 안에 들어 있어서, 실험실이 닫히면 이것도 함께 닫힙니다.
   function aiOn(){ return formFeatures().ai !== false; }
+  //  결과 해설 가리기는 반대로, true 라고 적힌 수업에서만 켜집니다(예전 수업은 그대로 보여 줍니다).
+  function readOn(){ return formFeatures().readLater === true; }
 
   // ── AI와 협업 탐구 · 프롬프트 틀 ───────────────────────────────
   //  ★ 이것은 "AI에게 물어보기"가 아닙니다. 학생이 먼저 자기 해석을 내놓고, AI 는 그것을
@@ -2052,6 +2068,7 @@
     $('inClass').value = '';
     $('inFeatLab').checked = true;
     $('inFeatAi').checked  = true;
+    $('inFeatRead').checked = true;
     $('newErr').textContent = '';
     qeNew.set([]);
     show('new');
@@ -2084,7 +2101,8 @@
       //  vendor·steps·prep 은 실험 절차입니다. 스키마를 바꾸지 않으려고 form 안에 함께 담습니다.
       form       : Object.assign(
                      { questions: qs, features: { lab: !!$('inFeatLab').checked,
-                                                  ai : !!$('inFeatAi').checked } },
+                                                  ai : !!$('inFeatAi').checked,
+                                                  readLater: !!$('inFeatRead').checked } },
                      VENDORS.length ? { vendor: newVendor(), steps: seNew.get(), prep: peNew.get() } : {},
                      //  모둠별로 나눠 맡기 — 켰을 때만 담습니다(스키마 변경 없음)
                      (function(){ const g = assignFormValue(); return g ? { assign: g } : {}; })(),
@@ -2142,6 +2160,7 @@
       formDirty = false; formSyncedSig = null; labBusy = false;
       procDirty = false; procSyncedSig = null;
       aiBusy = false; aiTplDirty = false; aiTplSyncedSig = null; aiOpen = {};
+      readBusy = false;
       resetDashKit();
       resetGrading();
       $('formErr').textContent = ''; $('formMsg').textContent = ''; $('featMsg').textContent = '';
@@ -2313,6 +2332,7 @@
     syncProcEditor(false);
     syncLabToggle();
     syncAiToggle();
+    syncReadToggle();
     syncAiEditor(false);
     syncQuizEditor(false);
     paintQuizResult();
@@ -2483,6 +2503,10 @@
   function syncAiToggle(){
     if (aiBusy) return;
     $('dFeatAi').checked = aiOn();
+  }
+  function syncReadToggle(){
+    if (readBusy) return;
+    $('dFeatRead').checked = readOn();
   }
   function formMsg(t){
     $('formMsg').textContent = t || '';
@@ -2734,6 +2758,20 @@
       featMsg(on ? (labOn() ? 'AI와 협업 탐구를 열었습니다. 학생 화면에 곧 나타납니다.'
                             : 'AI와 협업 탐구를 열었습니다. 다만 데이터 실험실 탭이 꺼져 있어 아직 보이지 않습니다.')
                  : 'AI와 협업 탐구를 닫았습니다. 학생 화면에서 곧 사라집니다.');
+    });
+  });
+
+  //  결과 해설 가리기 켜고 끄기 — 켜 두면 수집 단계 동안만 가려지고, 공유 단계부터는 저절로 보입니다.
+  $('dFeatRead').addEventListener('change', function(){
+    const el = this, on = !!el.checked;
+    readBusy = true; el.disabled = true;
+    featMsg(on ? '결과 해설을 가리는 중…' : '결과 해설을 여는 중…');
+    saveForm({ features: { readLater: on } }).then(function(r){
+      readBusy = false; el.disabled = false;
+      if (!r || !r.ok){ syncReadToggle(); featMsg('바꾸지 못했습니다. 다시 눌러 주세요.'); return; }
+      syncReadToggle();
+      featMsg(on ? '결과 해설을 수집 단계 동안 가립니다. 공유 단계를 열면 학생 화면에 나타납니다.'
+                 : '결과 해설을 가리지 않습니다. 학생 화면에 곧 나타납니다.');
     });
   });
 
@@ -4375,7 +4413,7 @@
       aiTemplate: (o.aiTemplate && typeof o.aiTemplate === 'object') ? o.aiTemplate : null,
       //  대시보드 구성도 함께 담습니다 — 간편 모드에서도 같은 짜임으로 볼 수 있게 합니다.
       dash: (o.dash && typeof o.dash === 'object' && !Array.isArray(o.dash)) ? o.dash : null,
-      features: { lab: f.lab !== false, ai: f.ai !== false }
+      features: { lab: f.lab !== false, ai: f.ai !== false, readLater: f.readLater === true }
     };
   }
   //  수업 만들기 화면에 지금 들어 있는 그대로
@@ -4395,7 +4433,7 @@
       rubric: packRub,
       aiTemplate: packAiTpl,
       dash: packDash,
-      features: { lab: !!$('inFeatLab').checked, ai: !!$('inFeatAi').checked }
+      features: { lab: !!$('inFeatLab').checked, ai: !!$('inFeatAi').checked, readLater: !!$('inFeatRead').checked }
     });
   }
   //  이미 만든 실시간 수업 → 꾸러미 (form 을 그대로 옮겨 담습니다)
@@ -4491,6 +4529,7 @@
     $('inGroups').value    = p.groupCount;
     $('inFeatLab').checked = p.features.lab !== false;
     $('inFeatAi').checked  = p.features.ai  !== false;
+    $('inFeatRead').checked = p.features.readLater === true;
     $('newErr').textContent = '';
     vendorMsg('');
     qeNew.set(p.questions.length ? p.questions : (picked ? (picked.questions || []) : []));
