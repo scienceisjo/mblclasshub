@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609281254"></script>
+<script src="./lab-data.js?v=202609281649"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609281254"></script>
-<script src="./diagrams.js?v=202609281254"></script>
-<script src="./graphs.js?v=202609281254"></script>
-<script src="./config.js?v=202609281254"></script>
-<script src="./hub.js?v=202609281254"></script>
+<script src="./demo-data.js?v=202609281649"></script>
+<script src="./diagrams.js?v=202609281649"></script>
+<script src="./graphs.js?v=202609281649"></script>
+<script src="./config.js?v=202609281649"></script>
+<script src="./hub.js?v=202609281649"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609281254"></script>
-<script src="./dashkit.js?v=202609281254"></script>
+<script src="./sensorkit.js?v=202609281649"></script>
+<script src="./dashkit.js?v=202609281649"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -245,6 +245,35 @@
   .modalbox{background:var(--paper);border-radius:var(--r);box-shadow:var(--shadow-lg);
     padding:22px;width:100%;max-width:420px}
   .modalbox h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:6px}
+  /* ── 역할 룰렛 ─────────────────────────────────── */
+  .rbox{max-width:760px;max-height:92vh;overflow:auto}
+  .rhead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:6px}
+  .rbox h3{font-size:16px;margin:4px 0 2px}
+  .rrow{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:10px 0}
+  .rchips{display:flex;flex-wrap:wrap;gap:8px;margin-top:6px}
+  .rchip{display:inline-flex;align-items:center;gap:6px;padding:7px 12px;border-radius:999px;background:#F2FBFA;border:1.5px solid var(--line-2);font-weight:800}
+  .rchip button{border:0;background:none;cursor:pointer;color:var(--muted);font-size:15px;padding:0 2px}
+  .rrole{display:flex;gap:8px;align-items:center;margin:6px 0}
+  .rrole input[type=text]{flex:1;min-width:0}
+  .rstep{display:inline-flex;align-items:center;gap:6px;font-weight:800;white-space:nowrap}
+  .rstep button{width:34px;height:34px;border-radius:9px;border:1.5px solid var(--line-2);background:#fff;font-weight:800;cursor:pointer}
+  .rdef{display:block;width:100%;text-align:left;padding:14px 16px;border-radius:16px;border:2px solid var(--mint);background:#F2FBFA;cursor:pointer;font:inherit;margin-top:6px}
+  .rdef:hover{background:#E4F6F3}
+  .rdef b{display:block;font-size:17px;color:var(--mint-d)}
+  .rdef span{display:block;font-size:13.5px;color:var(--ink);margin-top:4px}
+  .rwheel{position:relative;width:min(340px,78vw);margin:14px auto 0}
+  .rwheel svg{width:100%;height:auto;display:block;overflow:visible}
+  .rpointer{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font-size:30px;line-height:1;color:var(--coral);z-index:2;filter:drop-shadow(0 2px 0 #fff)}
+  #roleWheelG{transition:transform 2.4s cubic-bezier(.12,.72,.14,1)}
+  #dashHost{--dk-sticky:132px}        /* 대시보드 도구막대가 위쪽 머리(.top)·상태 줄(.simplebar) 밑으로 숨지 않게 — 실제 값은 dashStickyTop() 이 잽니다 */
+  .rnow{text-align:center;font-size:22px;font-weight:900;min-height:1.6em;margin:12px 0 6px}
+  .rsofar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
+  .rsofar span{background:#FFF6D6;border-radius:999px;padding:5px 12px;font-weight:800;font-size:13.5px}
+  .rcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-top:8px}
+  .rcard{border:1.5px solid var(--line-2);border-radius:14px;padding:12px 14px;background:#fff}
+  .rcard b{display:block;font-size:15px}
+  .rcard .rwho{display:block;font-size:21px;font-weight:900;color:var(--mint-d);margin:4px 0 2px}
+  .rcard small{display:block;color:var(--muted);font-size:12.5px;line-height:1.5}
 
   /* ── CSV 끌어다 놓기 ─────────────────────────────── */
   .imp{border:1.5px dashed var(--line-2);border-radius:14px;background:var(--cream);padding:14px;margin:12px 0}
@@ -958,12 +987,13 @@
       <div id="shareCards" class="gcards"></div>
     </div>
 
-    <!-- 대시보드 만들기 — 블록을 고르면 우리 모둠 진짜 자료로 그 자리에서 완성됩니다 -->
+    <!-- 대시보드 만들기 — 틀을 고르고 칸을 눌러 고치면 우리 모둠 진짜 자료로 그 자리에서 완성됩니다 -->
     <div id="pnDash" class="panel hidden">
       <div class="box">
         <h2>대시보드 만들기</h2>
-        <p class="muted" id="dashSub">블록을 고르면 지금 표에 적힌 우리 모둠 자료로 바로 그려집니다.
-          센서를 이어 두었다면 <b>값 카드</b>가 표를 따라 함께 바뀝니다.</p>
+        <p class="muted" id="dashSub">틀을 고르면 지금 표에 적힌 우리 모둠 자료로 바로 그려집니다.
+          칸을 눌러 순서·크기를 고치고 <b>▶ 발표하기</b>를 누르면 화면 가득 띄워집니다. 고친 것은 저절로 저장됩니다.
+          센서를 이어 두었다면 <b>지금 값</b> 칸이 표를 따라 함께 바뀝니다.</p>
         <p id="dashLock" class="note hidden">먼저 모둠에 들어와야 대시보드를 만들 수 있습니다.</p>
         <div id="dashHost" style="margin-top:12px"></div>
         <div id="dashAiBox" class="hidden" style="margin-top:14px">
@@ -1033,6 +1063,42 @@
     <div id="pinModalErr" class="err" style="text-align:center"></div>
     <button id="btnPinOk" class="btn btn-solid" style="width:100%" type="button">확인</button>
     <button id="btnPinCancel" class="btn btn-sm" style="width:100%;margin-top:10px" type="button">취소</button>
+  </div>
+</div>
+
+<!-- 역할 룰렛 — 모둠원과 역할을 정하고 돌립니다(기본 세팅: 기계 조작 1 · 실험 기구 조작 2 · 안전 및 진행 1) -->
+<div id="roleModal" class="modal hidden" role="dialog" aria-modal="true" aria-labelledby="roleTitle">
+  <div class="modalbox rbox">
+    <div class="rhead"><h2 id="roleTitle">🎡 역할 룰렛</h2><button id="btnRoleClose" class="btn btn-sm" type="button">닫기</button></div>
+    <div id="roleSetup">
+      <h3>① 모둠원</h3>
+      <p class="muted">이름 대신 번호나 별명으로 적어도 됩니다.</p>
+      <div id="rolePeople" class="rchips"></div>
+      <div class="rrow"><input id="rolePersonIn" type="text" maxlength="12" placeholder="번호·별명 (예: 5번)" style="flex:1;min-width:0" />
+        <button id="btnRolePersonAdd" class="btn btn-sm" type="button">+ 더하기</button></div>
+      <h3 style="margin-top:14px">② 역할</h3>
+      <button id="btnRoleDefault" class="rdef" type="button"><b>⚡ 기본 세팅으로 바로 돌리기</b>
+        <span>🖥️ 기계 조작 1명 · 🧪 실험 기구 조작 2명 · 🦺 안전 및 진행 1명 (4인 1조)</span></button>
+      <p class="muted" style="margin-top:12px">역할을 직접 정하려면 아래에 적고 <b>[🎡 룰렛 돌리기]</b>를 누르세요.</p>
+      <div id="roleRows"></div>
+      <div class="rrow"><button id="btnRoleAddRow" class="btn btn-sm" type="button">+ 역할 더하기</button>
+        <span style="flex:1"></span><button id="btnRoleSpin" class="btn btn-solid" type="button">🎡 룰렛 돌리기</button></div>
+      <div id="roleErr" class="err"></div>
+    </div>
+    <div id="roleStage" class="hidden">
+      <div class="rwheel"><div class="rpointer" aria-hidden="true">▼</div>
+        <svg id="roleWheel" viewBox="-112 -112 224 224" role="img" aria-label="역할 룰렛"></svg></div>
+      <div id="roleNow" class="rnow" aria-live="polite"></div>
+      <div id="roleSoFar" class="rsofar"></div>
+      <div class="rrow" style="justify-content:center"><button id="btnRoleSkip" class="btn btn-sm" type="button">바로 결과 보기</button></div>
+    </div>
+    <div id="roleResult" class="hidden">
+      <p class="muted">이렇게 정해졌습니다. 마음에 들면 <b>[이대로 정하기]</b>를 누르세요.</p>
+      <div id="roleCards"></div>
+      <div class="rrow"><button id="btnRoleBack" class="btn btn-sm" type="button">역할 고치기</button><span style="flex:1"></span>
+        <button id="btnRoleAgain" class="btn" type="button">🎡 다시 돌리기</button>
+        <button id="btnRoleKeep" class="btn btn-solid" type="button">이대로 정하기</button></div>
+    </div>
   </div>
 </div>
 
@@ -2510,6 +2576,7 @@
     aiReset();
     reportStatus = 'draft';
     labReset();
+    roleLoad();
     renderGuide();
     renderDataTable(specRows());
     resetImport();
@@ -2665,6 +2732,7 @@
 
   if (typeof document !== 'undefined'){
     document.addEventListener('visibilitychange', function(){
+      if (document.hidden && dashUI && dashUI.flush) dashUI.flush();
       if (!document.hidden && phaseTimer) checkPhase();
     });
   }
@@ -2723,6 +2791,7 @@
   // 탭
   function selectTab(name){
     if (name === 'lab' && !labOn()) name = 'data';   // 닫아 둔 탭은 열지 않습니다
+    if (curTab === 'dash' && name !== 'dash' && dashUI && dashUI.flush) dashUI.flush();   // 기다리던 대시보드 저장을 마저 합니다
     curTab = name;
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
       t.classList.toggle('on', t.dataset.tab === name);
@@ -2745,6 +2814,252 @@
     t.addEventListener('click', function(){ selectTab(t.dataset.tab); });
   });
 
+  // ═══════════════════════════════════════════════════════════════
+  //  역할 룰렛 — 어떤 실험이든 기계 조작 · 실험 기구 조작 · 안전 및 진행 역할이 있습니다.
+  //  [기본 세팅]은 4인 1조(기계 1 · 기구 2 · 안전·진행 1)로 바로 돌리고, 아니면 역할을 적고 돌립니다.
+  //  정한 역할은 이 기기에 남기고, 보고서 답안의 예약 키 __roles 로 함께 실어 선생님 화면에도 보입니다.
+  // ═══════════════════════════════════════════════════════════════
+  const ROLE_KEY = '__roles';
+  const ROLE_DEFAULT = [
+    { name:'기계 조작',      n:1, icon:'🖥️', desc:'노트북과 센서 프로그램을 켜고 연결·수집을 맡습니다. 잰 값을 데이터 입력 표에 옮겨 적습니다.' },
+    { name:'실험 기구 조작', n:2, icon:'🧪', desc:'실험 기구를 설치하고 조건을 바꿉니다. 한 사람이 조작하면 다른 사람은 눈금과 상태를 확인합니다.' },
+    { name:'안전 및 진행',   n:1, icon:'🦺', desc:'안전 수칙을 지키는지 살피고 시간을 재며 다음 순서를 안내합니다. 결과를 발표할 수 있게 정리합니다.' }
+  ];
+  const ROLE_HELP = { name:'함께 돕기', icon:'🤝', desc:'맡은 역할이 없는 사람은 필요한 곳을 도우며 기록과 확인을 거듭니다.' };
+  const ROLE_COLORS = ['#20B2A6', '#54B4E8', '#FFC130', '#FF8C6B', '#9B7BEA', '#6CC56B', '#F06AA5', '#8D9BA8'];
+  let myRoles = null;          // {at, preset, list:[{role, icon, desc, who:[]}]}
+  let rolePeople = [];         // 룰렛에 올릴 모둠원
+  let roleRowsDraft = null;    // 직접 적은 역할 [{name, n}]
+  let roleRun = null;          // 돌리는 중인 판
+  function roleStoreKey(){ return 'roles_' + (joinCode || 'simple') + '_' + (group ? group.id : '0'); }
+  function roleLoad(){
+    myRoles = null; rolePeople = []; roleRowsDraft = null;
+    if (!group) return;
+    const r = Hub.loadLocal(roleStoreKey(), null);
+    if (r && Array.isArray(r.list)) myRoles = r;
+  }
+  function roleRand(n){
+    try { const a = new Uint32Array(1); crypto.getRandomValues(a); return a[0] % n; }
+    catch (e){ return Math.floor(Math.random() * n); }
+  }
+  function roleShuffle(arr){
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--){ const j = roleRand(i + 1); const t = a[i]; a[i] = a[j]; a[j] = t; }
+    return a;
+  }
+  function roleCardsHTML(list){
+    return '<div class="rcards">' + (list || []).map(function(it){
+      return '<div class="rcard"><b>' + esc((it.icon ? it.icon + ' ' : '') + (it.role || '')) + '</b>' +
+             '<span class="rwho">' + esc((it.who || []).join(', ')) + '</span>' +
+             (it.desc ? '<small>' + esc(it.desc) + '</small>' : '') + '</div>';
+    }).join('') + '</div>';
+  }
+  function roleBoxHTML(){
+    let h = '<div class="box" id="roleBox"><h2>🎡 우리 모둠 역할</h2>';
+    if (myRoles && Array.isArray(myRoles.list) && myRoles.list.length){
+      h += roleCardsHTML(myRoles.list) +
+           '<div class="rrow"><button type="button" class="btn btn-sm" data-role-open="1">🎡 역할 다시 정하기</button></div>';
+    } else {
+      h += '<p class="muted">실험을 시작하기 전에 누가 무엇을 맡을지 룰렛으로 정해 보세요. ' +
+           '어떤 실험이든 기계 조작 · 실험 기구 조작 · 안전 및 진행 역할이 있습니다.</p>' +
+           '<div class="rrow"><button type="button" class="btn btn-solid" data-role-open="1">🎡 역할 룰렛 열기</button></div>';
+    }
+    return h + '</div>';
+  }
+  function paintRoleBox(){
+    const box = document.getElementById('roleBox');
+    if (box) box.outerHTML = roleBoxHTML();
+  }
+  function roleShow(which){
+    $('roleSetup').classList.toggle('hidden', which !== 'setup');
+    $('roleStage').classList.toggle('hidden', which !== 'stage');
+    $('roleResult').classList.toggle('hidden', which !== 'result');
+  }
+  function openRoleModal(){
+    if (!group) return;
+    if (!rolePeople.length){
+      const saved = Hub.loadLocal(roleStoreKey() + '_people', null);
+      const mem = (group.members || []).map(function(s){ return String(s).trim(); }).filter(Boolean);
+      rolePeople = (Array.isArray(saved) && saved.length) ? saved.slice(0, 12) : (mem.length ? mem.slice(0, 12) : ['1번', '2번', '3번', '4번']);
+    }
+    if (!roleRowsDraft) roleRowsDraft = [{ name:'', n:1 }, { name:'', n:1 }];
+    $('roleErr').textContent = '';
+    paintRolePeople(); paintRoleRows();
+    roleShow('setup');
+    $('roleModal').classList.remove('hidden');
+  }
+  function closeRoleModal(){
+    roleStop();
+    $('roleModal').classList.add('hidden');
+  }
+  function paintRolePeople(){
+    $('rolePeople').innerHTML = rolePeople.map(function(p, i){
+      return '<span class="rchip">' + esc(p) + '<button type="button" data-rp-del="' + i + '" aria-label="' + esc(p) + ' 빼기">✕</button></span>';
+    }).join('') || '<span class="muted">아직 없습니다. 아래에서 더하세요.</span>';
+  }
+  function paintRoleRows(){
+    $('roleRows').innerHTML = roleRowsDraft.map(function(r, i){
+      return '<div class="rrole"><input type="text" maxlength="16" data-rr-name="' + i + '" value="' + esc(r.name) + '" placeholder="역할 이름 (예: 기록)" />' +
+             '<span class="rstep"><button type="button" data-rr-dec="' + i + '" aria-label="줄이기">−</button><span>' + r.n + '명</span>' +
+             '<button type="button" data-rr-inc="' + i + '" aria-label="늘리기">＋</button></span>' +
+             '<button type="button" class="btn btn-sm" data-rr-del="' + i + '" aria-label="이 역할 빼기">✕</button></div>';
+    }).join('');
+  }
+  //  판 짜기 — 사람을 섞어 역할 칸에 차례로 앉힙니다. 역할이 사람보다 많으면 한 바퀴 돈 뒤 다시 섞어 이어서 맡기고,
+  //  사람이 더 많으면 남은 사람은 「함께 돕기」가 됩니다. 결과를 먼저 정하고, 바퀴는 그 결과에 맞춰 멈춥니다.
+  function roleStart(defs, preset){
+    const people = rolePeople.slice();
+    if (!people.length){ $('roleErr').textContent = '모둠원을 한 명 이상 적어 주세요.'; return; }
+    const slots = [];
+    defs.forEach(function(d){ for (let k = 0; k < Math.max(1, Number(d.n) || 1); k++) slots.push(d); });
+    if (!slots.length){ $('roleErr').textContent = '역할을 한 개 이상 적어 주세요.'; return; }
+    const order = [];
+    while (order.length < slots.length) roleShuffle(people).forEach(function(p){ order.push(p); });
+    const plan = slots.map(function(d, i){ return { def: d, who: order[i] }; });
+    const used = order.slice(0, slots.length);
+    const extra = people.filter(function(p){ return used.indexOf(p) < 0; });
+    roleStop();
+    roleRun = { plan: plan, defs: defs, preset: preset, extra: extra, i: 0, pool: [], timers: [], result: null };
+    $('roleErr').textContent = '';
+    $('roleNow').textContent = '';
+    $('roleSoFar').innerHTML = '';
+    Hub.saveLocal(roleStoreKey() + '_people', rolePeople);
+    roleShow('stage');
+    roleSpin();
+  }
+  function roleDraw(pool){
+    const n = Math.max(1, pool.length), R = 104, seg = 360 / n;
+    let g = '';
+    pool.forEach(function(p, i){
+      const col = ROLE_COLORS[i % ROLE_COLORS.length];
+      if (n === 1) g += '<circle r="' + R + '" fill="' + col + '" />';
+      else {
+        const a0 = (i * seg - 90) * Math.PI / 180, a1 = ((i + 1) * seg - 90) * Math.PI / 180;
+        g += '<path d="M0,0 L' + (R * Math.cos(a0)).toFixed(2) + ',' + (R * Math.sin(a0)).toFixed(2) +
+             ' A' + R + ',' + R + ' 0 ' + (seg > 180 ? 1 : 0) + ' 1 ' + (R * Math.cos(a1)).toFixed(2) + ',' + (R * Math.sin(a1)).toFixed(2) +
+             ' Z" fill="' + col + '" stroke="#fff" stroke-width="2" />';
+      }
+      const am = ((i + 0.5) * seg - 90) * Math.PI / 180, tr = (n === 1) ? 0 : R * 0.62;
+      g += '<text x="' + (tr * Math.cos(am)).toFixed(1) + '" y="' + (tr * Math.sin(am)).toFixed(1) +
+           '" text-anchor="middle" dominant-baseline="middle" font-size="' + (n > 6 ? 12 : 15) + '" font-weight="800" fill="#fff">' + esc(p) + '</text>';
+    });
+    $('roleWheel').innerHTML = '<g id="roleWheelG" style="transform:rotate(0deg);transition:none">' + g + '</g>' +
+                               '<circle r="15" fill="#fff" stroke="#D3E6EA" stroke-width="3" />';
+  }
+  function roleSpin(){
+    const run = roleRun;
+    if (!run) return;
+    if (run.i >= run.plan.length){ roleFinish(); return; }
+    if (!run.pool.length) run.pool = rolePeople.slice();       // 역할이 사람보다 많으면 다시 모두 올립니다
+    const step = run.plan[run.i];
+    const k = Math.max(0, run.pool.indexOf(step.who));
+    const seg = 360 / run.pool.length;
+    roleDraw(run.pool);
+    //  바늘은 맨 위에 있습니다. k 번째 칸의 가운데가 위로 오도록 돌리고, 몇 바퀴를 더 돌려 멈춥니다.
+    const want = (360 - (k + 0.5) * seg + (roleRand(1000) / 1000 - 0.5) * seg * 0.5 + 720) % 360;
+    const rot = want + 360 * (run.i === 0 ? 5 : 3);
+    run.timers.push(setTimeout(function(){
+      const gEl = document.getElementById('roleWheelG');
+      if (!gEl) return;
+      gEl.style.transition = '';
+      void gEl.getBoundingClientRect();
+      gEl.style.transform = 'rotate(' + rot + 'deg)';
+    }, 40));
+    run.timers.push(setTimeout(function(){
+      const lab = (step.def.icon ? step.def.icon + ' ' : '') + step.def.name;
+      $('roleNow').textContent = lab + ' → ' + step.who;
+      $('roleSoFar').insertAdjacentHTML('beforeend', '<span>' + esc(lab + ' · ' + step.who) + '</span>');
+      run.pool.splice(run.pool.indexOf(step.who), 1);
+      run.i++;
+      run.timers.push(setTimeout(roleSpin, 900));
+    }, 2550));
+  }
+  function roleFinish(){
+    const run = roleRun;
+    if (!run) return;
+    roleStop();
+    const list = run.defs.map(function(d){
+      return { role: d.name, icon: d.icon || '', desc: d.desc || '',
+               who: run.plan.filter(function(s){ return s.def === d; }).map(function(s){ return s.who; }) };
+    });
+    if (run.extra.length) list.push({ role: ROLE_HELP.name, icon: ROLE_HELP.icon, desc: ROLE_HELP.desc, who: run.extra.slice() });
+    run.result = { at: new Date().toISOString(), preset: run.preset, list: list };
+    $('roleCards').innerHTML = roleCardsHTML(list);
+    roleShow('result');
+  }
+  function roleStop(){
+    if (roleRun && roleRun.timers){ roleRun.timers.forEach(function(t){ clearTimeout(t); }); roleRun.timers = []; }
+  }
+  function roleKeep(){
+    if (!roleRun || !roleRun.result) return;
+    myRoles = roleRun.result;
+    Hub.saveLocal(roleStoreKey(), myRoles);
+    closeRoleModal();
+    paintRoleBox();
+    //  선생님 화면에도 보이도록 보고서 답안(예약 키)에 실어 보냅니다. 보고서 칸의 답은 건드리지 않습니다.
+    if (group && !expired){
+      writeWithPin(function(pin){ return DB.saveReport(joinCode, group.id, analysisAnswers(), reportStatus, pin); })
+        .then(function(){}, function(){ /* 이 기기에는 남았습니다 — 다음 보고서 저장 때 함께 갑니다 */ });
+    }
+  }
+  function addRolePerson(){
+    const v = $('rolePersonIn').value.trim();
+    if (!v) return;
+    if (rolePeople.indexOf(v) >= 0){ $('roleErr').textContent = '이미 있는 이름입니다.'; return; }
+    if (rolePeople.length >= 12){ $('roleErr').textContent = '12명까지 올릴 수 있습니다.'; return; }
+    rolePeople.push(v);
+    $('rolePersonIn').value = '';
+    $('roleErr').textContent = '';
+    paintRolePeople();
+  }
+  $('btnRoleClose').addEventListener('click', closeRoleModal);
+  $('roleModal').addEventListener('click', function(e){ if (e.target === $('roleModal')) closeRoleModal(); });
+  document.addEventListener('keydown', function(e){
+    if (e.key === 'Escape' && !$('roleModal').classList.contains('hidden')) closeRoleModal();
+  });
+  $('btnRolePersonAdd').addEventListener('click', addRolePerson);
+  $('rolePersonIn').addEventListener('keydown', function(e){ if (e.key === 'Enter'){ e.preventDefault(); addRolePerson(); } });
+  $('rolePeople').addEventListener('click', function(e){
+    const b = e.target.closest('[data-rp-del]');
+    if (!b) return;
+    rolePeople.splice(Number(b.getAttribute('data-rp-del')), 1);
+    paintRolePeople();
+  });
+  $('roleRows').addEventListener('input', function(e){
+    const i = e.target.getAttribute('data-rr-name');
+    if (i === null || !roleRowsDraft[Number(i)]) return;
+    roleRowsDraft[Number(i)].name = e.target.value;
+  });
+  $('roleRows').addEventListener('click', function(e){
+    const b = e.target.closest('button');
+    if (!b) return;
+    const inc = b.getAttribute('data-rr-inc'), dec = b.getAttribute('data-rr-dec'), del = b.getAttribute('data-rr-del');
+    if (inc !== null) roleRowsDraft[Number(inc)].n = Math.min(10, roleRowsDraft[Number(inc)].n + 1);
+    if (dec !== null) roleRowsDraft[Number(dec)].n = Math.max(1, roleRowsDraft[Number(dec)].n - 1);
+    if (del !== null) roleRowsDraft.splice(Number(del), 1);
+    paintRoleRows();
+  });
+  $('btnRoleAddRow').addEventListener('click', function(){
+    if (roleRowsDraft.length >= 8) return;
+    roleRowsDraft.push({ name:'', n:1 });
+    paintRoleRows();
+  });
+  $('btnRoleDefault').addEventListener('click', function(){ roleStart(ROLE_DEFAULT, 'default'); });
+  $('btnRoleSpin').addEventListener('click', function(){
+    const defs = roleRowsDraft.filter(function(r){ return String(r.name).trim(); })
+                              .map(function(r){ return { name: String(r.name).trim(), n: r.n, icon: '🎯', desc: '' }; });
+    if (!defs.length){ $('roleErr').textContent = '역할 이름을 한 개 이상 적거나, 위의 [기본 세팅으로 바로 돌리기]를 누르세요.'; return; }
+    roleStart(defs, 'custom');
+  });
+  $('btnRoleSkip').addEventListener('click', function(){ if (roleRun) roleFinish(); });
+  $('btnRoleAgain').addEventListener('click', function(){ if (roleRun) roleStart(roleRun.defs, roleRun.preset); });
+  $('btnRoleBack').addEventListener('click', function(){ roleStop(); roleShow('setup'); paintRolePeople(); paintRoleRows(); });
+  $('btnRoleKeep').addEventListener('click', roleKeep);
+  $('pnGuide').addEventListener('click', function(e){
+    const b = e.target.closest('[data-role-open]');
+    if (b) openRoleModal();
+  });
+
   // 실험 안내
   function renderGuide(){
     const e = labExp();
@@ -2758,6 +3073,7 @@
       const oPrep  = Array.isArray(fm.prep)  ? fm.prep  : [];
       h += assignBanner();
       h += '<p class="lead" style="margin-top:12px">선생님이 안내하는 순서대로 실험하고, <b>데이터 입력</b> 탭에 측정값을 적으세요.</p></div>';
+      h += roleBoxHTML();
       if (oSteps.length || oPrep.length){
         h += '<div class="box"><h2>실험 순서</h2>';
         if (oSteps.length) h += '<ol class="steps-ol">' + oSteps.map(x => '<li>' + esc(x) + '</li>').join('') + '</ol>';
@@ -2777,6 +3093,7 @@
     h += altNoteHTML(e, vk);
     h += assignBanner();
     h += '<p class="lead" style="margin-top:6px">' + esc(e.why) + '</p></div>';
+    h += roleBoxHTML();
 
     const steps = stepsOf(e, vk), prep = prepOf(e, vk);
     const vi = vendorInfo(vk);
@@ -4092,16 +4409,32 @@
   }
 
   function dashReset(){
-    dashLayout = null;
     if (dashUI){ try { dashUI.destroy(); } catch (e){} dashUI = null; }
+    dashLayout = null;
     if ($('dashHost')) $('dashHost').innerHTML = '';
     if ($('dashAiBox')) $('dashAiBox').classList.add('hidden');
     if ($('dashAiText')) $('dashAiText').value = '';
   }
 
+  //  대시보드 도구막대를 붙일 높이 — 위에 붙어 있는 머리(.top)와 상태 줄(.simplebar)의 아래 끝입니다.
+  //  상태 줄은 화면 폭에 따라 두 줄이 되기도 하므로 그릴 때마다 잽니다.
+  function dashStickyTop(){
+    const host = $('dashHost');
+    if (!host) return;
+    let b = 0;
+    Array.prototype.forEach.call(document.querySelectorAll('.top, .simplebar'), function(e){
+      if (e.offsetParent === null) return;
+      const cs = getComputedStyle(e);
+      if (cs.position === 'sticky' || cs.position === 'fixed') b = Math.max(b, (parseFloat(cs.top) || 0) + e.offsetHeight);
+    });
+    host.style.setProperty('--dk-sticky', (b + 6) + 'px');
+  }
+  window.addEventListener('resize', function(){ if (curTab === 'dash') dashStickyTop(); });
+
   function renderDash(){
     const host = $('dashHost'), lock = $('dashLock');
     if (!host) return;
+    dashStickyTop();
     if (!group || atlasOnly || expired){
       if (lock) lock.classList.remove('hidden');
       dashReset();
@@ -4122,7 +4455,10 @@
         //  처음 여는 대시보드에는 데이터 실험실 그래프가 먼저 들어갑니다 — 그 그래프가 이 수업의 핵심이라서.
         layout: dashLayout || { theme:'light', title:'', items:[{ key:'tf', w:12 }, { key:'value', w:12 }, { key:'fit', w:6 }, { key:'stats', w:6 }] },
         onSave: dashSave,
-        onAI:   dashToAI
+        onAI:   dashToAI,
+        //  학생 화면은 고치면 저절로 저장하고, 처음 여는 대시보드는 틀 고르기부터 보여 줍니다.
+        autosave: true,
+        start: dashLayout ? '' : 'gallery'
       });
     } catch (e){
       dashUI = null;
@@ -4145,12 +4481,13 @@
     writeWithPin(function(pin){
       return DB.saveReport(joinCode, group.id, dashAnswers(), reportStatus, pin);
     }).then(function(res){
+      //  고칠 때마다 저절로 저장합니다 — 잘 되면 위쪽 작은 글씨만 바꾸고, 안 될 때만 아래에 까닭을 적습니다.
       if (!dashUI) return;
-      dashUI.note(res && res.offline
-        ? '임시 저장했습니다. 연결되면 자동으로 보냅니다.'
-        : '이 구성을 저장했습니다. 다음에 들어와도 그대로 나옵니다.');
+      dashUI.status(res && res.offline ? '임시 저장 · 연결되면 보냅니다' : '저절로 저장했습니다 ✓');
     }, function(err){
-      if (dashUI) dashUI.note(writeErrText(err));
+      if (!dashUI) return;
+      dashUI.status('저장하지 못했습니다');
+      dashUI.note(writeErrText(err));
     });
   }
 
@@ -4884,6 +5221,8 @@
     if (aiLogs.length) a.__ai = aiLogs;
     //  대시보드 구성 — 여기서 다시 실어 주지 않으면 보고서를 저장할 때 지워집니다.
     if (dashLayout) a[DASH_KEY] = dashLayout;
+    //  역할 룰렛으로 정한 역할 — 예약 키라서 보고서 문항으로는 그려지지 않습니다.
+    if (myRoles) a[ROLE_KEY] = myRoles;
     //  선생님이 준 평가 — 우리가 만든 것이 아니라 받은 것입니다.
     //  ★ 여기에서 다시 실어 주지 않으면, 보고서를 저장하는 순간 선생님이 준 점수가 지워집니다.
     if (myEval) a[EVAL_KEY] = myEval;
@@ -4895,6 +5234,8 @@
     if (!ans) return;
     if (Array.isArray(ans.__analysis)) analyses = ans.__analysis.slice(-5);
     if (Array.isArray(ans.__ai)) aiLogs = ans.__ai.slice(-5);
+    //  다른 기기에서 정한 역할도 이어받습니다.
+    if (ans[ROLE_KEY] && Array.isArray(ans[ROLE_KEY].list)){ myRoles = ans[ROLE_KEY]; paintRoleBox(); }
     //  저장해 둔 대시보드 구성을 이어받습니다(빌더가 아직 안 떠 있어도 붙들어 둡니다).
     if (!dashUI && ans[DASH_KEY] && typeof ans[DASH_KEY] === 'object' && !Array.isArray(ans[DASH_KEY])){
       dashLayout = ans[DASH_KEY];
@@ -5175,7 +5516,7 @@
     });
     if (LABP.list.length < 6) h += '<button type="button" class="btn btn-sm" data-labadd="1">＋ 새 그래프</button>';
     if (LABP.list.length > 1) h += '<button type="button" class="btn btn-sm" data-labdrop="1">이 그래프 지우기</button>';
-    h += '<span class="muted">장마다 축·변환을 따로 정합니다. 대시보드의 「변환 그래프」에는 전부 들어갑니다.</span></div>';
+    h += '<span class="muted">장마다 축·변환을 따로 정합니다. 대시보드의 「실험실 그래프」 칸에는 전부 들어갑니다.</span></div>';
     return h;
   }
   //  그래프 칸 — 좁은 화면에서는 눈금 글씨가 너무 작아지지 않도록 그림 자체를 작게 잡습니다.
@@ -5981,6 +6322,7 @@
     if (analyses.length) base.__analysis = analyses;
     if (aiLogs.length)   base.__ai = aiLogs;
     if (myEval)          base[EVAL_KEY] = myEval;      // ★ 없으면 분석을 저장할 때 선생님 평가가 지워집니다
+    if (myRoles)         base[ROLE_KEY] = myRoles;
     return base;
   }
 

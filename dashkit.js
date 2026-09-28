@@ -780,43 +780,44 @@
   // ─────────────────────────────────────────────────────────────────
   var BLOCKS = [
     // ── 측정
-    { key: 'value',   name: '값 카드',      group: '측정', need: ['data'], w: 12, desc: '계열마다 마지막 값을 큰 숫자와 단위로 보여 줍니다.' },
-    { key: 'table',   name: '데이터 표',    group: '측정', need: ['data'], w: 6,  desc: '적어 둔 측정값을 그대로 표로 보여 줍니다.' },
-    { key: 'line',    name: '선그래프',     group: '측정', need: ['data'], w: 12, desc: '가로축을 따라 계열을 선으로 잇습니다.' },
-    { key: 'scatter', name: '산점도',       group: '측정', need: ['data'], w: 6,  desc: '점만 찍어 흩어진 모양을 봅니다.' },
-    { key: 'bar',     name: '막대그래프',   group: '측정', need: ['data'], w: 6,  desc: '회차마다 크기를 나란히 견줍니다.' },
-    { key: 'stats',   name: '통계 카드',    group: '측정', need: ['data'], w: 6,  desc: '처음·마지막·평균·최소·최대를 한눈에.' },
-    { key: 'fit',     name: '기울기와 R²',  group: '측정', need: ['data'], w: 6,  desc: '최소제곱 직선의 기울기(단위까지)와 R².' },
-    { key: 'predict', name: '예상 vs 실제', group: '측정', need: ['data', 'predict'], w: 12, desc: '우리가 그린 예상을 점선으로 겹치고 가장 크게 달랐던 곳을 짚습니다.' },
-    { key: 'tf',      name: '변환 그래프',  group: '측정', need: ['data'], w: 12, desc: '데이터 실험실에서 고른 축·변환 그대로 다시 그립니다.' },
+    { key: 'value',   icon: '🔢', name: '지금 값',         group: '측정', need: ['data'], w: 12, desc: '계열마다 마지막 값을 큰 숫자와 단위로 보여 줍니다.' },
+    { key: 'table',   icon: '📋', name: '데이터 표',       group: '측정', need: ['data'], w: 6,  desc: '적어 둔 측정값을 그대로 표로 보여 줍니다.' },
+    { key: 'line',    icon: '📈', name: '선그래프',        group: '측정', need: ['data'], w: 12, desc: '가로축을 따라 계열을 선으로 잇습니다.' },
+    { key: 'scatter', icon: '⚬',  name: '점그래프',        group: '측정', need: ['data'], w: 6,  desc: '점만 찍어 흩어진 모양을 봅니다(산점도).' },
+    { key: 'bar',     icon: '📊', name: '막대그래프',      group: '측정', need: ['data'], w: 6,  desc: '회차마다 크기를 나란히 견줍니다.' },
+    { key: 'stats',   icon: '🧮', name: '평균·최대·최소',  group: '측정', need: ['data'], w: 6,  desc: '처음·마지막·평균·최소·최대를 한눈에.' },
+    { key: 'fit',     icon: '📐', name: '기울기와 R²',     group: '측정', need: ['data'], w: 6,  desc: '가장 잘 맞는 직선의 기울기(단위까지)와 R².' },
+    { key: 'predict', icon: '🔮', name: '예상 vs 실제',    group: '측정', need: ['data', 'predict'], w: 12, desc: '우리가 그린 예상을 점선으로 겹치고 가장 크게 달랐던 곳을 짚습니다.' },
+    { key: 'tf',      icon: '🔁', name: '실험실 그래프',    group: '측정', need: ['data'], w: 12, desc: '데이터 실험실에서 고른 축·변환 그대로 다시 그립니다.' },
 
     // ── 반 전체
-    { key: 'classLines', name: '모둠 겹친 그래프',   group: '반 전체', need: ['data', 'board'], w: 12, desc: '모둠마다 색을 달리해 한 그림에 겹쳐 그립니다.' },
-    { key: 'rank',       name: '모둠별 기울기 순위', group: '반 전체', need: ['data', 'board'], w: 6,  desc: '기울기가 큰 모둠부터 줄 세웁니다.' },
-    { key: 'mypos',      name: '우리 모둠 위치',     group: '반 전체', need: ['data', 'board'], w: 6,  desc: '반 전체 가운데 우리 모둠이 어디쯤인지.' },
-    { key: 'progress',   name: '모둠 진행 현황',     group: '반 전체', need: ['board'], w: 12, role: 'teacher', desc: '모둠별 측정·보고서·개념확인 진행 상태 타일.' },
+    { key: 'classLines', icon: '👥', name: '모둠 그래프 겹쳐 보기', group: '반 전체', need: ['data', 'board'], w: 12, desc: '모둠마다 색을 달리해 한 그림에 겹쳐 그립니다.' },
+    { key: 'rank',       icon: '🏅', name: '모둠별 기울기 순위',   group: '반 전체', need: ['data', 'board'], w: 6,  desc: '기울기가 큰 모둠부터 줄 세웁니다.' },
+    { key: 'mypos',      icon: '📍', name: '우리 모둠 위치',       group: '반 전체', need: ['data', 'board'], w: 6,  desc: '반 전체 가운데 우리 모둠이 어디쯤인지.' },
+    { key: 'progress',   icon: '⏱',  name: '모둠 진행 현황',       group: '반 전체', need: ['board'], w: 12, role: 'teacher', desc: '모둠별 측정·보고서·개념확인 진행 상태 타일.' },
 
     // ── 콘텐츠
-    { key: 'overview', name: '실험 개요',       group: '콘텐츠', need: ['exp'], w: 6,  desc: '제목·성취기준 원문·소요 시간·센서.' },
-    { key: 'prepare',  name: '준비물',          group: '콘텐츠', need: ['exp'], w: 6,  desc: '이 실험에 필요한 준비물 목록.' },
-    { key: 'steps',    name: '절차 카드',       group: '콘텐츠', need: ['exp'], w: 12, desc: '업체별 절차를 번호가 붙은 카드로.' },
-    { key: 'diagram',  name: '연결 다이어그램', group: '콘텐츠', need: ['exp', 'figD'], w: 6, desc: '센서를 어디에 어떻게 다는지 그림으로.' },
-    { key: 'exgraph',  name: '결과 그래프 예시', group: '콘텐츠', need: ['exp', 'figG'], w: 6, desc: '이런 모양이 나오면 잘 된 것입니다.' },
-    { key: 'report',   name: '보고서 문답',     group: '콘텐츠', need: ['report'], w: 12, desc: '문항과 우리가 쓴 답을 나란히.' },
-    { key: 'quiz',     name: '개념 확인 결과',  group: '콘텐츠', need: ['quiz'], w: 6,  desc: '우리 모둠이 받은 점수와 맞고 틀림.' },
-    { key: 'quizdist', name: '문항별 정답률',   group: '콘텐츠', need: ['quiz', 'board'], w: 6, role: 'teacher', desc: '어느 문항에서 반 전체가 걸렸는지.' },
-    { key: 'eval',     name: '선생님 평가',     group: '콘텐츠', need: ['eval'], w: 6,  desc: '루브릭 항목별 점수와 선생님이 쓴 문장.' },
-    { key: 'ai',       name: 'AI 협업 기록',    group: '콘텐츠', need: ['ai'], w: 12, desc: 'AI 에게 무엇을 물었고 무엇을 우리 데이터로 검증했는지.' },
-    { key: 'stars',    name: '별점과 칭찬',     group: '콘텐츠', need: ['feedback'], w: 6, desc: '다른 모둠에게 받은 별점 평균과 칭찬 글.' },
+    { key: 'overview', icon: '🧪', name: '실험 개요',        group: '콘텐츠', need: ['exp'], w: 6,  desc: '제목·성취기준 원문·소요 시간·센서.' },
+    { key: 'prepare',  icon: '🧰', name: '준비물',           group: '콘텐츠', need: ['exp'], w: 6,  desc: '이 실험에 필요한 준비물 목록.' },
+    { key: 'steps',    icon: '🪜', name: '절차 카드',        group: '콘텐츠', need: ['exp'], w: 12, desc: '업체별 절차를 번호가 붙은 카드로.' },
+    { key: 'diagram',  icon: '🔌', name: '연결 그림',        group: '콘텐츠', need: ['exp', 'figD'], w: 6, desc: '센서를 어디에 어떻게 다는지 그림으로.' },
+    { key: 'exgraph',  icon: '🖼',  name: '결과 그래프 예시', group: '콘텐츠', need: ['exp', 'figG'], w: 6, desc: '이런 모양이 나오면 잘 된 것입니다.' },
+    { key: 'report',   icon: '📝', name: '보고서 문답',      group: '콘텐츠', need: ['report'], w: 12, desc: '문항과 우리가 쓴 답을 나란히.' },
+    { key: 'quiz',     icon: '✅', name: '개념 확인 결과',   group: '콘텐츠', need: ['quiz'], w: 6,  desc: '우리 모둠이 받은 점수와 맞고 틀림.' },
+    { key: 'quizdist', icon: '📊', name: '문항별 정답률',    group: '콘텐츠', need: ['quiz', 'board'], w: 6, role: 'teacher', desc: '어느 문항에서 반 전체가 걸렸는지.' },
+    { key: 'eval',     icon: '🌟', name: '선생님 평가',      group: '콘텐츠', need: ['eval'], w: 6,  desc: '루브릭 항목별 점수와 선생님이 쓴 문장.' },
+    { key: 'ai',       icon: '🤖', name: 'AI 협업 기록',     group: '콘텐츠', need: ['ai'], w: 12, desc: 'AI 에게 무엇을 물었고 무엇을 우리 데이터로 검증했는지.' },
+    { key: 'stars',    icon: '⭐', name: '별점과 칭찬',      group: '콘텐츠', need: ['feedback'], w: 6, desc: '다른 모둠에게 받은 별점 평균과 칭찬 글.' },
 
     // ── 꾸밈
-    { key: 'bigtitle', name: '큰 제목', group: '꾸밈', need: [], w: 12, desc: '전자칠판에 띄울 큰 글씨 제목.' },
-    { key: 'memo',     name: '메모 글', group: '꾸밈', need: [], w: 6,  desc: '설명이나 알림을 적어 둡니다.' },
-    { key: 'divider',  name: '구분선',  group: '꾸밈', need: [], w: 12, desc: '영역을 나누는 가로선.' }
+    { key: 'bigtitle', icon: '🔠', name: '큰 제목', group: '꾸밈', need: [], w: 12, desc: '전자칠판에 띄울 큰 글씨 제목.' },
+    { key: 'memo',     icon: '🗒',  name: '글 상자', group: '꾸밈', need: [], w: 6,  desc: '결론·설명·알림을 적어 둡니다.' },
+    { key: 'divider',  icon: '➖', name: '구분선',  group: '꾸밈', need: [], w: 12, desc: '영역을 나누는 가로선.' }
   ];
   var BMAP = {};
   BLOCKS.forEach(function (b) { BMAP[b.key] = b; });
   var GROUPS = ['측정', '반 전체', '콘텐츠', '꾸밈'];
+  var GLABEL = { '측정': '📏 측정', '반 전체': '👥 반 전체', '콘텐츠': '📄 글·자료', '꾸밈': '✏️ 꾸미기' };
 
   // ─────────────────────────────────────────────────────────────────
   //  6. 쓸 수 있는가 — 없으면 "무엇이 있으면 되는지" 를 한 줄로
@@ -1410,7 +1411,7 @@
   // ─────────────────────────────────────────────────────────────────
   //  8. renderBlock · render · standalone
   // ─────────────────────────────────────────────────────────────────
-  var WIDTHS = [{ w: 4, name: '1칸' }, { w: 6, name: '2칸' }, { w: 12, name: '전체' }];
+  var WIDTHS = [{ w: 4, name: '1칸', short: '1/3' }, { w: 6, name: '2칸', short: '1/2' }, { w: 12, name: '전체', short: '전체' }];
   function normW(w) {
     w = Number(w);
     return (w === 4 || w === 6 || w === 12) ? w : 12;
@@ -1495,7 +1496,7 @@
     var inner = '';
     if (opt.head !== false) inner += headerHTML(C, L, when);
     if (!L.items.length) {
-      inner += '<div class="dk-empty">아직 고른 블록이 없습니다. 위에서 <b>짜임</b>을 고르거나 <b>블록 추가</b>를 눌러 보세요.</div>';
+      inner += '<div class="dk-empty">아직 고른 칸이 없습니다. 위에서 <b>틀</b>을 고르거나 <b>＋ 칸 더하기</b>를 눌러 보세요.</div>';
     } else {
       inner += '<div class="dk-grid">';
       L.items.forEach(function (it) { inner += renderBlock(it.key, ctx, { w: it.w, cfg: it.cfg }); });
@@ -1563,6 +1564,9 @@
   //  9. 짜임 고르기(preset) — 백지에서 시작하지 않게
   // ─────────────────────────────────────────────────────────────────
   var PRESETS = [
+    { key: 'pitch',    name: '발표 한 장', theme: 'light', tag: '추천',
+      desc: '핵심 그래프 · 지금 값 · 기울기 · 우리의 결론을 한 장에 담습니다. 제목은 맨 위를 눌러 바꿉니다.',
+      want: [['tf', 12], ['value', 6], ['fit', 6], ['memo', 12, { title: '우리의 결론' }]] },
     { key: 'monitor',  name: '측정 현황판', theme: 'light',
       desc: '지금 값이 어떤지 한 화면에서 봅니다.',
       want: [['value', 12], ['line', 12], ['stats', 6], ['table', 6], ['fit', 6], ['predict', 12]] },
@@ -1583,10 +1587,10 @@
     PRESETS.forEach(function (P) {
       var items = [];
       P.want.forEach(function (pair) {
-        if (canUse(pair[0], ctx).ok) items.push({ key: pair[0], w: pair[1], cfg: {} });
+        if (canUse(pair[0], ctx).ok) items.push({ key: pair[0], w: pair[1], cfg: pair[2] ? JSON.parse(JSON.stringify(pair[2])) : {} });
       });
       out.push({
-        key: P.key, name: P.name, desc: P.desc, ready: items.length,
+        key: P.key, name: P.name, desc: P.desc, tag: P.tag || '', ready: items.length,
         layout: { theme: P.theme, title: '', items: items }
       });
     });
@@ -1598,7 +1602,7 @@
         if (canUse(k, ctx).ok) fall.push({ key: k, w: BMAP[k].w, cfg: {} });
       });
       if (!fall.length) fall.push({ key: 'bigtitle', w: 12, cfg: {} });
-      out.unshift({ key: 'start', name: '실험 안내로 시작', ready: fall.length,
+      out.unshift({ key: 'start', name: '실험 안내로 시작', ready: fall.length, tag: '',
                     desc: '측정값이 아직 없어도 쓸 수 있는 것부터.',
                     layout: { theme: 'light', title: '', items: fall } });
     }
@@ -1607,43 +1611,91 @@
 
   // ─────────────────────────────────────────────────────────────────
   //  10. 빌더 UI — mount
-  //    드래그를 쓰지 않습니다. 이 앱은 전자칠판·터치에서 쓰이고,
-  //    질문·절차 편집기가 이미 ▲▼ 방식이라 같은 방식으로 통일합니다.
+  //    학생이 쓰기 쉽게, 흔히 쓰는 도구(Canva·구글 슬라이드·패들렛·노션)의 방식을 따릅니다.
+  //    ① 틀(그림 미리보기) 고르기 ② 미리보기의 칸을 눌러 그 자리에서 고치기(순서·크기·빼기)
+  //    ③ ＋ 칸 더하기는 아이콘 카드 창 ④ ↶ 되돌리기 ⑤ 주 단추는 ▶ 발표하기 하나, 나머지는 「저장·인쇄」 안에.
+  //    opt.autosave 면 고칠 때마다 저절로 onSave 를 부릅니다(학생 화면). 끌어 옮기기는 쓰지 않습니다(전자칠판·터치).
   // ─────────────────────────────────────────────────────────────────
   var UI_CSS_ID = 'dk-ui-css';
   function uiCSS() {
     return [
-      '.dkui{color:var(--ink,#254753)}',
-      '.dkui .dkui-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin:0 0 10px}',
-      '.dkui .dkui-lab{font-size:13px;font-weight:800;color:var(--muted,#6E8A96);margin-right:2px}',
+      '.dkui{color:var(--ink,#254753);position:relative}',
       '.dkui button{font:inherit;cursor:pointer;border-radius:10px;border:1.5px solid var(--line-2,#D3E6EA);' +
-        'background:var(--paper,#fff);color:var(--ink,#254753);padding:7px 12px;font-size:13.5px;font-weight:700}',
+        'background:var(--paper,#fff);color:var(--ink,#254753);padding:8px 12px;font-size:14px;font-weight:700;min-height:40px}',
       '.dkui button:hover{border-color:var(--mint,#20B2A6)}',
       '.dkui button.on{background:var(--mint,#20B2A6);border-color:var(--mint,#20B2A6);color:#fff}',
-      '.dkui button.dkui-go{background:var(--mint,#20B2A6);border-color:var(--mint,#20B2A6);color:#fff}',
       '.dkui button[disabled]{opacity:.45;cursor:not-allowed}',
-      '.dkui .dkui-cols{display:grid;grid-template-columns:minmax(260px,340px) 1fr;gap:14px;align-items:start}',
-      '@media (max-width:900px){.dkui .dkui-cols{grid-template-columns:1fr}}',
-      '.dkui .dkui-panel{background:var(--paper,#fff);border:1.5px solid var(--line,#E4EFF1);border-radius:16px;padding:12px}',
-      '.dkui .dkui-item{display:flex;flex-wrap:wrap;gap:6px;align-items:center;border:1.5px solid var(--line,#E4EFF1);' +
-        'border-radius:12px;padding:8px 10px;margin:6px 0;background:var(--cream,#FFFDF6)}',
-      '.dkui .dkui-item .dkui-nm{flex:1 1 8em;font-size:13.5px;font-weight:800;min-width:6em}',
-      '.dkui .dkui-item .dkui-warn{flex:1 1 100%;font-size:12px;color:var(--warn,#E8873C);font-weight:700}',
-      '.dkui .dkui-item button{padding:4px 9px;font-size:12.5px;border-radius:8px}',
-      '.dkui .dkui-pal{margin-top:8px;border-top:1.5px dashed var(--line-2,#D3E6EA);padding-top:8px}',
-      '.dkui .dkui-gname{font-size:12.5px;font-weight:800;color:var(--mint-d,#14867C);margin:8px 0 4px}',
-      '.dkui .dkui-p{display:block;width:100%;text-align:left;margin:4px 0;padding:8px 10px;border-radius:10px;' +
-        'border:1.5px solid var(--line,#E4EFF1);background:var(--paper,#fff)}',
-      '.dkui .dkui-p b{display:block;font-size:13.5px}',
-      '.dkui .dkui-p small{display:block;font-size:11.5px;color:var(--muted,#6E8A96);font-weight:600;line-height:1.5;margin-top:2px}',
-      '.dkui .dkui-p.off{opacity:.55}',
-      '.dkui .dkui-p.off small{color:var(--warn,#E8873C)}',
-      '.dkui .dkui-prev{background:var(--paper,#fff);border:1.5px solid var(--line,#E4EFF1);border-radius:16px;' +
-        'padding:8px;overflow:auto;max-height:74vh}',
-      '.dkui .dkui-prev.dkui-full{position:fixed;inset:0;z-index:9999;max-height:none;border-radius:0;padding:12px}',
-      '.dkui .dkui-msg{font-size:12.5px;color:var(--muted,#6E8A96);margin:6px 0 0;min-height:1.2em}',
-      '.dkui textarea.dkui-tx{width:100%;font:inherit;font-size:13px;border:1.5px solid var(--line-2,#D3E6EA);' +
-        'border-radius:8px;padding:6px 8px;resize:vertical;min-height:3.2em;background:var(--paper,#fff);color:inherit}'
+      '.dkui .dkui-go{background:var(--coral,#FF8C6B);border-color:var(--coral,#FF8C6B);color:#fff;font-size:15px;padding:8px 18px}',
+      '.dkui .dkui-go:hover{border-color:var(--coral,#FF8C6B);filter:brightness(1.05)}',
+      '.dkui .dkui-tools{position:sticky;top:var(--dk-sticky,0px);z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;' +
+        'background:var(--paper,#fff);border:1.5px solid var(--line,#E4EFF1);border-radius:14px;padding:8px 10px;box-shadow:0 6px 16px rgba(37,71,83,.06)}',
+      '.dkui .dkui-grow{flex:1 1 auto}',
+      '.dkui .dkui-lab{font-size:12.5px;font-weight:800;color:var(--muted,#6E8A96)}',
+      '.dkui .dkui-seg{display:inline-flex;border:1.5px solid var(--line-2,#D3E6EA);border-radius:10px;overflow:hidden}',
+      '.dkui .dkui-seg button{border:0;border-radius:0;min-height:36px;padding:6px 10px;font-size:13px}',
+      '.dkui .dkui-status{font-size:12.5px;color:var(--mint-d,#14867C);font-weight:700}',
+      '.dkui .dkui-hint{font-size:13px;color:var(--muted,#6E8A96);margin:8px 2px}',
+      '.dkui .dkui-hint b{color:var(--ink,#254753)}',
+      '.dkui details.dkui-more{position:relative}',
+      '.dkui details.dkui-more>summary{list-style:none;cursor:pointer;border:1.5px solid var(--line-2,#D3E6EA);border-radius:10px;' +
+        'padding:8px 12px;font-weight:700;font-size:14px;min-height:40px;display:flex;align-items:center;background:var(--paper,#fff)}',
+      '.dkui details.dkui-more>summary::-webkit-details-marker{display:none}',
+      '.dkui details.dkui-more>div{position:absolute;right:0;top:calc(100% + 6px);z-index:20;background:var(--paper,#fff);' +
+        'border:1.5px solid var(--line,#E4EFF1);border-radius:12px;padding:6px;box-shadow:0 12px 28px rgba(0,0,0,.14);display:grid;gap:4px;min-width:230px}',
+      '.dkui details.dkui-more>div button{text-align:left;border-color:transparent}',
+      // 틀 고르기
+      '.dkui .dkui-gallery{margin:10px 0;padding:12px;border:1.5px solid var(--line,#E4EFF1);border-radius:16px;background:var(--cream,#FFFDF6)}',
+      '.dkui .dkui-gallery h3{margin:0 0 2px;font-size:16px}',
+      '.dkui .dkui-tpls{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:10px}',
+      '.dkui .dkui-tpl{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:left;padding:10px;border-radius:14px}',
+      '.dkui .dkui-tpl:hover{box-shadow:0 8px 20px rgba(32,178,166,.18)}',
+      '.dkui .dkui-tpl b{font-size:15px}',
+      '.dkui .dkui-tpl small{font-size:12px;color:var(--muted,#6E8A96);font-weight:600;line-height:1.5}',
+      '.dkui .dkui-tag{align-self:flex-start;font-size:11px;font-weight:800;color:#fff;background:var(--coral,#FF8C6B);border-radius:999px;padding:2px 8px}',
+      '.dkui .dkui-ready{font-size:11.5px;color:var(--mint-d,#14867C);font-weight:800}',
+      '.dkui .dkui-thumb{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;padding:6px;background:#EEF7F6;border-radius:10px;' +
+        'height:104px;align-content:start;overflow:hidden}',
+      '.dkui .dkui-thumb i{font-style:normal;background:#fff;border:1px solid #D3E6EA;border-radius:5px;height:28px;' +
+        'display:flex;align-items:center;justify-content:center;font-size:13px}',
+      // 미리보기에서 바로 고치기
+      '.dkui .dkui-canvas{margin-top:10px}',
+      '.dkui .dkui-canvas .dk-b{position:relative;cursor:pointer;outline:2px solid transparent;outline-offset:2px;transition:outline-color .15s}',
+      '.dkui .dkui-canvas .dk-b:hover{outline-color:#9ADCD5}',
+      '.dkui .dkui-canvas .dk-b.dkui-on{outline:3px solid var(--mint,#20B2A6)}',
+      '.dkui .dkui-canvas .dk-head{cursor:pointer;border-radius:12px;outline:2px solid transparent;outline-offset:4px;transition:outline-color .15s}',
+      '.dkui .dkui-canvas .dk-head:hover{outline-color:#9ADCD5}',
+      '.dkui .dkui-canvas .dk-head.dkui-on{outline:3px solid var(--mint,#20B2A6)}',
+      '.dkui input.dkui-tx{min-height:0}',
+      '.dkui .dkui-float{position:absolute;top:.4em;right:.4em;z-index:3;display:flex;flex-wrap:wrap;gap:4px;align-items:center;' +
+        'background:#fff;border:1.5px solid #D3E6EA;border-radius:12px;padding:4px;box-shadow:0 8px 20px rgba(0,0,0,.14);font-size:13px}',
+      '.dkui .dkui-float button{min-height:34px;padding:4px 9px;font-size:13px;border-radius:8px}',
+      '.dkui .dkui-float .dkui-del{color:#C2410C}',
+      '.dkui .dkui-addtile{grid-column:span 12;border:2px dashed var(--line-2,#D3E6EA);background:transparent;color:var(--muted,#6E8A96);' +
+        'font-size:15px;padding:18px;border-radius:14px}',
+      '.dkui .dkui-addtile:hover{color:var(--mint-d,#14867C);border-color:var(--mint,#20B2A6)}',
+      '.dkui textarea.dkui-tx{display:block;width:100%;margin-top:.6em;font:inherit;font-size:15px;border:2px solid var(--mint,#20B2A6);' +
+        'border-radius:10px;padding:8px 10px;resize:vertical;min-height:3.4em;background:#fff;color:#254753}',
+      '.dkui .dkui-msg{font-size:13px;color:var(--muted,#6E8A96);margin:8px 2px 0;min-height:1.2em}',
+      // ＋ 칸 더하기 창
+      '.dkui .dkui-modal{position:fixed;inset:0;z-index:60;background:rgba(20,40,48,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px}',
+      '.dkui .dkui-modal[hidden]{display:none}',
+      '.dkui .dkui-sheet{background:#fff;width:min(920px,100%);max-height:86vh;overflow:auto;border-radius:18px;padding:14px 16px;box-shadow:0 20px 60px rgba(0,0,0,.25)}',
+      '.dkui .dkui-sheethead{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}',
+      '.dkui .dkui-sheethead b{font-size:17px}',
+      '.dkui .dkui-tabs{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:10px}',
+      '.dkui .dkui-cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(170px,1fr));gap:10px}',
+      '.dkui .dkui-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px;border-radius:14px;min-height:108px}',
+      '.dkui .dkui-card i{font-style:normal;font-size:26px;line-height:1}',
+      '.dkui .dkui-card b{font-size:14.5px}',
+      '.dkui .dkui-card small{font-size:12px;color:var(--muted,#6E8A96);font-weight:600;line-height:1.45}',
+      '.dkui .dkui-card.off{opacity:.55}',
+      '.dkui .dkui-card.off small{color:#C2410C}',
+      '.dkui .dkui-offtoggle{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--muted,#6E8A96);font-weight:700}',
+      // ▶ 발표하기(전체 화면) — 편집 도구가 없는 깨끗한 화면
+      '.dkui-show{position:fixed;inset:0;z-index:9999;background:#F4FBF6;overflow:auto;padding:16px}',
+      '.dkui-show .dkui-x{position:fixed;top:12px;right:14px;z-index:2;font:inherit;font-weight:800;border:0;border-radius:999px;' +
+        'background:rgba(37,71,83,.85);color:#fff;padding:8px 14px;cursor:pointer}',
+      '@media (max-width:640px){.dkui .dkui-tools{position:static}}'
     ].join('\n');
   }
 
@@ -1669,38 +1721,58 @@
     ensureStyle(doc, UI_CSS_ID, uiCSS());
 
     var L = normLayout(opt.layout || (ctx && ctx.layout) || emptyLayout());
+    var auto = !!opt.autosave;            // 고칠 때마다 저절로 저장(학생 화면)
+    var sel = -1;                         // 고른 칸 (-1 없음 · -2 맨 위 제목)
+    var undo = [];                        // 되돌리기 — 고치기 전 구성을 쌓아 둡니다
+    var saveT = null;
+    var galleryOpen = !L.items.length || opt.start === 'gallery';
+    var pickTab = null, showOff = false, psCache = [];
 
     el.classList.add('dkui');
     el.innerHTML =
-      '<div class="dkui-row" data-dk="presets"></div>' +
-      '<div class="dkui-cols">' +
-        '<div class="dkui-panel">' +
-          '<div class="dkui-row" data-dk="themes"></div>' +
-          '<div data-dk="items"></div>' +
-          '<div class="dkui-row" style="margin-top:8px">' +
-            '<button type="button" data-dk="addToggle">+ 블록 추가</button>' +
-            '<button type="button" data-dk="clear">모두 지우기</button>' +
-          '</div>' +
-          '<div class="dkui-pal" data-dk="palette" hidden></div>' +
-        '</div>' +
-        '<div>' +
-          '<div class="dkui-row">' +
-            '<button type="button" class="dkui-go" data-dk="save">HTML 파일로 저장</button>' +
-            '<button type="button" data-dk="keep">이 구성 저장</button>' +
-            '<button type="button" data-dk="full">전체 화면</button>' +
-            '<button type="button" data-dk="print">인쇄 · PDF</button>' +
-            '<button type="button" data-dk="ai">이 대시보드를 AI 와 함께 해석하기</button>' +
-          '</div>' +
-          '<div class="dkui-prev" data-dk="prev"></div>' +
-          '<p class="dkui-msg" data-dk="msg"></p>' +
-        '</div>' +
-      '</div>';
+      '<div class="dkui-tools">' +
+        '<button type="button" data-dk="gallery">🧩 틀 고르기</button>' +
+        '<button type="button" data-dk="pick">＋ 칸 더하기</button>' +
+        '<button type="button" data-dk="undo" title="방금 고친 것을 되돌립니다">↶ 되돌리기</button>' +
+        '<span class="dkui-lab">색</span><span class="dkui-seg" data-dk="themes"></span>' +
+        '<span class="dkui-grow"></span>' +
+        '<span class="dkui-status" data-dk="status"></span>' +
+        (auto ? '' : '<button type="button" data-dk="keep">💾 이 구성 저장</button>') +
+        '<button type="button" class="dkui-go" data-dk="present">▶ 발표하기</button>' +
+        '<details class="dkui-more"><summary>저장·인쇄 ▾</summary><div>' +
+          '<button type="button" data-dk="save">📄 HTML 파일로 내려받기</button>' +
+          '<button type="button" data-dk="print">🖨 인쇄 · PDF</button>' +
+          '<button type="button" data-dk="ai">🤖 AI 와 함께 해석하기</button>' +
+          '<button type="button" data-dk="clear">🗑 칸 모두 비우기</button>' +
+        '</div></details>' +
+      '</div>' +
+      '<p class="dkui-hint"><b>① 틀 고르기</b> → <b>② 제목 · 칸을 눌러 고치기</b>(순서 · 크기 · 빼기) → <b>③ ▶ 발표하기</b>' +
+        (auto ? ' · 고친 것은 저절로 저장됩니다.' : '') + '</p>' +
+      '<div class="dkui-gallery" data-dk="galleryBox" hidden></div>' +
+      '<div class="dkui-canvas" data-dk="prev"></div>' +
+      '<p class="dkui-msg" data-dk="msg"></p>' +
+      '<div class="dkui-modal" data-dk="pickBox" hidden></div>';
 
     var $ = function (k) { return el.querySelector('[data-dk="' + k + '"]'); };
     function note(t) { $('msg').textContent = t || ''; }
+    function status(t) { $('status').textContent = t || ''; }
+
+    function fire(name) {
+      if (typeof opt[name] !== 'function') return;
+      try { opt[name](JSON.parse(JSON.stringify(L)), ctx); } catch (e) {}
+    }
+    function scheduleSave() {
+      if (!auto) return;
+      if (saveT) w.clearTimeout(saveT);
+      status('고치는 중… 곧 저장합니다');
+      //  먼저 '저장했습니다' 로 적어 두고, 실패하면 부른 쪽이 status() 로 고쳐 적습니다.
+      saveT = w.setTimeout(function () { saveT = null; status('저절로 저장했습니다 ✓'); fire('onSave'); }, 1200);
+    }
+    function snap() { undo.push(JSON.stringify(L)); if (undo.length > 30) undo.shift(); }
+    function changed() { repaint(); scheduleSave(); }
 
     function paintThemes() {
-      var h = '<span class="dkui-lab">테마</span>';
+      var h = '';
       ['light', 'dark', 'big'].forEach(function (k) {
         h += '<button type="button" data-dk="theme" data-k="' + k + '"' + (L.theme === k ? ' class="on"' : '') + '>' +
              esc(THEMES[k].name) + '</button>';
@@ -1708,73 +1780,120 @@
       $('themes').innerHTML = h;
     }
 
-    var psCache = [];
-    function paintPresets() {
+    //  틀 고르기 — 틀마다 칸 배치를 작은 그림으로 보여 줍니다(무엇이 들어가는지 고르기 전에 보이게).
+    function thumbHTML(items) {
+      var h = '<div class="dkui-thumb">';
+      (items || []).forEach(function (it) {
+        var B = BMAP[it.key];
+        h += '<i style="grid-column:span ' + normW(it.w) + '" title="' + esc(B.name) + '">' + (B.icon || '▫') + '</i>';
+      });
+      return h + '</div>';
+    }
+    function paintGallery() {
+      var box = $('galleryBox');
+      box.hidden = !galleryOpen;
+      if (!galleryOpen) { box.innerHTML = ''; return; }
       psCache = presets(ctx);
-      var h = '<span class="dkui-lab">짜임 고르기</span>';
+      var h = '<h3>🧩 틀을 고르세요</h3><p class="dkui-msg" style="margin:0">고르면 바로 대시보드가 만들어집니다. ' +
+              '그다음 칸을 눌러 고치면 됩니다. 마음에 안 들면 ↶ 되돌리기.</p><div class="dkui-tpls">';
       psCache.forEach(function (p) {
-        h += '<button type="button" data-dk="preset" data-k="' + esc(p.key) + '" title="' + esc(p.desc) + '">' +
-             esc(p.name) + ' <span style="opacity:.65;font-weight:600">(' + p.ready + ')</span></button>';
+        h += '<button type="button" class="dkui-tpl" data-dk="preset" data-k="' + esc(p.key) + '"' + (p.ready ? '' : ' disabled') + '>' +
+             (p.tag ? '<span class="dkui-tag">' + esc(p.tag) + '</span>' : '') +
+             thumbHTML(p.layout.items) + '<b>' + esc(p.name) + '</b><small>' + esc(p.desc) + '</small>' +
+             (p.ready ? '<span class="dkui-ready">지금 바로 채워지는 칸 ' + p.ready + '개</span>'
+                      : '<small>자료가 더 모이면 쓸 수 있습니다.</small>') + '</button>';
       });
-      $('presets').innerHTML = h;
+      h += '<button type="button" class="dkui-tpl" data-dk="blank"><div class="dkui-thumb"></div>' +
+           '<b>빈 화면에서 시작</b><small>칸을 하나씩 직접 더합니다.</small></button>';
+      box.innerHTML = h + '</div>';
     }
 
-    function paintItems() {
-      var h = '';
-      if (!L.items.length) {
-        h = '<p class="dkui-msg">아직 블록이 없습니다. 위에서 짜임을 고르거나 아래 <b>+ 블록 추가</b>를 눌러 보세요.</p>';
-      }
-      L.items.forEach(function (it, i) {
-        var B = BMAP[it.key], can = canUse(it.key, ctx);
-        h += '<div class="dkui-item">' +
-             '<span class="dkui-nm">' + esc(B.name) + '</span>' +
-             '<button type="button" data-dk="up" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
-             '<button type="button" data-dk="down" data-i="' + i + '"' + (i === L.items.length - 1 ? ' disabled' : '') + '>▼</button>';
-        WIDTHS.forEach(function (x) {
-          h += '<button type="button" data-dk="w" data-i="' + i + '" data-w="' + x.w + '"' +
-               (it.w === x.w ? ' class="on"' : '') + '>' + x.name + '</button>';
-        });
-        h += '<button type="button" data-dk="del" data-i="' + i + '">삭제</button>';
-        if (it.key === 'bigtitle' || it.key === 'memo') {
-          h += '<textarea class="dkui-tx" data-dk="text" data-i="' + i + '" placeholder="' +
-               (it.key === 'bigtitle' ? '큰 제목에 쓸 글' : '메모로 적을 글') + '">' + esc(it.cfg.text || '') + '</textarea>';
-        }
-        if (!can.ok) h += '<span class="dkui-warn">' + esc(can.why) + '</span>';
-        h += '</div>';
+    //  고른 칸 위에 뜨는 작은 도구막대 — 앞으로 · 뒤로 · 크기 · 빼기
+    function floatHTML(i) {
+      var it = L.items[i];
+      var h = '<div class="dkui-float">' +
+        '<button type="button" data-dk="up" data-i="' + i + '"' + (i === 0 ? ' disabled' : '') + ' title="앞으로">↑</button>' +
+        '<button type="button" data-dk="down" data-i="' + i + '"' + (i === L.items.length - 1 ? ' disabled' : '') + ' title="뒤로">↓</button>';
+      WIDTHS.forEach(function (x) {
+        h += '<button type="button" data-dk="w" data-i="' + i + '" data-w="' + x.w + '"' + (it.w === x.w ? ' class="on"' : '') +
+             ' title="폭 ' + x.short + '">' + x.short + '</button>';
       });
-      $('items').innerHTML = h;
+      return h + '<button type="button" class="dkui-del" data-dk="del" data-i="' + i + '">🗑 빼기</button></div>';
     }
-
-    function paintPalette() {
-      var h = '';
-      GROUPS.forEach(function (g) {
-        var shown = '';
-        BLOCKS.forEach(function (b) {
-          if (b.group !== g) return;
-          var can = canUse(b.key, ctx);
-          shown += '<button type="button" class="dkui-p' + (can.ok ? '' : ' off') + '" data-dk="add" data-k="' + esc(b.key) + '"' +
-                   (can.ok ? '' : ' disabled') + '><b>' + esc(b.name) + '</b><small>' +
-                   esc(can.ok ? b.desc : can.why) + '</small></button>';
-        });
-        if (shown) h += '<div class="dkui-gname">' + esc(g) + '</div>' + shown;
-      });
-      $('palette').innerHTML = h;
-    }
-
     function paintPrev() {
       //  미리보기는 진짜 데이터로 그립니다 — 데모 데이터는 쓰지 않습니다.
       ensureStyle(doc, THEME_CSS_ID, css(L.theme));
-      $('prev').innerHTML = render(L, ctx);
+      var box = $('prev');
+      box.innerHTML = render(L, ctx);
+      Array.prototype.forEach.call(box.querySelectorAll('.dk-grid > .dk-b'), function (sec, i) {
+        sec.setAttribute('data-i', String(i));
+        if (i !== sel) return;
+        sec.classList.add('dkui-on');
+        sec.insertAdjacentHTML('afterbegin', floatHTML(i));
+        var it = L.items[i];
+        if (it && (it.key === 'bigtitle' || it.key === 'memo')) {
+          sec.insertAdjacentHTML('beforeend', '<textarea class="dkui-tx" data-dk="text" data-i="' + i + '" placeholder="' +
+            (it.key === 'bigtitle' ? '큰 제목에 쓸 글' : '여기에 글을 적으세요(예: 우리의 결론)') + '">' + esc(it.cfg.text || '') + '</textarea>');
+        }
+      });
+      var head = box.querySelector('.dk-root > .dk-head');
+      if (head && sel === -2) {
+        head.classList.add('dkui-on');
+        head.insertAdjacentHTML('beforeend', '<input type="text" class="dkui-tx" data-dk="title" maxlength="60" ' +
+          'placeholder="대시보드 제목 (비우면 실험 이름)" value="' + esc(L.title || '') + '" />');
+      }
+      var tile = '<button type="button" class="dkui-addtile" data-dk="pick">＋ 칸 더하기</button>';
+      var grid = box.querySelector('.dk-grid'), none = box.querySelector('.dk-root > .dk-empty');
+      if (grid) grid.insertAdjacentHTML('beforeend', tile);
+      else if (none) none.insertAdjacentHTML('afterend', '<div class="dk-grid">' + tile + '</div>');
     }
+
+    //  ＋ 칸 더하기 — 묶음 탭 + 아이콘 카드. 지금 못 쓰는 칸은 접어 두고, 원하면 까닭과 함께 봅니다.
+    function firstTab() {
+      for (var g = 0; g < GROUPS.length; g++) {
+        for (var b = 0; b < BLOCKS.length; b++) {
+          if (BLOCKS[b].group === GROUPS[g] && canUse(BLOCKS[b].key, ctx).ok) return GROUPS[g];
+        }
+      }
+      return GROUPS[0];
+    }
+    function paintPick() {
+      var box = $('pickBox');
+      if (box.hidden) return;
+      if (!pickTab) pickTab = firstTab();
+      var tabs = '<div class="dkui-tabs">';
+      GROUPS.forEach(function (g) {
+        tabs += '<button type="button" data-dk="tab" data-g="' + esc(g) + '"' + (g === pickTab ? ' class="on"' : '') + '>' +
+                esc(GLABEL[g] || g) + '</button>';
+      });
+      tabs += '</div>';
+      var cards = '', off = 0;
+      BLOCKS.forEach(function (b) {
+        if (b.group !== pickTab) return;
+        var can = canUse(b.key, ctx);
+        if (!can.ok) { off++; if (!showOff) return; }
+        cards += '<button type="button" class="dkui-card' + (can.ok ? '' : ' off') + '" data-dk="add" data-k="' + esc(b.key) + '"' +
+                 (can.ok ? '' : ' disabled') + '><i>' + (b.icon || '▫') + '</i><b>' + esc(b.name) + '</b><small>' +
+                 esc(can.ok ? b.desc : can.why) + '</small></button>';
+      });
+      box.innerHTML = '<div class="dkui-sheet" role="dialog" aria-label="칸 더하기">' +
+        '<div class="dkui-sheethead"><b>＋ 칸 더하기' + (sel !== -1 ? ' <span style="font-size:13px;font-weight:600;color:#6E8A96">· ' +
+          (sel === -2 ? '제목 바로 아래에' : '고른 칸 바로 뒤에') + ' 들어갑니다</span>' : '') +
+        '</b><button type="button" data-dk="pickClose">닫기</button></div>' + tabs +
+        '<div class="dkui-cards">' + (cards || '<p class="dkui-msg">이 묶음에는 지금 쓸 수 있는 칸이 없습니다.</p>') + '</div>' +
+        (off ? '<label class="dkui-offtoggle"><input type="checkbox" data-dk="showOff"' + (showOff ? ' checked' : '') + ' /> ' +
+               '아직 못 쓰는 칸도 보기(' + off + '개 · 무엇이 있으면 되는지 알려 줍니다)</label>' : '') +
+        '</div>';
+    }
+    function openPick() { $('pickBox').hidden = false; if (!pickTab) pickTab = firstTab(); paintPick(); }
+    function closeMore() { var d = el.querySelector('details.dkui-more'); if (d) d.open = false; }
 
     function repaint() {
       try { delete ctx.__dk; } catch (e) { ctx.__dk = null; }   // 새로 세도록 캐시를 비웁니다
-      paintThemes(); paintPresets(); paintItems(); paintPalette(); paintPrev();
-    }
-
-    function fire(name) {
-      if (typeof opt[name] !== 'function') return;
-      try { opt[name](JSON.parse(JSON.stringify(L)), ctx); } catch (e) {}
+      if (sel >= L.items.length) sel = -1;
+      paintThemes(); paintGallery(); paintPrev(); paintPick();
+      $('undo').disabled = !undo.length;
+      $('gallery').classList.toggle('on', galleryOpen);
     }
 
     function doSave() {
@@ -1795,76 +1914,207 @@
       fire('onExport');
     }
 
+    //  ▶ 발표하기 — 고치는 도구 없이 깨끗한 대시보드만 화면 가득. Esc 나 ✕ 로 닫습니다.
+    function present() {
+      var ov = doc.createElement('div');
+      ov.className = 'dkui-show';
+      ov.innerHTML = '<button type="button" class="dkui-x">✕ 닫기 (Esc)</button>' + render(L, ctx);
+      doc.body.appendChild(ov);
+      function close() {
+        doc.removeEventListener('keydown', onKey);
+        doc.removeEventListener('fullscreenchange', onFs);
+        try { if (doc.fullscreenElement === ov && doc.exitFullscreen) doc.exitFullscreen(); } catch (e) {}
+        if (ov.parentNode) ov.parentNode.removeChild(ov);
+      }
+      function onKey(e) { if (e.key === 'Escape') close(); }
+      function onFs() { if (!doc.fullscreenElement) close(); }
+      ov.querySelector('.dkui-x').addEventListener('click', close);
+      doc.addEventListener('keydown', onKey);
+      if (ov.requestFullscreen) {
+        try {
+          var pr = ov.requestFullscreen();
+          if (pr && pr.then) pr.then(function () { doc.addEventListener('fullscreenchange', onFs); }, function () {});
+        } catch (e) {}
+      }
+    }
+
+    function doUndo() {
+      if (!undo.length) return;
+      L = normLayout(JSON.parse(undo.pop()));
+      sel = -1;
+      changed();
+      note('되돌렸습니다.');
+    }
+
     el.addEventListener('click', function (ev) {
-      var btn = ev.target;
+      var t = ev.target;
+      var more = el.querySelector('details.dkui-more');
+      if (more && more.open && !more.contains(t)) more.open = false;    // 바깥을 누르면 메뉴를 닫습니다
+      var btn = t;
       while (btn && btn !== el && !(btn.getAttribute && btn.getAttribute('data-dk'))) btn = btn.parentNode;
       if (!btn || btn === el || !btn.getAttribute) return;
       var k = btn.getAttribute('data-dk');
       var i = Number(btn.getAttribute('data-i'));
 
-      if (k === 'theme') { L.theme = btn.getAttribute('data-k'); repaint(); return; }
+      //  미리보기의 칸을 누르면 그 칸이 골라집니다. 빈 곳을 누르면 고른 것을 풉니다.
+      if (k === 'prev') {
+        var hd = t.closest ? t.closest('.dk-head') : null;
+        if (hd && btn.contains(hd)) {
+          sel = (sel === -2) ? -1 : -2;
+          repaint();
+          var ti = $('prev').querySelector('[data-dk="title"]');
+          if (ti) { try { ti.focus(); ti.select(); } catch (e) {} }
+          return;
+        }
+        var sec = t.closest ? t.closest('.dk-b') : null;
+        if (sec && btn.contains(sec)) {
+          var si = Number(sec.getAttribute('data-i'));
+          sel = (sel === si) ? -1 : si;
+          repaint();
+        } else if (sel >= 0) { sel = -1; repaint(); }
+        return;
+      }
+      if (k === 'pickBox') { if (t === btn) btn.hidden = true; return; }   // 창 바깥(어두운 곳)을 누르면 닫습니다
+      if (k === 'text' || k === 'title' || k === 'showOff' || k === 'galleryBox' || k === 'msg' || k === 'status' || k === 'themes') return;
+
+      if (k === 'theme') { snap(); L.theme = btn.getAttribute('data-k'); changed(); return; }
+      if (k === 'gallery') { galleryOpen = !galleryOpen; repaint(); return; }
       if (k === 'preset') {
         for (var n = 0; n < psCache.length; n++) {
           if (psCache[n].key !== btn.getAttribute('data-k')) continue;
+          snap();
+          var keepTitle = L.title;                                  // 적어 둔 제목은 틀을 바꿔도 그대로 둡니다
           L = normLayout(psCache[n].layout);
-          repaint();
-          note(psCache[n].name + ' 짜임을 불러왔습니다 · 블록 ' + L.items.length + '개');
+          L.title = keepTitle;
+          sel = -1; galleryOpen = false;
+          changed();
+          note('「' + psCache[n].name + '」 틀로 만들었습니다 · 칸 ' + L.items.length + '개. 칸을 눌러 고치세요. 마음에 안 들면 ↶ 되돌리기.');
           return;
         }
         return;
       }
-      if (k === 'addToggle') { $('palette').hidden = !$('palette').hidden; return; }
+      if (k === 'blank') { snap(); L.items = []; sel = -1; galleryOpen = false; changed(); openPick(); return; }
+      if (k === 'pick') { openPick(); return; }
+      if (k === 'pickClose') { $('pickBox').hidden = true; return; }
+      if (k === 'tab') { pickTab = btn.getAttribute('data-g'); paintPick(); return; }
       if (k === 'add') {
         var key = btn.getAttribute('data-k');
         if (!BMAP[key]) return;
-        L.items.push({ key: key, w: BMAP[key].w, cfg: {} });
-        repaint();
-        note(BMAP[key].name + ' 을(를) 더했습니다.');
+        snap();
+        var at = (sel >= 0) ? sel + 1 : (sel === -2 ? 0 : L.items.length);
+        L.items.splice(at, 0, { key: key, w: BMAP[key].w, cfg: {} });
+        sel = at; galleryOpen = false;
+        $('pickBox').hidden = true;
+        changed();
+        note(BMAP[key].name + ' 칸을 더했습니다.');
+        var sec2 = $('prev').querySelector('.dk-b[data-i="' + at + '"]');
+        if (sec2 && sec2.scrollIntoView) { try { sec2.scrollIntoView({ block: 'center', behavior: 'smooth' }); } catch (e) {} }
         return;
       }
       if (k === 'up' && i > 0) {
-        var a = L.items[i - 1]; L.items[i - 1] = L.items[i]; L.items[i] = a; repaint(); return;
+        snap(); var a = L.items[i - 1]; L.items[i - 1] = L.items[i]; L.items[i] = a; sel = i - 1; changed(); return;
       }
       if (k === 'down' && i < L.items.length - 1) {
-        var b = L.items[i + 1]; L.items[i + 1] = L.items[i]; L.items[i] = b; repaint(); return;
+        snap(); var b = L.items[i + 1]; L.items[i + 1] = L.items[i]; L.items[i] = b; sel = i + 1; changed(); return;
       }
-      if (k === 'w')     { if (L.items[i]) { L.items[i].w = normW(btn.getAttribute('data-w')); repaint(); } return; }
-      if (k === 'del')   { L.items.splice(i, 1); repaint(); return; }
-      if (k === 'clear') { L.items = []; repaint(); note('블록을 모두 지웠습니다.'); return; }
-      if (k === 'full') {
-        var box = $('prev');
-        if (box.requestFullscreen) {
-          try { box.requestFullscreen().catch(function () { box.classList.toggle('dkui-full'); }); }
-          catch (e) { box.classList.toggle('dkui-full'); }
-        } else { box.classList.toggle('dkui-full'); }
+      if (k === 'w') { if (L.items[i]) { snap(); L.items[i].w = normW(btn.getAttribute('data-w')); changed(); } return; }
+      if (k === 'del') {
+        if (!L.items[i]) return;
+        snap();
+        var nm = BMAP[L.items[i].key].name;
+        L.items.splice(i, 1); sel = -1;
+        changed();
+        note(nm + ' 칸을 뺐습니다. ↶ 되돌리기로 되살릴 수 있습니다.');
         return;
       }
-      if (k === 'print') { w.print(); return; }
-      if (k === 'keep')  { fire('onSave'); note('이 구성을 저장했습니다.'); return; }
-      if (k === 'ai')    { fire('onAI'); return; }
-      if (k === 'save')  { doSave(); return; }
+      if (k === 'undo') { doUndo(); return; }
+      closeMore();
+      if (k === 'clear') {
+        snap(); L.items = []; sel = -1; galleryOpen = true; changed();
+        note('칸을 모두 비웠습니다. ↶ 되돌리기로 되살릴 수 있습니다.');
+        return;
+      }
+      if (k === 'present') { present(); return; }
+      if (k === 'print')   { w.print(); return; }
+      if (k === 'keep')    { fire('onSave'); return; }        // 저장 결과는 부른 쪽이 알려 줍니다
+      if (k === 'ai')      { fire('onAI'); return; }
+      if (k === 'save')    { doSave(); return; }
     });
 
+    //  큰 제목 · 글 상자 — 글을 치는 동안에는 그 칸의 글만 바꿉니다(다시 그리면 글칸이 사라집니다).
+    el.addEventListener('focusin', function (ev) {
+      var t = ev.target, k = t && t.getAttribute && t.getAttribute('data-dk');
+      if (k === 'text' || k === 'title') snap();
+    });
     el.addEventListener('input', function (ev) {
       var t = ev.target;
+      if (t && t.getAttribute && t.getAttribute('data-dk') === 'title') {
+        L.title = t.value;
+        var h1 = $('prev').querySelector('.dk-head h1');
+        if (h1) h1.textContent = t.value || prep(ctx).title || '실험 대시보드';
+        $('undo').disabled = !undo.length;
+        scheduleSave();
+        return;
+      }
       if (!t || !t.getAttribute || t.getAttribute('data-dk') !== 'text') return;
-      var i = Number(t.getAttribute('data-i'));
-      if (!L.items[i]) return;
-      L.items[i].cfg.text = t.value;
-      paintPrev();
+      var it = L.items[Number(t.getAttribute('data-i'))];
+      if (!it) return;
+      it.cfg.text = t.value;
+      var sec = t.closest ? t.closest('.dk-b') : null;
+      var body = sec && sec.querySelector('.dk-title, .dk-note, .dk-empty');
+      if (body) { try { body.outerHTML = BODY[it.key](prep(ctx), it.cfg); } catch (e) {} }
+      $('undo').disabled = !undo.length;
+      scheduleSave();
     });
+    el.addEventListener('change', function (ev) {
+      var t = ev.target;
+      if (t && t.getAttribute && t.getAttribute('data-dk') === 'showOff') { showOff = !!t.checked; paintPick(); }
+    });
+    //  단축키는 문서 전체에서 받습니다 — 칸 더하기 창이 닫히면 누른 단추가 사라져 초점이 편집기 밖으로 나가기 때문입니다.
+    //  편집기가 화면에 보일 때만, 그리고 글을 치는 중이 아닐 때만 움직입니다.
+    function onKey(ev) {
+      if (!el.isConnected || !el.offsetParent || doc.querySelector('.dkui-show')) return;
+      var tg = ev.target, typing = tg && (tg.tagName === 'TEXTAREA' || tg.tagName === 'INPUT' || tg.tagName === 'SELECT' || tg.isContentEditable);
+      if (typing && !el.contains(tg)) return;                // 다른 입력 칸에서 누른 단축키는 건드리지 않습니다
+      if ((ev.ctrlKey || ev.metaKey) && !ev.shiftKey && (ev.key === 'z' || ev.key === 'Z') && !typing) {
+        if (!undo.length) return;
+        ev.preventDefault(); doUndo(); return;
+      }
+      if (ev.key === 'Escape') {
+        if (!$('pickBox').hidden) { $('pickBox').hidden = true; return; }
+        if (sel !== -1 && (!typing || el.contains(tg))) { sel = -1; repaint(); }
+      }
+    }
+    doc.addEventListener('keydown', onKey);
 
     repaint();
 
     return {
       get: function () { return JSON.parse(JSON.stringify(L)); },
-      set: function (layout) { L = normLayout(layout); repaint(); },
-      refresh: function (newCtx) { if (newCtx) ctx = newCtx; repaint(); },
+      set: function (layout) { L = normLayout(layout); sel = -1; undo = []; repaint(); },
+      refresh: function (newCtx) {
+        if (newCtx) ctx = newCtx;
+        var a = doc.activeElement;
+        if (a && el.contains(a) && a.getAttribute && /^(text|title)$/.test(a.getAttribute('data-dk') || '')) return;   // 글을 치는 중에는 그대로
+        repaint();
+      },
       html: function () { return render(L, ctx); },
       file: function () { return { name: fileName(ctx, L), html: standalone(L, ctx) }; },
       describe: function () { return describe(L, ctx); },
       note: note,
-      destroy: function () { el.innerHTML = ''; el.classList.remove('dkui'); }
+      status: status,
+      //  기다리던 저장을 지금 바로 합니다(탭을 옮길 때 · 화면을 가릴 때 부릅니다).
+      flush: function () {
+        if (!saveT) return;
+        w.clearTimeout(saveT); saveT = null;
+        status('저절로 저장했습니다 ✓'); fire('onSave');
+      },
+      //  없앨 때는 기다리던 저장을 버립니다 — 모둠이 바뀐 뒤라면 엉뚱한 모둠에 저장될 수 있어서.
+      destroy: function () {
+        if (saveT) { w.clearTimeout(saveT); saveT = null; }
+        doc.removeEventListener('keydown', onKey);
+        el.innerHTML = ''; el.classList.remove('dkui');
+      }
     };
   }
 
