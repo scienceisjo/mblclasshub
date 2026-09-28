@@ -7,13 +7,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609281254"></script>
-<script src="./diagrams.js?v=202609281254"></script>
-<script src="./graphs.js?v=202609281254"></script>
-<script src="./config.js?v=202609281254"></script>
-<script src="./hub.js?v=202609281254"></script>
+<script src="./lab-data.js?v=202609281326"></script>
+<script src="./diagrams.js?v=202609281326"></script>
+<script src="./graphs.js?v=202609281326"></script>
+<script src="./config.js?v=202609281326"></script>
+<script src="./hub.js?v=202609281326"></script>
 <!-- 대시보드 엔진 — 외부 자원을 부르지 않습니다(학생 화면과 같은 파일을 씁니다) -->
-<script src="./dashkit.js?v=202609281254"></script>
+<script src="./dashkit.js?v=202609281326"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -2022,14 +2022,23 @@
       step = onGrid ? raw : asgNiceStep(raw);
     } else step = (hi - lo) / Math.max(1, n - 1);
     if (!(step > 0) || !isFinite(step)) step = 1;
+    //  너무 촘촘하면 권장 간격의 정수배로 키웁니다(감을 수 없는 12.5회 같은 값이 나오지 않게).
+    //  끝값이 빠지지 않도록 범위를 나누어떨어지게 하는 배수가 가까이 있으면 그것을 씁니다.
     const cap = Math.max(1, n) * Math.max(1, per || 1);
-    if (lists && cap > 1 && (hi - lo) / step + 1 > cap + 1e-9){
-      const need = (hi - lo) / (cap - 1);
-      const p10 = Math.pow(10, Math.floor(Math.log10(need)));
-      step = [1, 2, 2.5, 5, 10].map(function(c){ return c * p10; }).filter(function(c){ return c >= need - 1e-9; })[0];
+    if (lists && (hi - lo) / step + 1 > cap + 1e-9){
+      const base = step, need = cap > 1 ? (hi - lo) / (cap - 1) : (hi - lo);
+      const m0 = Math.max(1, Math.ceil(need / base - 1e-9));
+      let m = m0;
+      for (let t = m0; t <= Math.ceil(m0 * 1.5); t++){
+        const q = (hi - lo) / (base * t);
+        if (Math.abs(q - Math.round(q)) < 1e-6){ m = t; break; }
+      }
+      step = base * m;
     }
     step = Number(step.toPrecision(3));
-    return down ? { from: hi, to: lo, step: step } : { from: lo, to: hi, step: step };
+    //  간격이 범위를 나누어떨어지게 하지 못하면 「끝」 칸에 실제로 닿는 값을 보여 줍니다(몰래 빠지지 않게).
+    const end = Number((lo + step * Math.floor((hi - lo) / step + 1e-9)).toPrecision(12));
+    return down ? { from: hi, to: hi - (end - lo), step: step } : { from: lo, to: end, step: step };
   }
   function asgValues(from, to, step){
     const out = [];
@@ -2060,6 +2069,18 @@
   //  몫이 같은 모둠은 이웃하지 않게(A·B·C·A·B·C…) 돌려 놓습니다.
   function asgSplit(vals, n, per){
     const k = vals.length;
+    //  값이 넉넉하면(모둠 수 × 개수 이상) 모둠 g 에 g, g+n, g+2n …번째 값을 맡겨 몫이 모두 다르고 빈틈이 없게 합니다.
+    if (k >= n * Math.max(1, per || 1)){
+      const out = [];
+      let lo = Infinity, hi = 0;
+      for (let g = 0; g < n; g++){
+        const mine = [];
+        for (let i = g; i < k; i += n) mine.push(vals[i]);
+        lo = Math.min(lo, mine.length); hi = Math.max(hi, mine.length);
+        out.push(mine.join(' · '));
+      }
+      return { sets: out, per: hi, least: lo, kinds: n };
+    }
     const m = Math.min(k, Math.max(per || 1, Math.ceil(k / n)));
     const sets = [];
     for (let g = 0; g < n; g++){
@@ -2074,19 +2095,23 @@
     sets.forEach(function(s){ if (!bucket[s]){ bucket[s] = []; kinds.push(s); } bucket[s].push(s); });
     const out = [];
     while (out.length < n) kinds.forEach(function(s){ if (bucket[s].length) out.push(bucket[s].pop()); });
-    return { sets: out, per: m, kinds: kinds.length };
+    return { sets: out, per: m, least: m, kinds: kinds.length };
   }
   function asgDistribute(vals, n){ return asgSplit(vals, n, asgPerOf()).sets; }
   function asgNoteText(k, n){
     const r = asgSplit(asgGenVals || [], n, asgPerOf());
-    let t = '값 ' + k + '개를 모둠 ' + n + '곳에 나눴습니다. 모둠마다 ' + r.per + '개씩, 범위 처음부터 끝까지 고르게 흩어 맡습니다.';
+    let t = '값 ' + k + '개를 모둠 ' + n + '곳에 나눴습니다. 모둠마다 ' + (r.least === r.per ? r.per : r.least + '~' + r.per) + '개씩, 범위 처음부터 끝까지 고르게 흩어 맡습니다.';
     if (r.per < asgPerOf()) t += ' 값이 ' + k + '개뿐이라 모둠마다 ' + asgPerOf() + '개를 채우지 못합니다 — 간격을 줄이면 더 맡길 수 있습니다.';
     if (r.kinds < n) t += ' 값이 모자라 몫 ' + r.kinds + '가지를 여러 모둠이 겹쳐 맡습니다. 같은 값을 잰 모둠끼리 결과를 견줄 수 있고, 합쳐 보기에는 그대로 모두 올라갑니다.';
     else t += ' 합치면 ' + k + '칸이 빈틈없이 이어집니다.';
     return t;
   }
+  let asgHasPer = false;     // 이 실험에 권장 개수(pool.assign.per)가 있는가 — 안내문에서 씁니다
   function asgNote(t){
-    $('asgGenNote').textContent = t || '범위·간격·모둠마다 잴 개수를 적고 누르면, 모둠마다 범위 전체에 고르게 흩어진 값을 맡기고 모둠끼리는 한 칸씩 어긋나게 나눠 줍니다(1·4·7·10·13 / 2·5·8·11·14 …). 개수 칸에는 이 실험의 권장 개수(관계 모양·한 점 재는 시간·재료로 정한 값)가 들어 있습니다. 값이 모자라면 몇 모둠은 같은 몫을 겹쳐 맡습니다.';
+    $('asgGenNote').textContent = t || '범위·간격·모둠마다 잴 개수를 적고 누르면, 모둠마다 범위 전체에 고르게 흩어진 값을 맡기고 모둠끼리는 한 칸씩 어긋나게 나눠 줍니다(1·4·7·10·13 / 2·5·8·11·14 …). ' +
+      (asgHasPer ? '개수 칸에는 이 실험의 권장 개수(관계 모양·한 점 재는 시간·재료로 정한 값)가 들어 있습니다. '
+                 : '개수 칸의 ' + ASG_PER_DEFAULT + '는 따로 정해 둔 값이 없을 때의 기본값입니다 — 직선이면 4~5개, 곡선이면 6개 넘게 맡겨 주세요. ') +
+      '값이 모자라면 몇 모둠은 같은 몫을 겹쳐 맡습니다.';
   }
   function paintAssignNew(){
     const a = picked && assignSpecOf(picked);
@@ -2094,6 +2119,7 @@
     $('assignNew').classList.toggle('hidden', !a);
     if (!a){ $('assignNewList').innerHTML = ''; return; }
     $('assignNewSub').textContent = (a.how ? a.how + ' ' : '') + '값은 모둠 칸에서 바로 고칠 수 있습니다.';
+    asgHasPer = Number(a.per) >= 1;
     //  합치기 아주 좋은 실험(★)은 권장값을 켜 둔 채로 시작합니다 — 끄는 것도 선생님 마음입니다.
     $('inAssignOn').checked = (a.sets || []).length > 0 && poolFitOf(picked) >= 3;
     $('asgGenLab').textContent = asgBase(a.label);

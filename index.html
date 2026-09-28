@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609281254"></script>
+<script src="./lab-data.js?v=202609281326"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609281254"></script>
-<script src="./diagrams.js?v=202609281254"></script>
-<script src="./graphs.js?v=202609281254"></script>
-<script src="./config.js?v=202609281254"></script>
-<script src="./hub.js?v=202609281254"></script>
+<script src="./demo-data.js?v=202609281326"></script>
+<script src="./diagrams.js?v=202609281326"></script>
+<script src="./graphs.js?v=202609281326"></script>
+<script src="./config.js?v=202609281326"></script>
+<script src="./hub.js?v=202609281326"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609281254"></script>
-<script src="./dashkit.js?v=202609281254"></script>
+<script src="./sensorkit.js?v=202609281326"></script>
+<script src="./dashkit.js?v=202609281326"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -3210,9 +3210,12 @@
     //  몫의 종류 — 모든 모둠이 같은 값을 재는지(낼 수 있는 값이 몇 개뿐인 장비), 한 모둠이 조건을 여러 개 맡았는지
     const shape = (typeof Hub.assignShape === 'function') ? Hub.assignShape(a) : { allSame: false, multi: false };
     const many = assignMineList().length > 1;
+    const solo = a.groups.length <= 1;
     let say;
-    if (isX && shape.allSame) say = '모든 모둠이 이 값을 모두 잽니다. 합치면 같은 값에서 모둠끼리 결과가 같게 나오는지 견줄 수 있습니다.';
+    if (solo) say = isX ? '우리 모둠이 이 값을 모두 잽니다.' : '우리 모둠은 이 조건으로 잽니다.';
+    else if (isX && shape.allSame) say = '모든 모둠이 이 값을 모두 잽니다. 합치면 같은 값에서 모둠끼리 결과가 같게 나오는지 견줄 수 있습니다.';
     else if (isX) say = '모둠마다 맡은 값이 다릅니다. 실험 순서에 나온 값을 모두 재지 말고 <b>우리 몫만</b> 재세요.';
+    else if (shape.allSame) say = '모든 모둠이 같은 조건으로 잽니다. 합치면 같은 조건에서 모둠끼리 결과가 같게 나오는지 견줄 수 있습니다.';
     else if (many) say = '우리 모둠은 이 조건들을 차례로 모두 잽니다. 조건이 모둠마다 겹치거나 달라, 합치면 조건에 따른 차이가 한 화면에 드러납니다.';
     else say = '우리 모둠은 이 조건으로 잽니다. 다른 모둠은 다른 조건으로 재어, 합치면 조건에 따른 차이가 한 화면에 드러납니다.';
     return '<div class="note" style="margin-top:10px;border-left-width:6px">📌 <b style="font-size:1.1em">우리 모둠이 맡은 ' + esc(assignBase(a.label)) +

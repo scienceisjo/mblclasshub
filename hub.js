@@ -697,10 +697,14 @@ window.Hub = (function () {
   //  한 모둠이 값(조건)을 여러 개 맡았는가. 학생 안내 띠·합친 그래프 설명 문구를 고를 때 씁니다.
   function assignShape(a) {
     var g = (a && Array.isArray(a.groups)) ? a.groups : [];
-    var norm = function (x) { return assignList(x).join('|').replace(/\s+/g, '').toLowerCase(); };
+    //  구간(0~20)·빈 칸은 목록으로 읽히지 않으므로 원문으로 견줍니다.
+    var norm = function (x) {
+      var l = assignList(x);
+      return (l.length ? l.join('|') : String(x == null ? '' : x)).replace(/\s+/g, '').toLowerCase();
+    };
     var first = g.length ? norm(g[0]) : '';
     return {
-      allSame: g.length > 1 && g.every(function (x) { return norm(x) === first; }),
+      allSame: g.length > 1 && first !== '' && g.every(function (x) { return norm(x) === first; }),
       multi: g.some(function (x) { return assignList(x).length > 1; })
     };
   }
@@ -720,9 +724,10 @@ window.Hub = (function () {
     });
     if (per.some(function (p) { return !p.vals.length; })) return null;
     var isX = assignIsX(a, spec) && per.every(function (p) { return p.vals.every(function (v) { return isFinite(assignNum(v)); }); });
-    //  잰 값이 맡은 값 가운데 어느 것인지는 그 모둠 몫 안에서 가장 가까운 값으로 정합니다.
-    //  모둠 몫 안 가장 좁은 간격의 절반 안이면 그 값을 잰 것으로 봅니다(6 V 를 맞추다 6.3 V 로 적어도, 실제 단 1.33 g 을 적어도 채운 것).
-    //  몫에 값이 하나뿐이면 반 전체 값 사이 가장 좁은 간격의 절반, 그것도 없으면 값의 5 % 까지 봅니다.
+    //  잰 값이 맡은 값 가운데 어느 것인지는 가장 가까운 값으로 정합니다. 반 전체 맡은 값 사이 가장 좁은 간격의
+    //  절반보다 가까우면 그 값을 잰 것으로 봅니다(4 V 를 맞추다 4.3 V 로 적어도, 1.3 g 을 맡아 1.33 g 을 적어도 채운 것).
+    //  그보다 멀면(다른 모둠 몫에 더 가깝거나 두 값의 딱 가운데) 어느 칸도 채우지 않습니다.
+    //  반 전체 값이 하나뿐이면 값의 5 % 까지 봅니다.
     function gapOf(list) {
       var u = list.map(assignNum).filter(function (n, i, arr) { return arr.indexOf(n) === i; }).sort(function (x, y) { return x - y; });
       var gap = Infinity;
@@ -735,13 +740,11 @@ window.Hub = (function () {
       per.forEach(function (p) { every = every.concat(p.vals); });
       allGap = gapOf(every);
     }
-    function tolOf(p, v) {
-      var g = gapOf(p.vals);
-      if (!(isFinite(g) && g > 0)) g = allGap;
-      return (isFinite(g) && g > 0) ? g / 2 : Math.max(1e-9, Math.abs(assignNum(v) || 1) * 0.05);
+    function tolOf(v) {
+      return (isFinite(allGap) && allGap > 0) ? allGap / 2 : Math.max(1e-9, Math.abs(assignNum(v) || 1) * 0.05);
     }
     //  조건(자리·장소 따위)을 여러 개 맡은 모둠은, 표 첫 칸에 그 이름을 적었으면 그 조건만 찬 것으로 봅니다.
-    //  잰 줄 가운데 이름으로 가려지지 않는 줄이 있으면(조건이 표 밖에 있거나 숫자로 적음) 예전처럼 잰 줄이 있으면 맡은 조건을 모두 찬 것으로 봅니다.
+    //  잰 줄 가운데 이름으로 가려지지 않는 줄이 있으면(조건이 표 밖에 있거나 1·2·3 처럼 숫자로 적음) 예전처럼 잰 줄이 있으면 맡은 조건을 모두 찬 것으로 봅니다.
     function normName(t) { return String(t == null ? '' : t).replace(/\s+/g, '').toLowerCase(); }
     function nameHit(cell, v) {
       var c = normName(cell), n = normName(v);
@@ -761,7 +764,8 @@ window.Hub = (function () {
     var map = {}, order = [];
     per.forEach(function (p) {
       var got = measured(p);
-      var named = !isX && p.vals.length > 1 && got.length > 0 && got.every(function (x) { return p.vals.some(function (v) { return nameHit(x, v); }); });
+      var named = !isX && p.vals.length > 1 && got.length > 0 &&
+                  got.every(function (x) { return !isFinite(num(x)) && p.vals.some(function (v) { return nameHit(x, v); }); });
       p.vals.forEach(function (v) {
         var key = isX ? String(assignNum(v)) : String(v).trim().toLowerCase();
         if (!map[key]) { map[key] = { label: String(v).trim(), v: isX ? assignNum(v) : null, groups: [], by: [] }; order.push(key); }
@@ -769,13 +773,9 @@ window.Hub = (function () {
         if (it.groups.indexOf(p.no) < 0) it.groups.push(p.no);
         var hit;
         if (isX) {
-          var tol = tolOf(p, v), mine = assignNum(v);
-          //  가장 가까운 맡은 값이 이 값일 때만 — 잰 값 하나가 이웃한 두 칸을 함께 채우지 않게 합니다.
-          hit = got.some(function (x) {
-            var n = num(x);
-            if (!(Math.abs(n - mine) <= tol)) return false;
-            return p.vals.every(function (w) { return Math.abs(n - mine) <= Math.abs(n - assignNum(w)); });
-          });
+          var tol = tolOf(v), mine = assignNum(v);
+          //  허용폭 안(엄격히 절반 미만)이면 이 값이 반 전체에서 가장 가까운 맡은 값이라, 잰 값 하나가 두 칸을 채우지 않습니다.
+          hit = got.some(function (x) { return Math.abs(num(x) - mine) < tol; });
         } else hit = named ? got.some(function (x) { return nameHit(x, v); }) : got.length > 0;
         if (hit && it.by.indexOf(p.no) < 0) it.by.push(p.no);
       });
