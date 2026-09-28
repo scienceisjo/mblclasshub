@@ -7,13 +7,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609281649"></script>
-<script src="./diagrams.js?v=202609281649"></script>
-<script src="./graphs.js?v=202609281649"></script>
-<script src="./config.js?v=202609281649"></script>
-<script src="./hub.js?v=202609281649"></script>
+<script src="./lab-data.js?v=202609280909"></script>
+<script src="./diagrams.js?v=202609280909"></script>
+<script src="./graphs.js?v=202609280909"></script>
+<script src="./config.js?v=202609280909"></script>
+<script src="./hub.js?v=202609280909"></script>
 <!-- 대시보드 엔진 — 외부 자원을 부르지 않습니다(학생 화면과 같은 파일을 씁니다) -->
-<script src="./dashkit.js?v=202609281649"></script>
+<script src="./dashkit.js?v=202609280909"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -468,6 +468,9 @@
         <span class="muted">간격</span>
         <input id="asgStep" type="text" inputmode="decimal" placeholder="간격" aria-label="간격" />
         <span class="muted" id="asgUnit"></span>
+        <span class="muted">모둠마다</span>
+        <input id="asgPer" type="text" inputmode="numeric" value="5" aria-label="모둠마다 잴 값 개수" style="width:48px" />
+        <span class="muted">개씩</span>
         <button id="btnAsgGen" class="btn btn-sm btn-solid" type="button">모둠에 고르게 나눠 주기</button>
       </div>
       <p class="muted" id="asgGenNote" style="margin-top:6px"></p>
@@ -2014,24 +2017,43 @@
     }
     return out;
   }
-  //  값 목록 → 모둠별 몫. 값이 모둠보다 많으면 건너뛰며(1·8, 2·9…) 맡겨 모둠 안에서도 범위 전체에 퍼지게 하고,
-  //  적으면 돌아가며 맡겨 몇 모둠은 같은 값을 잽니다(같은 값끼리 견줄 수 있습니다).
-  function asgDistribute(vals, n){
-    const out = [];
-    for (let i = 0; i < n; i++){
-      if (vals.length <= n) out.push(vals[i % vals.length]);
-      else { const mine = []; for (let k = i; k < vals.length; k += n) mine.push(vals[k]); out.push(mine.join(' · ')); }
+  //  모둠 하나가 적어도 몇 개를 재야 제 모둠 자료만으로도 경향이 보이는지 — 기본 5개.
+  const ASG_PER_DEFAULT = 5;
+  function asgPerOf(){ const v = Math.round(asgNum($('asgPer').value)); return v >= 1 ? Math.min(v, 30) : ASG_PER_DEFAULT; }
+  //  값 목록 → 모둠별 몫. 모둠마다 적어도 per 개를 맡기되, 한 모둠의 값은 범위 처음부터 끝까지 고르게 벌어지고
+  //  모둠끼리는 한 칸씩 어긋나 합치면 빈틈없이 이어집니다(1·4·7·10·13 / 2·5·8·11·14 / 3·6·9·12·15).
+  //  값이 모자라 모둠 수 × per 칸을 다 다르게 채울 수 없으면 같은 몫을 여러 모둠이 겹쳐 맡습니다 —
+  //  겹친 모둠끼리는 같은 값에서 결과가 같게 나오는지 견줄 수 있습니다.
+  //  몫이 같은 모둠은 이웃하지 않게(A·B·C·A·B·C…) 돌려 놓습니다.
+  function asgSplit(vals, n, per){
+    const k = vals.length;
+    const m = Math.min(k, Math.max(per || 1, Math.ceil(k / n)));
+    const sets = [];
+    for (let g = 0; g < n; g++){
+      const mine = [];
+      for (let j = 0; j < m; j++){
+        const idx = Math.min(k - 1, Math.floor((g + j * n) * k / (n * m) + 1e-9));
+        if (mine.indexOf(vals[idx]) < 0) mine.push(vals[idx]);
+      }
+      sets.push(mine.join(' · '));
     }
-    return out;
+    const kinds = [], bucket = {};
+    sets.forEach(function(s){ if (!bucket[s]){ bucket[s] = []; kinds.push(s); } bucket[s].push(s); });
+    const out = [];
+    while (out.length < n) kinds.forEach(function(s){ if (bucket[s].length) out.push(bucket[s].pop()); });
+    return { sets: out, per: m, kinds: kinds.length };
   }
+  function asgDistribute(vals, n){ return asgSplit(vals, n, asgPerOf()).sets; }
   function asgNoteText(k, n){
-    if (k === n) return '값 ' + k + '개를 모둠 ' + n + '곳에 하나씩 나눴습니다.';
-    if (k < n) return '값 ' + k + '개를 모둠 ' + n + '곳에 돌아가며 나눴습니다. ' + (n - k) + '모둠은 다른 모둠과 같은 값을 재어 서로 견줍니다.';
-    const lo = Math.floor(k / n), hi = Math.ceil(k / n);
-    return '값 ' + k + '개를 모둠 ' + n + '곳에 나눴습니다. 모둠마다 ' + (lo === hi ? lo : lo + '~' + hi) + '개씩, 범위 전체에 흩어지게 맡습니다.';
+    const r = asgSplit(asgGenVals || [], n, asgPerOf());
+    let t = '값 ' + k + '개를 모둠 ' + n + '곳에 나눴습니다. 모둠마다 ' + r.per + '개씩, 범위 처음부터 끝까지 고르게 흩어 맡습니다.';
+    if (r.per < asgPerOf()) t += ' 값이 ' + k + '개뿐이라 모둠마다 ' + asgPerOf() + '개를 채우지 못합니다 — 간격을 줄이면 더 맡길 수 있습니다.';
+    if (r.kinds < n) t += ' 값이 모자라 몫 ' + r.kinds + '가지를 여러 모둠이 겹쳐 맡습니다. 같은 값을 잰 모둠끼리 결과를 견줄 수 있고, 합쳐 보기에는 그대로 모두 올라갑니다.';
+    else t += ' 합치면 ' + k + '칸이 빈틈없이 이어집니다.';
+    return t;
   }
   function asgNote(t){
-    $('asgGenNote').textContent = t || '범위와 간격을 적고 누르면 모둠 수에 맞춰 나눠 줍니다. 값 개수가 모둠 수와 같으면 한 모둠에 하나씩, 두 배면 두 개씩 맡고, 값이 모둠보다 적으면 몇 모둠은 같은 값을 잽니다.';
+    $('asgGenNote').textContent = t || '범위·간격·모둠마다 잴 개수를 적고 누르면, 모둠마다 범위 전체에 고르게 흩어진 값을 맡기고 모둠끼리는 한 칸씩 어긋나게 나눠 줍니다(1·4·7·10·13 / 2·5·8·11·14 …). 모둠마다 5개쯤은 재야 제 모둠 자료만으로도 경향이 보입니다. 값이 모자라면 몇 모둠은 같은 몫을 겹쳐 맡습니다.';
   }
   function paintAssignNew(){
     const a = picked && assignSpecOf(picked);
