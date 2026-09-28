@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609280909"></script>
+<script src="./lab-data.js?v=202609281254"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609280909"></script>
-<script src="./diagrams.js?v=202609280909"></script>
-<script src="./graphs.js?v=202609280909"></script>
-<script src="./config.js?v=202609280909"></script>
-<script src="./hub.js?v=202609280909"></script>
+<script src="./demo-data.js?v=202609281254"></script>
+<script src="./diagrams.js?v=202609281254"></script>
+<script src="./graphs.js?v=202609281254"></script>
+<script src="./config.js?v=202609281254"></script>
+<script src="./hub.js?v=202609281254"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609280909"></script>
-<script src="./dashkit.js?v=202609280909"></script>
+<script src="./sensorkit.js?v=202609281254"></script>
+<script src="./dashkit.js?v=202609281254"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -3207,11 +3207,17 @@
     if (!a || !mine) return '';
     const isX = assignIsXHere();
     const pre = isX && assignMineList().length > 0;
+    //  몫의 종류 — 모든 모둠이 같은 값을 재는지(낼 수 있는 값이 몇 개뿐인 장비), 한 모둠이 조건을 여러 개 맡았는지
+    const shape = (typeof Hub.assignShape === 'function') ? Hub.assignShape(a) : { allSame: false, multi: false };
+    const many = assignMineList().length > 1;
+    let say;
+    if (isX && shape.allSame) say = '모든 모둠이 이 값을 모두 잽니다. 합치면 같은 값에서 모둠끼리 결과가 같게 나오는지 견줄 수 있습니다.';
+    else if (isX) say = '모둠마다 맡은 값이 다릅니다. 실험 순서에 나온 값을 모두 재지 말고 <b>우리 몫만</b> 재세요.';
+    else if (many) say = '우리 모둠은 이 조건들을 차례로 모두 잽니다. 조건이 모둠마다 겹치거나 달라, 합치면 조건에 따른 차이가 한 화면에 드러납니다.';
+    else say = '우리 모둠은 이 조건으로 잽니다. 다른 모둠은 다른 조건으로 재어, 합치면 조건에 따른 차이가 한 화면에 드러납니다.';
     return '<div class="note" style="margin-top:10px;border-left-width:6px">📌 <b style="font-size:1.1em">우리 모둠이 맡은 ' + esc(assignBase(a.label)) +
            ' · ' + esc(mine) + '</b><br><span class="muted">' +
-           (isX ? '모둠마다 맡은 값이 다릅니다. 실험 순서에 나온 값을 모두 재지 말고 <b>우리 몫만</b> 재세요.' +
-                  (pre ? ' 데이터 입력 표의 첫 칸에 미리 적어 두었습니다.' : '')
-                : '우리 모둠은 이 조건으로 잽니다. 다른 모둠은 다른 조건으로 재어, 합치면 조건에 따른 차이가 한 화면에 드러납니다.') +
+           say + (pre ? ' 데이터 입력 표의 첫 칸에 미리 적어 두었습니다.' : '') +
            ' 반 전체를 합치면 그래프 한 장이 완성됩니다. 몇 칸 찼는지는 <b>모둠 공유</b> 탭에서 봅니다.</span></div>';
   }
   //  맡은 값을 입력표 가로축 칸에 미리 적어 둡니다. 이미 무엇이 적혀 있으면(저장본·붙여넣기) 건드리지 않습니다.
@@ -5405,10 +5411,12 @@
       if ((board.data || []).length < 2){ box.innerHTML = ''; return; }
       const inner = mergedClassChart();
       const a = assignOf();
+      //  가로축 값을 모둠마다 다르게 나눠 맡겼을 때만 「넓은 구간이 이어진다」가 맞습니다.
+      const spread = !!a && assignIsXHere() && !(typeof Hub.assignShape === 'function' && Hub.assignShape(a).allSame);
       box.innerHTML = inner
         ? '<div class="box"><h2>반 전체 한 그래프</h2>' +
           '<p class="muted">모둠 자료를 전부 하나의 그림에 겹쳤습니다. 굵은 것이 우리 모둠이고, 검은 선은 반 전체 추세선입니다.' +
-          (a ? ' 모둠마다 맡은 값이 달라, 합치면 넓은 구간이 이어집니다.' : '') + '</p>' +
+          (spread ? ' 모둠마다 맡은 값이 달라, 합치면 넓은 구간이 이어집니다.' : '') + '</p>' +
           inner + '</div>'
         : '';
     })();

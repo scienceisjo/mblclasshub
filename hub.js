@@ -693,6 +693,17 @@ window.Hub = (function () {
     var t = String(v == null ? '' : v).replace(/[^0-9+\-.eE]/g, '');
     return t === '' ? NaN : Number(t);
   }
+  //  Hub.assignShape(lesson) → {allSame, multi} — 모든 모둠 몫이 같은가(저항판처럼 낼 수 있는 값이 몇 개뿐일 때),
+  //  한 모둠이 값(조건)을 여러 개 맡았는가. 학생 안내 띠·합친 그래프 설명 문구를 고를 때 씁니다.
+  function assignShape(a) {
+    var g = (a && Array.isArray(a.groups)) ? a.groups : [];
+    var norm = function (x) { return assignList(x).join('|').replace(/\s+/g, '').toLowerCase(); };
+    var first = g.length ? norm(g[0]) : '';
+    return {
+      allSame: g.length > 1 && g.every(function (x) { return norm(x) === first; }),
+      multi: g.some(function (x) { return assignList(x).length > 1; })
+    };
+  }
   //  Hub.assignCoverage(board, lesson) → {items:[{label, v, groups:[모둠 번호], by:[잰 모둠], done}], total, done, unit, isX}
   //  나눠 맡기지 않았거나 맡긴 값이 구간(1~7)이면 null.
   //  가로축 값을 맡겼으면 그 값을 실제로 잰 줄(세로 값이 있는 줄)이 있어야 채운 것이고,
@@ -709,15 +720,32 @@ window.Hub = (function () {
     });
     if (per.some(function (p) { return !p.vals.length; })) return null;
     var isX = assignIsX(a, spec) && per.every(function (p) { return p.vals.every(function (v) { return isFinite(assignNum(v)); }); });
-    //  서로 다른 값 사이 가장 좁은 간격의 1/4 까지는 같은 값으로 봅니다(6 V 를 맞추다 6.03 V 로 적어도 채운 것).
-    var tol = 1e-9;
-    if (isX) {
-      var u = [];
-      per.forEach(function (p) { p.vals.forEach(function (v) { var n = assignNum(v); if (u.indexOf(n) < 0) u.push(n); }); });
-      u.sort(function (x, y) { return x - y; });
+    //  잰 값이 맡은 값 가운데 어느 것인지는 그 모둠 몫 안에서 가장 가까운 값으로 정합니다.
+    //  모둠 몫 안 가장 좁은 간격의 절반 안이면 그 값을 잰 것으로 봅니다(6 V 를 맞추다 6.3 V 로 적어도, 실제 단 1.33 g 을 적어도 채운 것).
+    //  몫에 값이 하나뿐이면 반 전체 값 사이 가장 좁은 간격의 절반, 그것도 없으면 값의 5 % 까지 봅니다.
+    function gapOf(list) {
+      var u = list.map(assignNum).filter(function (n, i, arr) { return arr.indexOf(n) === i; }).sort(function (x, y) { return x - y; });
       var gap = Infinity;
       for (var i = 1; i < u.length; i++) gap = Math.min(gap, u[i] - u[i - 1]);
-      tol = (isFinite(gap) && gap > 0) ? gap / 4 : Math.max(1e-9, Math.abs(u[0] || 1) * 0.05);
+      return gap;
+    }
+    var allGap = Infinity;
+    if (isX) {
+      var every = [];
+      per.forEach(function (p) { every = every.concat(p.vals); });
+      allGap = gapOf(every);
+    }
+    function tolOf(p, v) {
+      var g = gapOf(p.vals);
+      if (!(isFinite(g) && g > 0)) g = allGap;
+      return (isFinite(g) && g > 0) ? g / 2 : Math.max(1e-9, Math.abs(assignNum(v) || 1) * 0.05);
+    }
+    //  조건(자리·장소 따위)을 여러 개 맡은 모둠은, 표 첫 칸에 그 이름을 적었으면 그 조건만 찬 것으로 봅니다.
+    //  잰 줄 가운데 이름으로 가려지지 않는 줄이 있으면(조건이 표 밖에 있거나 숫자로 적음) 예전처럼 잰 줄이 있으면 맡은 조건을 모두 찬 것으로 봅니다.
+    function normName(t) { return String(t == null ? '' : t).replace(/\s+/g, '').toLowerCase(); }
+    function nameHit(cell, v) {
+      var c = normName(cell), n = normName(v);
+      return !!c && !!n && (c === n || c.indexOf(n) >= 0 || n.indexOf(c) >= 0);
     }
     var dataBy = {};
     (board.data || []).forEach(function (d) { dataBy[d.group_id] = d; });
@@ -733,12 +761,22 @@ window.Hub = (function () {
     var map = {}, order = [];
     per.forEach(function (p) {
       var got = measured(p);
+      var named = !isX && p.vals.length > 1 && got.length > 0 && got.every(function (x) { return p.vals.some(function (v) { return nameHit(x, v); }); });
       p.vals.forEach(function (v) {
         var key = isX ? String(assignNum(v)) : String(v).trim().toLowerCase();
         if (!map[key]) { map[key] = { label: String(v).trim(), v: isX ? assignNum(v) : null, groups: [], by: [] }; order.push(key); }
         var it = map[key];
         if (it.groups.indexOf(p.no) < 0) it.groups.push(p.no);
-        var hit = isX ? got.some(function (x) { return Math.abs(num(x) - assignNum(v)) <= tol; }) : got.length > 0;
+        var hit;
+        if (isX) {
+          var tol = tolOf(p, v), mine = assignNum(v);
+          //  가장 가까운 맡은 값이 이 값일 때만 — 잰 값 하나가 이웃한 두 칸을 함께 채우지 않게 합니다.
+          hit = got.some(function (x) {
+            var n = num(x);
+            if (!(Math.abs(n - mine) <= tol)) return false;
+            return p.vals.every(function (w) { return Math.abs(n - mine) <= Math.abs(n - assignNum(w)); });
+          });
+        } else hit = named ? got.some(function (x) { return nameHit(x, v); }) : got.length > 0;
         if (hit && it.by.indexOf(p.no) < 0) it.by.push(p.no);
       });
     });
@@ -1879,7 +1917,7 @@ window.Hub = (function () {
     createLesson: createLesson, adminLoad: adminLoad, adminSet: adminSet,
     adminListLessons: adminListLessons,
     adminPins: adminPins, adminResetPin: adminResetPin, features: features,
-    assignList: assignList, assignIsX: assignIsX, assignCoverage: assignCoverage,
+    assignList: assignList, assignIsX: assignIsX, assignShape: assignShape, assignCoverage: assignCoverage,
     adminExtend: adminExtend, adminDelete: adminDelete,
     adminSetQuiz: adminSetQuiz,
     myAdminCodes: myAdminCodes, forgetAdmin: forgetAdmin,
