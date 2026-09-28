@@ -2017,8 +2017,16 @@
     }
     return out;
   }
-  //  모둠 하나가 적어도 몇 개를 재야 제 모둠 자료만으로도 경향이 보이는지 — 기본 5개.
+  //  모둠 하나가 몇 개를 맡을지 — 실험마다 pool.assign.per 로 정해 둡니다(관계 모양·한 점 재는 시간·재료로 따진 값).
+  //  per 가 없으면 권장 몫에서 가장 긴 것의 개수, 그것도 없으면 가로축 값은 5개·조건은 1개.
   const ASG_PER_DEFAULT = 5;
+  function assignPerDefault(a){
+    if (!a) return ASG_PER_DEFAULT;
+    if (Number(a.per) >= 1) return Math.round(Number(a.per));
+    const lens = (a.sets || []).map(function(s){ return /[~∼〜]/.test(String(s)) ? 0 : String(s).split(/\s*[·,]\s*/).filter(Boolean).length; });
+    const most = lens.length ? Math.max.apply(null, lens) : 0;
+    return most > 1 ? most : (a.x ? ASG_PER_DEFAULT : 1);
+  }
   function asgPerOf(){ const v = Math.round(asgNum($('asgPer').value)); return v >= 1 ? Math.min(v, 30) : ASG_PER_DEFAULT; }
   //  값 목록 → 모둠별 몫. 모둠마다 적어도 per 개를 맡기되, 한 모둠의 값은 범위 처음부터 끝까지 고르게 벌어지고
   //  모둠끼리는 한 칸씩 어긋나 합치면 빈틈없이 이어집니다(1·4·7·10·13 / 2·5·8·11·14 / 3·6·9·12·15).
@@ -2053,7 +2061,7 @@
     return t;
   }
   function asgNote(t){
-    $('asgGenNote').textContent = t || '범위·간격·모둠마다 잴 개수를 적고 누르면, 모둠마다 범위 전체에 고르게 흩어진 값을 맡기고 모둠끼리는 한 칸씩 어긋나게 나눠 줍니다(1·4·7·10·13 / 2·5·8·11·14 …). 모둠마다 5개쯤은 재야 제 모둠 자료만으로도 경향이 보입니다. 값이 모자라면 몇 모둠은 같은 몫을 겹쳐 맡습니다.';
+    $('asgGenNote').textContent = t || '범위·간격·모둠마다 잴 개수를 적고 누르면, 모둠마다 범위 전체에 고르게 흩어진 값을 맡기고 모둠끼리는 한 칸씩 어긋나게 나눠 줍니다(1·4·7·10·13 / 2·5·8·11·14 …). 개수 칸에는 이 실험의 권장 개수(관계 모양·한 점 재는 시간·재료로 정한 값)가 들어 있습니다. 값이 모자라면 몇 모둠은 같은 몫을 겹쳐 맡습니다.';
   }
   function paintAssignNew(){
     const a = picked && assignSpecOf(picked);
@@ -2065,6 +2073,7 @@
     $('inAssignOn').checked = (a.sets || []).length > 0 && poolFitOf(picked) >= 3;
     $('asgGenLab').textContent = asgBase(a.label);
     $('asgUnit').textContent = a.unit || '';
+    $('asgPer').value = String(assignPerDefault(a));
     const d = asgDefaults(a, Math.max(1, Math.min(20, Number($('inGroups').value) || 7)));
     $('asgFrom').value = d ? asgFmt(d.from) : ''; $('asgTo').value = d ? asgFmt(d.to) : ''; $('asgStep').value = d ? asgFmt(d.step) : '';
     asgNote('');
