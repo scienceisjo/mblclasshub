@@ -672,6 +672,87 @@ window.Hub = (function () {
 
   //  Hub.adminResetPin(adminCode, groupId) → {group_id, group_no, pin}
   //  PIN 이 새로 바뀌므로 그 모둠은 기기에 저장된 옛 PIN 으로는 들어오지 못합니다.
+  // =================================================================
+  //  모둠마다 다른 값 재기 — 맡은 값 읽기 · 반 전체 그래프가 몇 칸 찼는지
+  // =================================================================
+  //  Hub.assignList('5 · 17') → ['5','17']. 구간(1~7)이나 빈 값은 [] 입니다(칸 하나에 적을 값이 아닙니다).
+  function assignList(str) {
+    var t = String(str == null ? '' : str).trim();
+    if (!t || /[~∼〜]/.test(t)) return [];
+    return t.split(/\s*[·,，、]\s*/).map(function (s) { return s.trim(); }).filter(Boolean);
+  }
+  //  맡긴 값이 가로축 값 그 자체인가 — 교사 화면이 x:true 로 적어 두었거나, 단위가 가로축과 같으면 그렇다고 봅니다.
+  function assignIsX(a, spec) {
+    if (!a) return false;
+    if (a.x === true) return true;
+    if (a.x === false) return false;
+    var au = String(a.unit || '').trim(), xu = String((spec && spec.x && spec.x.unit) || '').trim();
+    return !!au && au === xu;
+  }
+  function assignNum(v) {
+    var t = String(v == null ? '' : v).replace(/[^0-9+\-.eE]/g, '');
+    return t === '' ? NaN : Number(t);
+  }
+  //  Hub.assignCoverage(board, lesson) → {items:[{label, v, groups:[모둠 번호], by:[잰 모둠], done}], total, done, unit, isX}
+  //  나눠 맡기지 않았거나 맡긴 값이 구간(1~7)이면 null.
+  //  가로축 값을 맡겼으면 그 값을 실제로 잰 줄(세로 값이 있는 줄)이 있어야 채운 것이고,
+  //  조건(질량·장소 따위)을 맡겼으면 그 모둠 표에 잰 줄이 하나라도 있으면 채운 것입니다.
+  function assignCoverage(board, lesson) {
+    var a = lesson && lesson.form && lesson.form.assign;
+    if (!a || !Array.isArray(a.groups) || !a.groups.length || !board) return null;
+    var spec = (lesson && lesson.data_spec) || {};
+    var groups = (board.groups || []).slice().sort(function (p, q) { return (Number(p.group_no) || 0) - (Number(q.group_no) || 0); });
+    if (!groups.length) return null;
+    var per = groups.map(function (g) {
+      var no = Number(g.group_no) || 0;
+      return { no: no, id: g.id, vals: no >= 1 ? assignList(a.groups[(no - 1) % a.groups.length]) : [] };
+    });
+    if (per.some(function (p) { return !p.vals.length; })) return null;
+    var isX = assignIsX(a, spec) && per.every(function (p) { return p.vals.every(function (v) { return isFinite(assignNum(v)); }); });
+    //  서로 다른 값 사이 가장 좁은 간격의 1/4 까지는 같은 값으로 봅니다(6 V 를 맞추다 6.03 V 로 적어도 채운 것).
+    var tol = 1e-9;
+    if (isX) {
+      var u = [];
+      per.forEach(function (p) { p.vals.forEach(function (v) { var n = assignNum(v); if (u.indexOf(n) < 0) u.push(n); }); });
+      u.sort(function (x, y) { return x - y; });
+      var gap = Infinity;
+      for (var i = 1; i < u.length; i++) gap = Math.min(gap, u[i] - u[i - 1]);
+      tol = (isFinite(gap) && gap > 0) ? gap / 4 : Math.max(1e-9, Math.abs(u[0] || 1) * 0.05);
+    }
+    var dataBy = {};
+    (board.data || []).forEach(function (d) { dataBy[d.group_id] = d; });
+    function measured(p) {
+      var d = dataBy[p.id], out = [];
+      ((d && Array.isArray(d.rows)) ? d.rows : []).forEach(function (r) {
+        if (!Array.isArray(r) || r[0] === null || r[0] === undefined || String(r[0]).trim() === '') return;
+        var hasY = r.slice(1).some(function (v) { return v !== null && v !== undefined && String(v).trim() !== '' && isFinite(num(v)); });
+        if (hasY) out.push(r[0]);
+      });
+      return out;
+    }
+    var map = {}, order = [];
+    per.forEach(function (p) {
+      var got = measured(p);
+      p.vals.forEach(function (v) {
+        var key = isX ? String(assignNum(v)) : String(v).trim().toLowerCase();
+        if (!map[key]) { map[key] = { label: String(v).trim(), v: isX ? assignNum(v) : null, groups: [], by: [] }; order.push(key); }
+        var it = map[key];
+        if (it.groups.indexOf(p.no) < 0) it.groups.push(p.no);
+        var hit = isX ? got.some(function (x) { return Math.abs(num(x) - assignNum(v)) <= tol; }) : got.length > 0;
+        if (hit && it.by.indexOf(p.no) < 0) it.by.push(p.no);
+      });
+    });
+    var items = order.map(function (k) { var it = map[k]; it.done = it.by.length > 0; return it; });
+    if (isX) items.sort(function (x, y) { return x.v - y.v; });
+    return { items: items, total: items.length, done: items.filter(function (it) { return it.done; }).length, unit: a.unit || '', isX: isX };
+  }
+
+  //  Hub.features() → 서버가 아는 기능 {openGroups:true…}. 이 함수가 없는 옛 서버면 실패합니다.
+  //  「모둠 비밀번호 없이 입장」은 sql/2026-09-28_open_groups.sql 을 실행한 서버에서만 됩니다.
+  function features() {
+    return rpc('mbl_features', {}).then(function (f) { return (f && typeof f === 'object') ? f : {}; });
+  }
+
   function adminResetPin(adminCode, groupId) {
     return rpc('mbl_admin_reset_pin', {
       p_admin_code: norm(adminCode),
@@ -1797,7 +1878,8 @@ window.Hub = (function () {
     // 교사
     createLesson: createLesson, adminLoad: adminLoad, adminSet: adminSet,
     adminListLessons: adminListLessons,
-    adminPins: adminPins, adminResetPin: adminResetPin,
+    adminPins: adminPins, adminResetPin: adminResetPin, features: features,
+    assignList: assignList, assignIsX: assignIsX, assignCoverage: assignCoverage,
     adminExtend: adminExtend, adminDelete: adminDelete,
     adminSetQuiz: adminSetQuiz,
     myAdminCodes: myAdminCodes, forgetAdmin: forgetAdmin,

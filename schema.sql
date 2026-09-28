@@ -396,6 +396,7 @@ $$;
 --     (hub.js 가 그 값을 받아 오류로 바꿔 주므로 화면 동작은 예전과 같습니다.)
 --   ★ pin 이 null 이거나 빈 값인 모둠은 어떤 PIN 으로도 통과하지 못합니다.
 --   ★ 연속 5번 틀리면 10분 잠깁니다. 교사가 mbl_admin_pins·mbl_admin_reset_pin 으로 풀어 줍니다.
+--   ★ 선생님이 「모둠 비밀번호 쓰기」를 끄고 만든 수업(form.features.groupPin = false)은 비밀번호를 묻지 않습니다(2026-09-28).
 create or replace function mbl_pin_error(p_lesson_id uuid, p_group_id uuid, p_pin text)
 returns text
 language plpgsql
@@ -404,6 +405,7 @@ set search_path = public
 as $$
 declare
   v_g    mbl_groups;
+  v_l    mbl_lessons;
   v_fail int;
 begin
   if p_group_id is null then
@@ -415,6 +417,13 @@ begin
    where g.id = p_group_id and g.lesson_id = p_lesson_id;
   if not found then
     return '모둠 정보를 찾을 수 없습니다.';
+  end if;
+
+  -- 선생님이 「모둠 비밀번호 쓰기」를 끄고 만든 수업은 비밀번호를 묻지 않습니다.
+  --   소속 확인(위)은 그대로 하므로 다른 수업의 모둠에는 여전히 쓸 수 없습니다.
+  select * into v_l from mbl_lessons l where l.id = p_lesson_id;
+  if found and coalesce(v_l.form->'features'->>'groupPin', '') = 'false' then
+    return null;
   end if;
 
   -- 잠금 중이면 맞는 PIN 이어도 통과시키지 않습니다(맞는지 아닌지도 알려 주지 않습니다).
@@ -441,6 +450,17 @@ begin
   end if;
   return null;
 end;
+$$;
+
+-- 서버가 아는 기능 — 교사 화면이 「이 서버에 이 기능이 적용되었나」를 물어봅니다(읽기 전용).
+create or replace function mbl_features()
+returns json
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select json_build_object('openGroups', true);
 $$;
 
 -- 예외를 던지는 옛 형태(호환용). 실패 횟수를 남겨야 하는 쓰기 RPC 는 위 mbl_pin_error 를 씁니다.
@@ -1417,6 +1437,7 @@ grant execute on function mbl_admin_list(text)                                  
 grant execute on function mbl_admin_pins(text)                                               to anon, authenticated;
 grant execute on function mbl_admin_reset_pin(text, uuid)                                    to anon, authenticated;
 grant execute on function mbl_admin_delete(text)                                             to anon, authenticated;
+grant execute on function mbl_features()                                                     to anon, authenticated;
 -- mbl_cleanup 은 교사(대시보드)에서도 부르지 않습니다. SQL Editor 전용.
 --   (mbl_create_lesson 이 SECURITY DEFINER 로 안에서 부르므로 anon 권한은 필요 없습니다.)
 revoke execute on function mbl_cleanup() from public, anon, authenticated;

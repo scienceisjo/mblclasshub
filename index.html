@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609270035"></script>
+<script src="./lab-data.js?v=202609281254"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609270035"></script>
-<script src="./diagrams.js?v=202609270035"></script>
-<script src="./graphs.js?v=202609270035"></script>
-<script src="./config.js?v=202609270035"></script>
-<script src="./hub.js?v=202609270035"></script>
+<script src="./demo-data.js?v=202609281254"></script>
+<script src="./diagrams.js?v=202609281254"></script>
+<script src="./graphs.js?v=202609281254"></script>
+<script src="./config.js?v=202609281254"></script>
+<script src="./hub.js?v=202609281254"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609270035"></script>
-<script src="./dashkit.js?v=202609270035"></script>
+<script src="./sensorkit.js?v=202609281254"></script>
+<script src="./dashkit.js?v=202609281254"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -494,6 +494,15 @@
   .simplebar .sbstate.warn .sbdot{background:var(--warn)}
 
   #dataTbl input.calc{background:#F2FBFA;color:var(--mint-d);font-weight:700}
+  #dataTbl input.assigned{background:#FFF6D6;font-weight:800}
+  /* 우리 반 그래프 채우기 — 모둠마다 맡긴 값이 몇 칸 찼는지 */
+  .covbar{font-size:15px;margin:2px 0 10px}
+  .covchips{display:flex;flex-wrap:wrap;gap:8px}
+  .covchip{display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;padding:7px 12px;border-radius:14px;
+           border:2px dashed var(--line-2);background:#fff;color:var(--muted);font-weight:800;font-size:15px;line-height:1.2}
+  .covchip small{font-weight:600;font-size:11.5px}
+  .covchip.done{border-style:solid;border-color:var(--mint);background:#E7F7F4;color:var(--ink)}
+  .covchip.mine{box-shadow:0 0 0 3px var(--sun)}
   .labtabs{display:flex;gap:6px;flex-wrap:wrap;align-items:center;margin:0 0 12px}
   .labtabs .muted{font-size:12.5px}
   /* 자동저장 되살리기 물음 */
@@ -944,6 +953,7 @@
         <h2>다른 모둠 결과 보기</h2>
         <p class="muted" id="shareSub">선생님이 ‘모둠 공유’ 단계를 열면 다른 모둠의 그래프가 나타납니다.</p>
       </div>
+      <div id="shareCover"></div>
       <div id="shareMerged"></div>
       <div id="shareCards" class="gcards"></div>
     </div>
@@ -1671,11 +1681,25 @@
   });
 
   // ── ② 모둠 고르기 ──────────────────────────────────────────────
+  //  모둠 입장 방식 — 선생님이 「모둠 비밀번호 쓰기」를 끄고 만든 수업(form.features.groupPin === false)이면
+  //  모둠만 고르고 「모둠 탐구 공간 입장하기」로 들어옵니다. 값이 없는 예전 수업은 비밀번호를 씁니다.
+  //  서버가 비밀번호를 요구하면(옛 서버·선생님이 도중에 켬) forcePin 을 세우고 그때 4자리를 묻습니다.
+  let forcePin = false;
+  function openEntry(){
+    if (forcePin || !lesson) return false;
+    const f = lesson.form && lesson.form.features;
+    return !!(f && typeof f === 'object' && f.groupPin === false);
+  }
+  function enterLabel(){
+    return openEntry() ? ((pickedNo ? pickedNo + '모둠 ' : '모둠 ') + '탐구 공간 입장하기') : '이 모둠으로 들어가기';
+  }
   function openGroupPicker(){
     show('group');
     setPhase(lesson.phase);
     $('groupErr').textContent = '';
+    forcePin = false;
     showPinStep(false);
+    $('btnEnter').textContent = enterLabel();
     $('gLessonTitle').textContent = lesson.title || '수업';
     $('gLessonSub').textContent =
       [lesson.class_label, lesson.exp_title, lesson.teacher_name ? lesson.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ');
@@ -1696,10 +1720,13 @@
         b.classList.add('on');
         b.style.background = 'var(--g' + (((pickedNo - 1) % 7) + 1) + ')';
         $('btnEnter').disabled = false;
-        if (!$('inGroupName').value) $('inGroupName').value = pickedNo + '모둠';
+        //  비어 있거나 다른 모둠의 기본 이름(2모둠)이면 이 모둠의 기본 이름으로 바꿉니다.
+        const nv = $('inGroupName').value.trim();
+        if (!nv || /^\d+\s*모둠$/.test(nv)) $('inGroupName').value = pickedNo + '모둠';
         $('groupErr').textContent = '';
-        // 이 기기에 그 모둠 비밀번호가 남아 있으면 다시 묻지 않습니다.
-        showPinStep(!hasStoredPin(pickedNo));
+        // 비밀번호 없이 들어오는 수업이거나, 이 기기에 그 모둠 비밀번호가 남아 있으면 묻지 않습니다.
+        showPinStep(!openEntry() && !hasStoredPin(pickedNo));
+        $('btnEnter').textContent = enterLabel();
       });
     });
 
@@ -1711,14 +1738,14 @@
       $('inGroupName').value = cached.group_name || '';
       $('inMembers').value = (cached.members || []).join(', ');
       // 비밀번호가 기억되어 있으면 묻지 않고 바로 들어갑니다.
-      if (b && hasStoredPin(cached.group_no)) enterGroup();
+      if (b && (openEntry() || hasStoredPin(cached.group_no))) enterGroup();
     }
   }
 
   //  모둠 입장 — 기억된 비밀번호가 없으면 4칸에 적은 값을 씁니다.
   function enterGroup(){
     if (!pickedNo || expired) return;
-    const needPin = !hasStoredPin(pickedNo);
+    const needPin = !openEntry() && !hasStoredPin(pickedNo);
     const pin = needPin ? padGroup.value() : '';
     if (needPin && pin.length !== 4){
       showPinStep(true);
@@ -1727,21 +1754,30 @@
       return;
     }
     const members = $('inMembers').value.split(',').map(s => s.trim()).filter(Boolean);
+    //  빈 칸·기본 이름(3모둠)은 보내지 않습니다 — 같은 모둠의 다른 기기가 정해 둔 모둠 이름과 모둠원을 지우지 않게.
+    const nm = $('inGroupName').value.trim();
+    const nameArg = (nm && nm !== pickedNo + '모둠') ? nm : null;
+    const memArg  = members.length ? members : null;
     $('groupErr').textContent = '';
     $('btnEnter').disabled = true; $('btnEnter').textContent = '들어가는 중…';
-    Hub.joinGroup(joinCode, pickedNo, $('inGroupName').value.trim() || (pickedNo + '모둠'), members, pin)
+    Hub.joinGroup(joinCode, pickedNo, nameArg, memArg, pin)
       .then(function(g){ group = g; startWork(); },
             function(err){
               if (err && err.expired){ showExpired(); return; }
               if (err && err.pinError){
+                const wasOpen = openEntry();
+                forcePin = true;                 // 서버가 비밀번호를 요구합니다 — 이제부터는 4자리를 묻습니다
                 showPinStep(true);
-                $('groupErr').textContent = PIN_WRONG;
-                padGroup.shake(); padGroup.focus();
+                $('groupErr').textContent = wasOpen
+                  ? '이 수업은 지금 모둠 비밀번호가 필요합니다. 선생님께 우리 모둠 비밀번호 4자리를 받아 넣어 주세요.'
+                  : PIN_WRONG;
+                if (!wasOpen) padGroup.shake();
+                padGroup.focus();
                 return;
               }
               $('groupErr').textContent = (err && err.message) || '모둠 입장에 실패했습니다.';
             })
-      .then(function(){ $('btnEnter').disabled = false; $('btnEnter').textContent = '이 모둠으로 들어가기'; });
+      .then(function(){ $('btnEnter').disabled = false; $('btnEnter').textContent = enterLabel(); });
   }
 
   $('btnEnter').addEventListener('click', function(){ enterGroup(); });
@@ -2030,6 +2066,7 @@
     predict = null;
     analyses = []; aiLogs = []; aiReset();
     renderPredCard(); renderMyChart(); refreshReport();
+    prefillAssigned();
     dirty = false; renderSaveBar();
   });
 
@@ -2560,6 +2597,7 @@
     const nq = lesson.quiz_at || '', nf = lesson.form_at || '';
     if (nf !== formAt){
       formAt = nf;
+      if (group){ renderGuide(); prefillAssigned(); }   // 선생님이 몫을 바꿨으면 안내와 표도 따라갑니다
       questions = (lesson.form && Array.isArray(lesson.form.questions) && lesson.form.questions.length)
                 ? lesson.form.questions
                 : ((labExp() && labExp().questions) || []);
@@ -2835,12 +2873,56 @@
     const t = String(label || '값');
     return t.indexOf('맡을 ') === 0 ? t.slice(3) : t;
   }
+  //  맡은 값 목록(숫자·이름) — hub.js 의 Hub.assignList 로 읽습니다. 구간(1~7)이면 빈 목록입니다.
+  function assignMineList(){
+    const a = assignOf();
+    if (!a || !group || typeof Hub.assignList !== 'function') return [];
+    const no = Number(group.group_no) || 0;
+    return no >= 1 ? Hub.assignList(a.groups[(no - 1) % a.groups.length]) : [];
+  }
+  //  맡긴 값이 가로축 값 그 자체인가(전압·부피·거리 따위). 조건(질량·장소)을 맡긴 수업이면 표에 미리 채우지 않습니다.
+  function assignIsXHere(){
+    const a = assignOf();
+    return !!(a && typeof Hub.assignIsX === 'function' && Hub.assignIsX(a, spec));
+  }
   function assignBanner(){
     const a = assignOf(), mine = assignMine();
     if (!a || !mine) return '';
-    return '<div class="note" style="margin-top:10px">📌 <b>우리 모둠이 맡은 ' + esc(assignBase(a.label)) + '</b> · ' +
-           '<b>' + esc(mine) + '</b><br><span class="muted">모둠마다 맡은 값이 다릅니다. 우리 몫만 재면, ' +
-           '반 전체를 합쳤을 때 넓은 구간이 하나의 그래프로 이어집니다.</span></div>';
+    const isX = assignIsXHere();
+    const pre = isX && assignMineList().length > 0;
+    return '<div class="note" style="margin-top:10px;border-left-width:6px">📌 <b style="font-size:1.1em">우리 모둠이 맡은 ' + esc(assignBase(a.label)) +
+           ' · ' + esc(mine) + '</b><br><span class="muted">' +
+           (isX ? '모둠마다 맡은 값이 다릅니다. 실험 순서에 나온 값을 모두 재지 말고 <b>우리 몫만</b> 재세요.' +
+                  (pre ? ' 데이터 입력 표의 첫 칸에 미리 적어 두었습니다.' : '')
+                : '우리 모둠은 이 조건으로 잽니다. 다른 모둠은 다른 조건으로 재어, 합치면 조건에 따른 차이가 한 화면에 드러납니다.') +
+           ' 반 전체를 합치면 그래프 한 장이 완성됩니다. 몇 칸 찼는지는 <b>모둠 공유</b> 탭에서 봅니다.</span></div>';
+  }
+  //  맡은 값을 입력표 가로축 칸에 미리 적어 둡니다. 이미 무엇이 적혀 있으면(저장본·붙여넣기) 건드리지 않습니다.
+  //  학생은 그 값에 맞춰 재고 세로축만 채우면 됩니다. 실제로 맞춘 값이 조금 다르면 고쳐 적어도 됩니다.
+  function prefillAssigned(){
+    if (isSimple() || pendingAsk || !assignIsXHere() || !$('dataTbl')) return;
+    const vals = assignMineList().map(function(v){ const n = nnum(v); return isFinite(n) ? String(n) : ''; }).filter(Boolean);
+    if (!vals.length) return;
+    const xs = Array.prototype.slice.call($('dataTbl').querySelectorAll('input[data-c="0"]'));
+    if (xs.some(function(el){ return el.value.trim() !== ''; })) return;
+    if (vals.length > tableRows) setTableRows(vals.length);
+    vals.forEach(function(v, r){
+      const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="0"]');
+      if (el){ el.value = v; el.classList.add('assigned'); el.title = '우리 모둠이 맡은 값입니다. 실제로 맞춘 값이 조금 다르면 고쳐 적어도 됩니다.'; }
+    });
+    renderMyChart();
+  }
+  //  우리 반 그래프 채우기 — 칸마다 값과 맡은 모둠, 채웠으면 초록. myNo 가 있으면 그 모둠 몫을 노랗게 두릅니다.
+  function coverHTML(cv, myNo){
+    if (!cv) return '';
+    let h = '<div class="covbar"><b>우리 반 그래프 ' + cv.total + '칸 가운데 ' + cv.done + '칸을 채웠습니다</b>' +
+            (cv.total && cv.done === cv.total ? ' · 다 채웠습니다 🎉' : '') + '</div><div class="covchips">';
+    cv.items.forEach(function(it){
+      const mine = !!myNo && it.groups.indexOf(myNo) >= 0;
+      h += '<span class="covchip' + (it.done ? ' done' : '') + (mine ? ' mine' : '') + '">' + esc(it.label + (cv.unit ? ' ' + cv.unit : '')) +
+           '<small>' + (it.done ? '✓ ' : '') + it.groups.map(function(n){ return n + '모둠'; }).join('·') + (mine ? ' · 우리' : '') + '</small></span>';
+    });
+    return h + '</div>';
   }
   //  반 전체 한 그래프 — DashKit 의 classLines 블록을 빌려 씁니다(모둠색 겹치기 + 전체 추세선).
   function mergedClassChart(){
@@ -4919,6 +5001,7 @@
     if (r && r.status) reportStatus = r.status;
     fillAnswers(r ? r.answers : Hub.loadLocal('draft_report_' + joinCode + '_' + group.id, null));
     renderMyChart();
+    prefillAssigned();
   }
 
   // 모둠 공유 · 피드백
@@ -4929,6 +5012,17 @@
       return;
     }
     if (!board || !group) return;
+    //  우리 반 그래프 채우기 — 단계와 상관없이 보여 줍니다. 다른 모둠이 잰 값은 보이지 않고 칸이 찼는지만 보입니다.
+    (function(){
+      const box = $('shareCover');
+      if (!box) return;
+      const cv = (typeof Hub.assignCoverage === 'function') ? Hub.assignCoverage(board, lesson) : null;
+      box.innerHTML = cv
+        ? '<div class="box"><h2>🧩 우리 반 그래프 채우기</h2><p class="muted">모둠마다 다른 값을 맡아 잽니다. ' +
+          '모든 칸이 초록이 되면 반 전체 그래프 한 장이 완성됩니다. 노랗게 두른 칸이 우리 모둠 몫입니다.</p>' +
+          coverHTML(cv, Number(group.group_no) || 0) + '</div>'
+        : '';
+    })();
     const open = lesson && (lesson.phase === 'share' || lesson.phase === 'present' || lesson.phase === 'done');
     $('shareSub').textContent = open
       ? '별점과 한 줄 칭찬을 남겨 주세요. 우리 모둠에게는 줄 수 없습니다.'

@@ -461,7 +461,8 @@
         no: Number(groups[k].group_no) || (k + 1),
         name: groups[k].group_name || ((Number(groups[k].group_no) || (k + 1)) + '모둠'),
         rows: rr, note: (d && d.note) || '',
-        mine: String(groups[k].id) === gid,
+        //  ctx.noMine — 교사 대시보드처럼 「우리 모둠」이 없는 화면에서는 어느 모둠도 굵게 하지 않습니다.
+        mine: !ctx.noMine && String(groups[k].id) === gid,
         color: GROUP_HEX[k % GROUP_HEX.length]
       });
     }

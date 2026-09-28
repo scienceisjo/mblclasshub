@@ -7,13 +7,13 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609270035"></script>
-<script src="./diagrams.js?v=202609270035"></script>
-<script src="./graphs.js?v=202609270035"></script>
-<script src="./config.js?v=202609270035"></script>
-<script src="./hub.js?v=202609270035"></script>
+<script src="./lab-data.js?v=202609281254"></script>
+<script src="./diagrams.js?v=202609281254"></script>
+<script src="./graphs.js?v=202609281254"></script>
+<script src="./config.js?v=202609281254"></script>
+<script src="./hub.js?v=202609281254"></script>
 <!-- 대시보드 엔진 — 외부 자원을 부르지 않습니다(학생 화면과 같은 파일을 씁니다) -->
-<script src="./dashkit.js?v=202609270035"></script>
+<script src="./dashkit.js?v=202609281254"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -148,6 +148,16 @@
   .sheetprev td.gname{font-weight:800;color:var(--mint-d)}
   .sheetprev tr.skip{opacity:.5}
 
+  /* 우리 반 그래프 채우기 — 모둠마다 맡긴 값이 몇 칸 찼는지 */
+  .covbar{font-size:15px;margin:2px 0 10px}
+  .covchips{display:flex;flex-wrap:wrap;gap:8px}
+  .covchip{display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;padding:7px 12px;border-radius:14px;
+           border:2px dashed var(--line-2);background:#fff;color:var(--muted);font-weight:800;font-size:15px;line-height:1.2}
+  .covchip small{font-weight:600;font-size:11.5px}
+  .covchip.done{border-style:solid;border-color:var(--mint);background:#E7F7F4;color:var(--ink)}
+  .covchip.mine{box-shadow:0 0 0 3px var(--sun)}
+  .asggen{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px 12px;border:1.5px dashed var(--line-2);border-radius:12px;background:var(--cream)}
+  .asggen input{width:78px}
   /* 모둠 비밀번호(PIN) */
   .toolrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
   .pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
@@ -438,16 +448,28 @@
       </div>
     </div>
 
-    <!-- 모둠별로 나눠 맡기 — 실험에 나눔 권장값(pool.assign)이 있을 때만 나타납니다. -->
+    <!-- 모둠마다 다른 값 재기 — 실험에 나눔 권장값(pool.assign)이 있거나, 학생이 가로축 값을 정해 재는 실험이면 나타납니다. -->
     <div class="box hidden" id="assignNew">
-      <h2>모둠별로 나눠 맡기</h2>
+      <h2>🧩 우리 반 그래프 한 장 — 모둠마다 다른 값 재기</h2>
       <p class="muted" id="assignNewSub"></p>
       <label class="chkline" for="inAssignOn">
         <input id="inAssignOn" type="checkbox" />
         <span class="ct"><b>모둠마다 다른 값을 맡긴다</b>
-          <span>켜면 아래 값이 모둠별로 배정되고, 학생 화면의 실험 안내·데이터 입력에 자기 몫이 표시됩니다.
-            모두 같은 값을 재면 점이 한자리에 겹칠 뿐이지만, 나눠 맡으면 반 전체가 하나의 넓은 그래프로 이어집니다.</span></span>
+          <span>켜면 모둠마다 맡은 값이 학생 화면의 실험 안내에 뜨고, 가로축 값이면 데이터 입력 표에 미리 들어갑니다.
+            모두 같은 값을 재면 점이 한자리에 겹칠 뿐이지만, 나눠 재면 반 전체가 그래프 한 장을 함께 완성합니다.
+            대시보드와 학생 화면에 그래프가 몇 칸 찼는지도 보입니다.</span></span>
       </label>
+      <div class="asggen">
+        <b id="asgGenLab">맡을 값</b>
+        <input id="asgFrom" type="text" inputmode="decimal" placeholder="시작" aria-label="시작 값" />
+        <span>~</span>
+        <input id="asgTo" type="text" inputmode="decimal" placeholder="끝" aria-label="끝 값" />
+        <span class="muted">간격</span>
+        <input id="asgStep" type="text" inputmode="decimal" placeholder="간격" aria-label="간격" />
+        <span class="muted" id="asgUnit"></span>
+        <button id="btnAsgGen" class="btn btn-sm btn-solid" type="button">모둠에 고르게 나눠 주기</button>
+      </div>
+      <p class="muted" id="asgGenNote" style="margin-top:6px"></p>
       <div id="assignNewList" style="margin-top:10px"></div>
     </div>
 
@@ -467,6 +489,14 @@
           <input id="inGroups" type="number" min="1" max="20" value="7" />
         </div>
       </div>
+      <label class="chkline" for="inGroupPin" style="margin:4px 0 12px">
+        <input id="inGroupPin" type="checkbox" />
+        <span class="ct"><b>모둠 비밀번호 쓰기</b>
+          <span>끄면(기본) 학생은 참여코드를 넣고 모둠을 고른 뒤 <b>「모둠 탐구 공간 입장하기」</b>만 누릅니다.
+            켜면 모둠마다 비밀번호 4자리를 알려 줘야 들어오고, 다른 모둠이 우리 모둠 자료를 고치지 못합니다.
+            장난이 걱정되거나 여러 차시에 걸쳐 모둠 자료를 이어 쓸 때 켜세요. 대시보드에서 도중에도 바꿀 수 있습니다.</span></span>
+      </label>
+
       <label class="fl">보고서 질문</label>
       <p class="muted" style="margin:-2px 0 4px">질문 하나가 카드 한 장입니다. 유형을 고르고 <b>▲ ▼</b> 로 순서를 바꿉니다.
         비어 있는 질문은 저장할 때 저절로 빠집니다.</p>
@@ -548,8 +578,15 @@
 
     <div class="box">
       <h2>모둠 비밀번호</h2>
-      <p class="muted">모둠마다 4자리 숫자입니다. 학생은 자기 모둠 비밀번호를 넣어야 자료를 저장할 수 있습니다.
+      <p class="muted">모둠마다 4자리 숫자입니다. <b>「모둠 비밀번호 쓰기」를 켠 수업</b>에서만 학생이 넣습니다.
         같은 반 다른 모둠 것은 알려 주지 마세요.</p>
+      <label class="chkline" for="dGroupPin" style="margin-top:8px">
+        <input id="dGroupPin" type="checkbox" />
+        <span class="ct"><b>모둠 비밀번호 쓰기</b>
+          <span>끄면 학생은 모둠만 고르고 「모둠 탐구 공간 입장하기」로 들어옵니다(다른 모둠 칸에도 들어갈 수 있습니다).
+            켜면 아래 4자리를 알려 줘야 들어오고 저장할 수 있습니다. 수업 도중에도 바꿀 수 있습니다.</span></span>
+      </label>
+      <p id="pinModeNote" class="muted" style="margin-top:6px"></p>
       <div class="toolrow">
         <button id="btnPinShow"   class="btn btn-sm" type="button">보이기</button>
         <button id="btnPinBig"    class="btn btn-sm btn-solid" type="button">칠판에 크게 띄우기</button>
@@ -588,6 +625,13 @@
         </div>
       </div>
       <div id="dashMsg" class="ok" style="min-height:20px;margin-top:10px"></div>
+    </div>
+
+    <!-- 우리 반 그래프 채우기 — 모둠마다 다른 값을 맡긴 수업에서만 나타납니다. -->
+    <div class="box hidden" id="boxCover">
+      <h2>🧩 우리 반 그래프 채우기</h2>
+      <p class="muted" id="dCoverSub"></p>
+      <div id="dCover" style="margin-top:10px"></div>
     </div>
 
     <!-- 반 전체 한 그래프 — 자료를 올린 모둠이 2곳부터 나타납니다. -->
@@ -1535,6 +1579,8 @@
   let procSyncedSig = null;
   let aiBusy        = false;  // AI와 협업 탐구 켜기·끄기를 보내는 중
   let readBusy      = false;  // 결과 해설 가리기 켜기·끄기를 보내는 중
+  let gpinBusy      = false;  // 모둠 비밀번호 쓰기 켜기·끄기를 보내는 중
+  let pinFallbackFor = '';    // 비밀번호 없이 만들려 했지만 서버가 몰라서 비밀번호로 만든 수업의 관리코드
   let aiTplDirty    = false;  // 프롬프트 틀 편집기를 손대는 중
   let aiTplSyncedSig= null;
 
@@ -1610,6 +1656,13 @@
   function aiOn(){ return formFeatures().ai !== false; }
   //  결과 해설 가리기는 반대로, true 라고 적힌 수업에서만 켜집니다(예전 수업은 그대로 보여 줍니다).
   function readOn(){ return formFeatures().readLater === true; }
+  //  모둠 비밀번호 — false 라고 적힌 수업에서만 꺼집니다(값이 없는 예전 수업은 비밀번호를 씁니다).
+  function groupPinOn(){ return formFeatures().groupPin !== false; }
+  //  서버에 「모둠 비밀번호 없이 입장」이 적용되었는가(sql/2026-09-28_open_groups.sql). 옛 서버면 false.
+  function serverOpenGroups(){
+    if (typeof Hub.features !== 'function') return Promise.resolve(false);
+    return Hub.features().then(function(f){ return !!(f && f.openGroups); }, function(){ return false; });
+  }
 
   // ── AI와 협업 탐구 · 프롬프트 틀 ───────────────────────────────
   //  ★ 이것은 "AI에게 물어보기"가 아닙니다. 학생이 먼저 자기 해석을 내놓고, AI 는 그것을
@@ -1909,19 +1962,89 @@
             : ' — 이 업체의 절차입니다.') + ' 고쳐서 수업에 담을 수 있고, 수업 도중에도 다시 고칠 수 있습니다.';
   }
 
-  // ── 모둠별로 나눠 맡기 ─────────────────────────────────────────
+  // ── 모둠마다 다른 값 재기(모둠별로 나눠 맡기) ───────────────────
   //  실험의 pool.assign(권장 나눔값)을 모둠 수만큼 펼쳐 보여 주고, 고쳐서 form.assign 에 담습니다.
+  //  권장값이 없어도 학생이 가로축 값을 정해 재는 실험(수동 수집·점 그래프·가로축에 단위가 있음)이면
+  //  가로축을 나눠 맡길 수 있게 빈 칸으로 엽니다. x:true 는 「맡긴 값 = 가로축 값」이라는 표시로,
+  //  학생 입력표에 미리 채우고 반 전체 그래프가 몇 칸 찼는지 셀 때 씁니다(hub.js 의 assignCoverage).
+  const ASG_NOT_X = /시간|회차|시점/;
+  let asgGenVals = null;      // [모둠에 고르게 나눠 주기] 로 만든 값 — 모둠 수를 바꾸면 이것으로 다시 나눕니다
   function assignSpecOf(e){
-    const a = e && e.pool && e.pool.assign;
-    return (a && Array.isArray(a.sets) && a.sets.length) ? a : null;
+    if (!e) return null;
+    const a = e.pool && e.pool.assign;
+    const xs = (e.dataSpec && e.dataSpec.x) || {};
+    const xu = String(xs.unit || '').trim();
+    if (a && Array.isArray(a.sets) && a.sets.length){
+      const au = String(a.unit || '').trim();
+      return Object.assign({}, a, { x: !!au && au === xu });
+    }
+    if (e.mode === 'manual' && e.dataSpec && e.dataSpec.chart !== 'bar' && xs.label && xu && !ASG_NOT_X.test(xs.label)){
+      return { label: '맡을 ' + xs.label, unit: xu, sets: [], how: '', x: true };
+    }
+    return null;
+  }
+  function asgBase(label){ const t = String(label || '값'); return t.indexOf('맡을 ') === 0 ? t.slice(3) : t; }
+  function asgFmt(v){ return String(Number(Number(v).toFixed(6))); }
+  function asgNum(v){ const t = String(v == null ? '' : v).replace(/[^0-9+\-.eE]/g, ''); return t === '' ? NaN : Number(t); }
+  //  권장값에서 시작·끝·간격을 짐작합니다. 목록(5 · 17)이면 가장 좁은 간격, 구간(1~7)뿐이면 모둠 수로 나눈 간격.
+  function asgDefaults(a, n){
+    const nums = [];
+    let lists = false;
+    (a.sets || []).forEach(function(s){
+      String(s).split(/\s*[·,~∼〜]\s*/).forEach(function(t){ const v = asgNum(t); if (isFinite(v)) nums.push(v); });
+      if (!/[~∼〜]/.test(String(s))) lists = true;
+    });
+    if (!nums.length) return null;
+    const u = nums.filter(function(v, i){ return nums.indexOf(v) === i; }).sort(function(p, q){ return p - q; });
+    let step = Infinity;
+    if (lists && u.length > 1){ for (let i = 1; i < u.length; i++) step = Math.min(step, u[i] - u[i - 1]); }
+    else step = (u[u.length - 1] - u[0]) / Math.max(1, n - 1);
+    if (!(step > 0) || !isFinite(step)) step = 1;
+    return { from: u[0], to: u[u.length - 1], step: Number(step.toPrecision(3)) };
+  }
+  function asgValues(from, to, step){
+    const out = [];
+    if (!isFinite(from) || !isFinite(to) || !(step > 0)) return out;
+    const dir = to >= from ? 1 : -1;
+    for (let i = 0; i <= 200; i++){
+      const v = from + dir * i * step;
+      if (dir > 0 ? v > to + step * 1e-6 : v < to - step * 1e-6) break;
+      out.push(asgFmt(v));
+    }
+    return out;
+  }
+  //  값 목록 → 모둠별 몫. 값이 모둠보다 많으면 건너뛰며(1·8, 2·9…) 맡겨 모둠 안에서도 범위 전체에 퍼지게 하고,
+  //  적으면 돌아가며 맡겨 몇 모둠은 같은 값을 잽니다(같은 값끼리 견줄 수 있습니다).
+  function asgDistribute(vals, n){
+    const out = [];
+    for (let i = 0; i < n; i++){
+      if (vals.length <= n) out.push(vals[i % vals.length]);
+      else { const mine = []; for (let k = i; k < vals.length; k += n) mine.push(vals[k]); out.push(mine.join(' · ')); }
+    }
+    return out;
+  }
+  function asgNoteText(k, n){
+    if (k === n) return '값 ' + k + '개를 모둠 ' + n + '곳에 하나씩 나눴습니다.';
+    if (k < n) return '값 ' + k + '개를 모둠 ' + n + '곳에 돌아가며 나눴습니다. ' + (n - k) + '모둠은 다른 모둠과 같은 값을 재어 서로 견줍니다.';
+    const lo = Math.floor(k / n), hi = Math.ceil(k / n);
+    return '값 ' + k + '개를 모둠 ' + n + '곳에 나눴습니다. 모둠마다 ' + (lo === hi ? lo : lo + '~' + hi) + '개씩, 범위 전체에 흩어지게 맡습니다.';
+  }
+  function asgNote(t){
+    $('asgGenNote').textContent = t || '범위와 간격을 적고 누르면 모둠 수에 맞춰 나눠 줍니다. 값 개수가 모둠 수와 같으면 한 모둠에 하나씩, 두 배면 두 개씩 맡고, 값이 모둠보다 적으면 몇 모둠은 같은 값을 잽니다.';
   }
   function paintAssignNew(){
     const a = picked && assignSpecOf(picked);
+    asgGenVals = null;
     $('assignNew').classList.toggle('hidden', !a);
     if (!a){ $('assignNewList').innerHTML = ''; return; }
     $('assignNewSub').textContent = (a.how ? a.how + ' ' : '') + '값은 모둠 칸에서 바로 고칠 수 있습니다.';
-    //  합치기 아주 좋은 실험(★)은 켜 둔 채로 시작합니다 — 끄는 것도 선생님 마음입니다.
-    $('inAssignOn').checked = poolFitOf(picked) >= 3;
+    //  합치기 아주 좋은 실험(★)은 권장값을 켜 둔 채로 시작합니다 — 끄는 것도 선생님 마음입니다.
+    $('inAssignOn').checked = (a.sets || []).length > 0 && poolFitOf(picked) >= 3;
+    $('asgGenLab').textContent = asgBase(a.label);
+    $('asgUnit').textContent = a.unit || '';
+    const d = asgDefaults(a, Math.max(1, Math.min(20, Number($('inGroups').value) || 7)));
+    $('asgFrom').value = d ? asgFmt(d.from) : ''; $('asgTo').value = d ? asgFmt(d.to) : ''; $('asgStep').value = d ? asgFmt(d.step) : '';
+    asgNote('');
     fillAssignList();
   }
   function fillAssignList(){
@@ -1930,22 +2053,49 @@
     if (!box) return;
     if (!a){ box.innerHTML = ''; return; }
     const n = Math.max(1, Math.min(20, Number($('inGroups').value) || 7));
+    const sets = a.sets || [];
+    const vals = asgGenVals ? asgDistribute(asgGenVals, n)
+               : Array.from({ length: n }, function(_, i){ return sets.length ? sets[i % sets.length] : ''; });
     let h = '<label class="fl">' + esc(a.label || '맡을 값') + (a.unit ? ' (' + esc(a.unit) + ')' : '') + '</label>';
     for (let i = 0; i < n; i++){
       h += '<div style="display:flex;gap:8px;align-items:center;margin-top:6px">' +
            '<span class="pill" style="min-width:64px;text-align:center">' + (i + 1) + '모둠</span>' +
-           '<input type="text" data-asg="' + i + '" maxlength="40" style="flex:1" value="' + esc(a.sets[i % a.sets.length]) + '"/>' +
+           '<input type="text" data-asg="' + i + '" maxlength="60" style="flex:1" value="' + esc(vals[i]) + '"/>' +
            (a.unit ? '<span class="muted">' + esc(a.unit) + '</span>' : '') + '</div>';
     }
     box.innerHTML = h;
+    if (asgGenVals) asgNote(asgNoteText(asgGenVals.length, n));
   }
+  $('btnAsgGen').addEventListener('click', function(){
+    const from = asgNum($('asgFrom').value), to = asgNum($('asgTo').value), step = asgNum($('asgStep').value);
+    if (!isFinite(from) || !isFinite(to)){ asgNote('시작 값과 끝 값을 숫자로 적어 주세요.'); return; }
+    if (!(step > 0)){ asgNote('간격은 0 보다 큰 숫자로 적어 주세요.'); return; }
+    const vals = asgValues(from, to, step);
+    if (!vals.length){ asgNote('나눌 값이 없습니다. 시작·끝·간격을 확인해 주세요.'); return; }
+    if (vals.length > 60){ asgNote('값이 ' + vals.length + '개를 넘습니다. 간격을 키워 60개 안으로 줄여 주세요.'); return; }
+    asgGenVals = vals;
+    $('inAssignOn').checked = true;
+    fillAssignList();
+  });
   function assignFormValue(){
     const a = picked && assignSpecOf(picked);
     if (!a || $('assignNew').classList.contains('hidden') || !$('inAssignOn').checked) return null;
     const vals = Array.prototype.map.call($('assignNewList').querySelectorAll('[data-asg]'),
                                           function(el){ return el.value.trim(); });
     if (!vals.some(function(v){ return !!v; })) return null;
-    return { label: a.label || '맡을 값', unit: a.unit || '', groups: vals };
+    return { label: a.label || '맡을 값', unit: a.unit || '', groups: vals, x: !!a.x };
+  }
+  //  우리 반 그래프 채우기 — 칸마다 값과 맡은 모둠, 채웠으면 초록. myNo 가 있으면 그 모둠 몫을 노랗게 두릅니다.
+  function coverHTML(cv, myNo){
+    if (!cv) return '';
+    let h = '<div class="covbar"><b>우리 반 그래프 ' + cv.total + '칸 가운데 ' + cv.done + '칸을 채웠습니다</b>' +
+            (cv.total && cv.done === cv.total ? ' · 다 채웠습니다 🎉' : '') + '</div><div class="covchips">';
+    cv.items.forEach(function(it){
+      const mine = !!myNo && it.groups.indexOf(myNo) >= 0;
+      h += '<span class="covchip' + (it.done ? ' done' : '') + (mine ? ' mine' : '') + '">' + esc(it.label + (cv.unit ? ' ' + cv.unit : '')) +
+           '<small>' + (it.done ? '✓ ' : '') + it.groups.map(function(n){ return n + '모둠'; }).join('·') + (mine ? ' · 우리' : '') + '</small></span>';
+    });
+    return h + '</div>';
   }
 
   function fillUnits(){
@@ -2069,6 +2219,7 @@
     $('inFeatLab').checked = true;
     $('inFeatAi').checked  = true;
     $('inFeatRead').checked = true;
+    $('inGroupPin').checked = false;
     $('newErr').textContent = '';
     qeNew.set([]);
     show('new');
@@ -2091,34 +2242,44 @@
     $('newErr').textContent = '';
     this.disabled = true; this.textContent = '만드는 중…';
     Hub.saveLocal('teacher_name', $('inTeacher').value.trim());
-    Hub.createLesson({
-      title      : title,
-      expId      : picked ? picked.id : null,
-      expTitle   : picked ? picked.title : null,
-      classLabel : $('inClass').value.trim(),
-      teacherName: $('inTeacher').value.trim(),
-      //  features 는 켜고 끌 수 있는 탭들입니다 — lab(데이터 실험실) · ai(AI와 협업 탐구).
-      //  vendor·steps·prep 은 실험 절차입니다. 스키마를 바꾸지 않으려고 form 안에 함께 담습니다.
-      form       : Object.assign(
-                     { questions: qs, features: { lab: !!$('inFeatLab').checked,
-                                                  ai : !!$('inFeatAi').checked,
-                                                  readLater: !!$('inFeatRead').checked } },
-                     VENDORS.length ? { vendor: newVendor(), steps: seNew.get(), prep: peNew.get() } : {},
-                     //  모둠별로 나눠 맡기 — 켰을 때만 담습니다(스키마 변경 없음)
-                     (function(){ const g = assignFormValue(); return g ? { assign: g } : {}; })(),
-                     //  꾸러미로 들어온 것들 — 스키마를 바꾸지 않으려고 form 안에 함께 담습니다
-                     packQuiz.length ? { quiz: packQuiz } : {},
-                     packRub.length ? { rubric: packRub } : {},
-                     packAiTpl ? { aiTemplate: packAiTpl } : {},
-                     packDash ? { dash: packDash } : {}
-                   ),
-      dataSpec   : spec,
-      groupCount : Number($('inGroups').value) || 7
+    //  비밀번호를 끄고 만들려면 서버에 그 기능이 있어야 합니다(sql/2026-09-28_open_groups.sql).
+    //  없으면 비밀번호를 쓰는 수업으로 만들고 대시보드에서 알려 줍니다.
+    const wantOpen = !$('inGroupPin').checked;
+    let openFallback = false;
+    (wantOpen ? serverOpenGroups() : Promise.resolve(false)).then(function(okOpen){
+      if (wantOpen && !okOpen) openFallback = true;
+      const open = wantOpen && okOpen;
+      return Hub.createLesson({
+        title      : title,
+        expId      : picked ? picked.id : null,
+        expTitle   : picked ? picked.title : null,
+        classLabel : $('inClass').value.trim(),
+        teacherName: $('inTeacher').value.trim(),
+        //  features 는 켜고 끌 수 있는 탭들입니다 — lab(데이터 실험실) · ai(AI와 협업 탐구).
+        //  vendor·steps·prep 은 실험 절차입니다. 스키마를 바꾸지 않으려고 form 안에 함께 담습니다.
+        form       : Object.assign(
+                       { questions: qs, features: { lab: !!$('inFeatLab').checked,
+                                                    ai : !!$('inFeatAi').checked,
+                                                    readLater: !!$('inFeatRead').checked,
+                                                    groupPin : !open } },
+                       VENDORS.length ? { vendor: newVendor(), steps: seNew.get(), prep: peNew.get() } : {},
+                       //  모둠별로 나눠 맡기 — 켰을 때만 담습니다(스키마 변경 없음)
+                       (function(){ const g = assignFormValue(); return g ? { assign: g } : {}; })(),
+                       //  꾸러미로 들어온 것들 — 스키마를 바꾸지 않으려고 form 안에 함께 담습니다
+                       packQuiz.length ? { quiz: packQuiz } : {},
+                       packRub.length ? { rubric: packRub } : {},
+                       packAiTpl ? { aiTemplate: packAiTpl } : {},
+                       packDash ? { dash: packDash } : {}
+                     ),
+        dataSpec   : spec,
+        groupCount : Number($('inGroups').value) || 7
+      });
     }).then(function(r){
-      // 만든 즉시 모둠 비밀번호를 받아 둡니다(교사가 바로 칠판에 적을 수 있게 드러내 둡니다).
+      // 만든 즉시 모둠 비밀번호를 받아 둡니다. 비밀번호를 쓰는 수업이면 교사가 바로 칠판에 적을 수 있게 드러내 둡니다.
       pins      = Array.isArray(r.pins) ? r.pins : [];
       pinsCode  = Hub.norm(r.adminCode);
-      pinsShown = pins.length > 0;
+      pinsShown = pins.length > 0 && !(wantOpen && !openFallback);
+      pinFallbackFor = openFallback ? Hub.norm(r.adminCode) : '';
       const carried = packQuiz.slice();
       openDash(r.adminCode);
       //  꾸러미가 개념 확인 문항을 들고 왔으면 편집기에 얹어 둡니다(누르면 바로 배포됩니다).
@@ -2160,7 +2321,7 @@
       formDirty = false; formSyncedSig = null; labBusy = false;
       procDirty = false; procSyncedSig = null;
       aiBusy = false; aiTplDirty = false; aiTplSyncedSig = null; aiOpen = {};
-      readBusy = false;
+      readBusy = false; gpinBusy = false;
       resetDashKit();
       resetGrading();
       $('formErr').textContent = ''; $('formMsg').textContent = ''; $('featMsg').textContent = '';
@@ -2290,6 +2451,23 @@
       return h;
     }).join('') || '<div class="empty">아직 들어온 모둠이 없습니다.</div>';
 
+    //  우리 반 그래프 채우기 — 모둠마다 맡긴 값 가운데 어느 칸이 채워졌는지(hub.js 의 Hub.assignCoverage).
+    (function(){
+      const box = $('boxCover');
+      if (!box) return;
+      const cv = (typeof Hub.assignCoverage === 'function') ? Hub.assignCoverage(board, lesson) : null;
+      box.classList.toggle('hidden', !cv);
+      if (!cv){ $('dCover').innerHTML = ''; return; }
+      const left = cv.items.filter(function(it){ return !it.done; });
+      $('dCoverSub').textContent = cv.isX
+        ? '모둠마다 맡긴 값을 그 모둠이 실제로 쟀는지 봅니다. 초록 칸이 채워진 값입니다.'
+        : '모둠마다 맡긴 조건에 자료가 들어왔는지 봅니다. 초록 칸이 자료가 들어온 조건입니다.';
+      $('dCover').innerHTML = coverHTML(cv, 0) + (left.length
+        ? '<p class="muted" style="margin-top:10px">아직 비어 있는 칸 · ' + left.map(function(it){
+            return esc(it.label + (cv.unit ? ' ' + cv.unit : '')) + '(' + it.groups.map(function(n){ return n + '모둠'; }).join('·') + ')';
+          }).join(', ') + '</p>' : '');
+    })();
+
     //  반 전체 한 그래프 — DashKit 의 classLines(모둠색 겹치기 + 전체 추세선)를 빌려 씁니다.
     (function(){
       const box = $('boxMerged');
@@ -2304,7 +2482,7 @@
           st.id = 'dkCssMini'; st.textContent = DashKit.css('light');
           document.head.appendChild(st);
         }
-        inner = DashKit.renderBlock('classLines', { board: board, role: 'teacher', mode: 'live' },
+        inner = DashKit.renderBlock('classLines', { board: board, role: 'teacher', mode: 'live', noMine: true },
                                     { bare: true, cfg: { line: spec.chart !== 'scatter' } });
       } catch (e) { inner = ''; }
       $('dMerged').innerHTML = inner
@@ -2333,6 +2511,7 @@
     syncLabToggle();
     syncAiToggle();
     syncReadToggle();
+    syncPinMode();
     syncAiEditor(false);
     syncQuizEditor(false);
     paintQuizResult();
@@ -2507,6 +2686,15 @@
   function syncReadToggle(){
     if (readBusy) return;
     $('dFeatRead').checked = readOn();
+  }
+  function syncPinMode(){
+    const on = groupPinOn();
+    if (!gpinBusy) $('dGroupPin').checked = on;
+    $('pinModeNote').textContent = !on
+      ? '지금은 비밀번호 없이 들어옵니다. 학생은 참여코드를 넣고 모둠을 고른 뒤 「모둠 탐구 공간 입장하기」만 누릅니다. 아래 표는 비밀번호를 다시 켤 때 씁니다.'
+      : (pinFallbackFor && pinFallbackFor === Hub.norm(adminCode || '')
+        ? '비밀번호 없이 만들려 했지만 서버에 그 설정이 아직 없어 이 수업은 모둠 비밀번호를 씁니다. Supabase SQL Editor 에서 sql/2026-09-28_open_groups.sql 을 한 번 실행하면 끌 수 있습니다.'
+        : '지금은 모둠 비밀번호를 씁니다. 아래 4자리를 모둠마다 알려 주세요.');
   }
   function formMsg(t){
     $('formMsg').textContent = t || '';
@@ -2758,6 +2946,31 @@
       featMsg(on ? (labOn() ? 'AI와 협업 탐구를 열었습니다. 학생 화면에 곧 나타납니다.'
                             : 'AI와 협업 탐구를 열었습니다. 다만 데이터 실험실 탭이 꺼져 있어 아직 보이지 않습니다.')
                  : 'AI와 협업 탐구를 닫았습니다. 학생 화면에서 곧 사라집니다.');
+    });
+  });
+
+  //  모둠 비밀번호 쓰기 켜고 끄기 — 끄려면 서버가 그 기능을 알아야 합니다. 켜면 학생 화면이 다음 저장 때 4자리를 묻습니다.
+  $('dGroupPin').addEventListener('change', function(){
+    const el = this, on = !!el.checked;
+    gpinBusy = true; el.disabled = true;
+    pinMsg(on ? '모둠 비밀번호를 켜는 중…' : '비밀번호 없이 들어오게 바꾸는 중…', true);
+    (on ? Promise.resolve(true) : serverOpenGroups()).then(function(ok){
+      if (!ok){
+        gpinBusy = false; el.disabled = false; el.checked = true;
+        pinFallbackFor = Hub.norm(adminCode || '');
+        syncPinMode();
+        pinMsg('서버에 설정을 먼저 적용해야 합니다. Supabase SQL Editor 에서 sql/2026-09-28_open_groups.sql 을 한 번 실행해 주세요.', true);
+        return;
+      }
+      return saveForm({ features: { groupPin: on } }).then(function(r){
+        gpinBusy = false; el.disabled = false;
+        if (!r || !r.ok){ syncPinMode(); pinMsg('바꾸지 못했습니다. 다시 눌러 주세요.', true); return; }
+        if (!on) pinFallbackFor = '';
+        syncPinMode();
+        pinMsg(on ? '모둠 비밀번호를 켰습니다. 학생 화면은 다음 저장 때 비밀번호를 묻습니다. 아래 표를 칠판에 띄워 주세요.'
+                  : '비밀번호 없이 들어오게 바꿨습니다. 학생은 모둠만 고르면 됩니다.');
+        if (on && !pins.length) loadPins(false);
+      });
     });
   });
 
@@ -4413,7 +4626,7 @@
       aiTemplate: (o.aiTemplate && typeof o.aiTemplate === 'object') ? o.aiTemplate : null,
       //  대시보드 구성도 함께 담습니다 — 간편 모드에서도 같은 짜임으로 볼 수 있게 합니다.
       dash: (o.dash && typeof o.dash === 'object' && !Array.isArray(o.dash)) ? o.dash : null,
-      features: { lab: f.lab !== false, ai: f.ai !== false, readLater: f.readLater === true }
+      features: { lab: f.lab !== false, ai: f.ai !== false, readLater: f.readLater === true, groupPin: f.groupPin === true }
     };
   }
   //  수업 만들기 화면에 지금 들어 있는 그대로
@@ -4433,7 +4646,7 @@
       rubric: packRub,
       aiTemplate: packAiTpl,
       dash: packDash,
-      features: { lab: !!$('inFeatLab').checked, ai: !!$('inFeatAi').checked, readLater: !!$('inFeatRead').checked }
+      features: { lab: !!$('inFeatLab').checked, ai: !!$('inFeatAi').checked, readLater: !!$('inFeatRead').checked, groupPin: !!$('inGroupPin').checked }
     });
   }
   //  이미 만든 실시간 수업 → 꾸러미 (form 을 그대로 옮겨 담습니다)
@@ -4530,6 +4743,7 @@
     $('inFeatLab').checked = p.features.lab !== false;
     $('inFeatAi').checked  = p.features.ai  !== false;
     $('inFeatRead').checked = p.features.readLater === true;
+    $('inGroupPin').checked = p.features.groupPin === true;
     $('newErr').textContent = '';
     vendorMsg('');
     qeNew.set(p.questions.length ? p.questions : (picked ? (picked.questions || []) : []));
