@@ -271,6 +271,14 @@
       R + ' .dk-ul{margin:0;padding-left:1.1em;font-size:.88em}',
       R + ' .dk-ul li{margin:.25em 0}',
       R + ' .dk-steps{display:grid;gap:.5em}',
+      R + ' .dk-rich{font-size:.9em;line-height:1.65}',
+      R + ' .dk-rich .sr-h1{font-size:1.1em;margin:.9em 0 .35em;padding:.35em .6em;border-radius:.5em;background:' + T.soft + '}',
+      R + ' .dk-rich .sr-h2{font-size:1em;margin:.7em 0 .2em}',
+      R + ' .dk-rich p{margin:.2em 0}',
+      R + ' .dk-rich ol,' + R + ' .dk-rich ul{margin:.2em 0 .4em 1.3em}',
+      R + ' .dk-rich .sr-note{margin:.4em 0;padding:.45em .7em;border-radius:.6em;border:1px solid ' + T.line + ';font-weight:700}',
+      R + ' .dk-rich .sr-tb{border-collapse:collapse;margin:.4em 0}',
+      R + ' .dk-rich .sr-tb th,' + R + ' .dk-rich .sr-tb td{border:1px solid ' + T.line + ';padding:.3em .6em;text-align:left}',
       R + ' .dk-step{display:flex;gap:.6em;background:' + T.soft + ';border:1px solid ' + T.line + ';' +
         'border-radius:.7em;padding:.55em .7em;font-size:.85em;line-height:1.6}',
       R + ' .dk-step i{flex:0 0 1.5em;height:1.5em;border-radius:50%;background:' + ACC.mint + ';color:#fff;' +
@@ -336,7 +344,7 @@
   //  3. ctx 다듬기 — 실시간·간편·합치기 결과가 모두 같은 모양이 되게
   // ─────────────────────────────────────────────────────────────────
   var FIG_DIAGRAM = {
-    'sm-08': 'ohm',   'ez-22': 'ohm',
+    'sm-08': 'ohmsw', 'ez-22': 'ohm',
     'sm-05': 'boyle', 'ez-25': 'boyle', 'ez-26': 'boyle',
     'sm-06': 'photo', 'sm-07': 'photo',
     'sm-09': 'lux',   'sm-01': 'heat',
@@ -1184,6 +1192,8 @@
       var L = LABDB(), list = [];
       try { list = (L && L.stepsFor) ? (L.stepsFor(e, C.vendor) || []) : (e.steps || []); } catch (err) { list = e.steps || []; }
       if (!list.length) return empty('이 실험에는 적어 둔 절차가 없습니다.');
+      //  줄 머리로 짠 절차(실험 1·2, ①…)는 LAB.stepsHTML 로 그립니다. 사진·그림은 빼고(연결 그림 칸이 따로 있음) 글만.
+      if (L && L.richSteps && L.stepsHTML && L.richSteps(list)) return '<div class="dk-rich">' + L.stepsHTML(list, { media: false }) + '</div>';
       var h = '<div class="dk-steps">';
       list.forEach(function (x, i) { h += '<div class="dk-step"><i>' + (i + 1) + '</i><div>' + esc(x) + '</div></div>'; });
       return h + '</div>';
