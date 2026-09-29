@@ -7,17 +7,17 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-<script src="./lab-data.js?v=202609281649"></script>
+<script src="./lab-data.js?v=202609292306"></script>
 <!--  예시 데이터 — 연수·시연에서 센서 없이 기능을 보여 줄 때 씁니다. 없으면 버튼이 조용히 숨습니다.  -->
-<script src="./demo-data.js?v=202609281649"></script>
-<script src="./diagrams.js?v=202609281649"></script>
-<script src="./graphs.js?v=202609281649"></script>
-<script src="./config.js?v=202609281649"></script>
-<script src="./hub.js?v=202609281649"></script>
+<script src="./demo-data.js?v=202609292306"></script>
+<script src="./diagrams.js?v=202609292306"></script>
+<script src="./graphs.js?v=202609292306"></script>
+<script src="./config.js?v=202609292306"></script>
+<script src="./hub.js?v=202609292306"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609281649"></script>
-<script src="./dashkit.js?v=202609281649"></script>
+<script src="./sensorkit.js?v=202609292306"></script>
+<script src="./dashkit.js?v=202609292306"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -265,6 +265,11 @@
   .rwheel svg{width:100%;height:auto;display:block;overflow:visible}
   .rpointer{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font-size:30px;line-height:1;color:var(--coral);z-index:2;filter:drop-shadow(0 2px 0 #fff)}
   #roleWheelG{transition:transform 2.4s cubic-bezier(.12,.72,.14,1)}
+  .vphotos{display:flex;flex-wrap:wrap;gap:12px;margin:6px 0 4px;align-items:flex-start}
+  .vphotos figure{margin:0;flex:3 1 420px;min-width:0}
+  .vphotos figure.sm{flex:1 1 200px;max-width:320px}
+  .vphotos img{display:block;width:100%;height:auto;border-radius:12px;border:1px solid var(--line);background:#fff}
+  .vphotos figcaption{font-size:13px;color:var(--muted);margin-top:6px;line-height:1.55}
   #dashHost{--dk-sticky:132px}        /* 대시보드 도구막대가 위쪽 머리(.top)·상태 줄(.simplebar) 밑으로 숨지 않게 — 실제 값은 dashStickyTop() 이 잽니다 */
   .rnow{text-align:center;font-size:22px;font-weight:900;min-height:1.6em;margin:12px 0 6px}
   .rsofar{display:flex;flex-wrap:wrap;gap:6px;justify-content:center}
@@ -2259,7 +2264,7 @@
   function buildWorkHTML(w){
     const e = (window.LAB && w.pack.expId) ? LAB.byId(w.pack.expId) : null;
     const vk = w.pack.vendor;
-    const steps = (w.pack.steps || []).length ? w.pack.steps
+    const steps = (w.pack.steps || []).length ? ((window.LAB && LAB.fixSteps) ? LAB.fixSteps(w.pack.steps) : w.pack.steps)
                 : (e && window.LAB && LAB.stepsFor ? LAB.stepsFor(e, vk) : (e && e.steps) || []);
     const prep  = (w.pack.prep || []).length ? w.pack.prep
                 : (e && window.LAB && LAB.prepFor ? LAB.prepFor(e, vk) : (e && e.prep) || []);
@@ -3100,6 +3105,7 @@
     h += '<div class="box">' + illus('activity') +
          '<h2>실험 순서' + (vi ? ' · ' + esc(vi.name) : '') + '</h2>' +
          '<ol class="steps-ol">' + steps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
+    h += vendorPhotos(e, vk);
     if (prep.length){
       h += '<h3>준비물</h3><p class="muted">' + prep.map(esc).join(' · ') + '</p>';
     }
@@ -3127,6 +3133,17 @@
       h += '</div>';
     }
     $('pnGuide').innerHTML = h;
+  }
+
+  //  업체 화면 사진(사이언스# 실험설정 · 센서 영점) — 절차 바로 아래에 붙습니다. 누르면 새 창에서 크게 봅니다.
+  function vendorPhotos(e, vendor){
+    const ps = (window.LAB && LAB.photosFor && e && vendor) ? LAB.photosFor(e, vendor) : [];
+    if (!ps.length) return '';
+    return '<h3>화면으로 보기</h3><div class="vphotos">' + ps.map(function(p){
+      return '<figure' + (p.w < 800 ? ' class="sm"' : '') + '><a href="./' + esc(p.src) + '" target="_blank" rel="noopener" title="크게 보기">' +
+             '<img src="./' + esc(p.src) + '" alt="' + esc(p.alt) + '" width="' + p.w + '" height="' + p.h + '" loading="lazy" decoding="async" /></a>' +
+             '<figcaption>' + esc(p.cap) + '</figcaption></figure>';
+    }).join('') + '</div>';
   }
 
   // 안내 그림 한 장 (없으면 조용히 사라집니다)
@@ -3265,7 +3282,9 @@
   }
   //  절차·준비물 고르기 — 선생님이 직접 쓴 것 → 업체별 → 기본 순
   function stepsOf(e, vendor){
-    if (lesson && lesson.form && Array.isArray(lesson.form.steps) && lesson.form.steps.length) return lesson.form.steps;
+    //  예전에 만든 수업에 복사돼 있던 틀린 문장(사이언스# 연결·X축 설정)은 보여 줄 때 바로잡습니다.
+    if (lesson && lesson.form && Array.isArray(lesson.form.steps) && lesson.form.steps.length)
+      return (window.LAB && LAB.fixSteps) ? LAB.fixSteps(lesson.form.steps) : lesson.form.steps;
     if (window.LAB && LAB.stepsFor) return LAB.stepsFor(e, vendor);
     return (e && e.steps) || [];
   }
@@ -8251,7 +8270,8 @@
     }
     if (asteps.length){
       h += '<h3>실험 순서' + ((avi && !noS) ? ' · ' + esc(avi.name) : '') + '</h3>' + (noS ? '' : altNoteHTML(e, av)) +
-           '<ol class="steps-ol">' + asteps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
+           '<ol class="steps-ol">' + asteps.map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>' +
+           vendorPhotos(e, av);
     }
     h += figDiagram(e);
     //  이 수업의 실험이고 결과 해설을 가리는 중이면 도감에서도 가립니다.
