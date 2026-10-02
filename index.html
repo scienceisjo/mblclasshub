@@ -4,6 +4,7 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>MBL 수업허브 · 학생용</title>
+<meta name="description" content="MBL 수업허브 — 센서로 잰 값을 해석하고, 반 전체를 한 그래프로 합치고, 보고서를 쓰고 발표하는 중학교 과학 수업 도구입니다. 설치도 계정도 필요 없습니다." />
 <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
@@ -17,14 +18,15 @@
 <script src="./hub.js?v=202609301448"></script>
 <!-- 센서 연결 엔진 · 대시보드 엔진 — 둘 다 외부 자원을 부르지 않습니다.
      (무선 SDK 는 학생이 '무선'을 고를 때만 sensorkit.js 가 그 자리에서 불러옵니다.) -->
-<script src="./sensorkit.js?v=202609301448"></script>
-<script src="./dashkit.js?v=202609301448"></script>
+<!--  두 엔진은 작업 화면에서만 씁니다. defer 로 받아 첫 화면을 먼저 그립니다(아래 본문 스크립트는 둘이 늦게 와도 기다립니다).  -->
+<script src="./sensorkit.js?v=202609301448" defer></script>
+<script src="./dashkit.js?v=202609301448" defer></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
     --paper:#FFFFFF; --cream:#FFFDF6;
-    --ink:#254753; --muted:#6E8A96;
-    --mint:#20B2A6; --mint-d:#14867C;
+    --ink:#254753; --muted:#4F6B76;
+    --mint:#20B2A6; --mint-d:#0F766E; --mint-dd:#0B5F58;
     --sun:#FFC130; --coral:#FF8C6B; --sky:#54B4E8;
     --line:#E4EFF1; --line-2:#D3E6EA;
     --shadow:0 10px 28px rgba(37,71,83,.09);
@@ -36,6 +38,7 @@
     --wrap:1120px; --r:18px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{scroll-padding-top:84px}   /* 위에 붙은 머리띠 밑으로 숨지 않게 */
   body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;
     background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed;min-height:100vh}
   a{color:inherit;text-decoration:none}
@@ -53,7 +56,7 @@
 
   /* 상단바 */
   .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .top .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:62px;padding:8px 0}
+  .top .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:62px;padding:8px 16px}
   .brand{display:flex;flex-direction:column;line-height:1.2;min-width:0}
   .brand b{font-family:var(--display);font-size:19px;font-weight:400}
   .brand span{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
@@ -69,10 +72,10 @@
     background:#fff;color:var(--ink);padding:10px 18px;border-radius:999px;transition:.16s}
   .btn:hover{border-color:var(--mint);color:var(--mint-d)}
   .btn:disabled{opacity:.5;cursor:not-allowed}
-  .btn-solid{background:var(--mint);color:#fff;border-color:var(--mint);box-shadow:var(--shadow)}
-  .btn-solid:hover{background:var(--mint-d);color:#fff}
+  .btn-solid{background:var(--mint-d);color:#fff;border-color:var(--mint-d);box-shadow:var(--shadow)}
+  .btn-solid:hover{background:var(--mint-dd);border-color:var(--mint-dd);color:#fff}
   .btn-sun{background:var(--sun);border-color:var(--sun);color:#5A3E00}
-  .btn-sm{padding:7px 13px;font-size:13px}
+  .btn-sm{padding:7px 13px;font-size:13px;min-height:44px}
 
   .box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin:16px 0}
   .box h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:6px}
@@ -84,7 +87,8 @@
   .join{max-width:520px;margin:38px auto}
   .join .code-in{width:100%;font-family:var(--display);font-size:38px;letter-spacing:.16em;text-align:center;
     padding:16px 12px;border:2px solid var(--line-2);border-radius:16px;background:var(--cream);color:var(--ink);text-transform:uppercase}
-  .join .code-in:focus{border-color:var(--mint);outline:none}
+  .join .code-in:focus{border-color:var(--mint-d);outline:none;box-shadow:0 0 0 3px rgba(15,118,110,.22)}
+  .join .code-in::placeholder{color:#C3D3D8;opacity:1}
   .err{color:var(--bad);font-size:14px;font-weight:700;margin-top:10px;min-height:20px}
 
   /* 모둠 고르기 */
@@ -98,15 +102,15 @@
 
   input[type=text],input[type=number],textarea,select{font-family:var(--sans);font-size:15px;color:var(--ink);
     border:1.5px solid var(--line-2);border-radius:12px;padding:11px 13px;background:#fff;width:100%}
-  input:focus,textarea:focus,select:focus{border-color:var(--mint);outline:none}
+  input:focus,textarea:focus,select:focus{border-color:var(--mint-d);outline:none;box-shadow:0 0 0 3px rgba(15,118,110,.22)}
   textarea{resize:vertical;min-height:84px;line-height:1.6}
   label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--muted);margin:14px 0 6px}
 
   /* 탭 */
   .tabs{display:flex;gap:6px;overflow-x:auto;margin:16px 0 4px;padding-bottom:2px}
-  .tab{white-space:nowrap;cursor:pointer;background:#fff;border:1.5px solid var(--line-2);color:var(--muted);
+  .tab{white-space:nowrap;cursor:pointer;min-height:44px;background:#fff;border:1.5px solid var(--line-2);color:var(--muted);
     font-family:var(--sans);font-size:14px;font-weight:700;padding:9px 16px;border-radius:999px;transition:.16s}
-  .tab.on{background:var(--mint);border-color:var(--mint);color:#fff}
+  .tab.on{background:var(--mint-d);border-color:var(--mint-d);color:#fff}
   .tab:disabled{opacity:.45;cursor:not-allowed}
 
   /* 실험 안내 */
@@ -209,7 +213,7 @@
 
   /* 실험 도감 */
   .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
-  .filters select,.filters input{width:auto;min-width:150px;flex:1 1 190px}
+  .filters select,.filters input[type=text]{width:auto;min-width:150px;flex:1 1 190px}
   .atlaslist{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:12px;padding:4px}
   .exp{border:1.5px solid var(--line);border-radius:14px;background:var(--paper);padding:14px;min-height:44px;
     cursor:pointer;transition:.16s;box-shadow:var(--shadow)}
@@ -232,7 +236,7 @@
   .pinpad{display:flex;gap:10px;justify-content:center;margin:10px 0 2px}
   .pinpad input.pinbox{width:58px;height:66px;flex:none;text-align:center;font-family:var(--display);
     font-size:30px;border:2px solid var(--line-2);border-radius:14px;background:#fff;color:var(--ink);padding:0}
-  .pinpad input.pinbox:focus{border-color:var(--mint);background:#F0FBFA;outline:none}
+  .pinpad input.pinbox:focus{border-color:var(--mint-d);background:#F0FBFA;outline:none;box-shadow:0 0 0 3px rgba(15,118,110,.22)}
   .pinpad.bad input.pinbox{border-color:var(--bad)}
   .pinpad.shake{animation:pinshake .4s}
   @keyframes pinshake{
@@ -396,7 +400,7 @@
   .fithelp-in .dtul{margin:6px 0 0;padding-left:18px;font-size:14px;line-height:1.75}
   .fithelp-in .dtul li{margin-bottom:6px}
   .linfig{margin:12px 0 4px;padding:10px;border:1px solid var(--line);border-radius:12px;background:#fff;overflow-x:auto}
-  .linfig svg{min-width:520px}
+  .linfig svg{min-width:0;width:100%;height:auto}
   .linfig figcaption{margin-top:6px;font-size:12.5px;text-align:center}
   .qcards{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:12px;margin-top:10px}
   .qcard{border:1.5px solid var(--line);border-radius:14px;background:var(--cream);padding:12px 14px}
@@ -454,7 +458,7 @@
   .ehead{display:flex;gap:10px;align-items:flex-start}
   .ehead i{font-style:normal;font-size:26px;line-height:1;flex-shrink:0;margin-top:2px}
   .ehead b{display:block;font-family:var(--display);font-size:19px;font-weight:400;line-height:1.25}
-  .ehead span{display:block;font-size:13px;color:var(--muted);line-height:1.55;margin-top:3px}
+  .ehead div>span{display:block;font-size:13px;color:var(--muted);line-height:1.55;margin-top:3px}
   .ehead span b{display:inline;font-family:var(--sans);font-size:inherit;font-weight:700;color:var(--ink)}
   .ecard .btn{width:100%;min-height:46px}
   .ecard .code-in{font-size:32px;padding:12px 10px;margin-top:2px}
@@ -462,9 +466,10 @@
   .ecard .err:empty{display:none}
   .enote{font-size:12px;color:var(--muted);line-height:1.5;margin-top:auto}
   .esub{display:flex;flex-direction:column;gap:4px;margin-top:auto}
-  .lnk{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:5px 6px;margin:0 -6px;border-radius:9px;
+  .lnk{display:inline-flex;align-items:center;gap:6px;background:none;border:0;padding:5px 6px;margin:0 -6px;min-height:44px;border-radius:9px;
     font-family:var(--sans);font-size:13px;font-weight:700;color:var(--mint-d);cursor:pointer;text-align:left;line-height:1.35}
   .lnk:hover{background:rgba(32,178,166,.1)}
+  .lnk small{display:block;font-weight:500;color:var(--muted);font-size:12px}
   /* 등장 — 처음엔 조금 아래에서 흐리게, 보이는 순서대로 올라옵니다 */
   .reveal{opacity:0;transform:translateY(16px);
     transition:opacity .55s ease,transform .55s cubic-bezier(.2,.7,.2,1);transition-delay:calc(var(--i,0)*80ms)}
@@ -496,7 +501,9 @@
   .htile span{display:block;font-size:13.5px;color:var(--muted);line-height:1.6}
   .hsub{font-family:var(--display);font-size:19px;font-weight:400;margin:22px 0 8px}
   .hsub .muted{font-family:var(--sans);font-size:13px}
-  .hcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px}
+  .hcards{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+  @media (max-width:760px){ .hcards{grid-template-columns:repeat(2,minmax(0,1fr))} }
+  @media (max-width:420px){ .hcards{grid-template-columns:1fr} }
   .hcard{text-align:left;background:#fff;border:1.5px solid var(--line);border-radius:14px;padding:12px 13px;cursor:pointer;
     font-family:var(--sans);color:var(--ink);transition:.16s}
   .hcard:hover{border-color:var(--mint);box-shadow:var(--shadow)}
@@ -557,6 +564,70 @@
   background:#fdeceb;border:1px solid #f3c3bd;border-radius:8px;padding:6px 11px;text-decoration:none}
 .ytlink::before{content:"\25B6";font-size:.72em}
 .ytlink:hover{background:#b3271a;color:#fff;border-color:#b3271a}
+
+/* ── 위쪽 길잡이 — 넓은 화면은 한 줄, 좁은 화면은 [메뉴] 하나로 접습니다 ── */
+.topnav{display:flex;align-items:center;gap:2px;margin-left:auto;margin-right:6px}
+.topnav a{font-size:13px;font-weight:700;color:var(--muted);padding:10px 9px;border-radius:9px;white-space:nowrap;min-height:44px;display:inline-flex;align-items:center}
+.topnav a:hover,.topnav a[aria-current="page"]{color:var(--mint-d);background:rgba(32,178,166,.1)}
+.navmenu{position:relative;display:none}
+.navmenu>summary{list-style:none;cursor:pointer;font-size:13px;font-weight:700;border:1.5px solid var(--line-2);border-radius:999px;
+  padding:0 14px;min-height:44px;display:inline-flex;align-items:center;gap:6px;background:#fff;color:var(--ink)}
+.navmenu>summary::-webkit-details-marker{display:none}
+.navmenu[open]>summary{border-color:var(--mint-d);color:var(--mint-d)}
+.navmenu nav{position:absolute;right:0;top:calc(100% + 6px);z-index:60;background:#fff;border:1.5px solid var(--line-2);border-radius:14px;
+  box-shadow:var(--shadow-lg);padding:6px;min-width:190px;display:flex;flex-direction:column}
+.navmenu nav a{padding:12px 12px;border-radius:10px;font-size:14.5px;font-weight:700;min-height:44px}
+.navmenu nav a:hover{background:rgba(32,178,166,.1);color:var(--mint-d)}
+@media (max-width:900px){ .topnav{display:none} .navmenu{display:block} }
+@media (max-width:520px){ .brand span{display:none} .topright{gap:6px} .top .row{gap:8px} }
+
+/* ── 이어서 하던 작업 ── */
+.resumebar{display:flex;align-items:center;gap:12px;flex-wrap:wrap;border:2px solid var(--sun);background:#FFFBF0;border-radius:16px;
+  padding:14px 16px;margin:0 0 14px}
+.resumebar .rb-t{flex:1 1 240px;min-width:0}
+.resumebar b{display:block;font-size:15.5px}
+.resumebar .muted{display:block;font-size:13.5px}
+
+/* ── 학생용 분석 길 — 그래프만 빠르게와 나란히 두지 않고 따로 ── */
+.estrip{display:flex;align-items:center;gap:10px 14px;flex-wrap:wrap;margin-top:14px;background:var(--paper);border:1.5px solid var(--line);
+  border-left:5px solid var(--sky);border-radius:14px;padding:10px 14px;box-shadow:var(--shadow)}
+.estrip .pill{flex:none}
+.estrip span.t{flex:1 1 260px;font-size:13.5px;color:var(--muted)}
+
+/* ── 표 — 숫자가 아닌 칸 · 예시 값 · 옆으로 밀어 보기 ── */
+#dataTbl input.bad{outline:2px solid var(--bad);outline-offset:-2px;background:#FFF4F4;color:#B23A3A}
+.cellerr{font-size:13.5px;font-weight:700;color:var(--bad);margin-top:8px}
+.cellerr:empty{display:none}
+td.rowno.demo{color:#9A6B00;background:#FFF6D6;font-size:11px;line-height:1.2}
+.democap{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:800;color:#9A6B00;background:#FFF6D6;
+  border-radius:999px;padding:4px 11px;margin-top:10px}
+.can{box-shadow:inset -16px 0 14px -14px rgba(37,71,83,.45)}
+@media (max-width:640px){ #dataTbl table{min-width:0} #dataTbl td.rowno{width:34px} #dataTbl td input{padding:10px 3px} }
+.swipehint{font-size:12px;font-weight:800;color:var(--mint-d);text-align:right;margin:6px 2px 2px}
+.calctog{display:inline-flex;align-items:center;gap:8px;font-size:13.5px;font-weight:700;min-height:44px;cursor:pointer;margin-top:4px}
+.calctog input{width:20px;height:20px;flex:none;margin:0}
+.chartnote{font-size:13px;color:var(--muted);margin-top:6px}
+
+/* ── 실험 도감 — 좁은 화면에서는 거르기를 접고 카드부터 ── */
+.afilt>summary{display:none}
+@media (max-width:640px){
+  .afilt{border:1.5px solid var(--line);border-radius:14px;margin:10px 0;background:var(--cream)}
+  .afilt>summary{display:flex;align-items:center;gap:8px;list-style:none;cursor:pointer;min-height:44px;padding:0 14px;font-weight:800;font-size:14px}
+  .afilt>summary::-webkit-details-marker{display:none}
+  .afilt>summary::after{content:'▾';margin-left:auto;color:var(--muted)}
+  .afilt[open]>summary::after{content:'▴'}
+  .afilt .filters{padding:0 12px 10px;margin:0}
+  .filters select,.filters input[type=text]{flex:1 1 100%;min-width:0}
+  .atlaslist{grid-template-columns:1fr}
+}
+.anitem,.fitrow{min-width:0}
+.atlasstart{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.btn-teach{font-size:12.5px}
+.btn-teach small{font-weight:600;color:var(--muted)}
+@media (max-width:640px){
+  .tabs{scroll-snap-type:x proximity}
+  .tab{scroll-snap-align:center}
+}
 </style>
 </head>
 <body>
@@ -568,9 +639,25 @@
   <div class="wrap row">
     <div class="brand">
       <b>MBL 수업허브</b>
-      <span id="topSub">참여코드 · 코드 없이 · 그래프만 빠르게 · 실험 도감</span>
+      <span id="topSub">참여코드 · 간편 모드 · 그래프만 빠르게 · 실험 도감</span>
     </div>
+    <nav class="topnav" aria-label="다른 화면으로">
+      <a href="./index.html" aria-current="page">학생 화면</a>
+      <a href="./inquiry.html">손으로 탐구</a>
+      <a href="./teacher.html">교사 화면</a>
+      <a href="./manual.html">사용 설명서</a>
+      <a href="./about.html">앱 소개</a>
+    </nav>
     <div class="topright">
+      <details class="navmenu"><summary aria-label="다른 화면으로 가는 메뉴">☰ 메뉴</summary>
+        <nav aria-label="다른 화면으로">
+          <a href="./index.html" aria-current="page">학생 화면</a>
+          <a href="./inquiry.html">손으로 탐구</a>
+          <a href="./teacher.html">교사 화면</a>
+          <a href="./manual.html">사용 설명서</a>
+          <a href="./about.html">앱 소개</a>
+        </nav>
+      </details>
       <span id="phasePill" class="pill hidden"></span>
       <button id="btnSwitch" class="btn btn-sm hidden" type="button">다른 모둠으로</button>
       <button id="btnLeave" class="btn btn-sm hidden" type="button">나가기</button>
@@ -592,24 +679,28 @@
       <img class="hero-img" src="./assets/hero.webp" alt="" width="1000" height="750" decoding="async" onerror="this.remove()" />
     </div>
 
+    <!-- 이 기기에 하던 작업이 남아 있으면 첫 화면 맨 위에서 이어 갑니다 -->
+    <div id="resumeBar" class="resumebar hidden" role="region" aria-label="이어서 하던 작업"></div>
+
     <div class="entry">
       <!-- ⓐ 참여코드 -->
       <div class="ecard ec-code reveal" style="--i:1">
         <div class="ehead"><i>🔑</i><div><b>참여코드로 들어가기</b><span>선생님이 칠판에 적어 준 6자리를 그대로</span></div></div>
-        <input id="inCode" class="code-in" type="text" inputmode="latin" autocomplete="off"
-               maxlength="6" placeholder="ABC234" aria-label="참여코드 6자리" />
+        <input id="inCode" class="code-in" type="text" autocapitalize="characters" autocomplete="off"
+               autocorrect="off" spellcheck="false" maxlength="6" placeholder="ABC234" aria-label="참여코드 6자리"
+               aria-describedby="joinErr codeNote" />
         <div id="joinErr" class="err"></div>
         <button id="btnJoin" class="btn btn-solid" type="button">들어가기</button>
-        <p class="enote">O·0·I·1·L 은 코드에 쓰이지 않습니다. 모둠을 고른 뒤 모둠 비밀번호 4자리를 넣습니다.</p>
+        <p class="enote" id="codeNote">O·0·I·1·L 은 코드에 쓰이지 않습니다. 모둠을 고른 뒤 모둠 비밀번호 4자리를 넣습니다.</p>
       </div>
 
-      <!-- ⓑ 코드 없이 -->
+      <!-- ⓑ 간편 모드 -->
       <div class="ecard ec-simple reveal" style="--i:2">
-        <div class="ehead"><i>🧪</i><div><b>코드 없이 하기</b><span>참여코드가 없나요? 실험을 골라 바로 시작하고, 한 것을 <b>작업 파일 하나</b>로 선생님께 냅니다. 서버를 쓰지 않습니다.</span></div></div>
-        <button id="btnSimplePick" class="btn btn-solid" type="button">코드 없이 시작하기</button>
+        <div class="ehead"><i>🧪</i><div><b>간편 모드</b><span>참여코드가 없나요? 실험을 골라 바로 시작하고, 한 것을 <b>작업 파일 하나</b>로 선생님께 냅니다. 서버를 쓰지 않습니다.</span></div></div>
+        <button id="btnSimplePick" class="btn btn-solid" type="button">간편 모드로 시작하기</button>
         <div class="esub">
           <button id="btnSimplePack" class="lnk" type="button">📦 수업 꾸러미 파일 올리기</button>
-          <button id="btnSimpleResume" class="lnk" type="button">📄 이어서 하기</button>
+          <button id="btnSimpleResume" class="lnk" type="button"><span>📄 작업 파일(.html) 올려서 이어 하기<small>지난번에 내려받은 작업 파일을 고르면 하던 데서 이어 갑니다.</small></span></button>
           <a class="lnk" href="./inquiry.html">✍ 손으로 탐구 — 센서 없이 재고 그리기</a>
         </div>
         <input id="filePack" type="file" class="hidden" accept=".json,application/json" />
@@ -622,20 +713,26 @@
         <div class="ehead"><i>📈</i><div><b>그래프만 빠르게</b><span>모아 둔 값을 붙여넣으면 그래프·기울기·R²·결론 문장까지. <b>예상 적기나 질문 없이</b> 결과만 봅니다.</span></div></div>
         <button id="btnQuickOpen" class="btn btn-solid" type="button">데이터 붙여넣고 분석하기</button>
         <div class="esub">
-          <button id="btnAnalyzeOpen" class="lnk" type="button">🧭 학생용 — 내 생각 먼저 적고 견주기</button>
-          <button id="btnTry30" class="lnk" type="button">⏱ 30초 체험 — 예시 값으로</button>
+          <button id="btnTry30" class="lnk" type="button">⏱ 30초 체험 — 예시 값으로 바로 그래프 보기</button>
         </div>
       </div>
 
       <!-- ⓓ 실험 도감 -->
       <div class="ecard ec-atlas reveal" style="--i:4">
-        <div class="ehead"><i>📚</i><div><b>실험 도감 <span data-expcount>49</span>건</b><span>중1·2·3 단원별로, 이지메이커·사이언스큐브 절차를 따로. 준비물·절차·성취기준·예시 데이터까지.</span></div></div>
-        <button id="btnAtlas" class="btn btn-solid" type="button">참여 없이 실험 도감 보기</button>
+        <div class="ehead"><i>📚</i><div><b>실험 도감<span data-expcount data-fmt=" {n}건"></span></b><span>중1·2·3 단원별로, 이지메이커·사이언스큐브 절차를 따로. 준비물·절차·성취기준·예시 데이터까지.</span></div></div>
+        <button id="btnAtlas" class="btn btn-solid" type="button">실험 도감 둘러보기</button>
         <div class="esub">
           <a class="lnk" href="./teacher.html">🧑‍🏫 교사용 화면</a>
           <a class="lnk" href="./manual.html">📖 사용 설명서</a>
         </div>
       </div>
+    </div>
+
+    <!-- 학생용 분석 — 내 생각을 먼저 적어야 앱의 분석이 열립니다(빠른 길과 섞이지 않게 따로 둡니다) -->
+    <div class="estrip reveal" style="--i:5">
+      <span class="pill sky">🧭 학생용 분석</span>
+      <span class="t">모은 값을 붙여넣고, <b>내 예상·직접 계산·축 고르기</b>를 먼저 적은 뒤 앱의 분석과 견줍니다.</span>
+      <button id="btnAnalyzeOpen" class="btn btn-sm" type="button">내 생각 먼저 적고 견주기</button>
     </div>
 
     <!-- 이 앱이 하는 일 — 센서 프로그램은 재고, 수업허브는 수업을 합니다 -->
@@ -651,7 +748,7 @@
         <div class="htile reveal" style="--i:3"><i>🔌</i><b>센서가 없는 날도 수업</b>
           <span>예시 데이터·CSV 붙여넣기·손 입력으로 분석은 그대로 됩니다. 두 업체 절차를 나란히 실었습니다.</span></div>
       </div>
-      <h3 class="hsub reveal">실험 도감 · <span data-expcount>49</span>건 <span class="muted">학년별로 두 개씩</span></h3>
+      <h3 class="hsub reveal">실험 도감<span data-expcount data-fmt=" · {n}건"></span> <span class="muted">학년별로 두 개씩</span></h3>
       <div id="homeCards" class="hcards"></div>
       <div class="improw reveal" style="margin-top:8px">
         <button id="btnAtlasHome" class="btn" type="button" style="min-height:44px">도감 전체 보기</button>
@@ -679,8 +776,9 @@
       <label class="fl" for="ssClass">반 (선택)</label>
       <input id="ssClass" type="text" placeholder="예) 2학년 3반" maxlength="30" />
 
-      <label class="fl">우리 모둠</label>
-      <div id="ssGsel" class="gsel"></div>
+      <label class="fl" id="ssGselLab">우리 모둠 <span style="color:var(--bad)">*</span></label>
+      <div id="ssGsel" class="gsel" role="group" aria-labelledby="ssGselLab"></div>
+      <div id="ssGselErr" class="err" role="alert" style="margin-top:0"></div>
 
       <label class="fl" for="ssGroupName">모둠 이름 (선택)</label>
       <input id="ssGroupName" type="text" placeholder="예) 3모둠 열정파" maxlength="30" />
@@ -709,7 +807,7 @@
       <div id="anGoal"></div>
 
       <label class="fl" for="anPaste">② 모은 값을 붙여넣으세요</label>
-      <textarea id="anPaste" placeholder="엑셀·구글 시트·센서 프로그램에서 복사한 표를 그대로 붙여넣으세요.&#10;부피(mL),압력(기압)&#10;60,0.5&#10;53,0.58"></textarea>
+      <textarea id="anPaste" placeholder="엑셀·구글 시트·센서 프로그램에서 복사한 표를 그대로 붙여넣으세요.&#10;기체의 부피(mL),압력(atm)&#10;60,1.00&#10;50,1.19"></textarea>
       <div class="improw">
         <button id="btnAnFile" class="btn btn-sm" type="button">파일 불러오기</button>
         <button id="btnAnSheetOpen" class="btn btn-sm" type="button">구글 시트에서 불러오기</button>
@@ -791,22 +889,22 @@
       </div>
     </div>
 
-    <div class="tabs" role="tablist">
-      <button class="tab on" data-tab="guide" type="button">실험 안내</button>
-      <button class="tab" data-tab="data" type="button">데이터 입력</button>
-      <button class="tab" id="tabLab" data-tab="lab" type="button">데이터 실험실</button>
-      <button class="tab" data-tab="report" type="button">보고서</button>
-      <button class="tab" data-tab="share" type="button">모둠 공유</button>
-      <button class="tab" data-tab="dash" type="button">대시보드</button>
-      <button class="tab" data-tab="atlas" type="button">실험 도감</button>
+    <div class="tabs" role="tablist" id="workTabs" aria-label="작업 화면">
+      <button class="tab on" data-tab="guide" type="button" role="tab" id="tab-guide" aria-controls="pnGuide" aria-selected="true">실험 안내</button>
+      <button class="tab" data-tab="data" type="button" role="tab" id="tab-data" aria-controls="pnData" aria-selected="false">데이터 입력</button>
+      <button class="tab" id="tabLab" data-tab="lab" type="button" role="tab" aria-controls="pnLab" aria-selected="false">데이터 실험실</button>
+      <button class="tab" data-tab="report" type="button" role="tab" id="tab-report" aria-controls="pnReport" aria-selected="false">보고서</button>
+      <button class="tab" data-tab="share" type="button" role="tab" id="tab-share" aria-controls="pnShare" aria-selected="false">모둠 공유</button>
+      <button class="tab" data-tab="dash" type="button" role="tab" id="tab-dash" aria-controls="pnDash" aria-selected="false">대시보드</button>
+      <button class="tab" data-tab="atlas" type="button" role="tab" id="tab-atlas" aria-controls="pnAtlas" aria-selected="false">실험 도감</button>
     </div>
 
     <!-- 선생님이 탭을 열고 닫았을 때 한 줄로 알려 주는 자리 -->
     <p id="tabNote" class="note hidden" role="status" aria-live="polite"></p>
 
-    <div id="pnGuide" class="panel"></div>
+    <div id="pnGuide" class="panel" role="tabpanel" aria-labelledby="tab-guide"></div>
 
-    <div id="pnData" class="panel hidden">
+    <div id="pnData" class="panel hidden" role="tabpanel" aria-labelledby="tab-data">
 
       <!-- 예상 그래프 — 측정 전에 결과를 먼저 그려 봅니다 (안 그려도 됩니다) -->
       <div class="box" id="predCard">
@@ -900,7 +998,7 @@
         <div class="imp" id="sensorCard" style="margin-top:12px">
           <h3 style="margin:2px 0 6px">센서를 이 화면에 바로 잇기</h3>
           <p class="muted" style="margin:0 0 10px">
-            케이블(유선)로 이으면 값이 <b>이 표에 바로</b> 들어옵니다. <b>이지메이커는 먼저 ezon.ai 에서 코드를 보드에 업로드한 뒤</b> 여기서 연결하세요 — 보드가 값을 내보내고 있어야 받을 수 있습니다. 무선(블루투스)은 지금 고치는 중이라 잠시 닫아 두었습니다.
+            케이블(유선)로 이으면 값이 <b>이 표에 바로</b> 들어옵니다. <b>이지메이커는 먼저 ezon.ai 에서 코드를 보드에 업로드한 뒤</b> 여기서 연결하세요 — 보드가 값을 내보내고 있어야 받을 수 있습니다.
             센서가 없으면 <b>시험용 모의 장치</b>로 흐름을 익혀 볼 수 있습니다.
           </p>
           <div id="sensorHost"></div>
@@ -909,7 +1007,11 @@
         <p id="mockNote" class="note hidden" role="status" aria-live="polite">
           🧪 이 표에는 <b>시험용 모의 값</b>이 들어 있습니다 — 진짜 센서 값이 아닙니다. 수업 자료로 저장하지 마세요.
         </p>
+        <p id="demoNote" class="note hidden" role="status" aria-live="polite">
+          📋 이 표에는 <b>예시 값</b>이 들어 있습니다 — 우리가 잰 값이 아니라 보여 드리기 위한 값입니다. 직접 잰 값으로 바꿔 적으세요.
+        </p>
         <div id="dataTbl" class="tblwrap" style="margin-top:14px"></div>
+        <p id="cellErr" class="cellerr" role="alert"></p>
         <label class="fl" for="inNote">측정 조건 메모 (선택)</label>
         <input id="inNote" type="text" placeholder="예) 핫플레이트 3단, 물 200mL" maxlength="120" />
         <div class="savebar">
@@ -928,17 +1030,18 @@
           <span class="muted" id="zoomHint">그래프를 누르면 그 자리가 확대됩니다 · 휠로 확대/축소 · 끌어서 이동</span>
         </div>
         <div id="myChart" class="chartbox"></div>
+        <div id="chartOpts"></div>
         <div id="gapNote"></div>
       </div>
       </div>
     </div>
 
     <!-- 데이터 실험실 — 축 바꾸기·변환·파생열·구간·반 전체 (모두 보기 전용) -->
-    <div id="pnLab" class="panel hidden">
+    <div id="pnLab" class="panel hidden" role="tabpanel" aria-labelledby="tabLab">
       <div id="labBody"></div>
     </div>
 
-    <div id="pnReport" class="panel hidden">
+    <div id="pnReport" class="panel hidden" role="tabpanel" aria-labelledby="tab-report">
 
       <!-- 선생님 평가 — 선생님이 우리 모둠 보고서를 채점했을 때만 나타납니다 (우리 것만) -->
       <div class="box hidden" id="evalBox">
@@ -978,7 +1081,7 @@
       </div>
     </div>
 
-    <div id="pnShare" class="panel hidden">
+    <div id="pnShare" class="panel hidden" role="tabpanel" aria-labelledby="tab-share">
       <div class="box">
         <h2>다른 모둠 결과 보기</h2>
         <p class="muted" id="shareSub">선생님이 ‘모둠 공유’ 단계를 열면 다른 모둠의 그래프가 나타납니다.</p>
@@ -989,7 +1092,7 @@
     </div>
 
     <!-- 대시보드 만들기 — 틀을 고르고 칸을 눌러 고치면 우리 모둠 진짜 자료로 그 자리에서 완성됩니다 -->
-    <div id="pnDash" class="panel hidden">
+    <div id="pnDash" class="panel hidden" role="tabpanel" aria-labelledby="tab-dash">
       <div class="box">
         <h2>대시보드 만들기</h2>
         <p class="muted" id="dashSub">틀을 고르면 지금 표에 적힌 우리 모둠 자료로 바로 그려집니다.
@@ -1005,15 +1108,16 @@
       </div>
     </div>
 
-    <div id="pnAtlas" class="panel hidden">
+    <div id="pnAtlas" class="panel hidden" role="tabpanel" aria-labelledby="tab-atlas">
       <div id="atlasLock" class="box hidden">
-        <h2>코드 없이 둘러보는 중</h2>
-        <p class="lead">실험 도감은 참여코드 없이도 볼 수 있습니다. 데이터 입력·보고서·모둠 공유 탭은 수업에 들어와야 열립니다.</p>
-        <button id="btnAtlasJoin" class="btn btn-solid" style="margin-top:12px" type="button">참여코드 입력하러 가기</button>
+        <h2>실험 도감 둘러보기</h2>
+        <p class="lead">실험 도감은 참여코드 없이도 볼 수 있습니다. 실험을 펼친 뒤 <b>[이 실험으로 시작하기]</b>를 누르면 간편 모드로 바로 시작합니다.</p>
+        <button id="btnAtlasJoin" class="btn" style="margin-top:12px" type="button">처음 화면으로</button>
       </div>
       <div class="box">
         <h2>실험 도감</h2>
-        <p class="muted">교과서 단원별 센서 실험을 모아 두었습니다. 카드를 누르면 준비물과 순서가 나옵니다.</p>
+        <p class="muted">교과서 단원별로 센서 실험과 센서 없이 하는 실험을 모아 두었습니다. 카드를 누르면 준비물과 순서가 나옵니다.</p>
+        <details class="afilt" id="aFilt" open><summary>학년·단원·업체로 거르기 <span id="aFiltSum" class="muted" style="font-weight:600"></span></summary>
         <div class="filters">
           <select id="aGrade" aria-label="학년 고르기">
             <option value="">모든 학년</option>
@@ -1030,6 +1134,7 @@
           </label>
           <span id="aCount" class="pill" aria-live="polite"></span>
         </div>
+        </details>
         <div id="atlasList" class="atlaslist"></div>
         <p class="srcline">
           출처 · 『2026 교구 및 디지털 도구 활용 과학 교수학습자료(중등 과학)』 서울특별시교육청 창의미래교육과, 2026년 7월<br>
@@ -1103,7 +1208,7 @@
   </div>
 </div>
 
-<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-11</span></footer>
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#55606B;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 MBL 수업허브<span id="creditWho"></span></footer>
 
 <script>
 (function(){
@@ -1178,111 +1283,251 @@
   }
 
   // ── 인라인 SVG 그래프 (차트 라이브러리 없이 직접 그립니다) ────────
+  //  그래프 규칙(교사 화면·대시보드와 같은 약속)
+  //   ① 단위가 첫 계열과 다른 계열은 오른쪽 둘째 축에 그립니다(축은 둘까지). 축 제목마다 단위를 붙입니다.
+  //   ② 계산 열(라벨에 × ÷ 가 있거나 calc:true)은 기본으로 그리지 않습니다 — opt.showCalc 로 켭니다.
+  //   ③ 눈금은 1·2·5×10ⁿ 간격, 값이 모두 0 이상이면 음수 눈금을 두지 않습니다.
+  //   ④ 축 제목은 눈금 글씨와 다른 줄(위쪽·아래쪽)에 둡니다.
+  //   ⑤ opt.w 에 실제 칸 폭을 넘기면 글씨가 줄어들지 않습니다(좁은 화면에서도 12px).
   //  opt.predict 를 주면 예상 곡선을 점선으로 겹쳐 그리고, 가장 많이 달랐던 지점을 표시합니다.
+
+  //  표 한 칸을 숫자로 — 표·계산 열·그래프가 모두 이 규칙 하나를 씁니다.
+  //  빈 칸은 null, 숫자가 아니면 NaN. '2.0abc' 처럼 글자가 섞인 칸은 숫자로 치지 않습니다.
+  //  (소수점 쉼표 '1,25' · 지수 '1.2e3' · 앞뒤 빈칸은 받아 줍니다.)
+  function cellNum(v){
+    if (v === null || v === undefined) return null;
+    if (typeof v === 'number') return isFinite(v) ? v : NaN;
+    const s = String(v).trim();
+    if (s === '') return null;
+    if (/^[+\-−]?\d{1,3}(,\d{3})+(\.\d+)?$/.test(s)) return Number(s.replace(/,/g, '').replace('−', '-'));   // 1,250 — 자릿점
+    if (!/^[+\-−]?(\d+([.,]\d*)?|[.,]\d+)([eE][+\-]?\d+)?$/.test(s)) return NaN;
+    const n = Number(s.replace('−', '-').replace(',', '.'));
+    return isFinite(n) ? n : NaN;
+  }
+  //  계산 열인가 — 학생이 재는 값이 아니라 다른 열로 만드는 값입니다.
+  function isCalcSer(s){ return !!s && (s.calc === true || /[×÷]/.test(String(s.label || ''))); }
+  //  단위 표기를 한 가지로 — 'mL·atm' 과 'atm·mL' 이 섞여 보이지 않게 합니다.
+  function unitNorm(u){
+    const t = String(u == null ? '' : u).trim();
+    return t === 'mL·atm' ? 'atm·mL' : t;
+  }
+  //  1·2·5×10ⁿ 눈금 — {lo, hi, step, ticks}
+  function niceScale(lo, hi, n, opt){
+    opt = opt || {};
+    if (!isFinite(lo) || !isFinite(hi)){ lo = 0; hi = 1; }
+    if (hi < lo){ const t = lo; lo = hi; hi = t; }
+    const nonneg = lo >= 0;
+    if (lo === hi){ const d = Math.abs(lo) * 0.1 || 1; lo -= d; hi += d; }
+    if (opt.zero && lo > 0) lo = 0;
+    //  그리는 범위는 값 범위에 조금(5%)만 여유를 둡니다 — 점이 축 선에 붙지 않고, 빈 칸도 크게 생기지 않습니다.
+    const padv = (hi - lo) * 0.05;
+    let dlo = (opt.zero && lo === 0) ? 0 : lo - padv, dhi = hi + padv;
+    if (nonneg && dlo < 0) dlo = 0;
+    const raw = (dhi - dlo) / Math.max(1, n || 5);
+    const k = Math.pow(10, Math.floor(Math.log10(raw)));
+    const f = raw / k;
+    const step = (f <= 1 ? 1 : f <= 2 ? 2 : f <= 5 ? 5 : 10) * k;
+    let ticks = [];
+    for (let v = Math.ceil(dlo / step - 1e-9) * step, i = 0; v <= dhi + step * 1e-6 && i < 60; v += step, i++) ticks.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+    if (ticks.length < 2){                       // 눈금이 하나뿐이면 범위를 눈금에 맞춰 넓힙니다
+      dlo = Math.floor(dlo / step + 1e-9) * step; dhi = Math.ceil(dhi / step - 1e-9) * step;
+      if (nonneg && dlo < 0) dlo = 0;
+      if (dhi <= dlo) dhi = dlo + step;
+      ticks = [];
+      for (let v = dlo, i = 0; v <= dhi + step * 1e-6 && i < 60; v += step, i++) ticks.push(Math.abs(v) < step * 1e-9 ? 0 : v);
+    }
+    return { lo: dlo, hi: dhi, step: step, ticks: ticks };
+  }
+  function tickTxt(v, step){
+    if (!isFinite(v)) return '';
+    const a = Math.abs(step);
+    if (a >= 1e5 || (a > 0 && a < 1e-3)) return labNum(v);
+    const d = Math.max(0, Math.ceil(-Math.log10(a) - 1e-9));
+    return Number(v).toFixed(Math.min(6, d));
+  }
+  //  글자 폭 어림 — 한글은 넓게, 숫자·영문은 좁게 칩니다.
+  function textW(t, fs){
+    let w = 0;
+    String(t == null ? '' : t).split('').forEach(function(ch){ w += /[가-힣ㄱ-ㅎ]/.test(ch) ? 1 : (/[0-9.\-−]/.test(ch) ? 0.58 : 0.64); });
+    return w * fs;
+  }
+
   function chartSVG(sp, rows, opt){
     opt = opt || {};
-    const W = opt.w || 560, H = opt.h || 300;
-    const P = { l: 52, r: 16, t: 18, b: 44 };
+    const W = Math.max(260, Math.round(opt.w || 560)), H = Math.max(180, Math.round(opt.h || (opt.w ? Math.min(320, Math.max(230, W * 0.62)) : 300)));
+    const fs = Number(opt.fs || opt.font) || 12;
     const series = (sp && sp.series) || [];
     const kind = (sp && sp.chart) || 'line';
     const xLab = (sp && sp.x && sp.x.label) || 'x';
-    const xUnit= (sp && sp.x && sp.x.unit)  || '';
-    const pts = [];   // [{x, ys:[]}]
-    (rows || []).forEach(function(r){
-      if (!Array.isArray(r)) return;
-      //  빈 칸(null·'')은 점을 찍지 않습니다 — Number(null) 은 0 이라 그대로 두면 바닥에 점이 생깁니다.
-      const nv = v => (v === null || v === undefined || String(v).trim() === '') ? NaN : Number(v);
-      const x = nv(r[0]);
-      const ys = series.map((_, i) => { const v = nv(r[i+1]); return isFinite(v) ? v : null; });
-      if (ys.every(v => v === null)) return;
-      pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
-    });
+    const xUnit= unitNorm(sp && sp.x && sp.x.unit);
+    const nv = function(v){ const n = cellNum(v); return (n === null || !isFinite(n)) ? NaN : n; };
+    //  rows 는 [[x, s1…]] 이 정상이지만 {x, s0…} 꼴이 와도 읽습니다.
+    const getCell = function(r, c){ return Array.isArray(r) ? nv(r[c]) : cell(r, c); };
+    const rawX = function(r){ return Array.isArray(r) ? r[0] : (r && typeof r === 'object' ? r.x : undefined); };
 
+    //  그릴 계열 고르기 — 계산 열은 켤 때만, 단위는 두 가지(왼쪽·오른쪽 축)까지
+    const allCalc = series.length > 0 && series.every(isCalcSer);
+    const wantCalc = opt.showCalc === true || allCalc;
+    const hiddenCalc = [], hiddenUnit = [], axisOf = {};
+    let u0 = null, u1 = null;
+    series.forEach(function(s, i){
+      if (isCalcSer(s) && !wantCalc){ hiddenCalc.push(i); return; }
+      const u = unitNorm(s.unit);
+      if (u0 === null || u === u0){ u0 = u; axisOf[i] = 0; return; }
+      if (u1 === null || u === u1){ u1 = u; axisOf[i] = 1; return; }
+      hiddenUnit.push(i);
+    });
+    const vis = series.map(function(s, i){ return i; }).filter(function(i){ return axisOf[i] !== undefined; });
+    const dual = u1 !== null;
+    const colOf = function(si){ return SERIES_COLORS[si % SERIES_COLORS.length]; };
+    let preP = [];
+
+    const pts = [];   // [{x, raw, ys:[]}]
+    (rows || []).forEach(function(r){
+      if (!Array.isArray(r) && !(r && typeof r === 'object')) return;
+      const x = getCell(r, 0);
+      const ys = series.map(function(_, i){ const v = getCell(r, i + 1); return isFinite(v) ? v : null; });
+      if (vis.every(function(i){ return ys[i] === null; })) return;
+      pts.push({ x: isFinite(x) ? x : null, raw: rawX(r), ys: ys });
+    });
     // 예상 곡선 — [{x, s0, s1…}]
-    const preP = [];
     if (Array.isArray(opt.predict)){
       opt.predict.forEach(function(r){
         const x  = cell(r, 0);
-        const ys = series.map((_, i) => { const v = cell(r, i + 1); return isFinite(v) ? v : null; });
-        if (ys.every(v => v === null)) return;
+        const ys = series.map(function(_, i){ const v = cell(r, i + 1); return isFinite(v) ? v : null; });
+        if (vis.every(function(i){ return ys[i] === null; })) return;
         preP.push({ x: isFinite(x) ? x : null, ys: ys });
       });
     }
-
     if (!pts.length && !preP.length){
-      return '<div class="empty">아직 입력된 값이 없습니다.</div>';
+      return '<div class="empty">아직 입력된 값이 없습니다.</div>' + legendHTML();
     }
-    const numericX = pts.every(p => p.x !== null) && kind !== 'bar';
-    const xs  = numericX ? pts.map(p => p.x) : pts.map((p, i) => i);
-    if (numericX) preP.forEach(p => { if (p.x !== null) xs.push(p.x); });
-    if (!xs.length) preP.forEach((p, i) => { xs.push(i); });
-    const allY = [];
-    pts.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
-    preP.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
-    let y0 = Math.min.apply(null, allY), y1 = Math.max.apply(null, allY);
-    if (y0 === y1) { y0 -= 1; y1 += 1; }
-    const pad = (y1 - y0) * 0.12; y0 -= pad; y1 += pad;
-    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-    if (x0 === x1) { x0 -= .5; x1 += .5; }
-    const px = v => P.l + (v - x0) / (x1 - x0) * (W - P.l - P.r);
-    const py = v => H - P.b - (v - y0) / (y1 - y0) * (H - P.t - P.b);
+    const numericX = pts.every(function(p){ return p.x !== null; }) && kind !== 'bar';
 
-    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' + esc(xLab) + ' 그래프" style="min-width:340px">';
-    // 격자 + y 눈금
-    for (let i = 0; i <= 4; i++){
-      const v = y0 + (y1 - y0) * i / 4, y = py(v);
+    //  세로축 범위 — 축마다 따로
+    const yv = [[], []];
+    pts.concat(preP).forEach(function(p){ vis.forEach(function(i){ if (p.ys[i] !== null) yv[axisOf[i]].push(p.ys[i]); }); });
+    const plotHguess = H - (fs + 18) - (fs * 2 + 22);
+    const nY = Math.max(3, Math.min(6, Math.round(plotHguess / 46)));
+    const scaleOf = function(list){
+      if (!list.length) return niceScale(0, 1, nY);
+      return niceScale(Math.min.apply(null, list), Math.max.apply(null, list), nY, { zero: kind === 'bar' });
+    };
+    const Y0 = scaleOf(yv[0]), Y1 = dual ? scaleOf(yv[1]) : null;
+    const yLabs0 = Y0.ticks.map(function(v){ return tickTxt(v, Y0.step); });
+    const yLabs1 = Y1 ? Y1.ticks.map(function(v){ return tickTxt(v, Y1.step); }) : [];
+
+    //  가로축 — 숫자면 고른 눈금, 글자면 점마다 이름
+    const xsAll = numericX ? pts.map(function(p){ return p.x; }) : pts.map(function(p, i){ return i; });
+    if (numericX) preP.forEach(function(p){ if (p.x !== null) xsAll.push(p.x); });
+    if (!xsAll.length) preP.forEach(function(p, i){ xsAll.push(i); });
+
+    const P = { t: fs + 18, b: fs * 2 + 24, l: 0, r: 0 };
+    P.l = Math.max(34, Math.ceil(Math.max.apply(null, yLabs0.map(function(t){ return textW(t, fs); }).concat([0])) + 12));
+    let X = null, catLabs = null;
+    if (numericX){
+      const plotWguess = W - P.l - 40;
+      X = niceScale(Math.min.apply(null, xsAll), Math.max.apply(null, xsAll), Math.max(3, Math.min(8, Math.round(plotWguess / 64))));
+    } else {
+      catLabs = pts.map(function(p, i){ const r = p.raw; return (r === '' || r === undefined || r === null) ? String(i + 1) : String(r); });
+    }
+    const lastXLab = numericX ? tickTxt(X.ticks[X.ticks.length - 1], X.step) : (catLabs[catLabs.length - 1] || '');
+    P.r = dual ? Math.max(34, Math.ceil(Math.max.apply(null, yLabs1.map(function(t){ return textW(t, fs); }).concat([0])) + 12))
+               : Math.max(14, Math.ceil(textW(lastXLab, fs) / 2) + 6);
+    const x0 = numericX ? X.lo : -0.5, x1 = numericX ? X.hi : Math.max(0.5, xsAll.length - 0.5);
+    const plotW = W - P.l - P.r, plotH = H - P.t - P.b;
+    const px = function(v){ return P.l + (v - x0) / ((x1 - x0) || 1) * plotW; };
+    const pyA = function(ax){
+      const S = ax === 1 ? Y1 : Y0;
+      return function(v){ return H - P.b - (v - S.lo) / ((S.hi - S.lo) || 1) * plotH; };
+    };
+    const py0 = pyA(0), py1 = dual ? pyA(1) : py0;
+    const pyOf = function(si){ return axisOf[si] === 1 ? py1 : py0; };
+    const axCol0 = dual ? colOf(vis.filter(function(i){ return axisOf[i] === 0; })[0]) : 'var(--muted)';
+    const axCol1 = dual ? colOf(vis.filter(function(i){ return axisOf[i] === 1; })[0]) : 'var(--muted)';
+
+    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="' +
+            esc(xLab + ' 그래프' + (dual ? ' (축 두 개)' : '')) + '" style="display:block;max-width:100%;height:auto" font-family="inherit">';
+    // 격자 + 왼쪽 눈금
+    Y0.ticks.forEach(function(v, i){
+      const y = py0(v);
       s += '<line x1="' + P.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)" stroke-width="1"/>';
-      s += '<text x="' + (P.l - 8) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="var(--muted)">' + esc(v.toFixed(Math.abs(y1 - y0) < 5 ? 1 : 0)) + '</text>';
-    }
-    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
-    // x 눈금
-    pts.forEach(function(p, i){
-      const X = px(numericX ? p.x : i);
-      const lb = (p.raw === '' || p.raw === undefined || p.raw === null) ? (i + 1) : p.raw;
-      if (pts.length <= 12 || i % Math.ceil(pts.length / 10) === 0)
-        s += '<text x="' + X.toFixed(1) + '" y="' + (H - P.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' + esc(lb) + '</text>';
+      s += '<text x="' + (P.l - 6) + '" y="' + (y + fs * 0.35).toFixed(1) + '" text-anchor="end" font-size="' + fs + '" fill="' + axCol0 + '">' + esc(yLabs0[i]) + '</text>';
     });
-    if (!pts.length){                                   // 아직 측정값이 없고 예상만 있을 때
-      for (let i = 0; i <= 4; i++){
-        const v = x0 + (x1 - x0) * i / 4;
-        s += '<text x="' + px(v).toFixed(1) + '" y="' + (H - P.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' +
-             esc(fmtNum(v)) + '</text>';
-      }
+    if (dual){
+      Y1.ticks.forEach(function(v, i){
+        const y = py1(v);
+        s += '<line x1="' + (W - P.r) + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r + 4) + '" y2="' + y.toFixed(1) + '" stroke="' + axCol1 + '" stroke-width="1.2"/>';
+        s += '<text x="' + (W - P.r + 6) + '" y="' + (y + fs * 0.35).toFixed(1) + '" text-anchor="start" font-size="' + fs + '" fill="' + axCol1 + '">' + esc(yLabs1[i]) + '</text>';
+      });
+      s += '<line x1="' + (W - P.r) + '" y1="' + P.t + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.2"/>';
     }
-    s += '<text x="' + (W - P.r) + '" y="' + (H - 8) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' + esc(xLab + (xUnit ? ' (' + xUnit + ')' : '')) + '</text>';
+    s += '<line x1="' + P.l + '" y1="' + P.t + '" x2="' + P.l + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.2"/>';
+    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    // 가로 눈금
+    const yTick = H - P.b + fs + 5;
+    if (numericX){
+      X.ticks.forEach(function(v){
+        const xx = px(v);
+        s += '<line x1="' + xx.toFixed(1) + '" y1="' + (H - P.b) + '" x2="' + xx.toFixed(1) + '" y2="' + (H - P.b + 4) + '" stroke="var(--line-2)" stroke-width="1"/>';
+        s += '<text x="' + xx.toFixed(1) + '" y="' + yTick + '" text-anchor="middle" font-size="' + fs + '" fill="var(--muted)">' + esc(tickTxt(v, X.step)) + '</text>';
+      });
+    } else {
+      const slot = plotW / Math.max(1, catLabs.length);
+      const widest = Math.max.apply(null, catLabs.map(function(t){ return textW(t, fs); }).concat([1]));
+      const every = Math.max(1, Math.ceil((widest + 8) / Math.max(1, slot)));
+      catLabs.forEach(function(lb, i){
+        if (i % every) return;
+        const xx = px(i);
+        const t = lb.length > 10 && every === 1 && slot < textW(lb, fs) + 8 ? lb.slice(0, 9) + '…' : lb;
+        s += '<text x="' + xx.toFixed(1) + '" y="' + yTick + '" text-anchor="middle" font-size="' + fs + '" fill="var(--muted)"><title>' + esc(lb) + '</title>' + esc(t) + '</text>';
+      });
+    }
+    // 축 제목 — 눈금 글씨와 겹치지 않게 위쪽 끝·아래쪽 끝 줄에 둡니다.
+    const axTitle = function(list){
+      const ls = list.map(function(i){ return series[i].label || ('계열' + (i + 1)); });
+      const u = unitNorm(series[list[0]].unit);
+      return (ls.length > 2 ? ls.slice(0, 2).join(' · ') + ' 외' : ls.join(' · ')) + (u ? ' (' + u + ')' : '');
+    };
+    const l0 = vis.filter(function(i){ return axisOf[i] === 0; }), l1 = vis.filter(function(i){ return axisOf[i] === 1; });
+    if (l0.length) s += '<text x="4" y="' + (fs + 2) + '" text-anchor="start" font-size="' + fs + '" font-weight="700" fill="' + axCol0 + '">' +
+                        (dual ? '◀ ' : '') + esc(axTitle(l0)) + '</text>';
+    if (l1.length) s += '<text x="' + (W - 4) + '" y="' + (fs + 2) + '" text-anchor="end" font-size="' + fs + '" font-weight="700" fill="' + axCol1 + '">' +
+                        esc(axTitle(l1)) + ' ▶</text>';
+    s += '<text x="' + (P.l + plotW / 2).toFixed(1) + '" y="' + (H - 5) + '" text-anchor="middle" font-size="' + fs + '" font-weight="700" fill="var(--muted)">' +
+         esc(xLab + (xUnit ? ' (' + xUnit + ')' : '')) + '</text>';
 
     // 예상 곡선 — 실제 값보다 먼저 그려 뒤쪽에 깔립니다(점선 + 옅게).
-    //  가로축이 숫자가 아닌 그래프에서는 예상 점을 폭에 맞추어 고르게 폅니다.
     function preX(p, i){
       if (numericX && p.x !== null) return px(p.x);
       const span = Math.max(pts.length, preP.length) - 1;
       return px(preP.length > 1 ? (i * span / (preP.length - 1)) : 0);
     }
     if (preP.length){
-      series.forEach(function(se, si){
-        const col = SERIES_COLORS[si % SERIES_COLORS.length];
+      vis.forEach(function(si){
+        const py = pyOf(si);
         let d = '', pen = false;
         preP.forEach(function(p, i){
           if (p.ys[si] === null){ pen = false; return; }
           d += (pen ? 'L' : 'M') + preX(p, i).toFixed(1) + ' ' + py(p.ys[si]).toFixed(1) + ' ';
           pen = true;
         });
-        if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.2" opacity=".62" ' +
+        if (d) s += '<path d="' + d + '" fill="none" stroke="' + colOf(si) + '" stroke-width="2.2" opacity=".62" ' +
                     'stroke-dasharray="8 6" stroke-linejoin="round" stroke-linecap="round"/>';
       });
     }
-
     // 계열
-    series.forEach(function(se, si){
-      const col = SERIES_COLORS[si % SERIES_COLORS.length];
-      const list = pts.map((p, i) => ({ X: px(numericX ? p.x : i), Y: p.ys[si] === null ? null : py(p.ys[si]) }));
+    vis.forEach(function(si, vi){
+      const col = colOf(si), py = pyOf(si);
+      const list = pts.map(function(p, i){ return { X: px(numericX ? p.x : i), Y: p.ys[si] === null ? null : py(p.ys[si]) }; });
       if (kind === 'bar'){
-        const bw = Math.max(4, (W - P.l - P.r) / Math.max(pts.length, 1) / (series.length + 1));
-        list.forEach(function(pt, i){
+        const bw = Math.max(4, plotW / Math.max(pts.length, 1) / (vis.length + 1));
+        const base = py(Math.max(axisOf[si] === 1 ? Y1.lo : Y0.lo, 0));
+        list.forEach(function(pt){
           if (pt.Y === null) return;
-          const bx = pt.X - (series.length * bw) / 2 + si * bw;
-          s += '<rect x="' + bx.toFixed(1) + '" y="' + pt.Y.toFixed(1) + '" width="' + bw.toFixed(1) +
-               '" height="' + Math.max(0, (H - P.b - pt.Y)).toFixed(1) + '" fill="' + col + '" opacity=".85" rx="2"/>';
+          const bx = pt.X - (vis.length * bw) / 2 + vi * bw;
+          s += '<rect x="' + bx.toFixed(1) + '" y="' + Math.min(pt.Y, base).toFixed(1) + '" width="' + bw.toFixed(1) +
+               '" height="' + Math.abs(base - pt.Y).toFixed(1) + '" fill="' + col + '" opacity=".85" rx="2"/>';
         });
       } else {
         if (kind !== 'scatter'){
@@ -1296,37 +1541,56 @@
         }
         list.forEach(function(pt){
           if (pt.Y === null) return;
-          s += '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="3.4" fill="' + col + '"/>';
+          //  오른쪽 축 계열은 네모 점 — 색을 못 가리는 학생도 어느 축인지 알 수 있게
+          s += axisOf[si] === 1
+            ? '<rect x="' + (pt.X - 3.4).toFixed(1) + '" y="' + (pt.Y - 3.4).toFixed(1) + '" width="6.8" height="6.8" fill="' + col + '"/>'
+            : '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="3.6" fill="' + col + '"/>';
         });
       }
     });
 
     // 예상과 가장 많이 달랐던 지점 — 세로 점선으로 이어 표시합니다.
-    const gap = (preP.length && pts.length) ? biggestGap(rows, opt.predict, series) : null;
+    const gap = (preP.length && pts.length) ? biggestGap(rows, opt.predict, series.map(function(se, i){ return axisOf[i] === undefined ? null : se; })) : null;
     if (gap && numericX && isFinite(gap.atX)){
+      const py = pyOf(gap.si);
       const GX = px(gap.atX), Ya = py(gap.actual), Yp = py(gap.predicted);
       s += '<line x1="' + GX.toFixed(1) + '" y1="' + Math.min(Ya, Yp).toFixed(1) + '" x2="' + GX.toFixed(1) +
            '" y2="' + Math.max(Ya, Yp).toFixed(1) + '" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="3 3"/>';
       s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Yp.toFixed(1) + '" r="5" fill="none" stroke="var(--ink)" stroke-width="1.8"/>';
       s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Ya.toFixed(1) + '" r="5" fill="var(--ink)"/>';
-      s += '<text x="' + Math.min(W - P.r, GX + 8).toFixed(1) + '" y="' + (Math.min(Ya, Yp) - 7).toFixed(1) +
-           '" text-anchor="' + (GX > W * 0.7 ? 'end' : 'start') + '" font-size="11.5" font-weight="700" fill="var(--ink)">가장 큰 차이 ' +
+      const right = GX > P.l + plotW * 0.6;
+      s += '<text x="' + (right ? GX - 8 : GX + 8).toFixed(1) + '" y="' + Math.max(P.t + fs, Math.min(Ya, Yp) - 7).toFixed(1) +
+           '" text-anchor="' + (right ? 'end' : 'start') + '" font-size="' + fs + '" font-weight="700" fill="var(--ink)">가장 큰 차이 ' +
            esc(fmtNum(gap.maxDiff)) + '</text>';
     }
     s += '</svg>';
+    return s + legendHTML();
 
-    // 범례
-    let lg = '<div style="display:flex;flex-wrap:wrap;gap:12px;margin-top:6px;font-size:12.5px;color:var(--muted)">';
-    series.forEach(function(se, si){
-      lg += '<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:' +
-            SERIES_COLORS[si % SERIES_COLORS.length] + ';display:inline-block"></i>' +
-            esc(se.label || ('계열' + (si + 1))) + (se.unit ? ' (' + esc(se.unit) + ')' : '') + '</span>';
-    });
-    if (preP.length){
-      lg += '<span style="display:inline-flex;align-items:center;gap:5px">' +
-            '<i style="width:20px;height:0;border-top:2.4px dashed var(--muted);display:inline-block"></i>점선 = 우리가 그린 예상</span>';
+    // 범례 — 어느 축인지 · 숨긴 계열은 왜 숨겼는지까지
+    function legendHTML(){
+      let lg = '<div style="display:flex;flex-wrap:wrap;gap:6px 12px;margin-top:6px;font-size:12.5px;color:var(--muted)">';
+      vis.forEach(function(si){
+        const se = series[si];
+        lg += '<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:' + (axisOf[si] === 1 ? '1px' : '50%') + ';background:' +
+              colOf(si) + ';display:inline-block"></i>' +
+              esc(se.label || ('계열' + (si + 1))) + (se.unit ? ' (' + esc(unitNorm(se.unit)) + ')' : '') +
+              (dual ? ' · ' + (axisOf[si] === 1 ? '오른쪽 축' : '왼쪽 축') : '') + '</span>';
+      });
+      hiddenCalc.forEach(function(si){
+        const se = series[si];
+        lg += '<span style="display:inline-flex;align-items:center;gap:5px;opacity:.8"><i style="width:11px;height:11px;border-radius:3px;border:1.5px dashed ' +
+              colOf(si) + ';display:inline-block"></i>' + esc(se.label || '') + ' — 계산한 열이라 그래프에서는 뺐습니다</span>';
+      });
+      hiddenUnit.forEach(function(si){
+        const se = series[si];
+        lg += '<span style="opacity:.8">' + esc((se.label || '') + (se.unit ? ' (' + unitNorm(se.unit) + ')' : '')) + ' — 단위가 달라 이 그래프에서는 뺐습니다</span>';
+      });
+      if (preP.length){
+        lg += '<span style="display:inline-flex;align-items:center;gap:5px">' +
+              '<i style="width:20px;height:0;border-top:2.4px dashed var(--muted);display:inline-block"></i>점선 = 우리가 그린 예상</span>';
+      }
+      return lg + '</div>';
     }
-    return s + lg + '</div>';
   }
 
   //  계열마다 예상과 실제의 차이를 재어 가장 큰 것을 고릅니다.
@@ -1334,6 +1598,7 @@
     if (typeof Hub.predictGap !== 'function') return null;
     let best = null;
     (series || []).forEach(function(se, si){
+      if (!se) return;                                   // 그래프에서 뺀 계열(계산 열 따위)은 견주지 않습니다
       const g = Hub.predictGap(rows, predict, si);
       if (!g || g.maxDiff === null || !isFinite(g.maxDiff)) return;
       if (!best || g.maxDiff > best.maxDiff){
@@ -1483,7 +1748,8 @@
         });
       });
     }
-    return attempt('');
+    //  보내지 못해 이 기기에 쌓인 것이 생기거나 줄었을 수 있으니 저장할 때마다 배너를 다시 맞춥니다.
+    return attempt('').then(function(r){ refreshOffBar(); return r; }, function(e){ refreshOffBar(); throw e; });
   }
   // 저장 실패 문구 — 비밀번호를 묻다가 취소하면 자료는 그대로 두고 알려만 줍니다.
   function writeErrText(err){
@@ -1581,6 +1847,7 @@
     dirty = true;
     editedAt = Date.now();
     renderSaveBar();
+    refreshOffBar();
   }
   function renderSaveBar(){
     const bar = $('simpleBar');
@@ -1669,10 +1936,23 @@
   $('btnGoneAtlas').addEventListener('click', function(){ openAtlas(true); });
 
   // ── 오프라인 배너 ──────────────────────────────────────────────
-  Hub.onStatus(function(st){
-    const on = !isSimple() && (st.offline || Hub.pendingCount(joinCode) > 0);
-    $('offbar').classList.toggle('hidden', !on);
-  });
+  //  실시간 수업에 들어가 있고, 아직 보내지 못한 자료가 이 기기에 있을 때만 띄웁니다.
+  //  (첫 화면·간편 모드·실험 도감에서는 보낼 것이 없으므로 띄우지 않습니다.)
+  let lastNet = { offline: false };
+  function refreshOffBar(st){
+    if (st) lastNet = st;
+    const bar = $('offbar');
+    if (!bar) return;
+    let pending = 0;
+    try { pending = (joinCode && !isSimple()) ? Hub.pendingCount(joinCode) : 0; } catch (e) { pending = 0; }
+    const on = !isSimple() && !!joinCode && !!group && !atlasOnly && !expired && pending > 0;
+    bar.textContent = lastNet.offline
+      ? '임시 저장 중 — 인터넷이 돌아오면 자동으로 다시 보냅니다. (보내지 못한 것 ' + pending + '건)'
+      : '아직 보내지 못한 것이 ' + pending + '건 있습니다 — 연결되면 자동으로 다시 보냅니다.';
+    bar.classList.toggle('hidden', !on);
+  }
+  Hub.onStatus(refreshOffBar);
+  window.addEventListener('online', function(){ setTimeout(function(){ refreshOffBar(); }, 2500); });
 
   // ── 연결 설정 안내 (학생 화면이라 한 줄만) ─────────────────────
   let setupMsg = '';
@@ -1701,8 +1981,37 @@
 
   // ── 화면 전환 ──────────────────────────────────────────────────
   //  첫 화면으로 돌아올 때 상단바에 쓰는 한 줄 — 마크업(topSub)과 같은 말입니다.
-  const HOME_SUB = '참여코드 · 코드 없이 · 그래프만 빠르게 · 실험 도감';
+  const HOME_SUB = '참여코드 · 간편 모드 · 그래프만 빠르게 · 실험 도감';
+  let curScreen = 'join';
+  //  ── 브라우저 [뒤로] — 화면을 바꿀 때마다 한 칸씩 쌓고, 뒤로 가면 앞 화면을 다시 엽니다 ──
+  let navQuiet = false;            // 뒤로 가기를 되살리는 동안에는 새로 쌓지 않습니다
+  function navKey(){
+    if (curScreen === 'work') return atlasOnly ? 'atlas' : ('work:' + curTab);
+    return curScreen;
+  }
+  function navPush(replace){
+    if (navQuiet || !window.history || !history.pushState) return;
+    const k = navKey();
+    const cur = history.state && history.state.mbl;
+    if (cur === k) return;
+    try {
+      if (replace || !cur) history.replaceState({ mbl: k }, '', location.href);
+      else history.pushState({ mbl: k }, '', location.href);
+    } catch (e) {}
+  }
+  //  창 제목 — 탭·방문 기록에서 어느 화면인지 알아보게 합니다.
+  function setTitle(){
+    const k = navKey();
+    const TT = { join:'처음', group:'모둠 고르기', simple:'간편 모드 시작', analyze: anQuickNow() ? '그래프만 빠르게' : '붙여넣기 분석',
+                 expired:'보관 기간이 끝난 수업', atlas: simplePick ? '실험 고르기' : '실험 도감' };
+    const TAB = { guide:'실험 안내', data:'데이터 입력', lab:'데이터 실험실', report:'보고서', share:'모둠 공유', dash:'대시보드', atlas:'실험 도감' };
+    let t = TT[k];
+    if (!t && k.indexOf('work:') === 0) t = TAB[k.slice(5)] + (group ? ' · ' + (group.group_name || (group.group_no + '모둠')) : '');
+    document.title = (t ? t + ' · ' : '') + 'MBL 수업허브';
+  }
+  function anQuickNow(){ try { return !!AN.quick; } catch (e) { return false; } }
   function show(which){
+    curScreen = which;
     $('scJoin').classList.toggle('hidden',    which !== 'join');
     $('scGroup').classList.toggle('hidden',   which !== 'group');
     $('scSimpleSetup').classList.toggle('hidden', which !== 'simple');
@@ -1713,6 +2022,9 @@
       which === 'join' || which === 'expired' || which === 'simple' || which === 'analyze');
     // [다른 모둠으로] 는 실시간 수업에서 모둠에 들어가 있을 때만 보입니다.
     $('btnSwitch').classList.toggle('hidden', !(which === 'work' && group && !atlasOnly && !isSimple()));
+    if (which === 'join') renderResume();
+    refreshOffBar();
+    if (which !== 'work'){ navPush(); setTitle(); }   // 작업 화면은 탭을 고른 뒤에 쌓습니다
   }
   function setPhase(ph){
     const el = $('phasePill');
@@ -1725,14 +2037,27 @@
   }
 
   // ── ① 참여코드 ─────────────────────────────────────────────────
+  //  참여코드에는 O·0·I·1·L 이 쓰이지 않습니다 — 적으면 그 자리에서 짚어 줍니다(대신 바꿔 넣지는 않습니다).
+  const CODE_BAD = /[O0I1L]/;
+  function codeWarn(v){
+    return CODE_BAD.test(v) ? '참여코드에는 O·0·I·1·L 이 쓰이지 않습니다. 칠판의 글자를 다시 확인해 주세요(예: O 처럼 보이면 Q·D, 1 처럼 보이면 7·T 인지).' : '';
+  }
   $('inCode').addEventListener('input', function(){
-    this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    this.value = this.value.normalize('NFKC').toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6);
+    $('joinErr').textContent = codeWarn(this.value);
   });
   $('inCode').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('btnJoin').click(); });
 
   $('btnJoin').addEventListener('click', function(){
-    const code = Hub.norm($('inCode').value);
+    const code = Hub.norm($('inCode').value).normalize('NFKC').replace(/[^A-Z0-9]/g, '');
     if (code.length !== 6) { $('joinErr').textContent = '참여코드 6자리를 정확히 입력하세요.'; return; }
+    if (codeWarn(code)) { $('joinErr').textContent = codeWarn(code); return; }
+    //  서버 연결 도구(supabase-js)를 못 받았으면 인터넷 탓이 아닙니다 — 학교 망이 막았을 때가 많습니다.
+    if (typeof window.supabase === 'undefined' || !window.supabase || !window.supabase.createClient){
+      $('joinErr').textContent = '서버에 연결하는 도구(supabase)를 불러오지 못했습니다. 학교 네트워크가 막고 있을 수 있습니다. ' +
+        '참여코드 없이 옆의 「간편 모드」로 시작하고, 다 하면 작업 파일을 선생님께 내 주세요.';
+      return;
+    }
     $('joinErr').textContent = '';
     this.disabled = true; this.textContent = '확인하는 중…';
     Hub.getLesson(code).then(function(l){
@@ -1882,6 +2207,9 @@
       return;
     }
     if (!confirm('이 기기에서 나갈까요? 저장한 데이터는 그대로 남아 있습니다.')) return;
+    leaveLive();
+  });
+  function leaveLive(){
     if (unwatch) { unwatch(); unwatch = null; }
     stopPhaseTimer();
     group = null; lesson = null; joinCode = '';
@@ -1889,7 +2217,7 @@
     $('phasePill').classList.add('hidden');
     $('topSub').textContent = HOME_SUB;
     show('join');
-  });
+  }
 
   // ═══════════════════════════════════════════════════════════════
   //  ★ 간편 모드 — 참여코드도 서버도 없이 수업 한 차시를 그대로
@@ -1992,7 +2320,7 @@
     const e = (window.LAB && pack.expId) ? LAB.byId(pack.expId) : null;
     $('ssTitle').textContent = pack.title || (e && e.title) || '오늘의 실험';
     $('ssSub').textContent = [pack.school, pack.classLabel, pack.teacherName ? pack.teacherName + ' 선생님' : '',
-                              e ? '중' + e.grade + ' · ' + e.unit : ''].filter(Boolean).join(' · ')
+                              e ? '중' + e.grade + ' · ' + uName(e.unit) : ''].filter(Boolean).join(' · ')
                           || '실험을 고르고 모둠만 정하면 바로 시작합니다.';
     $('ssClass').value = pack.classLabel || '';
     $('ssGroupName').value = '';      // 지난번에 적어 둔 이름이 남아 엉뚱한 모둠으로 저장되지 않게
@@ -2012,12 +2340,21 @@
         });
         b.classList.add('on');
         b.style.background = 'var(--g' + (((picked - 1) % 7) + 1) + ')';
-        if (!$('ssGroupName').value) $('ssGroupName').value = picked + '모둠';
+        if (!$('ssGroupName').value || /^\d+\s*모둠$/.test($('ssGroupName').value.trim())) $('ssGroupName').value = picked + '모둠';
         $('ssErr').textContent = '';
+        $('ssGselErr').textContent = '';
       });
     });
+    $('ssGselErr').textContent = '';
     $('btnSimpleGo').onclick = function(){
-      const no = picked || 1;
+      //  모둠을 고르지 않으면 1모둠으로 몰래 넣지 않습니다 — 다른 모둠 파일과 섞이지 않게 꼭 고르게 합니다.
+      if (!picked){
+        $('ssGselErr').textContent = '우리 모둠 번호를 먼저 골라 주세요.';
+        const first = $('ssGsel').querySelector('.gbtn');
+        if (first){ first.focus(); $('ssGsel').scrollIntoView({ behavior:'smooth', block:'center' }); }
+        return;
+      }
+      const no = picked;
       startSimple(pack, {
         no: no,
         name: $('ssGroupName').value.trim() || (no + '모둠'),
@@ -2052,6 +2389,15 @@
     startWork(opt.startOpt || {});
     if (opt.after) opt.after();
     renderSaveBar();
+    rememberSimple();
+    window.scrollTo(0, 0);
+  }
+  //  이 기기에서 마지막으로 연 간편 모드 — 첫 화면의 「이어서 하던 작업」이 이것을 보고 되살립니다.
+  function rememberSimple(){
+    if (!isSimple() || !pack || !group) return;
+    Hub.saveLocal('simple_last', { pack: normPack(pack), classLabel: pack.classLabel || '',
+      group: { no: Number(group.group_no) || 1, name: group.group_name || '', members: group.members || [] },
+      at: Date.now() });
   }
 
   // ── 간편 모드에서 되지 않는 것 감추기 ──────────────────────────
@@ -2184,8 +2530,8 @@
 
   //  내보낸 파일은 다른 곳에서 열려야 합니다 — 색을 변수가 아닌 실제 값으로 박아 넣습니다.
   const WORK_CSS =
-    ':root{--ink:#254753;--muted:#6E8A96;--paper:#FFFFFF;--cream:#FFFDF6;--line:#E4EFF1;--line-2:#D3E6EA;' +
-    '--mint:#20B2A6;--mint-d:#14867C;--sun:#FFC130;--coral:#FF8C6B;--sky:#54B4E8;' +
+    ':root{--ink:#254753;--muted:#4F6B76;--paper:#FFFFFF;--cream:#FFFDF6;--line:#E4EFF1;--line-2:#D3E6EA;' +
+    '--mint:#20B2A6;--mint-d:#0F766E;--sun:#FFC130;--coral:#FF8C6B;--sky:#54B4E8;' +
     '--g5:#8B7FD4;--g6:#4FB477;--g7:#E88FB5;--ok:#37B58C;--warn:#E8873C;--bad:#E05A5A}' +
     '*{box-sizing:border-box;margin:0;padding:0}' +
     'body{font-family:-apple-system,system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);' +
@@ -2218,7 +2564,8 @@
     '.wevfb{margin-top:10px;background:#EAF8F0;border:1.5px solid var(--line);border-radius:12px;' +
     'padding:10px 12px;white-space:pre-wrap;line-height:1.7}' +
     '.tip{background:#EAF8F0;border:1.5px dashed var(--mint);border-radius:12px;padding:12px 14px;font-size:14px;margin:14px 0}' +
-    '.foot{text-align:center;font-size:12.5px;color:#8a8f98;margin-top:26px;' +
+    '.democap{display:inline-block;font-size:12.5px;font-weight:800;color:#9A6B00;background:#FFF6D6;border-radius:999px;padding:4px 11px;margin:6px 0}' +
+    '.foot{text-align:center;font-size:12.5px;color:#55606B;margin-top:26px;' +
     'border-top:1px solid rgba(128,128,128,.25);padding-top:12px}' +
     '@media print{body{background:#fff;padding:0}.card{box-shadow:none;break-inside:avoid;page-break-inside:avoid}' +
     '.tip{display:none}h1{font-size:20px}}';
@@ -2276,7 +2623,7 @@
          (w.pack.classLabel ? '반 · <b>' + esc(w.pack.classLabel) + '</b><br>' : '') +
          '모둠 · <b>' + esc(w.group.name) + '</b>' +
          ((w.group.members || []).length ? ' (' + w.group.members.map(esc).join(', ') + ')' : '') + '<br>' +
-         (e ? '단원 · 중' + esc(e.grade) + ' ' + esc(e.unit) + '<br>' : '') +
+         (e ? '단원 · 중' + esc(e.grade) + ' ' + esc(uName(e.unit)) + '<br>' : '') +
          (w.pack.teacherName ? '지도 · <b>' + esc(w.pack.teacherName) + ' 선생님</b><br>' : '') +
          '날짜 · ' + esc(day) + '<br>' +
          '방식 · ' + (w.mode === 'simple' ? '간편 모드(서버 없이)' : '실시간 모드') +
@@ -2284,7 +2631,7 @@
 
     h += '<div class="tip">이 파일 하나에 우리 모둠이 한 것이 모두 들어 있습니다. ' +
          '선생님께 이 파일을 그대로 내면 됩니다. 브라우저에서 <b>인쇄(Ctrl+P) → PDF로 저장</b>도 됩니다. ' +
-         '다시 이어서 하려면 수업허브 첫 화면에서 <b>이어서 하기</b>로 이 파일을 올리세요.</div>';
+         '다시 이어서 하려면 MBL 수업허브 첫 화면의 <b>작업 파일(.html) 올려서 이어 하기</b>로 이 파일을 올리세요.</div>';
 
     if (prep.length || steps.length){
       h += '<div class="card"><h2>준비물과 실험 순서</h2>';
@@ -2293,7 +2640,9 @@
       h += '</div>';
     }
 
-    h += '<div class="card"><h2>측정한 값</h2>' + rowsTableHTML(w) +
+    h += '<div class="card"><h2>측정한 값</h2>' +
+         (String(w.note || '').indexOf(DEMO_SIG) >= 0 ? '<p class="note">📋 아래 표는 <b>예시 값</b>입니다 — 직접 잰 값이 아닙니다.</p>' : '') +
+         rowsTableHTML(w) +
          (w.note ? '<p class="meta" style="margin-top:8px">측정 조건 · ' + esc(w.note) + '</p>' : '') + '</div>';
 
     h += '<div class="card"><h2>우리 모둠 그래프</h2><div class="chart">' + svg + '</div>';
@@ -2572,6 +2921,9 @@
     predict = loadPredict();
     analyses = [];
     aiLogs = [];
+    readOpenAsked = false;
+    showCalcInChart = false;
+    guideLockShown = null;
     myEval = null;                 // 우리 모둠 보고서에서 다시 읽어 옵니다
     renderEval();
     aiReset();
@@ -2591,7 +2943,7 @@
     if (opt.noAsk) restoreLocal();
     else           askOrRestore();          // 자동저장본이 있으면 조용히 덮지 않고 물어봅니다
     setPhase(lesson.phase);
-    if (!isSimple()) Hub.flushOffline(joinCode);
+    if (!isSimple()) Promise.resolve(Hub.flushOffline(joinCode)).then(function(){ refreshOffBar(); }, function(){ refreshOffBar(); });
     atlasOnly = false;
     lockTabsForAtlas(false);
     if (unwatch){ unwatch(); unwatch = null; }
@@ -2603,6 +2955,8 @@
     selectTab('guide');
     renderSaveBar();
     applyWatch();
+    refreshOffBar();
+    window.scrollTo(0, 0);                  // 모둠을 고른 뒤에는 안내의 맨 위부터 봅니다
   }
 
   // ── 얼마나 자주 서버를 볼지 정하기 ─────────────────────────────
@@ -2750,8 +3104,16 @@
   //  「결과를 이렇게 읽어요」와 결과 그래프 예시를 가립니다. 학생이 먼저 예상하고 재 보게 하려는 것입니다.
   //  간편 모드·꾸러미에는 단계를 열어 줄 선생님이 없고, 값이 없는 예전 수업도 그대로 보여 줍니다.
   var guideLockShown = null;       // 안내 탭을 마지막으로 그릴 때 가렸는지
+  //  간편 모드에는 단계를 열어 줄 선생님이 없습니다. 그래서 측정값을 몇 줄 적었거나
+  //  학생이 [결과 해설 보기]를 직접 눌렀을 때 엽니다 — 재기 전에 답부터 읽지 않게 하려는 것입니다.
+  let readOpenAsked = false;
+  function readNeedRows(){ return Math.min(3, specRows()); }
   function readLocked(){
-    if (isSimple() || !joinCode || !lesson) return false;
+    if (!joinCode || !lesson) return false;
+    if (isSimple()){
+      if (readOpenAsked || !spec || !$('dataTbl')) return false;
+      return collectRows().length < readNeedRows();
+    }
     const f = lesson.form && lesson.form.features;
     if (!(f && typeof f === 'object' && f.readLater === true)) return false;
     return (lesson.phase || 'collect') === 'collect';
@@ -2795,7 +3157,18 @@
     if (curTab === 'dash' && name !== 'dash' && dashUI && dashUI.flush) dashUI.flush();   // 기다리던 대시보드 저장을 마저 합니다
     curTab = name;
     Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
-      t.classList.toggle('on', t.dataset.tab === name);
+      const on = t.dataset.tab === name;
+      t.classList.toggle('on', on);
+      t.setAttribute('aria-selected', on ? 'true' : 'false');
+      t.tabIndex = on ? 0 : -1;
+      //  좁은 화면에서 고른 탭이 화면 밖에 있으면 탭 줄만 옆으로 밀어 보이게 합니다(쪽 전체는 움직이지 않습니다).
+      if (on){
+        const row = t.parentNode;
+        if (row && row.scrollWidth > row.clientWidth){
+          const want = t.offsetLeft - (row.clientWidth - t.offsetWidth) / 2;
+          try { row.scrollTo({ left: Math.max(0, want), behavior: 'smooth' }); } catch (e) { row.scrollLeft = Math.max(0, want); }
+        }
+      }
     });
     $('pnGuide').classList.toggle('hidden',  name !== 'guide');
     $('pnData').classList.toggle('hidden',   name !== 'data');
@@ -2810,9 +3183,19 @@
     if (name === 'dash')  renderDash();
     if (name === 'atlas') ensureAtlas();
     applyWatch();   // '모둠 공유' 탭을 열고 닫을 때만 서버를 봅니다
+    if (curScreen === 'work'){ navPush(); setTitle(); }
+    setTimeout(function(){ scrollCues($('scWork')); }, 0);
   }
   Array.prototype.forEach.call(document.querySelectorAll('.tab'), function(t){
     t.addEventListener('click', function(){ selectTab(t.dataset.tab); });
+    //  탭 줄은 화살표 키로도 옮겨 다닙니다(보이는 탭만).
+    t.addEventListener('keydown', function(e){
+      if (e.key !== 'ArrowRight' && e.key !== 'ArrowLeft') return;
+      const list = Array.prototype.filter.call(document.querySelectorAll('.tab'), function(x){ return !x.disabled && !x.classList.contains('hidden'); });
+      const i = list.indexOf(t);
+      const n = list[(i + (e.key === 'ArrowRight' ? 1 : list.length - 1)) % list.length];
+      if (n){ e.preventDefault(); n.focus(); selectTab(n.dataset.tab); }
+    });
   });
 
   // ═══════════════════════════════════════════════════════════════
@@ -3059,14 +3442,17 @@
   $('pnGuide').addEventListener('click', function(e){
     const b = e.target.closest('[data-role-open]');
     if (b) openRoleModal();
+    if (e.target.closest('[data-readopen]')){ readOpenAsked = true; renderGuide(); }
   });
 
   // 실험 안내
   function renderGuide(){
     const e = labExp();
     const vk = lessonVendor();               // 선생님이 고른 업체('' 면 기본 절차)
+    //  제목과 같은 말을 부제목에 되풀이하지 않습니다(간편 모드는 수업 제목이 곧 실험 제목입니다).
+    const subT = [lesson.class_label, lesson.exp_title !== lesson.title ? lesson.exp_title : ''].filter(Boolean).join(' · ');
     let h = '<div class="box"><h2>' + esc(lesson.title || '오늘의 실험') + '</h2>' +
-            '<p class="muted">' + esc([lesson.class_label, lesson.exp_title].filter(Boolean).join(' · ')) + '</p>';
+            (subT ? '<p class="muted">' + esc(subT) + '</p>' : '');
     if (!e){
       //  도감에 없는 실험이라도 선생님이 적어 준 절차·준비물이 있으면 그대로 보여 줍니다.
       const fm = (lesson && lesson.form) || {};
@@ -3085,7 +3471,7 @@
       return;
     }
     h += '<div class="taglist">' +
-         '<span class="pill">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+         '<span class="pill">중' + esc(e.grade) + ' · ' + esc(uName(e.unit)) + '</span>' +
          '<span class="pill sky">' + esc(e.minutes) + '분</span>' +
          '<span class="pill sun">준비 난이도 ' + esc(e.level) + '</span>' +
          (e.sensors || []).map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) + ' ' + esc(s.n) + '개</span>').join('') +
@@ -3115,19 +3501,43 @@
     const rl = readLocked();
     guideLockShown = rl;
     h += '<div class="box">' + illus('analysis') + '<h2>결과를 이렇게 읽어요</h2>' +
-         (rl ? '<p class="lead muted">🔒 결과를 읽는 법은 선생님이 <b>공유 단계</b>를 열면 여기에 나타납니다. ' +
-               '먼저 결과를 예상하고, 잰 값으로 스스로 설명해 보세요.</p>'
+         (rl ? (isSimple()
+                 ? '<p class="lead muted">🔒 결과 해설은 <b>데이터 입력</b> 탭에 측정값을 ' + readNeedRows() + '줄 이상 적으면 여기에 나타납니다. ' +
+                   '먼저 결과를 예상하고, 잰 값으로 스스로 설명해 보세요.</p>' +
+                   '<div class="improw"><button type="button" class="btn btn-sm" data-readopen="1">다 재었어요 — 결과 해설 보기</button></div>'
+                 : '<p class="lead muted">🔒 결과를 읽는 법은 선생님이 <b>공유 단계</b>를 열면 여기에 나타납니다. ' +
+                   '먼저 결과를 예상하고, 잰 값으로 스스로 설명해 보세요.</p>')
              : '<p class="lead">' + esc(e.read) + '</p>');
-    (e.tips || []).forEach(t => { h += '<div class="note">' + esc(t) + '</div>'; });
+    //  자료집의 도움말 가운데 선생님께 드리는 말(「~하게 하세요」「나눠 주세요」)은 학생 화면에 싣지 않습니다.
+    (e.tips || []).filter(t => !teacherTip(t)).forEach(t => { h += '<div class="note">' + esc(forStudent(t)) + '</div>'; });
     if (!rl) h += figGraph(e);
     h += '</div>';
 
     if ((e.caution || []).length){
       h += '<div class="box">' + illus('safety') + '<h2>안전하게 하려면</h2>';
-      (e.caution || []).forEach(t => { h += '<div class="note warn">주의 · ' + esc(t) + '</div>'; });
+      (e.caution || []).forEach(t => { h += '<div class="note warn">주의 · ' + esc(forStudent(t)) + '</div>'; });
       h += '</div>';
     }
     $('pnGuide').innerHTML = h;
+  }
+
+  //  단원 이름의 가운뎃점 — 자료에 ⋅(U+22C5)이 섞여 있어 화면에서는 · 로 맞춥니다.
+  function uName(u){ return String(u == null ? '' : u).replace(/\u22C5/g, '·'); }
+  //  학생 화면에 싣는 주의·도움말 — 선생님께 하는 말투를 학생에게 맞게 고칩니다.
+  function forStudent(t){
+    return String(t == null ? '' : t)
+      .replace(/([가-힣])게 지도하고/g, '$1고')
+      .replace(/교사가 한 번 확인해 주세요/g, '선생님께 한 번 확인받으세요')
+      .replace(/교사가 직접/g, '선생님이 직접')
+      .replace(/교사가 /g, '선생님이 ')
+      .replace(/교사의 /g, '선생님의 ')
+      .replace(/전압 상한을 정해 주세요/g, '전압 상한을 선생님과 함께 정하세요');
+  }
+  //  선생님께 드리는 도움말인가 — 「~하게 하세요」「나눠 주세요」「~해 주세요」로 끝나거나 몫 나누기를 이야기하는 것
+  function teacherTip(t){
+    const x = String(t == null ? '' : t).trim();
+    return /(주세요|주십시오|하게 하세요|게 하세요|시키세요|맡기세요|알려 줍니다)\.?$/.test(x) ||
+           /(나눠|나누어|흩어) ?맡기|해 두면 시간|예비 실험으로/.test(x);
   }
 
   // 안내 그림 한 장 (없으면 조용히 사라집니다)
@@ -3377,12 +3787,12 @@
     $('dataSub').textContent = '가로줄 ' + nRows + '칸. 숫자만 적으면 아래 그래프가 바로 그려집니다.' +
       (assignMine() ? ' 우리 모둠 몫 · ' + assignMine() + '.' : '');
     let h = '<table><thead><tr><th></th><th>' +
-            esc((spec.x && spec.x.label) || 'x') + (spec.x && spec.x.unit ? ' (' + esc(spec.x.unit) + ')' : '') + '</th>' +
-            ser.map(s => '<th>' + esc(s.label || '') + (s.unit ? ' (' + esc(s.unit) + ')' : '') + '</th>').join('') +
+            esc((spec.x && spec.x.label) || 'x') + (spec.x && spec.x.unit ? ' (' + esc(unitNorm(spec.x.unit)) + ')' : '') + '</th>' +
+            ser.map(s => '<th>' + esc(s.label || '') + (s.unit ? ' (' + esc(unitNorm(s.unit)) + ')' : '') + '</th>').join('') +
             '</tr></thead><tbody>';
     for (let r = 0; r < nRows; r++){
       h += '<tr><td class="rowno">' + (r + 1) + '</td>' +
-           '<td><input type="text" inputmode="decimal" data-r="' + r + '" data-c="0" aria-label="' + (r+1) + '행 x"/></td>' +
+           '<td><input type="text" inputmode="' + (xIsNum() ? 'decimal' : 'text') + '" data-r="' + r + '" data-c="0" aria-label="' + (r+1) + '행 ' + esc((spec.x && spec.x.label) || 'x') + '"/></td>' +
            ser.map((s, i) => '<td><input type="text" inputmode="decimal" data-r="' + r + '" data-c="' + (i + 1) +
                              (calcCols().some(cc => cc.c === i + 1) ? '" class="calc" readonly tabindex="-1" title="다른 칸으로 자동 계산됩니다' : '') +
                              '" aria-label="' + (r+1) + '행 ' + esc(s.label || '') + '"/></td>').join('') + '</tr>';
@@ -3391,22 +3801,69 @@
     Array.prototype.forEach.call($('dataTbl').querySelectorAll('input'), function(inp){
       inp.addEventListener('input', function(){ renderMyChart(); saveDataLocal(); });
     });
+    scrollCue($('dataTbl'));
   }
 
+  //  ── 칸 검사 — 숫자를 적는 칸에 글자가 섞이면 빨갛게 두르고, 그 줄은 그래프·저장에서 뺍니다 ──
+  //  가로축에 단위가 없는 실험(색종이 색·용액 이름·측정 시점)은 가로축 칸에 글을 적어도 됩니다.
+  function xIsNum(){ return !!(spec && spec.x && String(spec.x.unit || '').trim()); }
+  function cellState(c, v){
+    const t = String(v == null ? '' : v).trim();
+    if (!t) return 'empty';
+    if (c === 0 && !xIsNum()) return 'ok';
+    const n = cellNum(t);
+    return (n !== null && isFinite(n)) ? 'ok' : 'bad';
+  }
+  function colNameAt(c){
+    if (c === 0) return (spec.x && spec.x.label) || '가로축';
+    const se = (spec.series || [])[c - 1];
+    return (se && se.label) || ('계열 ' + c);
+  }
+  function validateGrid(){
+    const out = { bad: [], rows: {} };
+    if (!$('dataTbl')) return out;
+    Array.prototype.forEach.call($('dataTbl').querySelectorAll('input[data-r]'), function(el){
+      const st = el.classList.contains('calc') ? 'ok' : cellState(Number(el.dataset.c), el.value);
+      el.classList.toggle('bad', st === 'bad');
+      if (st === 'bad'){
+        el.setAttribute('aria-invalid', 'true');
+        out.bad.push({ r: Number(el.dataset.r), c: Number(el.dataset.c), v: el.value.trim() });
+        out.rows[el.dataset.r] = true;
+      } else el.removeAttribute('aria-invalid');
+    });
+    const msg = $('cellErr');
+    if (msg){
+      if (!out.bad.length) msg.textContent = '';
+      else {
+        const f = out.bad[0];
+        const nRows = Object.keys(out.rows).length;
+        msg.textContent = (f.r + 1) + '행 「' + colNameAt(f.c) + '」 칸의 ‘' + f.v.slice(0, 20) + '’ 는 숫자가 아닙니다. 숫자만 적어 주세요' +
+          (out.bad.length > 1 ? ' (이런 칸이 모두 ' + out.bad.length + '개)' : '') +
+          '. 고치기 전까지 이 ' + (nRows > 1 ? nRows + '줄은' : '줄은') + ' 그래프와 저장에서 빠집니다.';
+      }
+    }
+    return out;
+  }
+
+  //  표 → 줄 목록. 숫자가 아닌 칸이 있는 줄은 넣지 않습니다(그래프·저장·작업 파일이 모두 같은 줄을 봅니다).
   function collectRows(){
     const nRows = Math.max(1, Math.min(MAX_ROWS, tableRows || specRows()));
     const cols  = (spec.series || []).length + 1;
     const out = [];
     for (let r = 0; r < nRows; r++){
       const row = [];
-      let any = false;
+      let any = false, bad = false;
       for (let c = 0; c < cols; c++){
         const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
         const v = el ? el.value.trim() : '';
         if (v !== '') any = true;
-        row.push(v === '' ? null : (isFinite(Number(v)) ? Number(v) : v));
+        const st = (el && el.classList.contains('calc')) ? 'ok' : cellState(c, v);
+        if (st === 'bad'){ bad = true; break; }
+        if (v === '') row.push(null);
+        else if (c === 0 && !xIsNum()){ const n = cellNum(v); row.push((n !== null && isFinite(n)) ? n : v); }
+        else row.push(cellNum(v));
       }
-      if (any) out.push(row);
+      if (any && !bad) out.push(row);
     }
     return out;
   }
@@ -3452,8 +3909,8 @@
         const eb = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + k.b + '"]');
         const ec = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + k.c + '"]');
         if (!ea || !eb || !ec) return;
-        const a = nnum(ea.value), b = nnum(eb.value);
-        if (!isFinite(a) || !isFinite(b)){ ec.value = ''; return; }
+        const a = cellNum(ea.value), b = cellNum(eb.value);
+        if (a === null || b === null || !isFinite(a) || !isFinite(b)){ ec.value = ''; return; }
         let v = (k.op === '/' || k.op === '÷') ? (b === 0 ? NaN : a / b) : (k.op === '+') ? a + b : (k.op === '-' || k.op === '−') ? a - b : a * b;
         if (!isFinite(v)){ ec.value = ''; return; }
         const m = Math.abs(v); const d = m >= 100 ? 1 : m >= 10 ? 2 : 3;
@@ -3552,13 +4009,61 @@
       sp.addEventListener('pointerup', end); sp.addEventListener('pointercancel', end);
     }
   })();
+  //  계산 열(압력 × 부피 따위)을 그래프에 함께 그릴지 — 기본은 끕니다(단위가 달라 다른 계열을 납작하게 만듭니다).
+  let showCalcInChart = false;
+  function chartW(host){
+    const w = host ? Math.floor(host.clientWidth) : 0;
+    return w > 200 ? Math.min(760, w) : 560;
+  }
   function renderMyChart(){
     fillCalcCols();
+    validateGrid();
+    syncDemoNote();
     const rows = collectRows();
-    $('myChart').innerHTML = chartSVG(spec, rows, { predict: predict });
+    $('myChart').innerHTML = chartSVG(spec, rows, { predict: predict, w: chartW($('myChart')), showCalc: showCalcInChart });
     zoomApply();
+    renderChartOpts();
     renderGapNote(rows);
+    syncReadLock();         // 간편 모드 — 값을 넉넉히 적으면 결과 해설이 열립니다
     refreshDash();          // 표가 바뀌면 대시보드도 따라옵니다 (열려 있을 때만 다시 그립니다)
+  }
+  function renderChartOpts(){
+    const box = $('chartOpts');
+    if (!box) return;
+    const calc = (spec.series || []).filter(isCalcSer);
+    if (!calc.length || (spec.series || []).every(isCalcSer)){ box.innerHTML = ''; return; }
+    box.innerHTML = '<label class="calctog"><input type="checkbox" id="chkShowCalc"' + (showCalcInChart ? ' checked' : '') + ' /> ' +
+      '계산한 열(' + esc(calc.map(function(c){ return c.label; }).join(', ')) + ')도 그래프에 그리기</label>' +
+      (showCalcInChart ? '<p class="chartnote">단위가 다른 계열은 오른쪽 축에 그렸습니다. 축 제목의 단위를 보고 읽으세요.</p>' : '');
+    $('chkShowCalc').addEventListener('change', function(){ showCalcInChart = this.checked; renderMyChart(); });
+  }
+  //  화면 폭이 바뀌면 그래프를 다시 그려 글씨 크기를 지킵니다.
+  (function(){
+    let t = null;
+    window.addEventListener('resize', function(){
+      clearTimeout(t);
+      t = setTimeout(function(){
+        if (curTab === 'data' && group && !$('scWork').classList.contains('hidden')) renderMyChart();
+        Array.prototype.forEach.call(document.querySelectorAll('.tblwrap,.chartbox,.figbox,.linfig,.prevwrap'), scrollCue);
+      }, 160);
+    });
+  })();
+  //  옆으로 넘치는 표·그림에는 오른쪽 그림자와 「옆으로 밀어 보기」 한 줄을 붙입니다.
+  function scrollCue(el){
+    if (!el || !el.parentNode) return;
+    const can = el.scrollWidth > el.clientWidth + 4;
+    el.classList.toggle('can', can);
+    let hint = el.previousElementSibling;
+    if (!(hint && hint.classList && hint.classList.contains('swipehint'))) hint = null;
+    if (can && !hint){
+      hint = document.createElement('p');
+      hint.className = 'swipehint'; hint.setAttribute('aria-hidden', 'true');
+      hint.textContent = '옆으로 밀어서 더 보기 →';
+      el.parentNode.insertBefore(hint, el);
+    } else if (!can && hint) hint.remove();
+  }
+  function scrollCues(root){
+    Array.prototype.forEach.call((root || document).querySelectorAll('.tblwrap,.chartbox,.figbox,.linfig,.prevwrap'), scrollCue);
   }
 
   //  예상과 가장 많이 달랐던 지점을 말로도 알려 줍니다(그래프의 표시만으로는 읽기 어렵습니다).
@@ -3582,7 +4087,7 @@
     Hub.saveLocal('draft_data_' + joinCode + '_' + group.id, { rows: collectRows(), note: $('inNote').value });
   }
 
-  $('inNote').addEventListener('input', function(){ saveDataLocal(); syncMockNote(); });
+  $('inNote').addEventListener('input', function(){ saveDataLocal(); syncMockNote(); syncDemoNote(); });
 
   $('btnSaveData').addEventListener('click', function(){
     if (!group || expired) return;
@@ -3592,10 +4097,12 @@
     msg.className = 'savemsg'; msg.textContent = '저장 중…';
     this.disabled = true;
     // 비밀번호가 틀리면 다시 물어본 뒤 이 저장을 그대로 이어서 합니다.
+    const badN = Object.keys(validateGrid().rows).length;
     writeWithPin(function(pin){
       return DB.saveData(joinCode, group.id, rows, note, pin);
     }).then(function(res){
       if (res && res.offline){ msg.className = 'savemsg warn'; msg.textContent = '임시 저장했습니다. 연결되면 자동으로 보냅니다.'; }
+      else if (badN){ msg.className = 'savemsg warn'; msg.textContent = '저장했습니다 (' + rows.length + '줄) — 숫자가 아닌 칸이 있는 ' + badN + '줄은 빼고 저장했습니다. 고친 뒤 다시 저장하세요.'; }
       else { msg.textContent = '저장했습니다 (' + rows.length + '줄)'; }
     }, function(err){
       msg.className = 'savemsg warn'; msg.textContent = writeErrText(err);
@@ -4136,8 +4643,10 @@
     setTableRows(Math.max(specRows(), rows.length));
     gridClear();
     gridWrite(rows);
+    markDemo(!!IMP.demo);              // 예시 값이면 표와 메모에 표시하고, 진짜 자료로 바꾸면 표시를 뗍니다
     renderMyChart();
     saveDataLocal();
+    touch();
     impSay('표에 ' + gTxt + '넣었습니다. 원본 ' + n.toLocaleString() + '행 → ' + rows.length + '행. ' +
            '값을 확인한 뒤 아래 [데이터 저장]을 눌러 주세요.', 'ok');
     $('impPanel').classList.add('hidden');
@@ -4198,7 +4707,8 @@
       $('impPasteBox').classList.remove('hidden');
       $('impPaste').value = t;
       startImport(t, '예시 데이터');
-      impSay('예시 데이터를 넣었습니다. 실제로 잰 값이 아니라 보여 드리기 위한 값입니다.', 'ok');
+      if (IMP) IMP.demo = true;
+      impSay('예시 데이터를 읽었습니다. [표에 넣기]를 누르면 표에 「예시 값」으로 표시되어 들어갑니다.', 'ok');
     });
     //  구글 시트에서 바로 — 받은 CSV 는 붙여넣은 표와 똑같은 길(startImport)로 갑니다.
     $('btnImpSheetOpen').addEventListener('click', function(){
@@ -4278,6 +4788,40 @@
     syncMockNote();
   }
 
+  //  예시 값 표시 — 모의 값과 같은 자리(측정 조건 메모)에 남겨 저장·작업 파일까지 따라가게 합니다.
+  const DEMO_MARK = '📋 예시 값';
+  const DEMO_SIG  = '📋';
+  function hasDemoMark(){ return String(($('inNote') && $('inNote').value) || '').indexOf(DEMO_SIG) >= 0; }
+  function markDemo(on){
+    const box = $('inNote');
+    if (!box) return;
+    const has = hasDemoMark();
+    if (on && !has){
+      const cur  = String(box.value || '').trim();
+      const room = NOTE_MAX - DEMO_MARK.length - (cur ? 3 : 0);
+      const keep = cur.slice(0, Math.max(0, room)).trim();
+      box.value = (keep ? keep + ' · ' : '') + DEMO_MARK;
+    } else if (!on && has){
+      box.value = String(box.value || '').split('·').map(function(t){ return t.trim(); })
+        .filter(function(t){ return t && t.indexOf(DEMO_SIG) < 0; }).join(' · ');
+    }
+    syncDemoNote();
+  }
+  //  예시 값이 든 표 — 위에 한 줄, 줄 번호 칸에 「예시」를 붙입니다.
+  function syncDemoNote(){
+    const on = hasDemoMark();
+    if ($('demoNote')) $('demoNote').classList.toggle('hidden', !on);
+    if (!$('dataTbl')) return;
+    Array.prototype.forEach.call($('dataTbl').querySelectorAll('tbody tr'), function(tr, r){
+      const no = tr.querySelector('td.rowno');
+      if (!no) return;
+      const filled = on && Array.prototype.some.call(tr.querySelectorAll('input'), function(el){ return el.value.trim() !== ''; });
+      no.classList.toggle('demo', filled);
+      no.innerHTML = filled ? (r + 1) + '<br>예시' : String(r + 1);
+      no.title = filled ? '예시 값 — 직접 잰 값이 아닙니다' : '';
+    });
+  }
+
   function writeRowAt(r, row){
     (row || []).forEach(function(v, c){
       const el = $('dataTbl').querySelector('input[data-r="' + r + '"][data-c="' + c + '"]');
@@ -4337,6 +4881,12 @@
     const noS = !!(ce && LAB.kindOf(ce) !== 'sensor');
     if ($('sensorCard')) $('sensorCard').classList.toggle('hidden', noS);
     if (noS){ unmountSensor(); return; }
+    //  sensorkit.js 는 defer 로 받습니다 — 아직 오는 중이면 다 받은 뒤에 다시 답니다.
+    if (!window.SensorKit && document.readyState === 'loading'){
+      host.innerHTML = '<p class="muted">센서 연결 화면을 불러오는 중입니다…</p>';
+      document.addEventListener('DOMContentLoaded', function(){ if (group && !SK) mountSensor(); }, { once: true });
+      return;
+    }
     if (!window.SensorKit){
       host.innerHTML = '<p class="muted">센서 연결 기능을 불러오지 못했습니다(sensorkit.js). ' +
                        'CSV 끌어다 놓기와 직접 입력은 그대로 됩니다.</p>';
@@ -4454,6 +5004,11 @@
     //  '반 전체' 블록에 쓸 자료는 데이터 실험실과 같은 가벼운 한 번 받기로 채웁니다.
     //  (실시간 구독을 새로 열지 않습니다. 간편 모드에서는 아무것도 부르지 않습니다.)
     if (!isSimple() && !board) labFetchBoard();
+    if (!window.DashKit && document.readyState === 'loading'){
+      host.innerHTML = '<p class="muted">대시보드 엔진을 불러오는 중입니다…</p>';
+      document.addEventListener('DOMContentLoaded', function(){ if (curTab === 'dash') renderDash(); }, { once: true });
+      return;
+    }
     if (!window.DashKit){
       host.innerHTML = '<p class="muted">대시보드 엔진을 불러오지 못했습니다(dashkit.js). ' +
                        '나머지 기능은 그대로 됩니다.</p>';
@@ -5343,6 +5898,7 @@
       }
       if (d.note) $('inNote').value = d.note;
       syncMockNote();               // 저장본에 모의 값 표시가 남아 있으면 다시 알려 줍니다
+      syncDemoNote();
     }
     aiLoadLocal();                     // 이 기기에서 쓰던 협업 초안(고친 프롬프트 포함)
     predict = loadPredict();
@@ -5535,10 +6091,14 @@
   let LW = 620, LH = 340;
   const LP = { l: 64, r: 18, t: 18, b: 48 };
   function labSizeUp(){
-    const narrow = (typeof window !== 'undefined' && window.innerWidth < 560);
-    LW = narrow ? 380 : 620;
-    LH = narrow ? 300 : 340;
-    LP.l = narrow ? 46 : 64;
+    LW = fitW(620);
+    LH = Math.max(240, Math.min(340, Math.round(LW * 0.6)));
+  }
+  //  그래프를 그릴 폭 — 화면 폭에 맞추어(상자 안쪽 여백만큼 빼고) 글씨가 줄어들지 않게 합니다.
+  function fitW(max){
+    const vw = (typeof window !== 'undefined') ? (document.documentElement.clientWidth || window.innerWidth || 1024) : 1024;
+    const inner = Math.min(vw, 1120) - (vw < 641 ? 66 : 80);
+    return Math.max(280, Math.min(max || 620, Math.round(inner)));
   }
   let LABV = null;         // 지금 그린 그래프의 눈금 범위 (드래그 → 값 되돌리기에 씁니다)
 
@@ -5554,8 +6114,18 @@
   //  축·변환·구간만 처음 상태로 (만들어 둔 파생열은 그대로 둡니다)
   function labDefaults(){
     LABS.xk = 'x'; LABS.xt = 'none'; LABS.yt = 'none';
-    LABS.ys = (spec && spec.series || []).map(function(s, i){ return 's' + i; });
+    LABS.ys = labDefaultYs();
     LABS.kind = 'scatter'; LABS.trend = true; LABS.selA = null; LABS.selB = null;
+  }
+
+  //  처음 보여 줄 세로축 — 계산 열은 빼고, 첫 계열과 단위가 같은 것만(축이 하나라 단위가 다르면 한쪽이 납작해집니다).
+  function labDefaultYs(){
+    const ser = (spec && spec.series) || [];
+    const meas = ser.map(function(s, i){ return { s: s, k: 's' + i }; }).filter(function(o){ return !isCalcSer(o.s); });
+    const list = meas.length ? meas : ser.map(function(s, i){ return { s: s, k: 's' + i }; });
+    if (!list.length) return [];
+    const u0 = unitNorm(list[0].s.unit);
+    return list.filter(function(o){ return unitNorm(o.s.unit) === u0; }).map(function(o){ return o.k; });
   }
 
   // ── 숫자 · 단위 ────────────────────────────────────────────────
@@ -5707,51 +6277,52 @@
     return [lo, a * lo + b, hi, a * hi + b];
   }
 
-  //  sets: [{label, color, pts, line, big, faint, fit, thick}]
+  //  sets: [{label, color, pts, line, big, faint, fit, thick, curve}]
+  //   curve = {xt, yt, slope, intercept} — 바꾼 좌표에서 맞춘 직선을 원래 좌표로 되돌린 곡선(점선)입니다.
+  //  opt.w 를 주면 그 폭으로 그립니다(글씨가 화면에서 12px 안팎으로 보이게 실제 칸 폭을 넘깁니다).
+  const TF_INV = { none:v => v, inv:v => 1 / v, sq:v => (v >= 0 ? Math.sqrt(v) : NaN), sqrt:v => v * v,
+                   log:v => Math.pow(10, v), inv2:v => (v > 0 ? 1 / Math.sqrt(v) : NaN) };
   function labChart(sets, opt){
     opt = opt || {};
     const xs = [], ys = [];
     (sets || []).forEach(function(s){ s.pts.forEach(function(p){ xs.push(p.x); ys.push(p.y); }); });
-    if (!xs.length){ LABV = null; return '<div class="empty">그릴 점이 없습니다. 축이나 변환을 바꿔 보세요.</div>'; }
-
-    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-    let y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-    if (x1 === x0){ x0 -= 0.5; x1 += 0.5; }
-    if (y1 === y0){ y0 -= 1;   y1 += 1;   }
-    const padX = (x1 - x0) * 0.06, padY = (y1 - y0) * 0.10;
-    x0 -= padX; x1 += padX; y0 -= padY; y1 += padY;
-    LABV = { x0:x0, x1:x1, y0:y0, y1:y1 };
-    const px = function(v){ return LP.l + (v - x0) / (x1 - x0) * (LW - LP.l - LP.r); };
-    const py = function(v){ return LH - LP.b - (v - y0) / (y1 - y0) * (LH - LP.t - LP.b); };
+    if (!xs.length){ if (!opt.noId) LABV = null; return '<div class="empty">그릴 점이 없습니다. 축이나 변환을 바꿔 보세요.</div>'; }
+    const W = Math.round(opt.w || LW), H = Math.round(opt.h || (opt.w ? Math.max(240, Math.min(340, opt.w * 0.62)) : LH));
+    const fs = 12;
+    const X = niceScale(Math.min.apply(null, xs), Math.max.apply(null, xs), Math.max(3, Math.min(7, Math.round((W - 90) / 70))));
+    const Y = niceScale(Math.min.apply(null, ys), Math.max.apply(null, ys), Math.max(3, Math.min(6, Math.round((H - 80) / 48))));
+    const yl = Y.ticks.map(function(v){ return tickTxt(v, Y.step); });
+    const xl = X.ticks.map(function(v){ return tickTxt(v, X.step); });
+    const P = { t: fs + 18, b: fs * 2 + 24,
+                l: Math.max(36, Math.ceil(Math.max.apply(null, yl.map(function(t){ return textW(t, fs); })) + 12)),
+                r: Math.max(14, Math.ceil(textW(xl[xl.length - 1], fs) / 2) + 6) };
+    const x0 = X.lo, x1 = X.hi, y0 = Y.lo, y1 = Y.hi;
+    if (!opt.noId){ LW = W; LH = H; LP.l = P.l; LP.r = P.r; LP.t = P.t; LP.b = P.b; LABV = { x0:x0, x1:x1, y0:y0, y1:y1 }; }
+    const px = function(v){ return P.l + (v - x0) / ((x1 - x0) || 1) * (W - P.l - P.r); };
+    const py = function(v){ return H - P.b - (v - y0) / ((y1 - y0) || 1) * (H - P.t - P.b); };
 
     //  opt.noId 는 데이터 실험실 밖(붙여넣기 분석 화면)에서 쓸 때 — id 가 겹치지 않게, 구간 고르기도 빼고 그립니다.
-    let s = '<svg' + (opt.noId ? '' : ' id="labSvg"') + ' class="labsvg" viewBox="0 0 ' + LW + ' ' + LH + '" width="100%" role="img" ' +
+    let s = '<svg' + (opt.noId ? '' : ' id="labSvg"') + ' class="labsvg" viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" ' +
             'aria-label="' + esc((opt.xLabel || 'x') + ' 대 ' + (opt.yLabel || 'y') + ' 그래프' +
                                  (opt.noId ? '.' : '. 드래그하면 구간을 고를 수 있습니다.')) + '">';
-    // 고른 구간(뒤에 깔립니다) — 드래그 중에는 이 사각형만 고쳐 그립니다.
     if (!opt.noId)
-      s += '<rect id="labSel" x="0" y="' + LP.t + '" width="0" height="' + (LH - LP.t - LP.b) +
-           '" fill="var(--sun)" opacity=".18"/>';
-    for (let i = 0; i <= 4; i++){
-      const v = y0 + (y1 - y0) * i / 4, y = py(v);
-      s += '<line x1="' + LP.l + '" y1="' + y.toFixed(1) + '" x2="' + (LW - LP.r) + '" y2="' + y.toFixed(1) +
-           '" stroke="var(--line)" stroke-width="1"/>';
-      s += '<text x="' + (LP.l - 8) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="var(--muted)">' +
-           esc(labNum(v)) + '</text>';
-    }
-    for (let i = 0; i <= 4; i++){
-      const v = x0 + (x1 - x0) * i / 4, x = px(v);
-      s += '<line x1="' + x.toFixed(1) + '" y1="' + LP.t + '" x2="' + x.toFixed(1) + '" y2="' + (LH - LP.b) +
-           '" stroke="var(--line)" stroke-width="1" opacity=".6"/>';
-      s += '<text x="' + x.toFixed(1) + '" y="' + (LH - LP.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' +
-           esc(labNum(v)) + '</text>';
-    }
-    s += '<line x1="' + LP.l + '" y1="' + (LH - LP.b) + '" x2="' + (LW - LP.r) + '" y2="' + (LH - LP.b) +
-         '" stroke="var(--line-2)" stroke-width="1.5"/>';
-    s += '<text x="' + (LW - LP.r) + '" y="' + (LH - 8) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' +
+      s += '<rect id="labSel" x="0" y="' + P.t + '" width="0" height="' + (H - P.t - P.b) + '" fill="var(--sun)" opacity=".18"/>';
+    Y.ticks.forEach(function(v, i){
+      const y = py(v);
+      s += '<line x1="' + P.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)" stroke-width="1"/>';
+      s += '<text x="' + (P.l - 6) + '" y="' + (y + fs * 0.35).toFixed(1) + '" text-anchor="end" font-size="' + fs + '" fill="var(--muted)">' + esc(yl[i]) + '</text>';
+    });
+    X.ticks.forEach(function(v, i){
+      const x = px(v);
+      s += '<line x1="' + x.toFixed(1) + '" y1="' + P.t + '" x2="' + x.toFixed(1) + '" y2="' + (H - P.b) + '" stroke="var(--line)" stroke-width="1" opacity=".6"/>';
+      s += '<text x="' + x.toFixed(1) + '" y="' + (H - P.b + fs + 5) + '" text-anchor="middle" font-size="' + fs + '" fill="var(--muted)">' + esc(xl[i]) + '</text>';
+    });
+    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    s += '<line x1="' + P.l + '" y1="' + P.t + '" x2="' + P.l + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.2"/>';
+    //  축 제목 — 세로축은 왼쪽 위 끝, 가로축은 아래 끝 가운데(눈금 글씨와 다른 줄)
+    s += '<text x="' + ((P.l + W - P.r) / 2).toFixed(1) + '" y="' + (H - 5) + '" text-anchor="middle" font-size="' + fs + '" font-weight="700" fill="var(--muted)">' +
          esc(opt.xLabel || '') + '</text>';
-    s += '<text x="' + (LP.l - 8) + '" y="' + (LP.t - 4) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' +
-         esc(opt.yLabel || '') + '</text>';
+    s += '<text x="4" y="' + (fs + 2) + '" text-anchor="start" font-size="' + fs + '" font-weight="700" fill="var(--muted)">' + esc(opt.yLabel || '') + '</text>';
 
     (sets || []).forEach(function(se){
       const op = se.faint ? '.45' : '1';
@@ -5763,8 +6334,22 @@
         s += '<path d="' + d + '" fill="none" stroke="' + se.color + '" stroke-width="2.2" opacity="' + op +
              '" stroke-linejoin="round" stroke-linecap="round"/>';
       }
+      //  바꾼 좌표에서 맞춘 관계를 원래 좌표의 곡선으로 — 휘어 있는 자료에 곧은 선을 긋지 않습니다.
+      if (se.curve && isFinite(se.curve.slope) && isFinite(se.curve.intercept)){
+        const fx = LAB_TF[se.curve.xt] || LAB_TF.none, iy = TF_INV[se.curve.yt] || TF_INV.none;
+        let d = '', pen = false;
+        for (let i = 0; i <= 80; i++){
+          const xv = x0 + (x1 - x0) * i / 80;
+          const tx = fx.ok(xv) ? fx.f(xv, 0) : NaN;
+          const yv = isFinite(tx) ? iy(se.curve.slope * tx + se.curve.intercept) : NaN;
+          if (!isFinite(yv) || yv < y0 || yv > y1){ pen = false; continue; }
+          d += (pen ? 'L' : 'M') + px(xv).toFixed(1) + ' ' + py(yv).toFixed(1) + ' ';
+          pen = true;
+        }
+        if (d) s += '<path d="' + d + '" fill="none" stroke="' + se.color + '" stroke-width="1.8" opacity=".85" stroke-dasharray="7 5"/>';
+      }
       se.pts.forEach(function(p){
-        s += '<circle cx="' + px(p.x).toFixed(1) + '" cy="' + py(p.y).toFixed(1) + '" r="' + (se.big ? 5 : 3.2) +
+        s += '<circle cx="' + px(p.x).toFixed(1) + '" cy="' + py(p.y).toFixed(1) + '" r="' + (se.big ? 5 : 3.4) +
              '" fill="' + se.color + '" opacity="' + op + '"' +
              (se.big ? ' stroke="#fff" stroke-width="1.6"' : '') + '/>';
       });
@@ -5784,6 +6369,8 @@
       if (!se.label) return;
       lg += '<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:11px;height:11px;border-radius:3px;background:' +
             se.color + ';display:inline-block"></i>' + esc(se.label) + '</span>';
+      if (se.curve) lg += '<span style="display:inline-flex;align-items:center;gap:5px"><i style="width:20px;height:0;border-top:2px dashed ' + se.color +
+                          ';display:inline-block"></i>점선 = 바꾼 축에서 맞춘 관계를 원래 축에 되돌린 곡선</span>';
     });
     lg += '</div>';
     return s + lg;
@@ -5939,7 +6526,17 @@
   //  ── R² · 선형화 도움말 ────────────────────────────────────────
   //  기울기·절편·R² 를 처음 보는 분께 그 자리에서 설명합니다.
   //  펼치기 전에는 한 줄만 차지하도록 details 로 접어 둡니다.
-  function fitHelpHTML(){
+  //  full 이 아니면(학생이 아직 축을 바꿔 보기 전) 「1/부피로 바꾸면 직선」 같은 답을 먼저 알려 주지 않고 R² 읽는 법만 둡니다.
+  function fitHelpHTML(full){
+    if (full === false){
+      return '<details class="fithelp"><summary>R² 와 기울기를 어떻게 읽나요</summary><div class="fithelp-in">' +
+        '<h4>R² — 점이 직선을 얼마나 잘 따라갔나</h4>' +
+        '<p>0 부터 1 까지의 숫자입니다. <b>1 에 가까울수록</b> 점들이 직선 위에 잘 얹혀 있습니다. ' +
+        '0.85 라면 “흩어짐의 85% 는 이 직선으로 설명되고, 나머지 15% 는 다른 까닭(측정 오차 같은 것)” 이라는 뜻입니다.</p>' +
+        '<div class="note">⚠️ R² 는 <b>방향을 말해 주지 않습니다.</b> 오르내림은 <b>기울기의 부호</b>로 가려야 합니다. 그리고 점이 적으면 R² 는 쉽게 높아집니다.</div>' +
+        '<h4>곡선이면</h4><p>점이 휘어 있으면 직선의 기울기·R² 는 별 뜻이 없습니다. 위에서 <b>가로축 값 바꾸기</b>를 하나씩 골라 보며 ' +
+        '그래프가 곧게 펴지는 것을 찾아보세요. 펴지는 순간이 규칙을 찾은 순간입니다.</p></div></details>';
+    }
     const fig = (window.GRAPHS && GRAPHS.linearize)
       ? '<figure class="linfig">' + GRAPHS.linearize +
         '<figcaption class="muted">같은 자료입니다. 가로축만 바꿔 그린 것입니다.</figcaption></figure>' : '';
@@ -5984,6 +6581,37 @@
       '<span class="muted">점 ' + fit.n + '개</span></div>';
   }
 
+  //  이 실험의 분석 레시피가 (가로축, 세로축) 짝을 어떻게 보는지
+  //   'curve' — 축을 바꿔야 직선이 되는 관계(반비례·역제곱·제곱근…): 원래 축에 곧은 추세선을 긋지 않습니다.
+  //   'line'  — 원래 축 그대로 직선으로 잽니다.   '' — 정해 둔 것이 없습니다.
+  function fitPlan(exp, xk, yk){
+    const A = (exp && window.LAB && LAB.analysisOf) ? LAB.analysisOf(exp) : null;
+    const fits = ((A && A.steps) || []).filter(function(st){ return st && st.kind === 'fit' && st.x === xk && st.y === yk; });
+    const tf = fits.filter(function(f){ return (f.xt && f.xt !== 'none') || (f.yt && f.yt !== 'none'); })[0];
+    if (tf) return { kind: 'curve', xt: tf.xt || 'none', yt: tf.yt || 'none' };
+    return { kind: fits.length ? 'line' : '' };
+  }
+  //  원래 축으로 보는 중인데 곡선 관계인 실험이면 직선 추세선·기울기를 내세우지 않습니다.
+  function hideLinear(yk){
+    return LABS.xt === 'none' && LABS.yt === 'none' && fitPlan(labExp(), LABS.xk, yk).kind === 'curve';
+  }
+  const CURVE_NOTE = '이 실험은 <b>곡선 관계</b>를 보는 실험이라, 원래 축에서는 직선 추세선과 기울기·R² 를 보여 주지 않습니다(휘어 있는 점에 곧은 선을 그으면 잘못 읽기 쉽습니다). ' +
+                     '위에서 <b>가로축 값 바꾸기</b>를 골라 그래프를 곧게 펴 보세요.';
+
+  function labMixedUnits(items){
+    const us = {}; (items || []).forEach(function(it){ us[unitNorm(it.unit)] = 1; });
+    return Object.keys(us).length > 1;
+  }
+  //  세로축 제목 — 고른 계열 이름에 단위까지(단위가 같을 때만 하나로 묶습니다)
+  function labYTitle(items){
+    if (!items.length) return '세로축';
+    const names = items.map(function(it){ return it.label; });
+    const head = names.length > 2 ? names.slice(0, 2).join(' · ') + ' 외' : names.join(' · ');
+    if (labMixedUnits(items)) return head + ' (단위 섞임)';
+    const u = unitNorm(items[0].unit);
+    return head + (u ? ' (' + u + ')' : '');
+  }
+
   // ── 우리 모둠 보기 ─────────────────────────────────────────────
   function labMineHTML(rows){
     const xc = labCol(LABS.xk);
@@ -5997,6 +6625,7 @@
       const inSel = P.pts.filter(labInSel);
       items.push({
         key: yk, label: LAB_TF[LABS.yt].lab(yc.label), unit: LAB_TF[LABS.yt].unit(yc.unit),
+        hideFit: hideLinear(yk),
         pts: P.pts, skipped: P.skipped, missing: P.missing,
         fit: labFit(P.pts), fitRaw: labFit(P.rawKept),   // 전후 비교는 살아남은 같은 점끼리만
         sel: (LABS.selA !== null) ? labFit(inSel) : null, selN: inSel.length
@@ -6007,15 +6636,17 @@
     const sets = items.map(function(it){
       return { label: it.label + (it.unit ? ' (' + it.unit + ')' : ''), color: labColorOf(it.key),
                pts: it.pts, line: (LABS.kind === 'line'), big: false,
-               fit: (LABS.trend && it.fit.ok) ? it.fit : null };
+               fit: (LABS.trend && it.fit.ok && !it.hideFit) ? it.fit : null };
     });
 
     let h = '<div class="box"><h3 style="margin-top:0">그래프</h3>' +
             '<p class="muted">그래프 위를 <b>옆으로 끌면</b> 그 구간만 따로 계산합니다. 손가락으로도 됩니다.</p>' +
             '<div class="chartbox">' +
             labChart(sets, { xLabel: xLabel + (xUnit ? ' (' + xUnit + ')' : ''),
-                             yLabel: items.length === 1 ? (items[0].label + (items[0].unit ? ' (' + items[0].unit + ')' : '')) : '세로축' }) +
-            '</div>';
+                             yLabel: labYTitle(items) }) +
+            '</div>' + (labMixedUnits(items) ? '<p class="note warn" style="margin-top:8px">세로축에 <b>단위가 다른 값</b>(' +
+              esc(items.map(function(it){ return it.label + (it.unit ? ' ' + it.unit : ''); }).join(' · ')) +
+              ')을 함께 골랐습니다. 축이 하나라 크기가 작은 쪽이 납작하게 보입니다. 하나씩 따로 보거나 [＋ 새 그래프]로 나눠 보세요.</p>' : '');
     h += '<div class="improw">' +
          (LABS.selA !== null
             ? '<span class="pill sun">고른 구간 ' + esc(labNum(LABS.selA)) + ' ~ ' + esc(labNum(LABS.selB)) + esc(unitTxt(xUnit)) + '</span>' +
@@ -6029,8 +6660,9 @@
       h += '<div class="fitcard"><b><span style="display:inline-block;width:11px;height:11px;border-radius:3px;background:' +
            labColorOf(it.key) + '"></span> ' + esc(it.label) + esc(unitTxt(it.unit)) +
            ' <span class="muted" style="font-weight:400">↔ ' + esc(xLabel) + '</span></b>';
-      h += fitLineHTML(it.fit, it.unit, xUnit, '');
-      if (it.fit.ok && it.fitRaw.ok && it.fitRaw.r2 !== null && it.fit.r2 !== null && (LABS.xt !== 'none' || LABS.yt !== 'none')){
+      if (it.hideFit) h += '<p class="chartnote" style="font-size:14px">' + CURVE_NOTE + '</p>';
+      else h += fitLineHTML(it.fit, it.unit, xUnit, '');
+      if (!it.hideFit && it.fit.ok && it.fitRaw.ok && it.fitRaw.r2 !== null && it.fit.r2 !== null && (LABS.xt !== 'none' || LABS.yt !== 'none')){
         const up = (it.fit.r2 - it.fitRaw.r2);
         h += '<p style="margin-top:8px">바꾸기 전 R² <span class="r2jump">' + esc(fmtR2(it.fitRaw.r2)) + ' → ' +
              esc(fmtR2(it.fit.r2)) + '</span> ' +
@@ -6046,7 +6678,7 @@
       h += '</div>';
     });
     h += '<p class="muted">R² 는 <b>바꾼 뒤의 좌표</b>에서 잰 값입니다. 원래 값의 R² 와는 다른 수입니다.</p>';
-    h += fitHelpHTML();
+    h += fitHelpHTML(LABS.xt !== 'none' || LABS.yt !== 'none');
     h += '</div>';
     return h;
   }
@@ -6147,12 +6779,13 @@
       mineN: mine ? mine.pts.length : 0, allN: allPts.length
     };
 
+    const noLine = hideLinear(yk);
     const sets = parts.map(function(p){
       return { label: p.name + (p.mine ? ' (우리)' : ''), color: p.color, pts: p.pts,
                line: false, big: p.mine, faint: !p.mine,
-               fit: (LABS.trend && p.fit.ok) ? p.fit : null };
+               fit: (LABS.trend && p.fit.ok && !noLine) ? p.fit : null };
     });
-    if (LABS.trend && allFit.ok){
+    if (LABS.trend && allFit.ok && !noLine){
       sets.push({ label: '반 전체 추세선', color: 'var(--ink)', pts: [], line: false, big: false, thick: true, fit: allFit });
     }
 
@@ -6162,7 +6795,6 @@
             '<p class="lead">표본이 <b>' + (mine ? mine.pts.length : 0) + '개</b>에서 <b>' + allPts.length + '개</b>로 늘었습니다 (' +
             parts.length + '모둠).</p>' +
             (pe ? poolBadgeHTML(pe, false) : '') +
-            (pp && pp.watch ? '<div class="note">👀 <b>여기서 눈여겨볼 것</b><br>' + esc(pp.watch) + '</div>' : '') +
             (pp && pp.axis ? '<p class="muted">합칠 때 가로축 · <b>' + esc(pp.axis) + '</b></p>' : '') +
             '<div class="chartbox">' +
             labChart(sets, { xLabel: xLabel + (xUnit ? ' (' + xUnit + ')' : ''),
@@ -6175,9 +6807,10 @@
          '</div></div>';
 
     h += '<div class="box"><h3 style="margin-top:0">반 전체 계산 결과</h3>';
-    h += '<div class="fitcard"><b>반 전체를 하나로 봤을 때</b>' + fitLineHTML(allFit, yUnit, xUnit, '') +
+    if (noLine) h += '<p class="chartnote" style="font-size:14px;margin-bottom:10px">' + CURVE_NOTE + '</p>';
+    h += '<div class="fitcard"' + (noLine ? ' hidden' : '') + '><b>반 전체를 하나로 봤을 때</b>' + fitLineHTML(allFit, yUnit, xUnit, '') +
          (rankTxt ? '<p style="margin-top:8px">' + rankTxt + '</p>' : '') + '</div>';
-    h += '<div class="tblwrap"><table><thead><tr><th>모둠</th><th>점</th><th>기울기' +
+    h += '<div class="tblwrap"' + (noLine ? ' hidden' : '') + '><table><thead><tr><th>모둠</th><th>점</th><th>기울기' +
          (slopeUnit(yUnit, xUnit) ? ' (' + esc(slopeUnit(yUnit, xUnit)) + ')' : '') + '</th><th>R²</th></tr></thead><tbody>';
     parts.forEach(function(p){
       h += '<tr' + (p.mine ? ' style="background:#F0FBFA;font-weight:800"' : '') + '>' +
@@ -6191,7 +6824,7 @@
     if (skipped) h += '<div class="note warn" style="margin-top:10px">값을 바꾸면서 반 전체에서 <b>' + skipped +
                       '개</b>를 뺐습니다 — ' + esc(TF_WHY[LABS.xt] || TF_WHY[LABS.yt] || '계산할 수 없는 값이라서') + '입니다.</div>';
     h += '<p class="muted" style="margin-top:10px">R² 는 <b>바꾼 뒤의 좌표</b>에서 잰 값입니다. ' +
-         '모둠마다 측정 조건이 달랐다면 기울기가 다른 것도 자연스럽습니다.</p>' + fitHelpHTML() + '</div>';
+         '모둠마다 측정 조건이 달랐다면 기울기가 다른 것도 자연스럽습니다.</p>' + fitHelpHTML(LABS.xt !== 'none' || LABS.yt !== 'none') + '</div>';
     return h;
   }
 
@@ -6272,7 +6905,7 @@
                  ' · 점 ' + L.allN + '개' + (rec.rank ? ' · ' + rec.rank : '');
       return rec;
     }
-    const items = (L.items || []).filter(function(it){ return it.fit.ok; });
+    const items = (L.items || []).filter(function(it){ return it.fit.ok && (!it.hideFit || (it.sel && it.sel.ok)); });
     if (!items.length) return null;
     items.forEach(function(it){
       const use = it.sel && it.sel.ok ? it.sel : it.fit;
@@ -6341,7 +6974,12 @@
   function labSaveAnalysis(){
     if (!group || expired) return;
     const rec = labMakeRecord();
-    if (!rec){ labMsg('저장할 계산 결과가 없습니다. 점이 2개 이상 필요합니다.', 'warn'); return; }
+    if (!rec){
+      const curvy = LABS.last && (LABS.last.items || []).some(function(it){ return it.hideFit; });
+      labMsg(curvy ? '곡선 관계라 원래 축의 직선 결과는 저장하지 않습니다. 가로축 값을 바꾸거나 구간을 고른 뒤 저장하세요.'
+                   : '저장할 계산 결과가 없습니다. 점이 2개 이상 필요합니다.', 'warn');
+      return;
+    }
     const before = analyses.slice();
     analyses = analyses.concat([rec]).slice(-5);      // 최대 5개 — 오래된 것부터 밀려납니다
     const btn = $('btnLabSave');
@@ -6375,8 +7013,7 @@
     // 지운 파생열을 축으로 잡고 있으면 되돌립니다.
     if (!labCol(LABS.xk)) LABS.xk = 'x';
     LABS.ys = LABS.ys.filter(function(k){ return !!labCol(k) && k !== LABS.xk; });
-    if (!LABS.ys.length) LABS.ys = (spec && spec.series || []).map(function(s, i){ return 's' + i; })
-                                     .filter(function(k){ return k !== LABS.xk; });
+    if (!LABS.ys.length) LABS.ys = labDefaultYs().filter(function(k){ return k !== LABS.xk; });
     if (LABS.mode === 'class' && LABS.ys.length > 1) LABS.ys = [LABS.ys[0]];
 
     const rows = labRows();
@@ -7125,13 +7762,13 @@
     return d ? d.name : String(k);
   }
   function anColUnit(sp, ds, k){
-    if (k === 'x') return (sp.x && sp.x.unit) || '';
+    if (k === 'x') return unitNorm(sp.x && sp.x.unit);
     if (String(k).charAt(0) === 's'){
       const s = (sp.series || [])[Number(String(k).slice(1))];
-      return s ? (s.unit || '') : '';
+      return s ? unitNorm(s.unit) : '';
     }
     const d = derivedIn(ds, k);
-    return d ? (d.unit || '') : '';
+    return d ? unitNorm(d.unit) : '';
   }
   //  통계는 Hub.stats 한 곳에서 — 한 열을 [[x, 값], …] 로 만들어 그대로 넘깁니다.
   function anStat(rows, k, ds){
@@ -7177,6 +7814,22 @@
     return arr.length ? arr[arr.length - 1] : null;
   }
 
+  //  분석 레시피의 derive 와 짝이 되는 표의 계산 열 — 두 인자의 이름이 계산 열 라벨에 모두 들어 있으면 같은 것으로 봅니다.
+  function calcTwin(sp, st){
+    const ser = (sp && sp.series) || [];
+    const norm = t => String(t || '').replace(/\s/g, '');
+    const nameOf = k => k === 'x' ? norm(sp.x && sp.x.label) : (String(k).charAt(0) === 's' ? norm((ser[Number(String(k).slice(1))] || {}).label) : '');
+    const a = nameOf(st.a), b = nameOf(st.b);
+    if (!a || !b) return null;
+    for (let i = 0; i < ser.length; i++){
+      if (!isCalcSer(ser[i])) continue;
+      const parts = String(ser[i].label).split(/[×÷/]/).map(norm).filter(Boolean);
+      const has = p => parts.some(q => q === p || q.indexOf(p) >= 0 || p.indexOf(q) >= 0);
+      if (has(a) && has(b)) return ser[i];
+    }
+    return null;
+  }
+
   //  레시피를 차례로 실행합니다. 값만 만들고, 그리는 일은 anBlockHTML 이 합니다.
   function runAnalysis(exp, rows){
     const sp = (exp && exp.dataSpec) || { x:{}, series:[] };
@@ -7191,7 +7844,10 @@
 
       if (st.kind === 'derive'){
         const d = { id:'d' + ds.length, name: st.name || ('만든 열 ' + (ds.length + 1)),
-                    unit: st.unit || '', a: st.a, b: st.b, op: AN_OPS[st.op] || '×' };
+                    unit: unitNorm(st.unit), a: st.a, b: st.b, op: AN_OPS[st.op] || '×' };
+        //  표에 같은 계산 열(예: 「압력 × 부피」)이 있으면 그 이름·단위를 그대로 씁니다 — 화면마다 이름이 달라지지 않게.
+        const twin = calcTwin(sp, st);
+        if (twin){ d.name = twin.label; if (twin.unit) d.unit = unitNorm(twin.unit); }
         ds.push(d);
         const s = anStat(rows, d.id, ds);
         out.blocks.push({ kind:'derive', d:d, st:s,
@@ -7292,11 +7948,15 @@
     const u = t.unit(unit);
     return t.lab(name) + (u ? ' (' + u + ')' : '');
   }
-  function anChart(pts, xTxt, yTxt, fit, color){
+  //  curve 를 주면 직선 대신 그 곡선(바꾼 축에서 맞춘 관계)을 원래 축에 그립니다.
+  //  w 는 그릴 폭 — 둘을 나란히 놓는 자리는 반쯤으로 줄여 글씨가 작아지지 않게 합니다.
+  function anChart(pts, xTxt, yTxt, fit, color, curve, half){
+    const full = fitW(720);
+    const w = half && full > 600 ? Math.round((full - 12) / 2) : full;
     return '<div class="chartbox">' +
       labChart([{ label:yTxt, color: color || 'var(--mint)', pts: pts, line:false, big:false,
-                  fit: (fit && fit.ok) ? fit : null }],
-               { xLabel:xTxt, yLabel:yTxt, noId:true }) + '</div>';
+                  fit: (fit && fit.ok) ? fit : null, curve: curve || null }],
+               { xLabel:xTxt, yLabel:yTxt, noId:true, w: w }) + '</div>';
   }
 
   function anBlockHTML(b, i){
@@ -7333,10 +7993,11 @@
         //  바꾸기 전과 바꾼 뒤를 나란히 — 어느 쪽이 더 직선인지 눈으로 보게 합니다.
         const x0Txt = anAxText(b.xName, b.xUnit, 'none'), y0Txt = anAxText(b.yName, b.yUnit, 'none');
         h += '<div class="anpair">' +
-             '<figure><figcaption>바꾸기 전 · ' + esc(y0Txt) + ' ↔ ' + esc(x0Txt) + '</figcaption>' +
-             anChart(b.P0.pts, x0Txt, y0Txt, b.fit0, 'var(--sky)') + '</figure>' +
+             '<figure><figcaption>바꾸기 전 · ' + esc(y0Txt) + ' ↔ ' + esc(x0Txt) + ' — 휘어 있어 곧은 선 대신 곡선으로 그렸습니다</figcaption>' +
+             anChart(b.P0.pts, x0Txt, y0Txt, null, 'var(--sky)',
+                     b.fit.ok ? { xt: b.xt, yt: b.yt, slope: b.fit.slope, intercept: b.fit.intercept } : null, true) + '</figure>' +
              '<figure><figcaption>바꾼 뒤 · ' + esc(yTxt) + ' ↔ ' + esc(xTxt) + '</figcaption>' +
-             anChart(b.P.pts, xTxt, yTxt, b.fit, 'var(--mint)') + '</figure></div>';
+             anChart(b.P.pts, xTxt, yTxt, b.fit, 'var(--mint)', null, true) + '</figure></div>';
         if (b.fit.ok && b.fit0 && b.fit0.ok){
           const up = b.fit.r2 - b.fit0.r2;
           h += '<p class="muted">R² ' + esc(fmtR2(b.fit0.r2)) + ' → <b>' + esc(fmtR2(b.fit.r2)) + '</b> · ' +
@@ -7442,9 +8103,10 @@
   function anResultHTML(exp, res, rows, groups, forFile){
     const e = exp;
     let h = sfPanelHTML(e, res, rows, forFile);
-    h += '<div class="box"><span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+    h += '<div class="box"><span class="pill sky">중' + esc(e.grade) + ' · ' + esc(uName(e.unit)) + '</span>' +
             '<h2 style="margin-top:8px">' + esc(e.title) + ' — 분석 결과</h2>';
     if (res.goal) h += '<div class="dtquote"><b>무엇을 보려는 실험인가요</b><br>' + esc(res.goal) + '</div>';
+    if (AN.demo) h += '<p class="democap">📋 예시 값으로 분석한 결과입니다 — 직접 잰 값이 아닙니다</p>';
     h += '<p class="muted">쓴 줄 ' + rows.length + '개' +
          (groups && groups.length > 1 ? ' · 모둠 ' + groups.length + '개' : '') +
          (AN.when ? ' · ' + esc(AN.when) : '') + '</p>';
@@ -7530,9 +8192,9 @@
       '<meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
       '<title>' + esc(AN.exp.title + ' 분석 결과') + '</title>\n<style>\n' + AN_CSS + '\n</style>\n</head>\n<body>\n' +
       '<div class="wrap"><h1>' + esc(AN.exp.title) + ' — 분석 결과</h1>' +
-      '<p class="meta">MBL 센서 수업허브 · 붙여넣기 분석' + (AN.quick ? ' · 그래프만 빠르게' : '') + (AN.when ? ' · ' + esc(AN.when) : '') + '</p>' +
+      '<p class="meta">MBL 수업허브 · 붙여넣기 분석' + (AN.quick ? ' · 그래프만 빠르게' : '') + (AN.when ? ' · ' + esc(AN.when) : '') + '</p>' +
       body +
-      '<p class="foot">MBL 센서 수업허브 · 이 파일은 붙여넣은 값으로 이 기기 안에서 계산한 것입니다.</p></div>\n</body>\n</html>\n';
+      '<p class="foot">MBL 수업허브 · 이 파일은 붙여넣은 값으로 이 기기 안에서 계산한 것입니다.</p></div>\n</body>\n</html>\n';
     const clean = s => String(s == null ? '' : s).replace(/[\\/:*?"<>|.\s]+/g, '').slice(0, 24);
     const name = '분석_' + (clean(AN.exp.title) || '실험') + '_' + today8() + '.html';
     try {
@@ -7556,7 +8218,7 @@
       if (!list.length) return;
       h += '<optgroup label="중' + g + '">';
       list.forEach(function(e){
-        h += '<option value="' + esc(e.id) + '">' + esc(e.unit + ' · ' + e.title) + '</option>';
+        h += '<option value="' + esc(e.id) + '">' + esc(uName(e.unit) + ' · ' + e.title) + '</option>';
       });
       h += '</optgroup>';
     });
@@ -7593,6 +8255,7 @@
     if (AN.imp) anRenderMap();
   }
   function anRead(text, from){
+    AN.demo = (from === '예시 데이터');
     const r = parseTable(text);
     if (r.err){ AN.imp = null; $('anPanel').classList.add('hidden'); anMsg(r.err, 'bad'); return; }
     AN.imp = r;
@@ -7650,14 +8313,33 @@
     if (gs) gs.addEventListener('change', function(){ AN.gpick = gs.value; anRenderMap(); });
 
     //  미리보기 — 실제로 분석에 들어갈 줄 몇 개
+    //  ★ 학생용(관문이 열려 있는 동안)에는 계산 열(압력 × 부피 따위)의 값을 보여 주지 않습니다 — 관문 2번의 답이기 때문입니다.
     const built = anBuildRows(AN.gpick);
-    let p = '<table><thead><tr><th></th>' + labels.map(l => '<th>' + esc(l) + '</th>').join('') + '</tr></thead><tbody>';
+    const hideC = anGateOpen();
+    const showCol = labels.map(function(l, k){ return !(hideC && k > 0 && isCalcSer((sp.series || [])[k - 1])); });
+    let p = '<table><thead><tr><th></th>' + labels.map(function(l, k){ return showCol[k] ? '<th>' + esc(l) + '</th>' : ''; }).join('') + '</tr></thead><tbody>';
     built.slice(0, 5).forEach(function(r, i){
-      p += '<tr><td class="rowno">' + (i + 1) + '</td>' +
-           r.map(v => '<td>' + (v === null || v === undefined || v === '' ? '<span class="muted">—</span>' : esc(v)) + '</td>').join('') + '</tr>';
+      p += '<tr><td class="rowno">' + (AN.demo ? (i + 1) + '<br><small>예시</small>' : (i + 1)) + '</td>' +
+           r.map(function(v, k){ return showCol[k] ? '<td>' + (v === null || v === undefined || v === '' ? '<span class="muted">—</span>' : esc(v)) + '</td>' : ''; }).join('') + '</tr>';
     });
     p += '</tbody></table>';
-    $('anPrev').innerHTML = built.length ? p : '<div class="empty">넣을 줄이 없습니다. 열을 다시 골라 주세요.</div>';
+    $('anPrev').innerHTML = built.length
+      ? (AN.demo ? '<p class="democap">📋 예시 값 — 직접 잰 값이 아닙니다</p>' : '') + p +
+        (showCol.indexOf(false) >= 0 ? '<p class="muted" style="padding:6px 10px">계산 열은 내 생각을 먼저 적은 뒤에 보여 드립니다.</p>' : '')
+      : '<div class="empty">넣을 줄이 없습니다. 열을 다시 골라 주세요.</div>';
+    scrollCue($('anPrev'));
+  }
+  //  학생용 관문이 아직 열려 있는가(빠른 모드·시연 기기·이미 적은 뒤에는 아닙니다)
+  function anGateOpen(){ return !AN.quick && sfOn() && !AN.sf.revealed; }
+  //  예시 값을 붙여넣을 때 관문이 열려 있으면 계산 열을 빼고 넣습니다(답을 미리 보여 주지 않게).
+  function demoForAnalyze(id){
+    const t = demoOf(id);
+    if (!t || !anGateOpen()) return t;
+    const lines = t.split(/\r?\n/);
+    const head = lines[0].split(',');
+    const drop = head.map(function(h, i){ return i > 0 && /[×÷]/.test(h) ? i : -1; }).filter(function(i){ return i >= 0; });
+    if (!drop.length) return t;
+    return lines.map(function(l){ return l.split(',').filter(function(c, i){ return drop.indexOf(i) < 0; }).join(','); }).join('\n');
   }
   //  고른 열로 분석에 쓸 줄 만들기 — 데이터 입력표와 같은 모양([x, s0, s1…])입니다.
   //  가로축이 글자(물질 이름 등)이면 그대로 둡니다(순위 견주기에 씁니다).
@@ -7719,6 +8401,7 @@
   }
   function anShowResults(){
     const rows = AN.rows;
+    if (AN.imp) anRenderMap();            // 관문을 지났으니 미리보기에 계산 열을 다시 보여 줍니다
     $('anOut').innerHTML = anResultHTML(AN.exp, AN.res, rows, AN.groups, false);
     sfBindPanel();
     const bs = $('btnAnSave'); if (bs) bs.addEventListener('click', anSaveFile);
@@ -7743,7 +8426,7 @@
     return (res.blocks || []).filter(function(b){ return b.kind === 'fit' && b.xt && b.xt !== 'none'; })[0] || null;
   }
   function sfFitAny(res){ return (res.blocks || []).filter(function(b){ return b.kind === 'fit'; })[0] || null; }
-  function sfNum(v){ const n = Number(String(v == null ? '' : v).replace(/,/g, '').trim()); return isFinite(n) ? n : NaN; }
+  function sfNum(v){ const t = String(v == null ? '' : v).replace(/,/g, '').trim(); if (!t) return NaN; const n = Number(t); return isFinite(n) ? n : NaN; }
   function sfClose(a, b){ if (!isFinite(a) || !isFinite(b)) return false; const t = Math.max(Math.abs(b) * 0.03, 0.01); return Math.abs(a - b) <= t; }
 
   function sfGateHTML(e, res, rows){
@@ -7776,7 +8459,8 @@
       h += '</div>';
     }
     h += '<div class="improw" style="margin-top:14px">' +
-         '<button id="btnSfReveal" class="btn btn-solid" type="button" style="min-height:48px">내 생각을 적었어요 — 앱의 분석 보기</button></div>';
+         '<button id="btnSfReveal" class="btn btn-solid" type="button" style="min-height:48px">내 생각을 적었어요 — 앱의 분석 보기</button>' +
+         '<span id="sfErr" class="impmsg bad" role="alert" aria-live="assertive"></span></div>';
     if (sfCanToggle()){
       h += '<label class="chkline" for="sfSkip" style="margin-top:12px"><input id="sfSkip" type="checkbox" />' +
            '<span class="ct"><b>선생님 시연 — 이 기기에서는 관문 없이 바로 보기</b>' +
@@ -7796,11 +8480,14 @@
       if (this.checked){ AN.sf.revealed = true; anShowResults(); }
     });
     const b = $('btnSfReveal');
+    //  못 채운 칸은 단추 바로 옆에 알립니다(맨 위 안내 줄은 화면 밖이라 보이지 않습니다).
+    const say = function(t){ const e = $('sfErr'); if (e) e.textContent = t; };
     if (b) b.addEventListener('click', function(){
       const dv = sfDerive(AN.res), ft = sfFitTf(AN.res);
-      if (AN.sf.guess.trim().length < 4){ anMsg('1번 — 예상을 한 문장 적어 주세요. 틀려도 됩니다.', 'bad'); const el = $('sfGuess'); if (el) el.focus(); return; }
-      if (dv && (!isFinite(sfNum(AN.sf.d[0])) || !isFinite(sfNum(AN.sf.d[1])))){ anMsg('2번 — 두 줄 다 숫자로 계산해 적어 주세요.', 'bad'); const el = $('sfD0'); if (el) el.focus(); return; }
-      if (ft && !AN.sf.axis){ anMsg('3번 — 가로축을 하나 골라 주세요.', 'bad'); return; }
+      if (AN.sf.guess.trim().length < 2){ say('1번 — 예상을 짧게라도 적어 주세요(예: 반비례). 틀려도 됩니다.'); const el = $('sfGuess'); if (el) el.focus(); return; }
+      if (dv && (!isFinite(sfNum(AN.sf.d[0])) || !isFinite(sfNum(AN.sf.d[1])))){ say('2번 — 두 줄 다 숫자로 계산해 적어 주세요.'); const el = $(!isFinite(sfNum(AN.sf.d[0])) ? 'sfD0' : 'sfD1'); if (el) el.focus(); return; }
+      if (ft && !AN.sf.axis){ say('3번 — 가로축을 하나 골라 주세요.'); const el = document.querySelector('input[name="sfAxis"]'); if (el) el.focus(); return; }
+      say('');
       AN.sf.revealed = true;
       anShowResults();
     });
@@ -7920,7 +8607,7 @@
       window.scrollTo(0, 0);
     });
     $('btnAnDemo').addEventListener('click', function(){
-      const t = demoOf($('anExp').value);
+      const t = demoForAnalyze($('anExp').value);
       if (!t){ anMsg('이 실험은 아직 예시 데이터가 없습니다.', 'bad'); return; }
       $('anPaste').value = t;
       anRead(t, '예시 데이터');
@@ -8023,7 +8710,7 @@
     let h = '<div class="taglist">' + poolPillHTML(e) + '</div>';
     if (!withWhy) return h;
     h += '<div class="note"><b>반 전체로 합치면?</b> ' + esc(t.long);
-    if (p && p.why)  h += '<br>' + esc(p.why);
+    //  pool.why 는 선생님께 드리는 수업 운영 안내라 학생 화면에는 싣지 않습니다(교사 화면에서 봅니다).
     if (p && p.axis) h += '<br><span class="muted">합칠 때 가로축 · ' + esc(p.axis) + '</span>';
     h += '</div>';
     return h;
@@ -8037,8 +8724,10 @@
       t.disabled = !!lock;
       t.setAttribute('aria-disabled', lock ? 'true' : 'false');
     });
+    //  도감만 보는 동안에는 잠긴 탭 여섯 개를 늘어놓지 않고 탭 줄을 통째로 감춥니다.
+    if ($('workTabs')) $('workTabs').classList.toggle('hidden', !!lock);
     $('atlasLock').classList.toggle('hidden', !lock);
-    $('btnLeave').textContent = lock ? '참여코드 입력' : '나가기';
+    $('btnLeave').textContent = lock ? '처음으로' : (isSimple() ? '처음으로' : '나가기');
   }
 
   function backToJoin(){
@@ -8072,24 +8761,26 @@
     if ($('simpleBar')) $('simpleBar').classList.add('hidden');
     selectTab('atlas');
     if (atlasOnly){
-      $('topSub').textContent = simplePick ? '실험 고르기 — 코드 없이 시작하기' : '실험 도감 — 코드 없이 둘러보는 중';
+      $('topSub').textContent = simplePick ? '실험 고르기 — 간편 모드로 시작하기' : '실험 도감 둘러보기';
       const lockBox = $('atlasLock');
       if (lockBox){
         if (ATLAS_LOCK_HTML === null) ATLAS_LOCK_HTML = lockBox.innerHTML;
         lockBox.innerHTML = simplePick
           ? '<h2>실험을 골라 주세요</h2>' +
             '<p class="lead">아래에서 실험 카드를 누르면 자세히 펼쳐집니다. 펼친 곳 맨 위의 ' +
-            '<b>[이 실험으로 시작하기]</b>를 누르면 참여코드 없이 바로 시작합니다.</p>' +
+            '<b>[이 실험으로 시작하기]</b>를 누르면 간편 모드로 바로 시작합니다.</p>' +
             '<button class="btn" style="margin-top:12px" type="button" data-atlasback="1">처음으로</button>'
           : ATLAS_LOCK_HTML;
         const bb = lockBox.querySelector('[data-atlasback],#btnAtlasJoin');
         if (bb) bb.addEventListener('click', backToJoin);
       }
     }
+    if (atlasPick) renderAtlasDetail();      // 시작 단추가 보일지는 들어온 길에 따라 다릅니다
     window.scrollTo(0, 0);
   }
 
   function ensureAtlas(){
+    loadHand();
     if (atlasReady) return;
     atlasReady = true;
     if (!window.LAB){
@@ -8100,6 +8791,8 @@
     const vsel = $('aVendor');
     if (vsel && !(LAB.VENDORS && LAB.vendorOk)) vsel.classList.add('hidden');
     atlasFillUnits();
+    //  좁은 화면에서는 거르기 칸을 접어 두고 카드부터 보이게 합니다.
+    try { if (window.matchMedia('(max-width:640px)').matches && $('aFilt')) $('aFilt').open = false; } catch (e) {}
     renderAtlasList();
     ['aGrade','aUnit','aVendor','aSearch','aPool'].forEach(function(id){
       const el = $(id);
@@ -8122,7 +8815,7 @@
     const g = $('aGrade').value;
     const units = LAB.unitList(g === '' ? null : Number(g));
     $('aUnit').innerHTML = '<option value="">모든 단원</option>' +
-      units.map(u => '<option value="' + esc(u.title) + '">' + esc(u.title) + '</option>').join('');
+      units.map(u => '<option value="' + esc(u.title) + '">' + esc(uName(u.title)) + '</option>').join('');
   }
 
   function renderAtlasList(){
@@ -8139,6 +8832,10 @@
     else if (v && LAB.vendorOk) list = list.filter(e => LAB.vendorOk(e, v));
     if ($('aPool') && $('aPool').checked) list = list.filter(e => poolFitOf(e) >= 3);
     $('aCount').textContent = list.length + '건';
+    if ($('aFiltSum')){
+      const nOn = [g, u, $('aVendor') ? $('aVendor').value : '', q, ($('aPool') && $('aPool').checked) ? '1' : ''].filter(Boolean).length;
+      $('aFiltSum').textContent = '· ' + list.length + '건' + (nOn ? ' · 조건 ' + nOn + '개' : '');
+    }
 
     // 걸러낸 결과에서 사라진 실험은 펼침을 접습니다.
     if (atlasPick && !list.some(e => e.id === atlasPick)){ atlasPick = ''; renderAtlasDetail(); }
@@ -8154,8 +8851,8 @@
       const open = (atlasPick === e.id);
       return '<div class="exp' + (open ? ' on' : '') + '" data-id="' + esc(e.id) + '" tabindex="0" role="button"' +
              ' aria-expanded="' + (open ? 'true' : 'false') + '"' +
-             ' aria-label="' + esc('중' + e.grade + ' ' + e.unit + ' · ' + e.title + ' 자세히 보기') + '">' +
-             '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+             ' aria-label="' + esc('중' + e.grade + ' ' + uName(e.unit) + ' · ' + e.title + ' 자세히 보기') + '">' +
+             '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(uName(e.unit)) + '</span>' +
              '<b>' + esc(e.title) + '</b>' +
              '<div class="m">' + esc(sensors) + ' · ' + esc(e.minutes) + '분 · 난이도 ' + esc(e.level) + '</div>' +
              vendorTags(e) + poolPillHTML(e) + '</div>';
@@ -8196,6 +8893,7 @@
     if (closeBtn) closeBtn.addEventListener('click', function(){ pickAtlas(e.id); });
     const startBtn = $('btnAtlasStart');
     if (startBtn) startBtn.addEventListener('click', function(){ simplePick = false; simpleSetup(packFromExp(e, atlasVendor())); });
+    scrollCues(boxEl);
     //  꾸러미 받기 — 선생님이 절차·질문을 고치지 않고도 이 실험을 그대로 나눠 줄 수 있습니다.
     //  고쳐서 나눠 주려면 교사용 화면의 수업 만들기에서 편집한 뒤 [수업 꾸러미 내려받기] 를 씁니다.
     const packBtn = $('btnAtlasPack');
@@ -8212,18 +8910,18 @@
     const noS    = !!(window.LAB && LAB.kindOf && LAB.kindOf(e) !== 'sensor');
 
     let h = '<div class="box" id="atlasDetailBox" tabindex="-1" role="region" aria-label="실험 자세히 보기">';
-    if (simplePick){
-      h += '<div class="note" style="margin-top:0"><b>이 실험으로 바로 시작할 수 있습니다.</b><br>' +
-           '<span class="muted">참여코드 없이 하는 <b>간편 모드</b>입니다. 서버를 쓰지 않고, 한 것은 작업 파일로 내려받아 선생님께 냅니다.</span>' +
-           '<div style="margin-top:10px"><button id="btnAtlasStart" class="btn btn-solid" type="button" style="min-height:44px">이 실험으로 시작하기</button></div></div>';
+    //  도감만 보러 들어왔든 실험을 고르러 들어왔든, 수업 밖에서는 언제나 이 실험으로 바로 시작할 수 있습니다.
+    if (atlasOnly || simplePick){
+      h += '<div class="note atlasstart" style="margin-top:0"><span style="flex:1 1 240px"><b>이 실험으로 바로 시작할 수 있습니다.</b><br>' +
+           '<span class="muted">참여코드가 필요 없는 <b>간편 모드</b>입니다. 서버를 쓰지 않고, 한 것은 작업 파일로 내려받아 선생님께 냅니다.</span></span>' +
+           '<button id="btnAtlasStart" class="btn btn-solid" type="button" style="min-height:44px">이 실험으로 시작하기</button></div>';
     }
     h += '<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:10px;flex-wrap:wrap">' +
          '<h2 style="flex:1 1 220px">' + esc(e.title) + '</h2>' +
          '<span style="display:flex;gap:8px;flex-wrap:wrap">' +
-         '<button id="btnAtlasPack" class="btn btn-sm" type="button" title="이 실험의 절차·준비물·보고서 질문이 담긴 수업 꾸러미(.json)">📦 꾸러미 받기</button>' +
-         '<button id="btnAtlasClose" class="btn" type="button">닫기</button></span></div>';
+         '<button id="btnAtlasClose" class="btn btn-sm" type="button">닫기</button></span></div>';
     h += '<div class="taglist">' +
-         '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(e.unit) + '</span>' +
+         '<span class="pill sky">중' + esc(e.grade) + ' · ' + esc(uName(e.unit)) + '</span>' +
          '<span class="pill">' + esc(e.minutes) + '분</span>' +
          '<span class="pill coral">준비 난이도 ' + esc(e.level) +
            (LEVEL_TXT[e.level] ? ' · ' + esc(LEVEL_TXT[e.level]) : '') + '</span>' +
@@ -8232,20 +8930,14 @@
     if (vt) h += '<p class="muted" style="font-size:13px">이 실험을 할 수 있는 장비 · ' + vt + '</p>';
     if (!noS) h += vendorBadge(av);
     if (e.why) h += '<div class="dtquote">' + esc(e.why) + '</div>';
+    //  pool.why·watch 는 선생님께 드리는 말(「미리 지정해 주십시오」)이라 이 화면에는 싣지 않습니다 — 교사 화면에서 봅니다.
     h += poolBadgeHTML(e, true);
-    if (e.pool && e.pool.watch)
-      h += '<div class="note">👀 <b>합쳐 놓으면 눈에 띄는 것</b><br>' + esc(e.pool.watch) + '</div>';
     if (e.analysis && e.analysis.goal)
       h += '<h3>이 실험이 보려는 것</h3><p class="lead">' + esc(e.analysis.goal) + '</p>' +
            '<p class="muted" style="margin-top:6px">모은 값을 붙여넣으면 이 순서대로 분석해 드립니다 — 첫 화면의 ' +
            '<b>[데이터 붙여넣고 분석하기]</b>.</p>';
 
-    if (noS){
-      h += '<div class="note plus">✍ <b>' + (LAB.kindOf(e) === 'data' ? '공공 자료를 받아 분석하는 탐구' : '센서 없이 교실 도구로 하는 실험') +
-           '입니다.</b> 센서도 업체 프로그램도 필요 없습니다. ' +
-           '<a href="./inquiry.html?exp=' + encodeURIComponent(e.id) + '" style="color:var(--mint-d);font-weight:700">손으로 탐구에서 하기 →</a> ' +
-           '표 채우기·값 바꾸기·그래프 그리기를 학생이 직접 하고, 참여코드·간편 모드에서도 그대로 모둠 자료를 모읍니다.</div>';
-    }
+    h += inquiryNoteHTML(e, noS);
     if ((e.sensors || []).length){
       h += '<h3>필요한 센서</h3><div class="taglist">' +
            e.sensors.map(s => '<span class="pill coral">' + esc(s.label || LAB.sensorName(s.key)) +
@@ -8288,8 +8980,39 @@
     }
     if (e.textbook) h += '<h3>교과서</h3><p class="muted">' + esc(e.textbook) + '</p>';
     h += srcLine([e.src, e.altSrc].filter(Boolean), e.srcRef);
+    //  수업 꾸러미는 선생님이 나눠 주는 파일입니다 — 학생 눈에 먼저 띄지 않게 맨 아래에 교사용으로 둡니다.
+    h += '<div class="improw" style="margin-top:12px;border-top:1px dashed var(--line-2);padding-top:10px">' +
+         '<button id="btnAtlasPack" class="btn btn-sm btn-teach" type="button" title="이 실험의 절차·준비물·보고서 질문이 담긴 수업 꾸러미(.json)">' +
+         '📦 수업 꾸러미 받기 <small>교사용</small></button>' +
+         '<span class="muted" style="font-size:12.5px">선생님이 이 파일을 나눠 주면 학생은 첫 화면의 「수업 꾸러미 파일 올리기」로 엽니다.</span></div>';
     h += '</div>';
     return h;
+  }
+  //  손으로 탐구(inquiry.html)로 가는 길 — 모든 실험이 그곳에서 열립니다.
+  //  센서 없이 재는 법(hand-data.js)이 있으면 직접 재고, 없으면 예시 자료로 변환·그래프·해석을 합니다.
+  let handReq = null;
+  function loadHand(){
+    if (window.__LAB_HAND || handReq) return;
+    handReq = document.createElement('script');
+    //  다른 스크립트와 같은 버전 꼬리(?v=)를 붙여 옛 캐시를 피합니다.
+    const ref = document.querySelector('script[src*="lab-data.js"]');
+    const v = ref ? (/[?&]v=([^&]+)/.exec(ref.getAttribute('src')) || [])[1] : '';
+    handReq.src = './hand-data.js' + (v ? '?v=' + v : '');
+    handReq.async = true;
+    handReq.onload = function(){ if (atlasPick) renderAtlasDetail(); };
+    document.head.appendChild(handReq);
+  }
+  function inquiryNoteHTML(e, noS){
+    const H = window.__LAB_HAND;
+    const hd = H ? H[e.id] : null;
+    const can = hd ? hd.ok !== false : noS;
+    const link = '<a href="./inquiry.html?exp=' + encodeURIComponent(e.id) + '" style="color:var(--mint-d);font-weight:700">손으로 탐구에서 하기 →</a>';
+    let lead;
+    if (noS) lead = '<b>' + (LAB.kindOf(e) === 'data' ? '공공 자료를 받아 분석하는 탐구' : '센서 없이 교실 도구로 하는 실험') + '입니다.</b> 센서도 업체 프로그램도 필요 없습니다. ';
+    else if (can) lead = '<b>센서가 없어도 할 수 있습니다.</b> ' + (hd && (hd.tools || []).length ? esc((hd.tools || []).slice(0, 3).join('·')) + ' 같은 도구로 같은 표를 채웁니다. ' : '교실 도구로 같은 표를 채웁니다. ');
+    else lead = '<b>센서가 없으면</b> 예시 자료를 받아 값 바꾸기·그래프·해석을 직접 해 볼 수 있습니다. ';
+    return '<div class="note plus">✍ ' + lead + link + '<br><span class="muted">표 채우기·값 바꾸기·그래프 그리기를 학생이 직접 합니다. ' +
+           '손으로 탐구에서도 참여코드로 들어가면 반 전체 자료가 함께 모입니다.</span></div>';
   }
 
   $('btnAtlas').addEventListener('click', function(){ openAtlas(true); });
@@ -8305,7 +9028,7 @@
       sorted.slice(0, 2).forEach(function(e, j){
         const i = (g - 1) * 2 + j;
         h += '<button class="hcard reveal" type="button" style="--i:' + (i % 6) + '" data-hexp="' + esc(e.id) + '">' +
-             '<span class="g">중' + esc(e.grade) + ' · ' + esc(e.unit) + (LAB.poolFit(e) >= 3 ? ' · 합치기 ★' : '') + '</span>' +
+             '<span class="g">중' + esc(e.grade) + ' · ' + esc(uName(e.unit)) + (LAB.poolFit(e) >= 3 ? ' · 합치기 ★' : '') + '</span>' +
              '<b>' + esc(e.title) + '</b></button>';
       });
     });
@@ -8316,6 +9039,30 @@
     });
   }
   renderHomeCards();
+  //  ☰ 메뉴 — 바깥을 누르거나 Esc 를 누르면 닫습니다.
+  document.addEventListener('click', function(e){
+    const m = document.querySelector('.navmenu[open]');
+    if (m && !m.contains(e.target)) m.open = false;
+  });
+  document.addEventListener('keydown', function(e){
+    const m = document.querySelector('.navmenu[open]');
+    if (m && e.key === 'Escape'){ m.open = false; const sm = m.querySelector('summary'); if (sm) sm.focus(); }
+  });
+  //  꼬리말 — 학교·선생님 이름은 config.js(MBL_CONFIG)에서 읽습니다(다른 학교에 배포해도 고칠 곳이 없게).
+  (function credit(){
+    const el = $('creditWho');
+    if (!el) return;
+    const sc = (typeof Hub.schoolName === 'function') ? Hub.schoolName() : '';
+    const tn = (typeof Hub.teacherName === 'function') ? Hub.teacherName() : '';
+    el.textContent = [sc, tn ? tn + ' 선생님' : ''].filter(Boolean).map(function(t){ return ' · ' + t; }).join('');
+  })();
+  //  터치 화면에는 마우스 휠이 없습니다 — 안내도 그 기기에 맞춥니다.
+  (function zoomHint(){
+    const el = $('zoomHint');
+    let touch = false;
+    try { touch = window.matchMedia('(hover: none)').matches || ('ontouchstart' in window && !window.matchMedia('(pointer: fine)').matches); } catch (e) {}
+    if (el && touch) el.textContent = '그래프를 누르면 그 자리가 확대됩니다 · 확대한 뒤 끌어서 이동';
+  })();
   //  첫 화면의 실험 건수는 LAB 에서 셉니다(실험이 늘어도 글자를 고칠 일이 없게).
   (function homeCounts(){
     if (!window.LAB) return;
@@ -8323,7 +9070,9 @@
     const noS = LAB.kindOf ? LAB.experiments.filter(e => LAB.kindOf(e) !== 'sensor').length : 0;
     const k = $('heroK');
     if (k) k.textContent = '이지메이커 · 사이언스큐브 센서 실험 ' + (all - noS) + '건' + (noS ? ' · 센서 없이 ' + noS + '건' : '') + ' · 2022 개정 성취기준';
-    Array.prototype.forEach.call(document.querySelectorAll('[data-expcount]'), function(el){ el.textContent = String(all); });
+    Array.prototype.forEach.call(document.querySelectorAll('[data-expcount]'), function(el){
+      el.textContent = String(el.getAttribute('data-fmt') || ' {n}').replace('{n}', String(all));
+    });
   })();
   //  등장 애니메이션 — 화면에 들어온 것부터 차례로 올라옵니다. 지원하지 않는 브라우저는 바로 보입니다.
   (function reveal(){
@@ -8336,16 +9085,110 @@
   })();
   const bah = $('btnAtlasHome'); if (bah) bah.addEventListener('click', function(){ openAtlas(true); });
   const bt = $('btnTry30');
+  //  30초 체험 — 그래프만 빠르게 화면에 예시 값을 넣고 곧바로 분석까지 보여 줍니다(관문 없이).
   if (bt) bt.addEventListener('click', function(){
-    openAnalyze(false);
+    openAnalyze(true);
     const sel = $('anExp');
     if (sel){ sel.value = 'sm-05'; sel.dispatchEvent(new Event('change', { bubbles:true })); }
     const t = demoOf('sm-05');
-    if (t){ $('anPaste').value = t; anRead(t, '예시 데이터'); }
-    anMsg('예시 값을 넣었습니다. [분석하기]를 누르면 먼저 내 생각을 적는 관문이 열립니다.', 'ok');
-    const b = $('btnAnRun'); if (b) b.scrollIntoView({ behavior:'smooth', block:'center' });
+    if (t){ $('anPaste').value = t; anRead(t, '예시 데이터'); anRun(); }
+    else anMsg('예시 값을 찾지 못했습니다. 모은 값을 붙여넣어 주세요.', 'bad');
   });
   $('btnAtlasJoin').addEventListener('click', backToJoin);
+
+  // ── 브라우저 [뒤로]·[앞으로] ─────────────────────────────────
+  //  화면마다 방문 기록을 한 칸씩 쌓아 두었습니다(navPush). 뒤로 가면 앱을 떠나지 않고 앞 화면으로 돌아갑니다.
+  //  적던 것을 잃을 수 있는 자리(내려받지 않은 간편 모드 · 실시간 수업)에서는 먼저 묻습니다.
+  function navStay(){
+    //  떠나지 않기로 했으면 방금 빠진 기록을 다시 쌓아 지금 화면을 지킵니다.
+    try { history.pushState({ mbl: navKey() }, '', location.href); } catch (e) {}
+  }
+  function navGo(k){
+    if (!k || k === navKey()) return;
+    const inWork = curScreen === 'work' && !!group && !atlasOnly && !expired;
+    if (k.indexOf('work:') === 0){
+      if (inWork){ selectTab(k.slice(5)); return; }
+      k = 'join';                                    // 이미 나온 작업 화면으로는 되돌아가지 않습니다
+    }
+    if (inWork){
+      if (isSimple()){
+        if (dirty && !confirm('아직 작업 파일을 내려받지 않았습니다. 이 화면을 떠나면 이 기기에만 남습니다(첫 화면에서 이어 할 수 있습니다). 떠날까요?')){ navStay(); return; }
+        const keep = pack;
+        backToJoin();
+        if (k === 'simple' && keep){ simpleSetup(keep); return; }
+      } else {
+        if (!confirm('이 수업에서 나갈까요? 저장한 데이터는 그대로 남아 있습니다.')){ navStay(); return; }
+        leaveLive();
+        return;                                      // 모둠 고르기로 돌아가면 기억된 모둠으로 곧장 다시 들어가므로 첫 화면에서 멈춥니다
+      }
+    }
+    if (k === 'atlas'){ openAtlas(true); return; }
+    if (k === 'analyze'){ openAnalyze(anQuickNow()); return; }
+    if (k === 'simple' && pack && !group){ simpleSetup(pack); return; }
+    if (k === 'group' && lesson && joinCode && !isSimple() && !group){ show('group'); return; }
+    if (curScreen === 'work' || curScreen === 'analyze' || simplePick){ backToJoin(); return; }
+    show('join');
+  }
+  window.addEventListener('popstate', function(ev){
+    const k = (ev.state && ev.state.mbl) || 'join';
+    navQuiet = true;
+    try { navGo(k); }
+    catch (e) { if (window.console) console.warn(e); }
+    finally { navQuiet = false; }
+    try { history.replaceState({ mbl: navKey() }, '', location.href); } catch (e) {}
+    setTitle();
+  });
+
+  // ── 첫 화면 — 이 기기에서 하던 작업 이어 가기 ─────────────────
+  //  ① 간편 모드에서 자동저장된 것(측정값·보고서 답안이 실제로 있을 때만)  ② 지난번 참여코드 수업
+  function resumeInfo(){
+    const out = [];
+    const last = Hub.loadLocal('simple_last', null);
+    if (last && last.pack && last.group){
+      const p = normPack(last.pack);
+      const no = Math.max(1, Number(last.group.no) || 1);
+      const snap = snapshotAt(simpleCode(p), 'g' + no);
+      if (snap){
+        const e = (window.LAB && p.expId) ? LAB.byId(p.expId) : null;
+        out.push({ kind: 'simple', last: last, pack: p, no: no, snap: snap,
+                   title: p.title || (e && e.title) || '실험', group: last.group.name || (no + '모둠') });
+      }
+    }
+    const code = Hub.loadLocal('last_join', '');
+    const g = code ? Hub.loadLocal('group_' + code, null) : null;
+    if (code && g) out.push({ kind: 'live', code: code, group: g.group_name || (g.group_no + '모둠') });
+    return out;
+  }
+  function renderResume(){
+    const bar = $('resumeBar');
+    if (!bar) return;
+    let list = [];
+    try { list = resumeInfo(); } catch (e) { list = []; }
+    if (!list.length){ bar.classList.add('hidden'); bar.innerHTML = ''; return; }
+    const it = list[0];
+    const when = it.kind === 'simple' && it.last.at ? new Date(it.last.at) : null;
+    bar.innerHTML = '<div class="rb-t"><b>🔁 이어서 하던 작업이 있습니다</b>' +
+      (it.kind === 'simple'
+        ? '<span class="muted">간편 모드 · ' + esc(it.title) + ' · ' + esc(it.group) + ' — 측정값 ' + it.snap.rows + '줄' +
+          (it.snap.ans ? ' · 보고서 답안 있음' : '') + (when ? ' · ' + esc((when.getMonth() + 1) + '/' + when.getDate() + ' ' + hhmm(when.getTime())) : '') + '</span>'
+        : '<span class="muted">참여코드 ' + esc(it.code) + ' 수업 · ' + esc(it.group) + '</span>') +
+      '</div><button type="button" class="btn btn-solid" id="btnResume" style="min-height:44px">이어서 하기</button>' +
+      (list.length > 1 ? '<button type="button" class="btn btn-sm" id="btnResume2">참여코드 ' + esc(list[1].code) + ' 수업으로</button>' : '');
+    bar.classList.remove('hidden');
+    const go = function(x){
+      if (x.kind === 'simple'){
+        startSimple(x.pack, { no: x.no, name: x.last.group.name || (x.no + '모둠'), members: x.last.group.members || [] },
+                    { classLabel: x.last.classLabel || x.pack.classLabel || '', startOpt: { noAsk: true } });
+        dirty = true; renderSaveBar();         // 되살린 것은 아직 내려받지 않은 것으로 봅니다
+        tabNote('이 기기에 자동저장된 것을 불러왔습니다 — 하던 데서 이어서 하세요. 다 하면 [지금까지 한 것 내려받기]를 잊지 마세요.');
+      } else {
+        $('inCode').value = x.code;
+        $('btnJoin').click();
+      }
+    };
+    $('btnResume').addEventListener('click', function(){ go(it); });
+    if ($('btnResume2')) $('btnResume2').addEventListener('click', function(){ go(list[1]); });
+  }
 
   // ── 시작할 때: 지난번 코드 되살리기 ────────────────────────────
   (function init(){

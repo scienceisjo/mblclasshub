@@ -43,7 +43,7 @@
   //   고쳐지면 BLE_OFF.on 을 false 로 바꾸면 그만입니다. 유선·모의 장치·CSV·직접 입력은 그대로 됩니다.
   //   support() 가 이 값을 보고 ble:false 와 사유를 돌려주므로, 연결 단추와 connectBle 둘 다 같은 말을 합니다.
   var BLE_OFF = { on: true,
-    why: '지금은 안 됩니다 — 실제 센서와 이어 보니 연결이 되지 않아 고치는 중입니다. 케이블 · 직접 입력 · CSV 를 써 주세요.' };
+    why: '무선 연결은 아직 준비 중입니다. 유선으로 연결해 주세요.' };
 
   // ─────────────────────────────────────────────────────────────────
   //  0. 아주 작은 도구들
@@ -394,7 +394,7 @@
     var serial = !!(hasSerial && secure);
     var ble    = !!(hasBle && secure) && !BLE_OFF.on;
     if (BLE_OFF.on) bw = BLE_OFF.why;   // 고치는 중이면 브라우저 사정보다 이 사유가 먼저입니다
-    var why = BLE_OFF.on   ? (serial ? '케이블은 됩니다. 무선(블루투스)은 고치는 중이라 잠시 닫아 두었습니다.' : sw)
+    var why = BLE_OFF.on   ? (serial ? '케이블(유선)로 이을 수 있습니다.' : sw)
             : serial && ble ? '케이블·블루투스 둘 다 됩니다.'
             : serial ? ('케이블은 됩니다. 블루투스는 안 됩니다 — ' + bw)
             : ble    ? ('블루투스는 됩니다. 케이블은 안 됩니다 — ' + sw)
@@ -1098,7 +1098,7 @@
             '<button type="button" class="sk-way" data-sk="way-ble"><b>📶 무선(블루투스)</b><span data-sk="why-ble"></span></button>' +
             '<button type="button" class="sk-way" data-sk="way-mock"><b>🧪 시험용 모의 장치</b><span>센서가 없어도 흐름을 익혀 볼 수 있습니다. 진짜 값이 아닙니다.</span></button>' +
           '</div>' +
-          '<p class="sk-muted">케이블·직접 입력·CSV 는 인터넷 없이도 됩니다. 무선(블루투스)은 지금 고치는 중이라 잠시 닫아 두었습니다.</p>' +
+          '<p class="sk-muted">케이블·직접 입력·CSV 는 인터넷 없이도 됩니다.</p>' +
         '</div>' +
 
         '<div class="sk-hide" data-sk="live">' +
