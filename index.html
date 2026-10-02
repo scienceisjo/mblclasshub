@@ -2248,7 +2248,9 @@ td.rowno.demo{color:#9A6B00;background:#FFF6D6;font-size:11px;line-height:1.2}
       //  선생님이 합치기 화면에서 같은 기준으로 채점할 수 있습니다.
       rubric: arr(p.rubric),
       aiTemplate: (p.aiTemplate && typeof p.aiTemplate === 'object') ? p.aiTemplate : null,
-      features: { lab: f.lab !== false, ai: f.ai !== false }
+      features: { lab: f.lab !== false, ai: f.ai !== false, readLater: f.readLater !== false },
+      //  모둠마다 다른 값 — 교사 화면 꾸러미의 assign(lesson.form.assign 과 같은 모양)을 간편 모드에서도 씁니다.
+      assign: (p.assign && Array.isArray(p.assign.groups) && p.assign.groups.length) ? p.assign : null
     };
   }
 
@@ -3586,7 +3588,7 @@ td.rowno.demo{color:#9A6B00;background:#FFF6D6;font-size:11px;line-height:1.2}
   //  선생님이 수업을 열 때 켜면 lesson.form.assign 에 담겨 옵니다.
   //  { label:'맡을 부피', unit:'mL', groups:['5 · 7', ...모둠 수만큼] }
   function assignOf(){
-    const a = lesson && lesson.form && lesson.form.assign;
+    const a = (lesson && lesson.form && lesson.form.assign) || (simpleMode && pack && pack.assign);
     return (a && Array.isArray(a.groups) && a.groups.length) ? a : null;
   }
   function assignMine(){
