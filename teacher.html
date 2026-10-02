@@ -19,8 +19,8 @@
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
     --paper:#FFFFFF; --cream:#FFFDF6;
-    --ink:#254753; --muted:#6E8A96;
-    --mint:#20B2A6; --mint-d:#14867C;
+    --ink:#254753; --muted:#4F6A76;
+    --mint:#20B2A6; --mint-d:#14867C; --mint-ink:#0F766E;   /* 흰 글자를 올리는 진한 민트(5.4:1) */
     --sun:#FFC130; --coral:#FF8C6B; --sky:#54B4E8;
     --line:#E4EFF1; --line-2:#D3E6EA;
     --shadow:0 10px 28px rgba(37,71,83,.09);
@@ -42,23 +42,38 @@
   .offbar{background:rgba(255,193,48,.25);border-bottom:1px solid rgba(255,193,48,.6);color:#8A5B00;
     font-size:13.5px;font-weight:700;text-align:center;padding:9px 14px}
 
-  .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  #dashKit,#wkKit{--dk-sticky:64px}   /* 대시보드 도구막대가 위쪽 머리(.top) 밑으로 숨지 않게 */
-  .top .row{display:flex;align-items:center;justify-content:space-between;gap:12px;min-height:62px;padding:8px 0;flex-wrap:wrap}
+  .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.94);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  /* 대시보드 도구막대가 위쪽 머리(.top)·탭 밑으로 숨지 않게 — 높이는 스크립트가 재어 --top-h 에 넣습니다 */
+  #dashKit{--dk-sticky:calc(var(--top-h,64px) + var(--tabs-h,0px))}
+  #wkKit{--dk-sticky:var(--top-h,64px)}
+  .top .row{display:flex;align-items:center;justify-content:space-between;gap:8px 14px;min-height:58px;padding:8px 18px;flex-wrap:wrap}
   .brand b{font-family:var(--display);font-size:20px;font-weight:400}
   .brand span{display:block;font-size:12.5px;color:var(--muted)}
   .topright{display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+  /* 화면 사이 이동 — 모든 화면이 같은 줄을 씁니다 */
+  .topnav{display:flex;flex-wrap:wrap;gap:2px 4px;align-items:center;font-size:13.5px;font-weight:700}
+  .topnav a{padding:7px 10px;border-radius:999px;color:var(--muted)}
+  .topnav a:hover{background:rgba(32,178,166,.10);color:var(--mint-ink)}
+  .topnav a[aria-current="page"]{background:rgba(32,178,166,.14);color:var(--mint-ink)}
+  @media (max-width:640px){
+    .wrap{padding:0 16px}
+    .top{position:static}                 /* 좁은 화면에서는 머리가 화면을 가리지 않게 따라오지 않습니다 */
+    .top .row{padding:8px 16px;min-height:0}
+    .topnav{font-size:12.5px;width:100%}
+    .topnav a{padding:5px 8px}
+  }
 
   .btn{font-family:var(--sans);font-size:14px;font-weight:700;cursor:pointer;border:1.5px solid var(--line-2);
     background:#fff;color:var(--ink);padding:10px 18px;border-radius:999px;transition:.16s}
   .btn:hover{border-color:var(--mint);color:var(--mint-d)}
   .btn:disabled{opacity:.5;cursor:not-allowed}
-  .btn-solid{background:var(--mint);color:#fff;border-color:var(--mint);box-shadow:var(--shadow)}
-  .btn-solid:hover{background:var(--mint-d);color:#fff}
+  .btn-solid{background:var(--mint-ink);color:#fff;border-color:var(--mint-ink);box-shadow:var(--shadow)}
+  .btn-solid:hover{background:#0B5F58;border-color:#0B5F58;color:#fff}
   .btn-sm{padding:7px 13px;font-size:13px}
   .btn-ghost{background:transparent;border-color:transparent;color:var(--muted)}
 
   .box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin:16px 0}
+  .box,#packLoadMsg,#inTitle{scroll-margin-top:calc(var(--top-h,64px) + var(--tabs-h,0px) + 12px)}
   .box h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:4px}
   .box h3{font-family:var(--display);font-size:17px;font-weight:400;margin:18px 0 8px}
   .muted{color:var(--muted);font-size:14px}
@@ -73,16 +88,18 @@
   label.fl{display:block;font-size:13.5px;font-weight:700;color:var(--muted);margin:14px 0 6px}
 
   .pill{display:inline-flex;align-items:center;gap:6px;font-size:12.5px;font-weight:700;padding:5px 11px;border-radius:999px;
-    background:rgba(32,178,166,.14);color:var(--mint-d)}
-  .pill.sun{background:rgba(255,193,48,.24);color:#9A6B00}
-  .pill.coral{background:rgba(255,140,107,.2);color:#C9542F}
-  .pill.sky{background:rgba(84,180,232,.18);color:#2A7FB0}
-  .pill.bad{background:rgba(224,90,90,.16);color:var(--bad)}
+    background:rgba(32,178,166,.14);color:#0B5F58}
+  .pill.sun{background:rgba(255,193,48,.24);color:#6E4C00}
+  .pill.coral{background:rgba(255,140,107,.2);color:#9C3816}
+  .pill.sky{background:rgba(84,180,232,.18);color:#1A5C82}
+  .pill.bad{background:rgba(224,90,90,.16);color:#A32F2F}
 
   /* 실험 고르기 */
   .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
   .filters select,.filters input{width:auto;min-width:140px;flex:0 1 210px}
   .explist{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;max-height:460px;overflow:auto;padding:4px}
+  @media (max-width:640px){ .explist{max-height:none;overflow:visible} }   /* 휴대폰에서는 목록 안쪽 스크롤을 두지 않습니다 */
+  .filters label.vh+select,.filters label.vh+input{flex:0 1 210px}
   .exp{border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:14px;cursor:pointer;transition:.16s;box-shadow:var(--shadow)}
   .exp:hover{transform:translateY(-2px);border-color:var(--mint)}
   .exp.on{border-color:var(--mint);box-shadow:0 0 0 3px rgba(32,178,166,.18)}
@@ -109,12 +126,14 @@
   .phases{display:flex;gap:8px;flex-wrap:wrap}
   .ph{cursor:pointer;border:1.5px solid var(--line-2);background:#fff;color:var(--muted);font-family:var(--sans);
     font-size:14px;font-weight:700;padding:10px 18px;border-radius:999px;transition:.16s}
-  .ph.on{background:var(--mint);border-color:var(--mint);color:#fff}
+  .ph.on{background:var(--mint-ink);border-color:var(--mint-ink);color:#fff}
 
   /* 모둠 현황 */
   .gcards{display:grid;grid-template-columns:repeat(auto-fill,minmax(250px,1fr));gap:14px}
   .gcard{border:1px solid var(--line);border-radius:16px;background:#fff;box-shadow:var(--shadow);overflow:hidden}
-  .gcard .gh{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:10px 14px;color:#fff;font-family:var(--display);font-size:16px}
+  .gcard .gh{display:flex;align-items:center;justify-content:space-between;gap:6px;padding:8px 12px;font-family:var(--display);font-size:16px}
+  /* 모둠 색 띠 위의 이름은 흰 바탕 칩에 진한 글자로 — 노란 3모둠에서도 읽힙니다 */
+  .gcard .gh .gname{background:rgba(255,255,255,.92);color:var(--ink);border-radius:999px;padding:2px 12px}
   .gcard .gb{padding:12px 14px;font-size:13.5px}
   .gcard .st{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
   .chartbox{width:100%;overflow-x:auto}
@@ -160,12 +179,18 @@
   .covchip.mine{box-shadow:0 0 0 3px var(--sun)}
   .asggen{display:flex;flex-wrap:wrap;gap:8px;align-items:center;margin-top:12px;padding:10px 12px;border:1.5px dashed var(--line-2);border-radius:12px;background:var(--cream)}
   .asggen input{width:78px}
+  .asgrow{display:flex;gap:8px;align-items:flex-start;margin-top:6px;flex-wrap:wrap}
+  .asgrow textarea{flex:1 1 200px;min-height:44px;resize:none;overflow:hidden;line-height:1.5;padding:9px 12px}
+  .asgrow .pill{min-width:64px;justify-content:center;margin-top:9px}
+  .asgrow .u{margin-top:11px}
+  .more{background:none;border:0;padding:0 2px;font:inherit;font-size:13.5px;font-weight:800;color:var(--mint-ink);
+    text-decoration:underline;cursor:pointer}
   /* 모둠 비밀번호(PIN) */
   .toolrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
   .pins{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin-top:12px}
   .pincard{display:flex;align-items:center;gap:10px;border:1px solid var(--line);border-radius:14px;
     background:#fff;padding:10px 12px;box-shadow:var(--shadow)}
-  .pincard .no{width:34px;height:34px;flex:0 0 auto;border-radius:10px;color:#fff;font-family:var(--display);
+  .pincard .no{width:34px;height:34px;flex:0 0 auto;border-radius:10px;color:#132F38;font-family:var(--display);
     font-size:15px;display:flex;align-items:center;justify-content:center}
   .pincard .v{flex:1;min-width:0}
   .pincard .v b{display:block;font-family:var(--display);font-weight:400;font-size:21px;letter-spacing:.16em;line-height:1.2}
@@ -179,7 +204,11 @@
   .biggrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:16px}
   .bigcell{border-radius:22px;background:rgba(255,255,255,.08);border:3px solid rgba(255,255,255,.2);padding:16px;text-align:center}
   .bigcell .bno{font-family:var(--display);font-size:clamp(18px,2.4vw,30px);opacity:.9}
-  .bigcell .bpin{font-family:var(--display);font-size:clamp(54px,8vw,116px);letter-spacing:.14em;line-height:1.15}
+  .bigcell .bpin{font-family:var(--display);font-size:clamp(40px,6vw,96px);letter-spacing:.08em;line-height:1.15;overflow-wrap:anywhere}
+  /* 칠판에 크게 — 참여코드 하나만 아주 크게 띄웁니다(모둠 비밀번호는 쪽지로만 나눠 줍니다) */
+  .bigcode{font-family:var(--display);font-size:clamp(64px,16vw,220px);letter-spacing:.1em;line-height:1.05;text-align:center;
+    margin:4vh 0 2vh;overflow-wrap:anywhere}
+  .bigsteps{font-size:clamp(18px,2.4vw,32px);line-height:1.6;text-align:center;opacity:.92}
 
   /* 보관 기한 */
   .keepbar{font-size:15px;font-weight:700}
@@ -225,13 +254,18 @@
   .qcard .qtop .sp{flex:1 1 auto}
   .qcard textarea{min-height:52px;line-height:1.55;overflow:hidden}
   .qmove{min-width:44px;min-height:44px;padding:0 12px;font-size:17px;line-height:1}
+  /* 휴대폰 — 카드 머리를 「이름·유형」 한 줄, 「▲ ▼ 삭제」 한 줄로 가지런히 */
+  @media (max-width:640px){
+    .qcard .qtop .sp{flex:0 0 100%;height:0}
+    .qcard .qtop select,.qhead select{min-width:0;flex:1 1 120px}
+  }
   .qmove:disabled{opacity:.35}
   /* 켜고 끄는 줄 — 네모칸 + 글자로 알립니다(색만으로 알리지 않습니다) */
   .chkline{display:flex;align-items:flex-start;gap:11px;border:1.5px solid var(--line-2);border-radius:14px;
     background:#fff;padding:11px 14px;min-height:44px;cursor:pointer}
   .chkline input{width:22px;height:22px;margin:2px 0 0;flex:0 0 auto;accent-color:var(--mint)}
-  .chkline .ct b{display:block;font-size:14.5px}
-  .chkline .ct span{display:block;font-size:12.5px;color:var(--muted);font-weight:600;line-height:1.55}
+  .chkline .ct > b{display:block;font-size:14.5px}
+  .chkline .ct > span{display:block;font-size:12.5px;color:var(--muted);font-weight:600;line-height:1.55}
   .qrow{border:1px solid var(--line);border-radius:14px;background:#fff;padding:11px 14px;margin-bottom:8px}
   .qrow.low{border:2px solid var(--coral);background:#FFF7F4}
   .qrow .qq{font-size:14px;font-weight:700;line-height:1.5}
@@ -342,22 +376,55 @@
   .setup.ok h3{color:#1C8A66}
   .setup.ok p{color:#2E6B57}
   .setup.ok a.lnk{color:#1C8A66}
+  /* 서버가 없어도 되는 화면에서는 붉은 경고 대신 차분한 안내로 */
+  .setup.soft{border-color:var(--line-2);background:var(--cream)}
+  .setup.soft h3{color:var(--ink)}
+  .setup.soft p{color:var(--muted)}
+  .setup.soft a.lnk{color:var(--mint-ink)}
+
+  /* 수업 만들기 — 단계 번호 */
+  .stepno{display:inline-flex;align-items:center;justify-content:center;width:30px;height:30px;border-radius:50%;
+    background:var(--mint-ink);color:#fff;font-family:var(--display);font-size:17px;margin-right:8px;vertical-align:2px}
+  .boxhead{display:flex;align-items:center;justify-content:space-between;gap:8px 12px;flex-wrap:wrap}
+  .modenote{border:2px dashed var(--mint);background:var(--cream);border-radius:14px;padding:12px 16px;margin:16px 0 0;font-size:14px;font-weight:700}
+  .makeopts{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+  @media (max-width:760px){ .makeopts{grid-template-columns:1fr} }
+  .makeopt{border:1.5px solid var(--line-2);border-radius:16px;padding:14px 16px;background:#fff}
+  .makeopt h3{margin:0 0 4px}
+
+  /* 대시보드 — 수업 중 · 고치기 · 평가 · 내보내기 */
+  .dtabs{position:sticky;top:var(--top-h,64px);z-index:40;display:flex;gap:6px;flex-wrap:wrap;margin:16px 0 0;padding:8px;
+    background:rgba(255,255,255,.95);border:1px solid var(--line);border-radius:16px;box-shadow:var(--shadow)}
+  .dtabs button{flex:1 1 120px;font-family:var(--sans);font-size:15px;font-weight:800;cursor:pointer;min-height:44px;
+    border:1.5px solid var(--line-2);background:#fff;color:var(--muted);border-radius:12px;padding:8px 12px}
+  .dtabs button[aria-selected="true"]{background:var(--mint-ink);border-color:var(--mint-ink);color:#fff}
+  .dtabs button small{display:block;font-size:11.5px;font-weight:700;opacity:.9}
+  @media (max-width:640px){ .dtabs{position:static} .dtabs button{flex:1 1 40%} }
+  #scDash[data-tab="live"]  [data-dsec]:not([data-dsec="live"]),
+  #scDash[data-tab="edit"]  [data-dsec]:not([data-dsec="edit"]),
+  #scDash[data-tab="grade"] [data-dsec]:not([data-dsec="grade"]),
+  #scDash[data-tab="out"]   [data-dsec]:not([data-dsec="out"]){display:none}
 </style>
 </head>
 <body>
 
-<div id="offbar" class="offbar hidden">임시 저장 중 — 인터넷이 돌아오면 자동으로 다시 보냅니다.</div>
+<div id="offbar" class="offbar hidden" role="status">서버에 연결되지 않았습니다 — 바꾼 것이 학생 화면에 가지 않을 수 있습니다. 인터넷 연결을 확인해 주세요.</div>
 
 <header class="top">
   <div class="wrap row">
     <div class="brand">
-      <b>MBL 수업허브 · 교사용</b>
-      <span id="topSub">수업을 만들고 학생 화면을 지휘합니다</span>
+      <b>MBL 수업허브</b>
+      <span id="topSub">교사 화면 · 수업을 만들고 학생 화면을 지휘합니다</span>
     </div>
+    <nav class="topnav" aria-label="화면 이동">
+      <a href="./index.html" target="_blank" rel="noopener">학생 화면</a>
+      <a href="./inquiry.html" target="_blank" rel="noopener">손으로 탐구</a>
+      <a aria-current="page">교사 화면</a>
+      <a href="./manual.html" target="_blank" rel="noopener">사용 설명서</a>
+      <a href="./about.html" target="_blank" rel="noopener">앱 소개</a>
+    </nav>
     <div class="topright">
       <button id="btnDiag" class="btn btn-sm" type="button">연결 확인</button>
-      <a class="btn btn-sm" href="./about.html">앱 소개</a>
-      <a class="btn btn-sm" href="./manual.html" target="_blank" rel="noopener">사용 설명서</a>
       <button id="btnHome" class="btn btn-sm hidden" type="button">처음으로</button>
     </div>
   </div>
@@ -375,9 +442,10 @@
         <img src="./assets/mission.webp" alt="" width="1200" height="900" decoding="async"
              onerror="this.remove()"
              style="display:block;width:100%;max-width:260px;height:auto;margin:0 auto 8px" />
-        <h2>새 수업 만들기</h2>
-        <p class="muted">실험을 고르면 데이터 입력표와 보고서 질문이 자동으로 채워집니다. 만들면 참여코드 6자리가 나옵니다.</p>
-        <button id="btnNew" class="btn btn-solid" style="margin-top:14px" type="button">실험 고르기</button>
+        <h2>새 수업 만들기 · 참여코드</h2>
+        <p class="muted">실험을 고르면 데이터 입력표와 보고서 질문이 저절로 채워집니다. 만들면 참여코드 6자리가 나오고,
+          학생이 그 코드로 들어오면 이 화면에서 단계·발표·채점을 지휘합니다(인터넷 연결이 필요합니다).</p>
+        <button id="btnNew" class="btn btn-solid" style="margin-top:14px" type="button">새 수업 만들기</button>
       </div>
       <div class="box">
         <h2>관리코드로 이어가기</h2>
@@ -391,18 +459,18 @@
 
     <!-- 수업 꾸러미 — 절차·질문을 고쳐 파일로 나눠 주고, 학생이 낸 파일을 모읍니다. 서버를 쓰지 않습니다. -->
     <div class="box">
-      <h2>절차·질문을 고쳐서 나눠 주기 — 수업 꾸러미</h2>
-      <p class="muted">실험 도감의 절차·준비물·보고서 질문은 <b>고쳐서 쓰라고 있는 것</b>입니다.
-        실험을 고른 뒤 카드 하나하나를 고치고 <b>[수업 꾸러미 내려받기]</b> 를 누르면 <b>.json</b> 파일이 됩니다.
-        학생은 첫 화면 <b>[수업 꾸러미 파일 올리기]</b> 에 그 파일을 올리면 고친 절차·질문이 그대로 세팅됩니다.
-        참여코드도 서버도 필요 없고, 다른 학교 선생님께 파일만 보내도 됩니다.</p>
+      <h2>서버 없이 파일로 수업하기 · 수업 꾸러미</h2>
+      <p class="muted">참여코드도 인터넷 연결도 없이, <b>파일 하나</b>로 수업을 나눠 주고 모읍니다.
+        실험을 고르고 절차·질문을 고친 뒤 <b>[수업 꾸러미 내려받기]</b>를 누르면 <b>.json</b> 파일이 됩니다.
+        학생은 학생 화면 첫 화면의 <b>[수업 꾸러미 파일 올리기]</b>에 그 파일을 올리고, 끝나면 <b>작업 파일(.html)</b>을 냅니다.
+        다른 학교 선생님께 파일만 보내도 됩니다.</p>
       <div class="toolrow">
         <button id="btnPackNew"  class="btn btn-solid" type="button">꾸러미 만들기 — 실험 고르고 고치기</button>
         <button id="btnPackLoad" class="btn" type="button">받은 꾸러미 열어서 더 고치기</button>
         <button id="btnWorkOpen" class="btn" type="button">학생이 낸 작업 파일 모아 합치기</button>
       </div>
-      <p class="muted" style="margin-top:8px">고치지 않고 그대로 나눠 주려면 학생용 <b>실험 도감</b>에서 카드마다 있는
-        <b>[📦 꾸러미 받기]</b> 를 누르면 됩니다. 손으로 파일을 짤 일은 없습니다.</p>
+      <p class="muted" style="margin-top:8px">고치지 않고 그대로 나눠 주려면 학생 화면 <b>실험 도감</b>에서 카드마다 있는
+        <b>[📦 꾸러미 받기]</b>를 누르면 됩니다.</p>
     </div>
 
     <div class="box">
@@ -412,10 +480,16 @@
     </div>
   </section>
 
-  <!-- ② 수업 만들기 -->
+  <!-- ② 수업 만들기 (꾸러미 만들기도 같은 화면입니다) -->
   <section id="scNew" class="hidden">
+    <p id="newModeNote" class="modenote hidden">📦 꾸러미 만들기 — 서버에 수업을 만들지 않습니다. 아래 순서대로 고른 뒤
+      맨 아래 <b>[수업 꾸러미 내려받기]</b>를 누르세요.</p>
     <div class="box">
-      <h2>1단계 · 실험 고르기</h2>
+      <div class="boxhead">
+        <h2><span class="stepno" data-step></span>실험 고르기</h2>
+        <button id="btnPackOpenNew" class="btn btn-sm" type="button">받은 꾸러미 파일 불러오기</button>
+      </div>
+      <p id="packLoadMsg" class="ok" role="status" style="min-height:0"></p>
       <!-- 쓰는 센서(업체) — 두 업체는 조작 방법이 다르고, 없는 센서도 서로 다릅니다 -->
       <div class="vrow hidden" id="vendorRow">
         <label class="fl" for="fVendor">쓰는 센서</label>
@@ -424,12 +498,15 @@
       </div>
       <p class="muted hidden" id="vendorMsg" style="margin:-4px 0 10px;font-weight:700"></p>
       <div class="filters">
-        <select id="fGrade">
+        <label class="vh" for="fGrade">학년</label>
+        <select id="fGrade" aria-label="학년으로 거르기">
           <option value="">모든 학년</option>
           <option value="1">중1</option><option value="2">중2</option><option value="3">중3</option>
         </select>
-        <select id="fUnit"><option value="">모든 단원</option></select>
-        <input id="fSearch" type="text" placeholder="제목·센서로 찾기" />
+        <label class="vh" for="fUnit">단원</label>
+        <select id="fUnit" aria-label="단원으로 거르기"><option value="">모든 단원</option></select>
+        <label class="vh" for="fSearch">찾기</label>
+        <input id="fSearch" type="text" placeholder="제목·센서로 찾기" aria-label="제목·센서로 찾기" />
         <span id="expCount" class="pill"></span>
       </div>
       <div id="explist" class="explist"></div>
@@ -437,7 +514,7 @@
 
     <!-- 실험을 골랐을 때만 나타납니다. 고른 업체의 절차·준비물을 그대로 고칠 수 있습니다. -->
     <div class="box hidden" id="procNew">
-      <h2>실험 절차와 준비물</h2>
+      <h2><span class="stepno" data-step></span>절차·준비물</h2>
       <p class="muted" id="procNewSub"></p>
       <label class="fl" style="margin-top:10px">준비물</label>
       <div id="inPrepBox" class="qedit"></div>
@@ -452,8 +529,9 @@
 
     <!-- 모둠마다 다른 값 재기 — 실험에 나눔 권장값(pool.assign)이 있거나, 학생이 가로축 값을 정해 재는 실험이면 나타납니다. -->
     <div class="box hidden" id="assignNew">
-      <h2>🧩 우리 반 그래프 한 장 — 모둠마다 다른 값 재기</h2>
-      <p class="muted" id="assignNewSub"></p>
+      <h2><span class="stepno" data-step></span>모둠마다 다른 값 <span class="muted" style="font-family:var(--sans);font-size:14px">· 골라서 쓰기</span></h2>
+      <p class="muted"><span id="assignNewSub"></span> <button type="button" class="more hidden" id="asgHowMore" aria-expanded="false">자세히</button></p>
+      <p class="muted hidden" id="assignNewHow" style="margin-top:4px"></p>
       <label class="chkline" for="inAssignOn">
         <input id="inAssignOn" type="checkbox" />
         <span class="ct"><b>모둠마다 다른 값을 맡긴다</b>
@@ -474,12 +552,13 @@
         <span class="muted">개씩</span>
         <button id="btnAsgGen" class="btn btn-sm btn-solid" type="button">모둠에 고르게 나눠 주기</button>
       </div>
-      <p class="muted" id="asgGenNote" style="margin-top:6px"></p>
+      <p class="muted" style="margin-top:6px"><span id="asgGenNote"></span> <button type="button" class="more hidden" id="asgNoteMore" aria-expanded="false">자세히</button></p>
+      <p class="muted hidden" id="asgGenNoteMore" style="margin-top:2px"></p>
       <div id="assignNewList" style="margin-top:10px"></div>
     </div>
 
     <div class="box">
-      <h2>2단계 · 수업 정보</h2>
+      <h2><span class="stepno" data-step></span>수업 정보</h2>
       <div class="two">
         <div>
           <label class="fl" for="inTitle">수업 제목</label>
@@ -489,9 +568,10 @@
         </div>
         <div>
           <label class="fl" for="inTeacher">교사 이름</label>
-          <input id="inTeacher" type="text" maxlength="20" placeholder="예) 조승재" />
+          <input id="inTeacher" type="text" maxlength="20" placeholder="예) 김선생" />
           <label class="fl" for="inGroups">모둠 수</label>
-          <input id="inGroups" type="number" min="1" max="20" value="7" />
+          <input id="inGroups" type="number" min="1" max="20" value="7" inputmode="numeric" aria-describedby="groupsErr" />
+          <div id="groupsErr" class="err" style="min-height:0"></div>
         </div>
       </div>
       <label class="chkline" for="inGroupPin" style="margin:4px 0 12px">
@@ -526,31 +606,38 @@
             학생이 먼저 예상하고 재 본 뒤, 공유 단계를 열면 나타납니다.</span></span>
       </label>
 
-      <div id="newErr" class="err"></div>
-      <div style="display:flex;gap:8px;flex-wrap:wrap">
-        <button id="btnCreate" class="btn btn-solid" type="button">수업 만들기</button>
-        <button id="btnCancelNew" class="btn" type="button">취소</button>
-      </div>
     </div>
 
-    <!-- 파일로 주고받기 — 서버에 수업을 만들지 않고도 이 화면 그대로 파일 한 개에 담습니다 -->
-    <div class="box">
-      <h2>수업 꾸러미로 내보내기 · 불러오기</h2>
-      <p class="muted">지금 이 화면에 채워 넣은 그대로(실험·절차·준비물·질문·탭 설정) 파일 하나에 담습니다.
-        학생은 그 파일을 학생 화면에 올리기만 하면 됩니다 — <b>참여코드도 인터넷 연결도 필요 없습니다</b>.
-        다른 학교 선생님과 파일로 주고받을 수도 있습니다.</p>
-      <div class="toolrow">
-        <button id="btnPackSaveNew" class="btn btn-solid tap" type="button">수업 꾸러미 내려받기</button>
-        <button id="btnPackOpenNew" class="btn tap" type="button">꾸러미 파일 불러오기</button>
-        <span id="packNewMsg" class="ok"></span>
+    <!-- 만들기 — 실시간 수업(서버) 또는 수업 꾸러미(파일) -->
+    <div class="box" id="makeBox">
+      <h2><span class="stepno" data-step></span>만들기</h2>
+      <div id="newErr" class="err" role="alert"></div>
+      <div class="makeopts">
+        <div class="makeopt" id="makeLive">
+          <h3>참여코드로 실시간 수업</h3>
+          <p class="muted">서버에 수업을 만들고 참여코드·관리코드를 받습니다. 학생 화면과 대시보드가 실시간으로 이어집니다.</p>
+          <div class="toolrow">
+            <button id="btnCreate" class="btn btn-solid" type="button">수업 만들기</button>
+            <button id="btnCancelNew" class="btn" type="button">취소</button>
+          </div>
+        </div>
+        <!-- 파일로 주고받기 — 서버에 수업을 만들지 않고도 이 화면 그대로 파일 한 개에 담습니다 -->
+        <div class="makeopt" id="makePack">
+          <h3>서버 없이 · 수업 꾸러미 파일</h3>
+          <p class="muted" id="packWhat">이 화면에 고른 그대로 파일 하나에 담습니다 — 실험·쓰는 센서·절차·준비물·보고서 질문·모둠마다 다른 값·학생 화면 탭 설정·모둠 수.
+            학생은 학생 화면에 그 파일을 올리기만 하면 됩니다(참여코드도 인터넷도 필요 없습니다).</p>
+          <div class="toolrow">
+            <button id="btnPackSaveNew" class="btn btn-solid tap" type="button">수업 꾸러미 내려받기</button>
+          </div>
+          <p id="packNewMsg" class="ok" role="status"></p>
+          <p class="muted hidden" id="packCarry" style="margin-top:6px"></p>
+        </div>
       </div>
-      <p class="muted" style="margin-top:8px">개념 확인 문항을 함께 담으면 <b>정답과 해설도 파일 안에 들어갑니다</b>
-        (학생 기기에서 바로 채점하기 위해서입니다). 시험지처럼 다루어 주세요.</p>
     </div>
   </section>
 
   <!-- ③ 대시보드 -->
-  <section id="scDash" class="hidden">
+  <section id="scDash" class="hidden" data-tab="live">
     <div class="box">
       <div class="two" style="align-items:center">
         <div class="codecard">
@@ -558,6 +645,7 @@
           <div id="dJoin" class="big">------</div>
           <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin-top:10px">
             <button id="btnCopyJoin" class="btn btn-sm" type="button">코드 복사</button>
+            <button id="btnPinBig" class="btn btn-sm" type="button">칠판에 크게 띄우기</button>
             <a id="lnkStudent" class="btn btn-sm" href="./index.html" target="_blank" rel="noopener">학생 화면</a>
             <a id="lnkPresent" class="btn btn-sm btn-solid" href="./present.html" target="_blank" rel="noopener">발표 화면</a>
           </div>
@@ -581,10 +669,15 @@
       <button id="btnExtendTop" class="btn btn-sm" type="button">30일 연장</button>
     </div>
 
-    <div class="box">
+    <div class="dtabs" id="dTabs" role="tablist" aria-label="대시보드 영역">
+      <button type="button" role="tab" id="tabLive"  data-dtab="live"  aria-controls="scDash" aria-selected="true">수업 중<small>단계 · 발표 · 모둠 현황</small></button>
+      <button type="button" role="tab" id="tabEdit"  data-dtab="edit"  aria-controls="scDash" aria-selected="false" tabindex="-1">고치기<small>질문 · 절차 · 탭 · 개념 확인</small></button>
+      <button type="button" role="tab" id="tabGrade" data-dtab="grade" aria-controls="scDash" aria-selected="false" tabindex="-1">평가<small id="tabGradeSub">기준표 · 채점 · 결과</small></button>
+      <button type="button" role="tab" id="tabOut"   data-dtab="out"   aria-controls="scDash" aria-selected="false" tabindex="-1">내보내기<small>대시보드 · 꾸러미 · 생기부 · 보관</small></button>
+    </div>
+
+    <div data-dsec="live" class="box">
       <h2>모둠 비밀번호</h2>
-      <p class="muted">모둠마다 4자리 숫자입니다. <b>「모둠 비밀번호 쓰기」를 켠 수업</b>에서만 학생이 넣습니다.
-        같은 반 다른 모둠 것은 알려 주지 마세요.</p>
       <label class="chkline" for="dGroupPin" style="margin-top:8px">
         <input id="dGroupPin" type="checkbox" />
         <span class="ct"><b>모둠 비밀번호 쓰기</b>
@@ -592,17 +685,21 @@
             켜면 아래 4자리를 알려 줘야 들어오고 저장할 수 있습니다. 수업 도중에도 바꿀 수 있습니다.</span></span>
       </label>
       <p id="pinModeNote" class="muted" style="margin-top:6px"></p>
-      <div class="toolrow">
-        <button id="btnPinShow"   class="btn btn-sm" type="button">보이기</button>
-        <button id="btnPinBig"    class="btn btn-sm btn-solid" type="button">칠판에 크게 띄우기</button>
-        <button id="btnPinPrint"  class="btn btn-sm" type="button">모둠 쪽지 인쇄</button>
-        <button id="btnPinReload" class="btn btn-sm btn-ghost" type="button">새로 불러오기</button>
-        <span id="pinMsg" class="muted"></span>
+      <!-- 비밀번호를 쓰는 수업에서만 펼칩니다. 모둠 비밀번호는 칠판에 띄우지 않고 쪽지로만 나눠 줍니다. -->
+      <div id="pinTools">
+        <p class="muted" style="margin-top:6px">모둠마다 4자리 숫자입니다. <b>모둠 쪽지</b>로 인쇄해 모둠에 한 장씩 나눠 주세요 —
+          다른 모둠 것은 보이지 않게 합니다.</p>
+        <div class="toolrow">
+          <button id="btnPinPrint"  class="btn btn-sm btn-solid" type="button">모둠 쪽지 인쇄</button>
+          <button id="btnPinShow"   class="btn btn-sm" type="button">보이기</button>
+          <button id="btnPinReload" class="btn btn-sm btn-ghost" type="button">새로 불러오기</button>
+          <span id="pinMsg" class="muted"></span>
+        </div>
+        <div id="dPins" class="pins"></div>
       </div>
-      <div id="dPins" class="pins"></div>
     </div>
 
-    <div class="box">
+    <div data-dsec="live" class="box">
       <h2>수업 단계</h2>
       <p class="muted">단계를 바꾸면 학생 화면과 발표 화면이 곧바로 따라옵니다.</p>
       <div class="phases" style="margin-top:12px">
@@ -633,26 +730,26 @@
     </div>
 
     <!-- 우리 반 그래프 채우기 — 모둠마다 다른 값을 맡긴 수업에서만 나타납니다. -->
-    <div class="box hidden" id="boxCover">
+    <div data-dsec="live" class="box hidden" id="boxCover">
       <h2>🧩 우리 반 그래프 채우기</h2>
       <p class="muted" id="dCoverSub"></p>
       <div id="dCover" style="margin-top:10px"></div>
     </div>
 
     <!-- 반 전체 한 그래프 — 자료를 올린 모둠이 2곳부터 나타납니다. -->
-    <div class="box hidden" id="boxMerged">
+    <div data-dsec="live" class="box hidden" id="boxMerged">
       <h2>반 전체 한 그래프</h2>
-      <p class="muted" id="dMergedSub">모둠 자료를 전부 하나의 그림에 겹쳤습니다. 검은 선은 반 전체 추세선입니다.</p>
+      <p class="muted" id="dMergedSub">모둠 자료를 전부 하나의 그림에 겹쳤습니다.</p>
       <div id="dMerged" style="margin-top:10px"></div>
     </div>
 
-    <div class="box">
+    <div data-dsec="live" class="box">
       <h2>모둠 현황</h2>
       <div id="dGroups" class="gcards" style="margin-top:12px"></div>
     </div>
 
     <!-- 예상 그래프 비교 — 예상을 그린 모둠이 있을 때만 나타납니다 -->
-    <div id="boxPredict" class="box hidden">
+    <div data-dsec="live" id="boxPredict" class="box hidden">
       <h2>예상과 실제</h2>
       <p class="muted">데이터를 넣기 전에 그린 예상 곡선과 실제 측정값을 견줍니다.
         차이가 큰 모둠이 위에 옵니다 — “왜 그렇게 예상했나요?” 를 물어보기 좋은 자리입니다.</p>
@@ -660,40 +757,7 @@
       <p id="dPredictNone" class="muted" style="margin-top:8px"></p>
     </div>
 
-    <!-- 평가 기준표(루브릭) — 채점 항목을 여기에서 정합니다 -->
-    <div class="box" id="dRubricBox">
-      <h2>평가 기준표</h2>
-      <p class="muted">항목 2~6개를 정해 두면 아래 <b>보고서 채점</b> 화면에 그대로 나옵니다.
-        항목마다 <b>이름 · 배점 · 채점 기준 설명</b>을 적습니다.
-        백지에서 시작하지 마시고 <b>[기본 기준표 불러오기]</b> 로 불러와 고쳐 쓰세요.
-        고치는 동안에는 화면이 저절로 덮어써지지 않습니다.</p>
-      <p class="muted" id="dRubStd" style="margin-top:6px"></p>
-      <div id="dRubBox" class="qedit" style="margin-top:10px"></div>
-      <div id="rubErr" class="err"></div>
-      <div class="toolrow">
-        <button id="btnSaveRubric" class="btn btn-solid tap" type="button">기준표 저장</button>
-        <button id="btnRubReset" class="btn btn-sm btn-ghost tap" type="button">저장된 기준표 다시 불러오기</button>
-        <span id="rubMsg" class="ok"></span>
-      </div>
-      <p class="muted" style="margin-top:8px">기준표를 나중에 고쳐도 <b>이미 준 점수의 뜻은 바뀌지 않습니다</b> —
-        채점할 때 쓴 기준이 그 모둠의 평가 안에 그대로 박혀 저장되기 때문입니다.</p>
-    </div>
-
-    <!-- 보고서 채점 — 팝업 없이 한 화면에서 끝냅니다 -->
-    <div class="box" id="dGradeBox">
-      <h2>보고서 채점</h2>
-      <p class="muted">왼쪽에서 모둠을 고르면 오른쪽에 그 모둠 보고서가 펼쳐집니다.
-        항목별 점수를 넣으면 <b>총점이 저절로 더해지고</b>, 저장하면 미평가 목록에서 바로 사라집니다.
-        학생은 <b>자기 모둠 평가만</b> 봅니다 — 다른 모둠 평가는 어디에도 보이지 않습니다.</p>
-      <div class="gwrap">
-        <div id="gdList" class="glist"></div>
-        <div id="gdBody"></div>
-      </div>
-      <div id="gdErr" class="err"></div>
-      <div id="gdMsg" class="ok" style="min-height:20px"></div>
-    </div>
-
-    <div class="box">
+    <div data-dsec="edit" class="box">
       <h2>보고서 질문 고치기</h2>
       <p class="muted">질문 하나가 카드 한 장입니다. 유형을 고르고 <b>▲ ▼</b> 로 순서를 바꿉니다.
         저장하면 학생 화면이 바로 바뀝니다. 고치는 동안에는 화면이 저절로 덮어써지지 않습니다.</p>
@@ -707,7 +771,7 @@
     </div>
 
     <!-- 실험 절차 고치기 — 실험이 붙어 있거나 저장된 절차가 있을 때만 나타납니다 -->
-    <div class="box hidden" id="dProcBox">
+    <div data-dsec="edit" class="box hidden" id="dProcBox">
       <h2>실험 절차 고치기</h2>
       <p class="muted">수업 도중에도 고칠 수 있습니다. 저장하면 학생 화면이 곧 따라옵니다.
         업체를 바꾸면 그 업체의 절차를 다시 불러옵니다 — 저장해야 학생에게 갑니다.</p>
@@ -729,7 +793,7 @@
       </div>
     </div>
 
-    <div class="box">
+    <div data-dsec="edit" class="box">
       <h2>학생 화면 탭</h2>
       <p class="muted">수업 도중에도 켜고 끌 수 있습니다. 바꾸면 학생 화면이 곧 따라옵니다.
         발표 화면과 이 대시보드의 분석 표시는 이 설정과 상관없이 그대로 남습니다.</p>
@@ -753,7 +817,7 @@
     </div>
 
     <!-- AI와 협업 탐구 · 프롬프트 틀 고치기 -->
-    <div class="box" id="dAiBox">
+    <div data-dsec="edit" class="box" id="dAiBox">
       <h2>AI와 협업 탐구 · 프롬프트 틀 고치기</h2>
       <p class="muted">국면마다 <b>AI 에게 주는 역할</b>과 <b>부탁 목록</b>을 고쳐 학생 화면에 배포합니다.
         맥락(실험·성취기준·측정값·통계·우리 생각)은 학생 화면이 알아서 붙입니다 — 여기에서는 손대지 않아도 됩니다.
@@ -781,9 +845,9 @@
     </div>
 
     <!-- 개념 확인 문항 출제 (형성평가) -->
-    <div class="box">
+    <div data-dsec="edit" class="box">
       <h2>개념 확인 문항</h2>
-      <p class="muted">3~5문항까지 낼 수 있습니다. 모둠 활동과 달리 <b>학생 한 사람씩 자기 번호와 이름을 넣고</b> 풉니다.
+      <p class="muted">1~5문항을 낼 수 있습니다. 모둠 활동과 달리 <b>학생 한 사람씩 자기 번호와 이름을 넣고</b> 풉니다.
         배포하면 학생 화면에 개념 확인 영역이 생기고, 문항을 모두 지우면 다시 감춰집니다.
         학생은 답을 내면 곧바로 점수와 해설을 봅니다.</p>
       <div id="quizList" style="margin-top:14px"></div>
@@ -800,8 +864,41 @@
       </div>
     </div>
 
+    <!-- 평가 기준표(루브릭) — 채점 항목을 여기에서 정합니다 -->
+    <div data-dsec="grade" class="box" id="dRubricBox">
+      <h2>평가 기준표</h2>
+      <p class="muted">항목 2~6개를 정해 두면 아래 <b>보고서 채점</b> 화면에 그대로 나옵니다.
+        항목마다 <b>이름 · 배점 · 채점 기준 설명</b>을 적습니다.
+        백지에서 시작하지 마시고 <b>[기본 기준표 불러오기]</b> 로 불러와 고쳐 쓰세요.
+        고치는 동안에는 화면이 저절로 덮어써지지 않습니다.</p>
+      <p class="muted" id="dRubStd" style="margin-top:6px"></p>
+      <div id="dRubBox" class="qedit" style="margin-top:10px"></div>
+      <div id="rubErr" class="err"></div>
+      <div class="toolrow">
+        <button id="btnSaveRubric" class="btn btn-solid tap" type="button">기준표 저장</button>
+        <button id="btnRubReset" class="btn btn-sm btn-ghost tap" type="button">저장된 기준표 다시 불러오기</button>
+        <span id="rubMsg" class="ok"></span>
+      </div>
+      <p class="muted" style="margin-top:8px">기준표를 나중에 고쳐도 <b>이미 준 점수의 뜻은 바뀌지 않습니다</b> —
+        채점할 때 쓴 기준이 그 모둠의 평가 안에 그대로 박혀 저장되기 때문입니다.</p>
+    </div>
+
+    <!-- 보고서 채점 — 팝업 없이 한 화면에서 끝냅니다 -->
+    <div data-dsec="grade" class="box" id="dGradeBox">
+      <h2>보고서 채점</h2>
+      <p class="muted">왼쪽에서 모둠을 고르면 오른쪽에 그 모둠 보고서가 펼쳐집니다.
+        항목별 점수를 넣으면 <b>총점이 저절로 더해지고</b>, 저장하면 미평가 목록에서 바로 사라집니다.
+        학생은 <b>자기 모둠 평가만</b> 봅니다 — 다른 모둠 평가는 어디에도 보이지 않습니다.</p>
+      <div class="gwrap">
+        <div id="gdList" class="glist"></div>
+        <div id="gdBody"></div>
+      </div>
+      <div id="gdErr" class="err"></div>
+      <div id="gdMsg" class="ok" style="min-height:20px"></div>
+    </div>
+
     <!-- 개념 확인 결과 — 응시한 학생이 있을 때만 나타납니다 -->
-    <div id="boxQuizResult" class="box hidden">
+    <div data-dsec="grade" id="boxQuizResult" class="box hidden">
       <h2>개념 확인 결과</h2>
       <p class="muted">문항별 정답률입니다. 절반을 넘기지 못한 문항에는 <b>[다시 짚을 문항]</b> 표시가 붙습니다.</p>
       <div class="toolrow">
@@ -826,7 +923,7 @@
     </div>
 
     <!-- 여러 반 묶어보기 — 같은 실험을 한 수업이 이 브라우저에 둘 이상 있을 때만 나타납니다 -->
-    <div id="boxMerge" class="box hidden">
+    <div data-dsec="grade" id="boxMerge" class="box hidden">
       <h2>여러 반 묶어보기</h2>
       <p class="muted">이 브라우저로 만든 <b>같은 실험</b> 수업을 골라 한 그래프에 겹칩니다.
         반이 늘수록 표본이 커져 규칙이 또렷해집니다. 합치는 일은 이 화면에서만 하며 <b>서버에 새로 저장하지 않습니다</b>.</p>
@@ -844,7 +941,7 @@
     </div>
 
     <!-- 대시보드 만들기 — 우리 반이 지금 모은 자료로 한 장을 짭니다 -->
-    <div class="box" id="dDashKitBox">
+    <div data-dsec="out" class="box" id="dDashKitBox">
       <h2>대시보드 만들기</h2>
       <p class="muted">틀을 고르고 칸을 눌러 고치면 <b>우리 반이 지금 모은 진짜 자료</b>로 그 자리에서 한 장이 완성됩니다.
         AI 에게 코드를 받아 붙여 넣고 파일을 어딘가에 올리는 일이 없습니다.
@@ -864,35 +961,47 @@
     </div>
 
     <!-- 수업 꾸러미 — 이 수업을 파일 하나로 -->
-    <div class="box">
+    <div data-dsec="out" class="box">
       <h2>수업 꾸러미로 내보내기</h2>
-      <p class="muted">이 수업의 실험·절차·준비물·보고서 질문·개념 확인·탭 설정을 파일 하나에 담습니다.
+      <p class="muted">이 수업을 파일 하나에 담습니다 — 실험·쓰는 센서·절차·준비물·보고서 질문·모둠마다 다른 값·학생 화면 탭 설정·모둠 수,
+        그리고 배포한 개념 확인 문항·평가 기준표·AI 프롬프트 틀·대시보드 구성. 모둠 자료·보고서·학생 이름은 담지 않습니다.
         다음 반에서는 참여코드 없이 이 파일만 나눠 주고 수업할 수 있고, 다른 선생님께 그대로 보내도 됩니다.</p>
       <div class="toolrow">
         <button id="btnPackSaveDash" class="btn btn-solid tap" type="button">수업 꾸러미 내려받기</button>
-        <button id="btnWorkFromDash" class="btn tap" type="button">제출된 보고서 합치기</button>
         <span id="packDashMsg" class="ok"></span>
       </div>
       <p class="muted" style="margin-top:8px">개념 확인을 배포해 두었다면 <b>정답과 해설도 파일 안에 들어갑니다</b>
-        (학생 기기에서 바로 채점하기 위해서입니다). 시험지처럼 다루어 주세요.</p>
+        (학생 기기에서 바로 채점하기 위해서입니다). 시험지처럼 다루어 주세요.
+        학생이 파일로 낸 작업은 처음 화면의 <b>[학생이 낸 작업 파일 모아 합치기]</b>에서 합칩니다.</p>
     </div>
 
     <!-- 생기부 자료 내보내기 -->
-    <div class="box">
+    <div data-dsec="out" class="box">
       <h2>생기부 자료 내보내기</h2>
       <p class="muted">학생별로 묶은 기록을 파일로 내려받습니다.
-        Markdown 파일은 맨 앞에 안내 문단이 들어 있어 그대로 Claude 에 붙여넣으면 되고, CSV 는 엑셀로 정리할 때 씁니다.
+        Markdown 파일은 맨 앞에 안내 문단이 들어 있어 AI(Claude 등)에 붙여 세특 초안을 받을 때 쓰고, CSV 는 엑셀로 정리할 때 씁니다.
         모둠원 이름을 적지 않은 모둠은 <b>모둠 단위 기록</b> 한 건으로 나옵니다.</p>
+      <div class="setup soft" style="margin:10px 0 0;padding:12px 14px" role="note">
+        <p style="color:var(--ink);font-weight:800;margin:0 0 4px">⚠ 학생 개인정보 — AI 에 붙여넣기 전에</p>
+        <p style="margin:0">학교·교육청이 허용한 AI 서비스에만 붙여 넣으세요. 이름이 그대로 나가지 않게
+          아래 <b>가명으로 바꾸기</b>를 켜 두는 편이 안전합니다(1번·2번 차례로 바뀝니다. 가명표는 따로 내려받아 이 기기에만 두세요).</p>
+        <label class="chkline" for="expPseudo" style="margin-top:8px">
+          <input id="expPseudo" type="checkbox" checked />
+          <span class="ct"><b>이름을 1번·2번 가명으로 바꾸기</b>
+            <span>Markdown·CSV 모두 학생 이름·모둠원 이름을 「학생 1」「학생 2」처럼 바꿉니다. 함께 내려받는 가명표로 다시 이어 붙입니다.</span></span>
+        </label>
+      </div>
       <div class="toolrow">
         <button id="btnExpMd"  class="btn btn-solid tap" type="button">생기부 자료 내보내기 (Markdown)</button>
         <button id="btnExpCsv" class="btn tap" type="button">CSV 내려받기</button>
+        <button id="btnExpMap" class="btn btn-sm hidden" type="button">가명표 내려받기</button>
         <span id="expMsg" class="muted"></span>
       </div>
       <p class="muted" style="margin-top:10px">내려받은 파일에는 학생 이름과 답변이 그대로 들어 있습니다.
         개인 기기에 오래 두지 마시고, 세특 작성이 끝나면 지워 주세요.</p>
     </div>
 
-    <div class="box">
+    <div data-dsec="out" class="box">
       <h2>수업 보관</h2>
       <p class="muted">학생 이름이 오래 남지 않도록 수업은 기한이 지나면 지워집니다. 더 쓰시려면 연장하세요.</p>
       <div id="dKeep" class="keepbar" style="margin-top:10px">—</div>
@@ -1007,6 +1116,11 @@
 
       <div class="box">
         <h2>제출 현황</h2>
+        <div class="vrow" style="margin:8px 0 0">
+          <label class="fl" for="wkGroupCount">이 반의 모둠 수</label>
+          <input id="wkGroupCount" type="number" min="1" max="20" inputmode="numeric" style="width:96px" />
+          <span class="muted" id="wkGroupCountNote"></span>
+        </div>
         <div id="wkRoster" style="margin-top:6px"></div>
       </div>
 
@@ -1081,11 +1195,21 @@
       <div class="box">
         <h2>생기부 자료 내보내기</h2>
         <p class="muted">합친 파일들을 학생별 기록으로 묶어 내려받습니다.
-          Markdown 은 그대로 Claude 에 붙여넣고, CSV 는 엑셀로 정리할 때 씁니다.
+          Markdown 은 AI(Claude 등)에 붙여 세특 초안을 받을 때, CSV 는 엑셀로 정리할 때 씁니다.
           모둠원 이름을 적지 않은 모둠은 <b>모둠 단위 기록</b> 한 건으로 나옵니다.</p>
+        <div class="setup soft" style="margin:10px 0 0;padding:12px 14px" role="note">
+          <p style="color:var(--ink);font-weight:800;margin:0 0 4px">⚠ 학생 개인정보 — AI 에 붙여넣기 전에</p>
+          <p style="margin:0">학교·교육청이 허용한 AI 서비스에만 붙여 넣으세요. <b>가명으로 바꾸기</b>를 켜 두면 이름이 「학생 1」처럼 바뀝니다.</p>
+          <label class="chkline" for="wkExpPseudo" style="margin-top:8px">
+            <input id="wkExpPseudo" type="checkbox" checked />
+            <span class="ct"><b>이름을 1번·2번 가명으로 바꾸기</b>
+              <span>가명표는 따로 내려받아 이 기기에만 두세요.</span></span>
+          </label>
+        </div>
         <div class="toolrow">
           <button id="btnWkExpMd"  class="btn btn-solid tap" type="button">생기부 자료 내보내기 (Markdown)</button>
           <button id="btnWkExpCsv" class="btn tap" type="button">CSV 내려받기</button>
+          <button id="btnWkExpMap" class="btn btn-sm hidden" type="button">가명표 내려받기</button>
           <span id="wkExpMsg" class="muted"></span>
         </div>
         <p class="muted" style="margin-top:10px">내려받은 파일에는 학생 이름과 답변이 그대로 들어 있습니다.
@@ -1100,16 +1224,14 @@
 </main>
 
 <!-- 칠판용 큰 화면 -->
-<div id="pinBig" class="bigwrap hidden" role="dialog" aria-label="모둠 비밀번호 크게 보기" aria-modal="true">
+<!-- 참여코드만 크게 띄웁니다. 모둠 비밀번호는 다른 모둠이 보면 안 되므로 칠판에 띄우지 않습니다(쪽지로만). -->
+<div id="pinBig" class="bigwrap hidden" role="dialog" aria-label="참여코드 크게 보기" aria-modal="true">
   <div class="bighead">
-    <div>
-      <div class="lb">학생 참여코드</div>
-      <div id="bigJoin" class="bigjoin">------</div>
-    </div>
-    <button id="btnBigClose" class="btn btn-sm" type="button">닫기</button>
+    <div class="lb">학생 참여코드</div>
+    <button id="btnBigClose" class="btn btn-sm" type="button">닫기 (Esc)</button>
   </div>
-  <div id="bigGrid" class="biggrid"></div>
-  <p style="margin-top:18px;opacity:.8;font-size:15px">우리 모둠 번호 아래의 네 자리 숫자를 입력하세요.</p>
+  <div id="bigJoin" class="bigcode">------</div>
+  <p id="bigSteps" class="bigsteps">학생 화면에서 참여코드를 넣고 우리 모둠을 고르세요.</p>
 </div>
 
 <!-- 칠판용 큰 화면 · 개념 확인 문항별 응답 분포 -->
@@ -1122,7 +1244,7 @@
     <div style="display:flex;gap:8px;flex-wrap:wrap">
       <button id="btnDistBigPrev" class="btn btn-sm" type="button">◀ 앞 문항</button>
       <button id="btnDistBigNext" class="btn btn-sm" type="button">다음 문항 ▶</button>
-      <button id="btnDistBigClose" class="btn btn-sm" type="button">닫기</button>
+      <button id="btnDistBigClose" class="btn btn-sm" type="button">닫기 (Esc)</button>
     </div>
   </div>
   <div id="distBigBody"></div>
@@ -1134,7 +1256,7 @@
 <p class="srcline">실험 절차와 해설은 서울특별시교육청 자료집과 이지메이커 수업사례집을 참고해 다시 쓴 것입니다.
   <a href="./manual.html#sources" target="_blank" rel="noopener">자료 출처 보기</a></p>
 
-<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#8a8f98;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 조승재(과학이조선생) · 해누리중학교 · All rights reserved<br><span style="font-size:11px;opacity:.85;">최종 업데이트: 2026-08-22</span></footer>
+<footer id="app-credit" style="width:100%;box-sizing:border-box;margin:2.5rem 0 0;padding:14px 12px;text-align:center;font-size:12.5px;line-height:1.6;color:#55606B;font-family:system-ui,-apple-system,'Segoe UI','Malgun Gothic',sans-serif;border-top:1px solid rgba(128,128,128,.25);">© 2026 MBL 수업허브<span id="creditWho"></span></footer>
 
 <script>
 (function(){
@@ -1146,7 +1268,7 @@
   const SLIDE_NAMES = ['모둠 그래프', '보고서', '별점 모아 보기'];
   //  발표 모둠이 예상을 그렸으면 발표 화면에 한 장이 더 붙습니다(present.html 과 같은 규칙).
   const PRED_SLIDE  = '예상 vs 실제';
-  const QMIN = 3, QMAX = 5, OPTMIN = 2, OPTMAX = 5;
+  const QMIN = 1, QMAX = 5, OPTMIN = 2, OPTMAX = 5;   // 개념 확인은 한 문항부터 낼 수 있습니다
 
   let adminCode = '';
   let lesson    = null;
@@ -1161,6 +1283,7 @@
   let packRub   = [];     // 꾸러미가 들고 온 평가 기준표
   let packAiTpl = null;   // 꾸러미가 들고 온 AI 프롬프트 틀
   let packDash  = null;   // 꾸러미가 들고 온 대시보드 구성 (dashkit.js)
+  let packAsg   = null;   // 꾸러미가 들고 온 「모둠마다 다른 값」 — 이 화면에 칸이 없는 실험일 때 그대로 되돌려 보냅니다
   let pins      = [];     // [{group_id, group_no, group_name, pin}] — 교사만 봅니다
   let pinsShown = false;  // 표에서 PIN 을 드러낼지 (평소에는 ●●●● 로 가려 둡니다)
   let pinsCode  = '';     // 지금 들고 있는 PIN 표가 어느 관리코드의 것인지
@@ -1180,116 +1303,16 @@
   const groupLabel = g => (g && g.group_name) ? g.group_name : ((Number(g && g.group_no) || 0) + '모둠');
 
   // ── 인라인 SVG 그래프 ──────────────────────────────────────────
+  //  학생 화면·발표 화면과 같은 약속으로 그립니다(dashkit.js 의 DashKit.chartSVG):
+  //  단위가 다른 계열은 오른쪽 둘째 축 · 축 제목에 단위 · 계산 열(× ÷)은 빼기 · 1·2·5 눈금 · 음수 눈금 없음.
   //  opt.predict 를 주면 그 모둠이 그린 예상 곡선을 점선으로 겹쳐 그립니다.
-  //  (가로축이 숫자가 아닌 그래프에는 겹치지 않습니다 — 자리를 맞출 수 없어서입니다)
   function chartSVG(sp, rows, opt){
-    opt = opt || {};
-    const W = opt.w || 520, H = opt.h || 240;
-    const P = { l: 46, r: 12, t: 14, b: 36 };
-    const series = (sp && sp.series) || [];
-    const kind = (sp && sp.chart) || 'line';
-    const pts = [];
-    (rows || []).forEach(function(r){
-      if (!Array.isArray(r)) return;
-      //  빈 칸(null·'')은 점을 찍지 않습니다 — Number(null) 은 0 이라 그대로 두면 바닥에 점이 생깁니다.
-      const nv = v => (v === null || v === undefined || String(v).trim() === '') ? NaN : Number(v);
-      const x = nv(r[0]);
-      const ys = series.map((_, i) => { const v = nv(r[i+1]); return isFinite(v) ? v : null; });
-      if (ys.every(v => v === null)) return;
-      pts.push({ x: isFinite(x) ? x : null, raw: r[0], ys: ys });
-    });
-    if (!pts.length) return '<div class="empty">아직 자료가 없습니다.</div>';
-    const numericX = pts.every(p => p.x !== null) && kind !== 'bar';
-
-    // 예상 곡선 — [{x, s0, s1…}] 꼴입니다. Hub.cellAt 이 없으면 조용히 건너뜁니다.
-    const pre = [];
-    if (Array.isArray(opt.predict) && window.Hub && typeof Hub.cellAt === 'function'){
-      opt.predict.forEach(function(r){
-        const x  = Hub.cellAt(r, 0);
-        const ys = series.map((_, i) => { const v = Hub.cellAt(r, i + 1); return isFinite(v) ? v : null; });
-        if (ys.every(v => v === null)) return;
-        pre.push({ x: isFinite(x) ? x : null, ys: ys });
-      });
+    if (!(window.DashKit && typeof DashKit.chartSVG === 'function')){
+      return '<div class="empty">그래프 엔진(dashkit.js)을 불러오지 못했습니다.</div>';
     }
-    const usePre = numericX && pre.length > 0 && pre.every(p => p.x !== null);
-
-    const xs = numericX ? pts.map(p => p.x) : pts.map((p, i) => i);
-    const allY = []; pts.forEach(p => p.ys.forEach(v => { if (v !== null) allY.push(v); }));
-    if (usePre) pre.forEach(function(p){
-      xs.push(p.x);
-      p.ys.forEach(v => { if (v !== null) allY.push(v); });
-    });
-    let y0 = Math.min.apply(null, allY), y1 = Math.max.apply(null, allY);
-    if (y0 === y1){ y0 -= 1; y1 += 1; }
-    const pad = (y1 - y0) * .12; y0 -= pad; y1 += pad;
-    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-    if (x0 === x1){ x0 -= .5; x1 += .5; }
-    const px = v => P.l + (v - x0) / (x1 - x0) * (W - P.l - P.r);
-    const py = v => H - P.b - (v - y0) / (y1 - y0) * (H - P.t - P.b);
-
-    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" aria-label="모둠 그래프" style="min-width:300px">';
-    for (let i = 0; i <= 4; i++){
-      const v = y0 + (y1 - y0) * i / 4, y = py(v);
-      s += '<line x1="' + P.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)"/>';
-      s += '<text x="' + (P.l - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' +
-           esc(v.toFixed(Math.abs(y1 - y0) < 5 ? 1 : 0)) + '</text>';
-    }
-    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
-    pts.forEach(function(p, i){
-      if (pts.length > 10 && i % Math.ceil(pts.length / 8) !== 0) return;
-      const X = px(numericX ? p.x : i);
-      const lb = (p.raw === '' || p.raw === undefined || p.raw === null) ? (i + 1) : p.raw;
-      s += '<text x="' + X.toFixed(1) + '" y="' + (H - P.b + 15) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' + esc(lb) + '</text>';
-    });
-    series.forEach(function(se, si){
-      const col = SERIES_COLORS[si % SERIES_COLORS.length];
-      const list = pts.map((p, i) => ({ X: px(numericX ? p.x : i), Y: p.ys[si] === null ? null : py(p.ys[si]) }));
-      if (kind === 'bar'){
-        const bw = Math.max(3, (W - P.l - P.r) / Math.max(pts.length, 1) / (series.length + 1));
-        list.forEach(function(pt, i){
-          if (pt.Y === null) return;
-          const bx = pt.X - (series.length * bw) / 2 + si * bw;
-          s += '<rect x="' + bx.toFixed(1) + '" y="' + pt.Y.toFixed(1) + '" width="' + bw.toFixed(1) +
-               '" height="' + Math.max(0, H - P.b - pt.Y).toFixed(1) + '" fill="' + col + '" opacity=".85" rx="2"/>';
-        });
-      } else {
-        if (kind !== 'scatter'){
-          let d = '', pen = false;
-          list.forEach(function(pt){
-            if (pt.Y === null){ pen = false; return; }
-            d += (pen ? 'L' : 'M') + pt.X.toFixed(1) + ' ' + pt.Y.toFixed(1) + ' '; pen = true;
-          });
-          if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.2" stroke-linejoin="round"/>';
-        }
-        list.forEach(function(pt){
-          if (pt.Y === null) return;
-          s += '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="3" fill="' + col + '"/>';
-        });
-      }
-    });
-    // 예상 곡선 — 같은 색 점선으로 겹쳐 그립니다(실선 = 실제, 점선 = 예상).
-    if (usePre){
-      series.forEach(function(se, si){
-        const col = SERIES_COLORS[si % SERIES_COLORS.length];
-        let d = '', pen = false;
-        pre.forEach(function(p){
-          const v = p.ys[si];
-          if (v === null){ pen = false; return; }
-          d += (pen ? 'L' : 'M') + px(p.x).toFixed(1) + ' ' + py(v).toFixed(1) + ' '; pen = true;
-        });
-        if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2" ' +
-                    'stroke-dasharray="7 5" opacity=".62" stroke-linejoin="round"/>';
-      });
-    }
-    s += '</svg>';
-    let lg = '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;font-size:12px;color:var(--muted)">';
-    series.forEach(function(se, si){
-      lg += '<span style="display:inline-flex;align-items:center;gap:4px"><i style="width:10px;height:10px;border-radius:3px;background:' +
-            SERIES_COLORS[si % SERIES_COLORS.length] + ';display:inline-block"></i>' + esc(se.label || ('계열' + (si + 1))) + '</span>';
-    });
-    if (usePre) lg += '<span style="display:inline-flex;align-items:center;gap:4px">' +
-                      '<i style="width:16px;height:0;border-top:2px dashed currentColor;display:inline-block"></i>점선 = 예상</span>';
-    return s + lg + '</div>';
+    //  모둠 카드는 좁으므로 그림 안 글자를 크게(그림이 줄어들어도 읽히게) 그립니다. 범례 글자는 따로 12px.
+    const o = Object.assign({ w: 440, h: 300, font: 16, colors: SERIES_COLORS }, opt || {});
+    return DashKit.chartSVG(sp, rows, o).replace(/(class="dk-lg" style="[^"]*font-size:)\d+px/, function(m, a){ return a + '12px'; });
   }
 
   // ── 질문 텍스트 ↔ 배열 ─────────────────────────────────────────
@@ -1319,11 +1342,23 @@
   }
 
   //  받침이 있으면 앞엣것(을·이), 없으면 뒤엣것(를·가)
+  //  따옴표·괄호·물음표 같은 꾸밈 글자는 건너뛰고 마지막 글자를 봅니다(“…커질까”를 · 보기 2가).
+  //  숫자는 읽는 소리로 봅니다(0 영·1 일·3 삼·6 육·7 칠·8 팔·10 십 → 받침 있음).
+  const DIGIT_B = { '0':true, '1':true, '2':false, '3':true, '4':false, '5':false, '6':true, '7':true, '8':true, '9':false };
+  function hasBatchim(word){
+    const t = String(word == null ? '' : word).replace(/[\s"'“”‘’「」『』()\[\]{}<>.,!?…·:;~-]+$/, '');
+    if (!t) return false;
+    const ch = t.charAt(t.length - 1), c = ch.charCodeAt(0);
+    if (c >= 0xAC00 && c <= 0xD7A3) return (c - 0xAC00) % 28 !== 0;
+    if (/[0-9]/.test(ch)){
+      if (/(^|[^0-9])0$/.test(t) || /[1-9]0$/.test(t)) return true;     // 10·20 … (십) · 0 (영)
+      return DIGIT_B[ch];
+    }
+    return /[LMNRlmnr]$/.test(ch);                                       // 영어는 대충 소리로
+  }
   function josa(word, withB, withoutB){
     const s = String(word == null ? '' : word);
-    const c = s.charCodeAt(s.length - 1);
-    const has = (c >= 0xAC00 && c <= 0xD7A3) ? ((c - 0xAC00) % 28 !== 0) : true;
-    return s + (has ? withB : withoutB);
+    return s + (hasBatchim(s) ? withB : withoutB);
   }
 
   //  makeListEditor(o) → {set, get, size, redraw}
@@ -1455,6 +1490,21 @@
     };
   }
 
+  //  숨어 있을 때(display:none) 그린 글상자는 높이를 잴 수 없어 한 줄로 잘립니다.
+  //  화면·탭·상자를 보이게 한 뒤 이것을 불러 보이는 글상자 높이를 다시 맞춥니다.
+  function regrowAll(root){
+    const r = root || document;
+    Array.prototype.forEach.call(r.querySelectorAll('.qedit textarea, .asgrow textarea'), function(el){
+      if (!el.offsetParent) return;                       // 아직 숨어 있으면 다음에
+      el.style.height = 'auto';
+      el.style.height = Math.max(el.closest('.asgrow') ? 44 : 52, el.scrollHeight + 2) + 'px';
+    });
+  }
+  function regrowSoon(root){
+    (window.requestAnimationFrame || setTimeout)(function(){ regrowAll(root); });
+  }
+  window.addEventListener('resize', function(){ regrowSoon(); });
+
   //  보고서 질문 편집기 — 카드 머리에 '유형 고르기' 를 한 칸 더 답니다.
   function makeQEditor(o){
     return makeListEditor({
@@ -1566,6 +1616,8 @@
     if (LAB.kindOf && LAB.kindOf(e) !== 'sensor') return '';        // 센서 없이 하는 실험은 어느 업체를 골라도 할 수 있습니다
     if (LAB.vendorOk(e, v)) return '';
     if (vendorAlt(e, v)) return '';
+    //  ※ 지금 실험 도감(2026-09)에서는 못 하는 업체마다 대체 절차(altBy)가 모두 있어 아래로 내려오는 실험이 없습니다.
+    //    다만 대체 절차 없이 새 실험이 들어오면 바로 쓰이는 안전망이라 지우지 않고 둡니다.
     const miss  = (e.sensors || []).filter(function(s){ return !LAB.sensorHas(s.key, v); })
                                    .map(function(s){ return LAB.sensorName(s.key); });
     const other = VENDORS.filter(function(x){ return x.key !== v && LAB.vendorOk(e, x.key); })
@@ -1589,9 +1641,16 @@
   let aiTplDirty    = false;  // 프롬프트 틀 편집기를 손대는 중
   let aiTplSyncedSig= null;
 
+  //  수업 만들기 화면에서 선생님이 손댄 것 — 다른 실험·업체를 고를 때 말없이 덮어쓰지 않게 묻습니다.
+  const newEdits = { title: false, steps: false, questions: false, assign: false };
+  function newEdited(keys){
+    return (keys || Object.keys(newEdits)).some(function(k){ return newEdits[k]; });
+  }
+  function clearNewEdits(){ Object.keys(newEdits).forEach(function(k){ newEdits[k] = false; }); }
   const qeNew = makeQEditor({
     boxId  : 'inQBox',
-    suggest: function(){ return (picked && picked.questions) || []; }
+    suggest: function(){ return (picked && picked.questions) || []; },
+    onChange: function(){ newEdits.questions = true; }
   });
   const qeDash = makeQEditor({
     boxId  : 'dQBox',
@@ -1611,7 +1670,8 @@
     fillConfirm: '고친 절차를 버리고 원래 절차를 다시 불러올까요?',
     emptyText  : '아직 절차가 없습니다. [+ 단계 추가] 를 누르거나 원래 절차를 불러오세요.',
     placeholder: '예) 센서 전원을 짧게 한 번 눌러 켠다.',
-    suggest    : function(){ return picked ? LAB.stepsFor(picked, newVendor()) : []; }
+    suggest    : function(){ return picked ? LAB.stepsFor(picked, newVendor()) : []; },
+    onChange   : function(){ newEdits.steps = true; }
   });
   const peNew = makeLineEditor({
     boxId: 'inPrepBox', noun: '준비물',
@@ -1620,7 +1680,8 @@
     emptyText  : '아직 준비물이 없습니다. [+ 준비물 추가] 를 눌러 적어 주세요.',
     placeholder: '예) 무선 온도 센서 2개',
     maxlen     : 120,
-    suggest    : function(){ return picked ? LAB.prepFor(picked, newVendor()) : []; }
+    suggest    : function(){ return picked ? LAB.prepFor(picked, newVendor()) : []; },
+    onChange   : function(){ newEdits.steps = true; }
   });
   const seDash = makeLineEditor({
     boxId: 'dStepBox', noun: '단계',
@@ -1789,17 +1850,36 @@
     return e ? LAB.prepFor(e, dashVendor()) : [];
   }
 
-  Hub.onStatus(function(st){ $('offbar').classList.toggle('hidden', !st.offline); });
+  //  「서버에 연결되지 않았습니다」 띠 — 서버가 꼭 있어야 하는 대시보드에서, 실제로 끊겼을 때만 띄웁니다.
+  //  (수업 만들기·꾸러미·작업 파일 합치기 화면은 서버 없이도 쓰므로 띄우지 않습니다.)
+  let netOffline = false;
+  function paintOffbar(){
+    const onDash = !!$('scDash') && !$('scDash').classList.contains('hidden');
+    $('offbar').classList.toggle('hidden', !(onDash && netOffline));
+  }
+  Hub.onStatus(function(st){ netOffline = !!(st && st.offline); paintOffbar(); });
 
   // ── 연결 진단 ──────────────────────────────────────────────────
   const MANUAL_SUPABASE = './manual.html#supabase';
 
-  function setupCard(html, ok){
+  //  setupCard(html, ok, soft) — soft 면 붉은 경고 대신 차분한 안내 상자로 씁니다
+  //  (처음 화면처럼 서버 없이도 쓸 수 있는 것이 함께 있는 화면).
+  let setupShown = false;
+  function setupCard(html, ok, soft){
     const el = $('setupCard');
-    el.className = 'setup' + (ok ? ' ok' : '');
+    el.className = 'setup' + (ok ? ' ok' : '') + (soft ? ' soft' : '');
     el.innerHTML = html;
+    setupShown = true;
+    if (!$('scWork').classList.contains('hidden')) el.classList.add('hidden');
   }
-  function hideSetup(){ $('setupCard').className = 'setup hidden'; }
+  function hideSetup(){ $('setupCard').className = 'setup hidden'; setupShown = false; }
+  //  서버에 닿지 못했을 때 — 개발자 말 대신 선생님이 할 수 있는 일을 적습니다(hub.js 의 진단 글은 쓰지 않습니다).
+  function htmlUnreachable(){
+    return '<h3>서버에 연결하지 못했습니다</h3>' +
+           '<p>학교망이 서버를 막았을 수 있습니다 · 수업 꾸러미와 작업 파일 합치기는 서버 없이 쓸 수 있습니다.</p>' +
+           '<p>참여코드 수업을 하려면 다른 인터넷(휴대폰 핫스팟 등)으로 다시 열어 보거나, 학교 정보 담당 선생님께 ' +
+           '「supabase.co」 주소를 열어 달라고 부탁해 주세요.</p>' + manualLink();
+  }
   function manualLink(){
     return '<p><a class="lnk" href="' + MANUAL_SUPABASE + '" target="_blank" rel="noopener">' +
            '사용 설명서 · Supabase 준비하기 열기</a></p>';
@@ -1822,8 +1902,9 @@
 
   //  checkSetup(loud) — loud 가 true 면 정상일 때도 결과를 보여 줍니다([연결 확인] 버튼용).
   function checkSetup(loud){
+    const soft = !loud;              // 처음 열 때 저절로 하는 점검은 차분하게, [연결 확인] 을 눌렀을 때만 또렷하게
     if (typeof Hub.isConfigured === 'function' && !Hub.isConfigured()){
-      setupCard(htmlNotConfigured(), false);
+      setupCard(htmlNotConfigured(), false, soft);
       return Promise.resolve(false);
     }
     if (typeof Hub.diagnose !== 'function'){
@@ -1835,13 +1916,9 @@
     }
     return Promise.resolve(Hub.diagnose()).then(function(d){
       d = d || {};
-      if (!d.configured){ setupCard(htmlNotConfigured(), false); return false; }
-      if (!d.reachable){
-        setupCard('<h3>Supabase 에 연결하지 못했습니다</h3><p>' +
-                  esc(d.message || '인터넷 연결과 config.js 의 주소를 확인해 주세요.') + '</p>' + manualLink(), false);
-        return false;
-      }
-      if (!d.schemaOk){ setupCard(htmlNoSchema(), false); return false; }
+      if (!d.configured){ setupCard(htmlNotConfigured(), false, soft); return false; }
+      if (!d.reachable){ setupCard(htmlUnreachable(), false, soft); return false; }
+      if (!d.schemaOk){ setupCard(htmlNoSchema(), false, soft); return false; }
       if (loud){
         const who = [ (window.MBL_CONFIG && window.MBL_CONFIG.SCHOOL) || '',
                       (window.MBL_CONFIG && window.MBL_CONFIG.TEACHER) || '' ].filter(Boolean).join(' · ');
@@ -1850,9 +1927,8 @@
                   (who ? '<p>연결된 곳 · ' + esc(who) + '</p>' : ''), true);
       } else hideSetup();
       return true;
-    }, function(err){
-      setupCard('<h3>연결 확인에 실패했습니다</h3><p>' +
-                esc((err && err.message) || '알 수 없는 오류입니다.') + '</p>' + manualLink(), false);
+    }, function(){
+      setupCard(htmlUnreachable(), false, soft);
       return false;
     });
   }
@@ -1873,9 +1949,49 @@
     $('scDash').classList.toggle('hidden', which !== 'dash');
     $('scWork').classList.toggle('hidden', which !== 'work');
     $('btnHome').classList.toggle('hidden', which === 'home');
+    //  작업 파일 합치기는 서버 없이 쓰는 화면이라 연결 안내를 띄우지 않습니다.
+    $('setupCard').classList.toggle('hidden', which === 'work' || !setupShown);
+    paintOffbar();
     window.scrollTo(0, 0);
+    measureTop();
+    regrowSoon();
+  }
+  //  머리(.top)와 대시보드 탭의 높이 — 아래 붙어 따라오는 도구막대가 그 밑으로 숨지 않게 잽니다.
+  function measureTop(){
+    const top = document.querySelector('.top');
+    const root = document.documentElement.style;
+    const stickyTop = top && getComputedStyle(top).position === 'sticky';
+    root.setProperty('--top-h', (stickyTop ? top.offsetHeight : 0) + 'px');
+    const tabs = $('dTabs');
+    const stickyTabs = tabs && tabs.offsetParent && getComputedStyle(tabs).position === 'sticky';
+    root.setProperty('--tabs-h', (stickyTabs ? tabs.offsetHeight + 6 : 0) + 'px');
+  }
+  window.addEventListener('resize', measureTop);
+  if (window.ResizeObserver){ try { new ResizeObserver(measureTop).observe(document.querySelector('.top')); } catch (e){} }
+
+  //  저장하지 않고 고쳐 둔 것이 있는가 — 처음으로 · 창 닫기 전에 묻습니다.
+  function isDirty(){
+    if (!$('scNew').classList.contains('hidden') && newEdited()) return true;
+    if (!$('scDash').classList.contains('hidden')){
+      if (formDirty || procDirty || quizDirty || aiTplDirty || rubDirty) return true;
+      if (gradeUI.dash && gradeUI.dash.dirty) return true;
+      if (dkDash && qSig(dkDash.get()) !== dkDashSig) return true;
+    }
+    if (!$('scWork').classList.contains('hidden') && gradeUI.wk && gradeUI.wk.dirty) return true;
+    return false;
+  }
+  window.addEventListener('beforeunload', function(e){
+    let d = false;
+    try { d = isDirty(); } catch (err){ d = false; }
+    if (!d) return;
+    e.preventDefault();
+    e.returnValue = '';
+  });
+  function leaveOk(){
+    return !isDirty() || confirm('저장하지 않고 고친 내용이 있습니다.\n이 화면을 떠나면 고친 내용이 사라집니다. 계속할까요?');
   }
   $('btnHome').addEventListener('click', function(){
+    if (!leaveOk()) return;
     if (unwatch){ unwatch(); unwatch = null; }
     stopAdminTimer();
     quizDraft = []; quizDirty = false; quizSyncedAt = null;
@@ -1926,8 +2042,18 @@
     fillVendorSelect($('fVendor'), lastVendor());
     $('vendorRow').classList.remove('hidden');
     paintVendorSW();
+    let prevVendor = $('fVendor').value;
     $('fVendor').addEventListener('change', function(){
       const v = newVendor();
+      //  고쳐 둔 절차·준비물이 있으면 그 업체 것으로 바꾸기 전에 묻습니다.
+      const lose = picked && (vendorBlock(picked, v) ? newEdited() : newEdits.steps);
+      if (lose && !confirm(vendorBlock(picked, v)
+            ? (josa(vendorName(v), '으로는', '로는') + ' 고른 실험을 할 수 없어 선택이 풀립니다.\n고쳐 둔 절차·질문이 사라집니다. 바꿀까요?')
+            : ('고쳐 둔 절차·준비물이 있습니다.\n' + vendorName(v) + ' 절차로 바꾸면 고친 내용이 사라집니다. 바꿀까요?'))){
+        this.value = prevVendor;
+        return;
+      }
+      prevVendor = v;
       Hub.saveLocal(VENDOR_KEY, v);
       paintVendorSW();
       //  고른 실험을 그 업체로 못 하게 되면 선택을 풀고 까닭을 알립니다.
@@ -1939,6 +2065,7 @@
         } else {
           seNew.set(LAB.stepsFor(picked, v));
           peNew.set(LAB.prepFor(picked, v));
+          newEdits.steps = false;
           vendorMsg(vendorName(v) + ' 절차와 준비물로 바꿨습니다.');
         }
       } else {
@@ -1952,11 +2079,23 @@
     const v = newVendor();
     $('vendorSW').textContent = vendorSW(v) ? ('소프트웨어 ' + vendorSW(v)) : '';
   }
+  //  수업 만들기 상자에 차례 번호를 붙입니다 — 보이는 상자만 1 · 2 · 3 … 으로 셉니다.
+  function renumberSteps(){
+    let n = 0;
+    Array.prototype.forEach.call($('scNew').querySelectorAll('.box'), function(box){
+      const no = box.querySelector('[data-step]');
+      if (!no) return;
+      if (box.classList.contains('hidden')){ no.textContent = ''; return; }
+      no.textContent = String(++n);
+    });
+  }
   //  절차·준비물 상자는 실험을 골랐을 때만 나타납니다.
   function paintProcNew(){
     const on = !!(picked && VENDORS.length);
     $('procNew').classList.toggle('hidden', !on);
+    renumberSteps();
     if (!on){ seNew.set([]); peNew.set([]); return; }
+    regrowSoon($('procNew'));
     const altP = vendorAlt(picked, newVendor());
     if (window.LAB && LAB.kindOf && LAB.kindOf(picked) !== 'sensor'){
       $('procNewSub').textContent = '센서 없이 교실 도구로 하는 실험입니다 — 업체와 상관없이 같은 절차입니다. 고쳐서 수업에 담을 수 있고, 수업 도중에도 다시 고칠 수 있습니다.';
@@ -1974,6 +2113,7 @@
   //  학생 입력표에 미리 채우고 반 전체 그래프가 몇 칸 찼는지 셀 때 씁니다(hub.js 의 assignCoverage).
   const ASG_NOT_X = /시간|회차|시점/;
   let asgGenVals = null;      // [모둠에 고르게 나눠 주기] 로 만든 값 — 모둠 수를 바꾸면 이것으로 다시 나눕니다
+  let asgKeep    = false;     // 칸에 손으로 적은(또는 꾸러미에서 온) 값 — 모둠 수를 바꿔도 그대로 둡니다
   function assignSpecOf(e){
     if (!e) return null;
     const a = e.pool && e.pool.assign;
@@ -2108,18 +2248,46 @@
     return t;
   }
   let asgHasPer = false;     // 이 실험에 권장 개수(pool.assign.per)가 있는가 — 안내문에서 씁니다
+  //  긴 안내는 첫 문장만 보이고 나머지는 [자세히] 로 펼칩니다.
+  function splitFirst(t){
+    t = String(t == null ? '' : t).trim();
+    const m = t.match(/^([\s\S]+?[.!?。])\s+([\s\S]+)$/);
+    return m ? [m[1], m[2]] : [t, ''];
+  }
+  function setMore(mainId, moreId, btnId, text, tail){
+    const p = splitFirst(text);
+    $(mainId).textContent = [p[0], tail || ''].filter(Boolean).join(' ');
+    $(moreId).textContent = p[1];
+    const open = !!p[1] && $(btnId).getAttribute('aria-expanded') === 'true';
+    $(moreId).classList.toggle('hidden', !open);
+    $(btnId).classList.toggle('hidden', !p[1]);
+    $(btnId).textContent = open ? '접기' : '자세히';
+  }
+  ['asgHowMore:assignNewHow', 'asgNoteMore:asgGenNoteMore'].forEach(function(pair){
+    const ids = pair.split(':');
+    $(ids[0]).addEventListener('click', function(){
+      const open = this.getAttribute('aria-expanded') !== 'true';
+      this.setAttribute('aria-expanded', open ? 'true' : 'false');
+      this.textContent = open ? '접기' : '자세히';
+      $(ids[1]).classList.toggle('hidden', !open);
+    });
+  });
   function asgNote(t){
-    $('asgGenNote').textContent = t || '범위·간격·모둠마다 잴 개수를 적고 누르면, 모둠마다 범위 전체에 고르게 흩어진 값을 맡기고 모둠끼리는 한 칸씩 어긋나게 나눠 줍니다(1·4·7·10·13 / 2·5·8·11·14 …). ' +
+    setMore('asgGenNote', 'asgGenNoteMore', 'asgNoteMore', t || '범위·간격·모둠마다 잴 개수를 적고 누르면, 모둠마다 범위 전체에 고르게 흩어진 값을 맡기고 모둠끼리는 한 칸씩 어긋나게 나눠 줍니다(1·4·7·10·13 / 2·5·8·11·14 …). ' +
       (asgHasPer ? '개수 칸에는 이 실험의 권장 개수(관계 모양·한 점 재는 시간·재료로 정한 값)가 들어 있습니다. '
                  : '개수 칸의 ' + ASG_PER_DEFAULT + '는 따로 정해 둔 값이 없을 때의 기본값입니다 — 직선이면 4~5개, 곡선이면 6개 넘게 맡겨 주세요. ') +
-      '값이 모자라면 몇 모둠은 같은 몫을 겹쳐 맡습니다.';
+      '값이 모자라면 몇 모둠은 같은 몫을 겹쳐 맡습니다.');
   }
   function paintAssignNew(){
     const a = picked && assignSpecOf(picked);
     asgGenVals = null;
+    newEdits.assign = false; asgKeep = false;
     $('assignNew').classList.toggle('hidden', !a);
+    renumberSteps();
     if (!a){ $('assignNewList').innerHTML = ''; return; }
-    $('assignNewSub').textContent = (a.how ? a.how + ' ' : '') + '값은 모둠 칸에서 바로 고칠 수 있습니다.';
+    $('asgHowMore').setAttribute('aria-expanded', 'false');
+    $('asgNoteMore').setAttribute('aria-expanded', 'false');
+    setMore('assignNewSub', 'assignNewHow', 'asgHowMore', a.how || '', '값은 모둠 칸에서 바로 고칠 수 있습니다.');
     asgHasPer = Number(a.per) >= 1;
     //  합치기 아주 좋은 실험(★)은 권장값을 켜 둔 채로 시작합니다 — 끄는 것도 선생님 마음입니다.
     $('inAssignOn').checked = (a.sets || []).length > 0 && poolFitOf(picked) >= 3;
@@ -2140,14 +2308,22 @@
     const sets = a.sets || [];
     const vals = asgGenVals ? asgDistribute(asgGenVals, n)
                : Array.from({ length: n }, function(_, i){ return sets.length ? sets[i % sets.length] : ''; });
+    //  손으로 고친 값은 모둠 수를 바꿔도 그대로 둡니다(새로 나눠 준 값이 없을 때).
+    const kept = asgGenVals ? null : Array.prototype.map.call(box.querySelectorAll('[data-asg]'), function(el){ return el.value; });
     let h = '<label class="fl">' + esc(a.label || '맡을 값') + (a.unit ? ' (' + esc(a.unit) + ')' : '') + '</label>';
     for (let i = 0; i < n; i++){
-      h += '<div style="display:flex;gap:8px;align-items:center;margin-top:6px">' +
-           '<span class="pill" style="min-width:64px;text-align:center">' + (i + 1) + '모둠</span>' +
-           '<input type="text" data-asg="' + i + '" maxlength="60" style="flex:1" value="' + esc(vals[i]) + '"/>' +
-           (a.unit ? '<span class="muted">' + esc(a.unit) + '</span>' : '') + '</div>';
+      const v = (kept && kept[i] !== undefined && asgKeep) ? kept[i] : vals[i];
+      //  긴 값(여러 개 · 이름)도 잘리지 않게 줄이 늘어나는 글상자로 둡니다.
+      h += '<div class="asgrow">' +
+           '<span class="pill">' + (i + 1) + '모둠</span>' +
+           '<textarea data-asg="' + i + '" rows="1" maxlength="120" aria-label="' + (i + 1) + '모둠이 맡을 값">' + esc(v) + '</textarea>' +
+           (a.unit ? '<span class="muted u">' + esc(a.unit) + '</span>' : '') + '</div>';
     }
     box.innerHTML = h;
+    Array.prototype.forEach.call(box.querySelectorAll('[data-asg]'), function(el){
+      el.addEventListener('input', function(){ newEdits.assign = true; asgKeep = true; regrowAll(box); });
+    });
+    regrowSoon(box);
     if (asgGenVals) asgNote(asgNoteText(asgGenVals.length, n));
   }
   $('btnAsgGen').addEventListener('click', function(){
@@ -2159,11 +2335,13 @@
     if (vals.length > 60){ asgNote('값이 ' + vals.length + '개를 넘습니다. 간격을 키워 60개 안으로 줄여 주세요.'); return; }
     asgGenVals = vals;
     $('inAssignOn').checked = true;
+    newEdits.assign = true;
     fillAssignList();
   });
   function assignFormValue(){
     const a = picked && assignSpecOf(picked);
-    if (!a || $('assignNew').classList.contains('hidden') || !$('inAssignOn').checked) return null;
+    if (!a || $('assignNew').classList.contains('hidden')) return packAsg ? normAssign(packAsg) : null;
+    if (!$('inAssignOn').checked) return null;
     const vals = Array.prototype.map.call($('assignNewList').querySelectorAll('[data-asg]'),
                                           function(el){ return el.value.trim(); });
     if (!vals.some(function(v){ return !!v; })) return null;
@@ -2249,7 +2427,7 @@
     $('explist').innerHTML = list.map(function(e){
       const sensors = (LAB.kindOf && LAB.kindOf(e) !== 'sensor')
         ? (LAB.kindOf(e) === 'data' ? '센서 없이 · 공공 자료' : '센서 없이 · 교실 도구')
-        : (e.sensors || []).map(s => LAB.sensorName(s.key) + ' ' + s.n).join(' · ');
+        : (e.sensors || []).map(s => LAB.sensorName(s.key) + ' 센서 ' + (Number(s.n) || 1) + '개').join(' · ');
       const why = vendorBlock(e, v);
       const alt = (!why && VENDORS.length) ? vendorAlt(e, v) : null;
       return '<div class="exp' + (why ? ' off' : ((picked && picked.id === e.id) ? ' on' : '')) + '" data-id="' + esc(e.id) + '"' +
@@ -2273,7 +2451,12 @@
     //  고른 업체로 못 하는 실험은 고를 수 없습니다(까닭은 목록 카드에 이미 적혀 있습니다).
     const why = vendorBlock(e, newVendor());
     if (why){ vendorMsg(why); return; }
+    if (picked && picked.id === e.id) return;            // 이미 고른 실험 — 고친 것을 그대로 둡니다
+    //  선생님이 고친 제목·절차·질문·맡길 값이 있으면 말없이 덮어쓰지 않습니다.
+    if (newEdited() && !confirm('고쳐 둔 제목·절차·준비물·질문이 있습니다.\n「' + e.title + '」' +
+                                (hasBatchim(e.title) ? '을' : '를') + ' 고르면 고친 내용이 이 실험의 기본값으로 바뀝니다. 바꿀까요?')) return;
     picked = e;
+    clearNewEdits();
     vendorMsg('');
     $('inTitle').value = picked.title;
     //  실험을 고르면 추천 질문이 지금처럼 저절로 채워집니다(교사가 가장 좋아하는 자리입니다).
@@ -2284,36 +2467,75 @@
     paintProcNew();
     paintAssignNew();
     renderExpList();
-    $('inTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    //  고른 다음 단계(절차·준비물)로 — 상자가 없으면(업체 목록이 없을 때) 맡길 값·수업 정보로
+    const next = !$('procNew').classList.contains('hidden') ? $('procNew')
+               : (!$('assignNew').classList.contains('hidden') ? $('assignNew') : $('inTitle'));
+    next.scrollIntoView({ behavior: 'smooth', block: 'start' });
   }
-  $('inGroups').addEventListener('input', fillAssignList);
+  $('inTitle').addEventListener('input', function(){ newEdits.title = true; });
+  //  모둠 수 — 1~20 만 받습니다.
+  function groupsOk(){
+    const raw = String($('inGroups').value).trim();
+    const n = Number(raw);
+    const ok = raw !== '' && Number.isInteger(n) && n >= 1 && n <= 20;
+    $('groupsErr').textContent = ok ? '' : '모둠 수는 1부터 20까지 적어 주세요.';
+    return ok;
+  }
+  $('inGroups').addEventListener('input', function(){ if (groupsOk()) fillAssignList(); });
   ['fGrade','fUnit','fSearch'].forEach(function(id){
     $(id).addEventListener('input', function(){ if (id === 'fGrade') fillUnits(); renderExpList(); });
   });
 
-  $('btnNew').addEventListener('click', function(){
+  //  새로 시작 — 앞에서 취소한 제목·모둠 수·거르개·맡길 값이 남지 않게 모두 처음 값으로 되돌립니다.
+  //  mode 'pack' 이면 꾸러미 만들기(서버에 만들지 않음)로 엽니다 — 화면은 같고 안내만 다릅니다.
+  function teacherDefault(){
+    const saved = Hub.loadLocal('teacher_name', '') || '';
+    const conf  = (window.MBL_CONFIG && window.MBL_CONFIG.TEACHER) ? String(window.MBL_CONFIG.TEACHER) : '';
+    return saved || conf;
+  }
+  function startNew(mode){
     picked = null;
-    packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = []; packDash = null;
-    packNewMsg('');
+    packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = []; packDash = null; packAsg = null;
+    clearNewEdits();
+    packNewMsg(''); packLoadMsg('');
+    $('fGrade').value = ''; $('fSearch').value = '';
+    fillUnits(); $('fUnit').value = '';
     vendorMsg(''); paintVendorSW(); paintProcNew();
-    paintAssignNew();
-    fillUnits(); renderExpList();
-    $('inTeacher').value = Hub.loadLocal('teacher_name', '') || '';
+    $('inTitle').value = '';
     $('inClass').value = '';
+    $('inGroups').value = '7'; $('groupsErr').textContent = '';
+    $('inTeacher').value = teacherDefault();
+    paintAssignNew();
+    renderExpList();
     $('inFeatLab').checked = true;
     $('inFeatAi').checked  = true;
     $('inFeatRead').checked = true;
     $('inGroupPin').checked = false;
     $('newErr').textContent = '';
     qeNew.set([]);
+    setNewMode(mode);
     show('new');
+  }
+  function setNewMode(mode){
+    const pack = mode === 'pack';
+    $('newModeNote').classList.toggle('hidden', !pack);
+    //  꾸러미 만들기면 꾸러미 쪽을 앞에 둡니다(같은 화면에서 실시간 수업도 그대로 만들 수 있습니다).
+    $('makePack').style.order = pack ? '-1' : '';
+    paintPackCarry();
+    renumberSteps();
+  }
+  $('btnNew').addEventListener('click', function(){ startNew('live'); });
+  $('btnCancelNew').addEventListener('click', function(){
+    if (!leaveOk()) return;
+    clearNewEdits();
+    show('home');
   });
-  $('btnCancelNew').addEventListener('click', function(){ show('home'); });
 
   // ── 수업 만들기 ────────────────────────────────────────────────
   $('btnCreate').addEventListener('click', function(){
     const title = $('inTitle').value.trim();
-    if (!title){ $('newErr').textContent = '수업 제목을 적어 주세요.'; return; }
+    if (!title){ $('newErr').textContent = '수업 제목을 적어 주세요.'; $('inTitle').focus(); return; }
+    if (!groupsOk()){ $('newErr').textContent = '모둠 수는 1부터 20까지 적어 주세요.'; $('inGroups').focus(); return; }
     const qs = qeNew.get();                       // 빈 질문은 여기에서 걸러집니다
     if (!qs.length){
       $('newErr').textContent = '보고서 질문이 하나도 없습니다. [+ 질문 추가] 로 적거나 [추천 질문 불러오기] 를 눌러 주세요.';
@@ -2356,7 +2578,7 @@
                        packDash ? { dash: packDash } : {}
                      ),
         dataSpec   : spec,
-        groupCount : Number($('inGroups').value) || 7
+        groupCount : Math.max(1, Math.min(20, Number($('inGroups').value) || 7))
       });
     }).then(function(r){
       // 만든 즉시 모둠 비밀번호를 받아 둡니다. 비밀번호를 쓰는 수업이면 교사가 바로 칠판에 적을 수 있게 드러내 둡니다.
@@ -2365,6 +2587,7 @@
       pinsShown = pins.length > 0 && !(wantOpen && !openFallback);
       pinFallbackFor = openFallback ? Hub.norm(r.adminCode) : '';
       const carried = packQuiz.slice();
+      clearNewEdits();
       openDash(r.adminCode);
       //  꾸러미가 개념 확인 문항을 들고 왔으면 편집기에 얹어 둡니다(누르면 바로 배포됩니다).
       if (carried.length){
@@ -2372,6 +2595,7 @@
         quizDirty = true;                // 서버 값이 이것을 덮어쓰지 않게 합니다
         renderQuiz();
         quizMsg('꾸러미의 개념 확인 ' + quizDraft.length + '문항을 불러왔습니다. [개념 확인 배포] 를 눌러 주세요.');
+        $('dashMsg').textContent = '꾸러미의 개념 확인 ' + quizDraft.length + '문항을 「고치기」 탭에 올려 두었습니다 — [개념 확인 배포] 를 눌러야 학생에게 갑니다.';
       }
       packSpec = null; packQuiz = []; packAiTpl = null; packExpId = ''; packRub = []; packDash = null;
     }, function(err){
@@ -2385,9 +2609,15 @@
   $('inAdmin').addEventListener('input', function(){
     this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 10);
   });
+  $('inAdmin').addEventListener('keydown', function(e){ if (e.key === 'Enter') $('btnOpenAdmin').click(); });
   $('btnOpenAdmin').addEventListener('click', function(){
     const c = Hub.norm($('inAdmin').value);
-    if (c.length < 6){ $('adminErr').textContent = '관리코드 10자리를 입력하세요.'; return; }
+    //  관리코드는 늘 10자리입니다(schema.sql 의 mbl_gen_code(10)) — 모자라면 몇 자리 넣었는지 함께 알려 줍니다.
+    if (c.length !== 10){
+      $('adminErr').textContent = '관리코드 10자리를 모두 입력하세요' + (c.length ? ' (지금 ' + c.length + '자리)' : '') + '.';
+      $('inAdmin').focus();
+      return;
+    }
     $('adminErr').textContent = '';
     openDash(c);
   });
@@ -2412,6 +2642,7 @@
       $('procErr').textContent = ''; $('procMsg').textContent = '';
       $('aiTplErr').textContent = ''; $('aiTplMsg').textContent = '';
       show('dash');
+      setDashTab(Hub.loadLocal('dash_tab', 'live'));
       paintHeader();
       syncQuizEditor(true);
       paintDash();
@@ -2445,11 +2676,49 @@
     });
   }
 
+  // ── 대시보드 탭 — 수업 중 · 고치기 · 평가 · 내보내기 ──────────────
+  //  긴 한 장을 네 갈래로 나눕니다. 모든 상자는 그대로 있고 탭이 보이는 갈래만 고릅니다.
+  const DTABS = ['live', 'edit', 'grade', 'out'];
+  function setDashTab(t, focus){
+    if (DTABS.indexOf(t) < 0) t = 'live';
+    $('scDash').setAttribute('data-tab', t);
+    Array.prototype.forEach.call($('dTabs').querySelectorAll('[data-dtab]'), function(b){
+      const on = b.getAttribute('data-dtab') === t;
+      b.setAttribute('aria-selected', on ? 'true' : 'false');
+      b.tabIndex = on ? 0 : -1;
+      if (on && focus) b.focus();
+    });
+    Hub.saveLocal('dash_tab', t);
+    measureTop();
+    regrowSoon($('scDash'));             // 숨어 있던 글상자 높이를 다시 잽니다
+  }
+  $('dTabs').addEventListener('click', function(ev){
+    const b = ev.target.closest ? ev.target.closest('[data-dtab]') : null;
+    if (!b) return;
+    setDashTab(b.getAttribute('data-dtab'));
+    //  탭 줄 바로 아래로 — 앞 갈래에서 내려가 있던 자리에 머물지 않게
+    const top = $('dTabs').getBoundingClientRect().top;
+    if (top < 0 || top > window.innerHeight * 0.5) $('dTabs').scrollIntoView({ block: 'start' });
+  });
+  $('dTabs').addEventListener('keydown', function(ev){
+    const cur = DTABS.indexOf($('scDash').getAttribute('data-tab'));
+    let n = -1;
+    if (ev.key === 'ArrowRight') n = (cur + 1) % DTABS.length;
+    else if (ev.key === 'ArrowLeft') n = (cur - 1 + DTABS.length) % DTABS.length;
+    else if (ev.key === 'Home') n = 0;
+    else if (ev.key === 'End') n = DTABS.length - 1;
+    if (n < 0) return;
+    ev.preventDefault();
+    setDashTab(DTABS[n], true);
+  });
+
   function paintHeader(){
     $('dJoin').textContent  = lesson.join_code || '------';
     $('dAdmin').textContent = adminCode;
     $('dTitle').textContent = lesson.title || '수업';
-    $('dSub').textContent   = [lesson.class_label, lesson.exp_title, lesson.teacher_name ? lesson.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ');
+    //  실험 이름이 수업 제목과 같으면 한 번만 씁니다.
+    const expT = (lesson.exp_title && String(lesson.exp_title).trim() !== String(lesson.title || '').trim()) ? ('실험 · ' + lesson.exp_title) : '';
+    $('dSub').textContent   = [lesson.class_label, expT, lesson.teacher_name ? lesson.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ');
     $('lnkStudent').href = './index.html?code=' + encodeURIComponent(lesson.join_code);
     $('lnkPresent').href = './present.html?code=' + encodeURIComponent(lesson.join_code);
     syncFormEditor(true);
@@ -2483,6 +2752,9 @@
 
     const nData = (board.data || []).length;
     const nDone = (board.reports || []).filter(r => r.status === 'done').length;
+    //  평가 탭에 아직 채점하지 않은 제출 보고서 수를 띄웁니다.
+    const nTodo = (board.reports || []).filter(r => r.status === 'done' && !evalOf(r.answers)).length;
+    $('tabGradeSub').textContent = nTodo ? ('채점할 보고서 ' + nTodo + '개') : '기준표 · 채점 · 결과';
     $('dStat').innerHTML = '모둠 ' + (board.groups || []).length + ' · 데이터 <b>' + nData + '</b> · 제출 <b>' + nDone + '</b>';
 
     const spec = lesson.data_spec && lesson.data_spec.series ? lesson.data_spec
@@ -2492,7 +2764,7 @@
       const col = 'var(--g' + (((Number(g.group_no) - 1) % 7) + 1) + ')';
       const d = dataBy[g.id], r = repBy[g.id], f = fbTo[g.id];
       let h = '<div class="gcard"' + (lesson.presenter_group === g.id ? ' style="outline:3px solid var(--coral)"' : '') + '>';
-      h += '<div class="gh" style="background:' + col + '"><span>' + esc(g.group_name || (g.group_no + '모둠')) + '</span>' +
+      h += '<div class="gh" style="background:' + col + '"><span class="gname">' + esc(g.group_name || (g.group_no + '모둠')) + '</span>' +
            '<button class="btn btn-sm" type="button" data-present="' + esc(g.id) + '" style="padding:4px 10px;font-size:12px">발표</button></div>';
       h += '<div class="gb"><div class="st">' +
            '<span class="pill' + (d ? '' : ' bad') + '">' + (d ? '데이터 ' + ((d.rows || []).length) + '줄' : '데이터 없음') + '</span>' +
@@ -2532,9 +2804,18 @@
         const logs = aiLogsIn(r.answers);
         if (nAn) h += '<div class="st"><span class="pill">데이터 분석 ' + nAn + '건</span></div>';
         if (logs.length) h += aiCardHTML(g.id, logs);
-        if (aks.length){
-          h += '<div class="ans">' + aks.map(function(k){
-            return '<p><b>' + esc(k) + '</b> ' + esc(r.answers[k]) + '</p>';
+        //  q1·q2 같은 저장 열쇠 대신 문항 글로 — Hub.alignAnswers 가 차례가 바뀌어도 바르게 잇습니다. 빈 답은 뺍니다.
+        const qs = formQuestions(), used = {};
+        const vals = (typeof Hub.alignAnswers === 'function') ? (Hub.alignAnswers(r.answers, qs, used) || []) : [];
+        const shown = [];
+        qs.forEach(function(q, i){ shown.push({ q: q.q || ('질문 ' + (i + 1)), a: vals[i] }); });
+        aks.filter(function(k){ return !used[k]; }).forEach(function(k){
+          shown.push({ q: /^q\d+$/.test(k) ? ('질문 ' + k.slice(1)) : k, a: r.answers[k] });
+        });
+        const filled = shown.filter(function(x){ return x.a !== null && x.a !== undefined && String(x.a).trim() !== ''; });
+        if (filled.length){
+          h += '<div class="ans">' + filled.map(function(x){
+            return '<p><b>' + esc(x.q) + '</b><br>' + esc(x.a) + '</p>';
           }).join('') + '</div>';
         }
       }
@@ -2581,7 +2862,7 @@
       const asg2 = lesson.form && lesson.form.assign;
       //  가로축 값을 모둠마다 다르게 나눠 맡겼을 때만 「넓은 구간이 이어진다」가 맞습니다(조건을 맡겼거나 모든 몫이 같으면 빼기).
       const spread2 = !!asg2 && Hub.assignIsX(asg2, spec) && !(typeof Hub.assignShape === 'function' && Hub.assignShape(asg2).allSame);
-      $('dMergedSub').textContent = '모둠 자료를 전부 하나의 그림에 겹쳤습니다. 검은 선은 반 전체 추세선입니다.' +
+      $('dMergedSub').textContent = '모둠 자료를 전부 하나의 그림에 겹쳤습니다.' +
         (spread2 ? ' 모둠마다 맡은 값이 달라, 넓은 구간이 하나로 이어집니다.' : '');
     })();
     Array.prototype.forEach.call($('dGroups').querySelectorAll('[data-present]'), function(b){
@@ -2783,11 +3064,14 @@
   function syncPinMode(){
     const on = groupPinOn();
     if (!gpinBusy) $('dGroupPin').checked = on;
+    //  비밀번호를 쓰지 않는 수업(기본)에서는 표·쪽지·보이기를 접어 둡니다.
+    $('pinTools').classList.toggle('hidden', !on);
+    if (bigOpen) fillBig();
     $('pinModeNote').textContent = !on
-      ? '지금은 비밀번호 없이 들어옵니다. 학생은 참여코드를 넣고 모둠을 고른 뒤 「모둠 탐구 공간 입장하기」만 누릅니다. 아래 표는 비밀번호를 다시 켤 때 씁니다.'
+      ? '지금은 비밀번호 없이 들어옵니다. 학생은 참여코드를 넣고 모둠을 고른 뒤 「모둠 탐구 공간 입장하기」만 누릅니다.'
       : (pinFallbackFor && pinFallbackFor === Hub.norm(adminCode || '')
         ? '비밀번호 없이 만들려 했지만 서버에 그 설정이 아직 없어 이 수업은 모둠 비밀번호를 씁니다. Supabase SQL Editor 에서 sql/2026-09-28_open_groups.sql 을 한 번 실행하면 끌 수 있습니다.'
-        : '지금은 모둠 비밀번호를 씁니다. 아래 4자리를 모둠마다 알려 주세요.');
+        : '지금은 모둠 비밀번호를 씁니다.');
   }
   function formMsg(t){
     $('formMsg').textContent = t || '';
@@ -2821,8 +3105,15 @@
     seDash.set(st); peDash.set(pr);
   }
   //  대시보드에서 업체를 바꾸면 그 업체의 절차를 불러옵니다(저장은 따로 눌러야 합니다).
+  let dVendorPrev = '';
+  $('dVendor').addEventListener('focus', function(){ dVendorPrev = this.value; });
   $('dVendor').addEventListener('change', function(){
     const v = vendorInfo(this.value) ? this.value : dashVendor();
+    if (procDirty && !confirm('고쳐 둔 절차·준비물이 있습니다.\n' + vendorName(v) + ' 절차로 바꾸면 고친 내용이 사라집니다. 바꿀까요?')){
+      if (dVendorPrev) this.value = dVendorPrev;
+      return;
+    }
+    dVendorPrev = v;
     const e = dashExp();
     const why = e ? vendorBlock(e, v) : '';
     $('dVendorSW').textContent = vendorSW(v) ? ('소프트웨어 ' + vendorSW(v)) : '';
@@ -3181,27 +3472,53 @@
   });
   $('btnPinReload').addEventListener('click', function(){ loadPins(true); });
 
-  // 칠판에 크게 띄우기
+  // ── 칠판용 큰 화면(대화 상자) 공통 ─────────────────────────────
+  //  열면 안쪽에 초점을 가두고(Tab 이 밖으로 새지 않게), Esc 로 닫고, 닫으면 열었던 단추로 초점을 돌려줍니다.
+  const modalBack = [];
+  function trapOpen(el, first){
+    modalBack.push({ el: el, back: document.activeElement });
+    el.classList.remove('hidden');
+    try { (first || el).focus(); } catch (e){}
+  }
+  function trapClose(el){
+    el.classList.add('hidden');
+    for (let i = modalBack.length - 1; i >= 0; i--){
+      if (modalBack[i].el !== el) continue;
+      const b = modalBack[i].back;
+      modalBack.splice(i, 1);
+      if (b && typeof b.focus === 'function' && document.contains(b)){ try { b.focus(); } catch (e){} }
+      break;
+    }
+  }
+  document.addEventListener('keydown', function(ev){
+    if (ev.key !== 'Tab') return;
+    const el = [$('pinBig'), $('distBig')].filter(function(x){ return x && !x.classList.contains('hidden'); })[0];
+    if (!el) return;
+    const f = Array.prototype.filter.call(
+      el.querySelectorAll('button,[href],input,select,textarea,[tabindex]:not([tabindex="-1"])'),
+      function(x){ return !x.disabled && x.offsetParent !== null; });
+    if (!f.length){ ev.preventDefault(); return; }
+    const first = f[0], last = f[f.length - 1], at = document.activeElement;
+    if (ev.shiftKey && (at === first || !el.contains(at))){ ev.preventDefault(); last.focus(); }
+    else if (!ev.shiftKey && (at === last || !el.contains(at))){ ev.preventDefault(); first.focus(); }
+  });
+
+  // 칠판에 크게 띄우기 — 참여코드만. 모둠 비밀번호는 다른 모둠이 보면 안 되므로 쪽지로만 나눠 줍니다.
   function fillBig(){
     $('bigJoin').textContent = (lesson && lesson.join_code) || '------';
-    $('bigGrid').innerHTML = pins.length
-      ? pins.map(function(p){
-          return '<div class="bigcell"><div class="bno">' + esc(groupLabel(p)) + '</div>' +
-                 '<div class="bpin">' + esc(p.pin || '----') + '</div></div>';
-        }).join('')
-      : '<div class="bigcell"><div class="bno">모둠 비밀번호를 불러오지 못했습니다.</div></div>';
+    $('bigSteps').textContent = groupPinOn()
+      ? '학생 화면에서 참여코드를 넣고 우리 모둠을 고른 뒤, 나눠 준 쪽지의 모둠 비밀번호를 넣으세요.'
+      : '학생 화면에서 참여코드를 넣고 우리 모둠을 고른 뒤 「모둠 탐구 공간 입장하기」를 누르세요.';
   }
   function openBig(){
-    Promise.resolve(pins.length ? pins : loadPins(false)).then(function(){
-      fillBig();
-      bigOpen = true;
-      $('pinBig').classList.remove('hidden');
-      $('btnBigClose').focus();
-    });
+    fillBig();
+    bigOpen = true;
+    trapOpen($('pinBig'), $('btnBigClose'));
   }
   function closeBig(){
+    if (!bigOpen){ $('pinBig').classList.add('hidden'); return; }
     bigOpen = false;
-    $('pinBig').classList.add('hidden');
+    trapClose($('pinBig'));
   }
   $('btnPinBig').addEventListener('click', openBig);
   $('btnBigClose').addEventListener('click', closeBig);
@@ -3493,17 +3810,20 @@
          '<select class="tap" data-i="' + i + '" data-k="type" aria-label="문항 ' + n + ' 유형">' +
          '<option value="choice"' + (it.type === 'choice' ? ' selected' : '') + '>보기에서 고르기</option>' +
          '<option value="short"'  + (it.type === 'short'  ? ' selected' : '') + '>직접 쓰기</option></select>' +
+         '<span style="flex:1 1 auto"></span>' +
+         '<button class="btn btn-sm qmove" type="button" data-qup="' + i + '" aria-label="문항 ' + n + ' 위로 옮기기"' + (i === 0 ? ' disabled' : '') + '>▲</button>' +
+         '<button class="btn btn-sm qmove" type="button" data-qdown="' + i + '" aria-label="문항 ' + n + ' 아래로 옮기기"' + (i === quizDraft.length - 1 ? ' disabled' : '') + '>▼</button>' +
          '<button class="btn btn-sm btn-ghost tap" type="button" data-qdel="' + i + '">이 문항 삭제</button></div>';
     h += '<label class="fl" for="qq' + i + '">질문</label>' +
          '<input id="qq' + i + '" type="text" maxlength="200" data-i="' + i + '" data-k="q" value="' + esc(it.q) +
-         '" placeholder="예) 같은 열을 주었을 때 온도가 더 천천히 오른 물질은?" />';
+         '" placeholder="예) 이 실험에서 일부러 바꾼 것(조작 변인)은 무엇인가요?" />';
     if (it.type === 'choice'){
       h += '<label class="fl">보기 · 정답 하나를 골라 주세요</label>';
       it.options.forEach(function(o, oi){
         h += '<div class="opt">' +
              '<label class="pick' + (it.answer === oi ? ' on' : '') + '">' +
              '<input type="radio" name="qa' + i + '" data-i="' + i + '" data-ans="' + oi + '"' +
-             (it.answer === oi ? ' checked' : '') + ' aria-label="문항 ' + n + ' 보기 ' + (oi + 1) + ' 을 정답으로" />정답</label>' +
+             (it.answer === oi ? ' checked' : '') + ' aria-label="문항 ' + n + ' ' + josa('보기 ' + (oi + 1), '을', '를') + ' 정답으로" />정답</label>' +
              '<input type="text" maxlength="120" data-i="' + i + '" data-opt="' + oi + '" value="' + esc(o) +
              '" placeholder="보기 ' + (oi + 1) + '" aria-label="문항 ' + n + ' 보기 ' + (oi + 1) + '" />' +
              (it.options.length > OPTMIN
@@ -3578,6 +3898,17 @@
         Array.prototype.forEach.call(picks, function(lb, k){ lb.classList.toggle('on', k === it.answer); });
       });
     });
+    Array.prototype.forEach.call(box.querySelectorAll('[data-qup],[data-qdown]'), function(el){
+      el.addEventListener('click', function(){
+        const up = el.hasAttribute('data-qup');
+        const i = Number(up ? el.dataset.qup : el.dataset.qdown), j = up ? i - 1 : i + 1;
+        if (j < 0 || j >= quizDraft.length) return;
+        const t = quizDraft[i]; quizDraft[i] = quizDraft[j]; quizDraft[j] = t;
+        quizDirty = true; quizErr(''); renderQuiz();
+        const again = box.querySelector('[data-q' + (up ? 'up' : 'down') + '="' + j + '"]');
+        (again && !again.disabled ? again : box.querySelector('.qitem[data-i="' + j + '"] input[type=text]')).focus();
+      });
+    });
     Array.prototype.forEach.call(box.querySelectorAll('[data-qdel]'), function(el){
       el.addEventListener('click', function(){
         quizDraft.splice(Number(el.dataset.qdel), 1);
@@ -3636,7 +3967,7 @@
         const opts = (it.options || []).map(function(s){ return String(s == null ? '' : s).trim(); });
         if (opts.length < OPTMIN) return { err: n + '번 문항의 보기를 ' + OPTMIN + '개 이상 적어 주세요.' };
         if (opts.length > OPTMAX) return { err: n + '번 문항의 보기는 ' + OPTMAX + '개까지입니다.' };
-        for (let k = 0; k < opts.length; k++) if (!opts[k]) return { err: n + '번 문항의 보기 ' + (k + 1) + ' 이 비어 있습니다.' };
+        for (let k = 0; k < opts.length; k++) if (!opts[k]) return { err: n + '번 문항의 ' + josa('보기 ' + (k + 1), '이', '가') + ' 비어 있습니다.' };
         if (!(it.answer >= 0 && it.answer < opts.length)) return { err: n + '번 문항의 정답 보기를 골라 주세요.' };
         out.push({ id: id, type: 'choice', q: q, options: opts, answer: it.answer, explain: explain });
       } else {
@@ -3885,10 +4216,7 @@
     });
 
     const series = (sp.series || []);
-    $('selMergeSeries').innerHTML = series.map(function(s, i){
-      return '<option value="' + i + '">' + esc(s.label || ('계열 ' + (i + 1))) + (s.unit ? (' (' + esc(s.unit) + ')') : '') + '</option>';
-    }).join('');
-    if (wasSeries !== '' && Number(wasSeries) < series.length) $('selMergeSeries').value = wasSeries;
+    fillSeriesSelect($('selMergeSeries'), series, wasSeries);
     $('mergeSeriesWrap').style.display = (series.length > 1) ? 'flex' : 'none';
   }
 
@@ -3960,27 +4288,29 @@
     const xLab = (sp.x && sp.x.label) ? sp.x.label : '가로축';
     const xUnit= (sp.x && sp.x.unit) ? sp.x.unit : '';
     const yLab = se.label || '측정값', yUnit = se.unit || '';
-    const su   = slopeUnitOf(yUnit, xUnit);
+    const cats = catsFor(sp, [].concat.apply([], got.map(function(g){ return (g.board.data || []).map(function(d){ return d.rows; }); })));
+    const rel  = cats ? null : relFor(lesson && lesson.exp_id, si, xLab, yLab);
+    const su   = relSlopeUnit(rel, yUnit, xUnit);
 
     const classes = [];
     got.forEach(function(g, i){
       const l = g.board.lesson || {};
       let pts = [], nGroup = 0;
       (g.board.data || []).forEach(function(d){
-        const p = mergePoints(d.rows, si);
+        const p = cats ? catPoints(d.rows, si, cats) : mergePoints(d.rows, si);
         if (p.length){ nGroup++; pts = pts.concat(p); }
       });
       classes.push({
         name : l.class_label || l.title || '이름 없는 수업',
         join : l.join_code || '',
         col  : CLASS_COLS[i % CLASS_COLS.length],
-        now  : !!g.now, pts: pts, groups: nGroup, fit: fitOf(pts)
+        now  : !!g.now, pts: pts, groups: nGroup, fit: cats ? { ok: false } : fitFor(pts, rel)
       });
     });
 
     let all = [];
     classes.forEach(function(c){ all = all.concat(c.pts); });
-    const allFit = fitOf(all);
+    const allFit = cats ? { ok: false } : fitFor(all, rel);
     const mine   = classes.filter(function(c){ return c.now; })[0];
     const mineN  = mine ? mine.pts.length : 0;
 
@@ -3999,118 +4329,120 @@
     h += '<p class="muted"><b>' + esc(yLab) + '</b> ↔ <b>' + esc(xLab) + '</b> · 반 ' + classes.length + '개 · ' +
          '표본이 ' + mineN + '개에서 <b>' + all.length + '개</b>로 늘었습니다' +
          (mineN ? (' (약 ' + (all.length / Math.max(1, mineN)).toFixed(1) + '배)') : '') + '.</p>';
-    h += '<div class="chartbox">' + mergeChartSVG(classes, allFit, xLab, xUnit, yLab, yUnit) + '</div>';
+    h += '<div class="chartbox">' + mergeChartSVG(classes, allFit, xLab, xUnit, yLab, yUnit, { rel: rel, relText: rel && rel.text, cats: cats }) + '</div>';
+    h += mergeTable(classes, all, allFit, { rel: rel, su: su, yUnit: yUnit, cats: cats, nameHead: '반', groupsCol: true, sumName: '전체 묶음' });
 
-    h += '<div class="mtblwrap"><table class="mtbl"><thead><tr>' +
-         '<th>반</th><th>모둠</th><th>점</th><th>기울기' + (su ? (' (' + esc(su) + ')') : '') + '</th><th>절편' +
-         (yUnit ? (' (' + esc(yUnit) + ')') : '') + '</th><th>R²</th></tr></thead><tbody>';
-    classes.forEach(function(c){
-      h += '<tr><td><span class="dot" style="background:' + c.col + '"></span>' + esc(c.name) +
-           (c.now ? ' <span class="pill">지금 보는 반</span>' : '') + '</td>' +
-           '<td>' + c.groups + '</td><td>' + c.pts.length + '</td>' +
-           '<td>' + esc(fmtNum(c.fit.slope, 3)) + '</td>' +
-           '<td>' + esc(fmtNum(c.fit.intercept, 3)) + '</td>' +
-           '<td>' + esc(fmtNum(c.fit.r2, 3)) + '</td></tr>';
-    });
-    h += '<tr class="sumrow"><td>전체 묶음</td><td>—</td><td>' + all.length + '</td>' +
-         '<td>' + esc(fmtNum(allFit.slope, 3)) + '</td><td>' + esc(fmtNum(allFit.intercept, 3)) + '</td>' +
-         '<td>' + esc(fmtNum(allFit.r2, 3)) + '</td></tr>';
-    h += '</tbody></table></div>';
-
-    //  기울기 순위 — 반끼리 견주어 볼 이야깃거리입니다.
+    //  기울기 순위 — 반끼리 견주어 볼 이야깃거리입니다(이름 가로축이면 기울기를 견주지 않습니다).
     const ranked = classes.filter(function(c){ return c.fit.ok; })
                           .slice().sort(function(a, b){ return b.fit.slope - a.fit.slope; });
-    if (mine && mine.fit.ok && ranked.length > 1){
+    if (!cats && mine && mine.fit.ok && ranked.length > 1){
       const at = ranked.indexOf(mine) + 1;
       h += '<p class="muted" style="margin-top:8px">지금 보는 반의 기울기는 ' + ranked.length + '개 반 가운데 <b>' + at + '번째로 큽니다</b>. ' +
            '반마다 기울기가 크게 다르면 측정 방법이나 조건이 달랐는지 이야기해 보세요.</p>';
     }
-    h += '<p class="muted" style="margin-top:6px">굵은 선 = 전체 묶음 추세선, 연한 선 = 반별 추세선입니다. ' +
-         '자료는 이 화면에서만 합쳤고 서버에는 그대로 남아 있습니다.</p>';
+    h += '<p class="muted" style="margin-top:6px">' + mergeLegendNote(rel, cats) +
+         ' 자료는 이 화면에서만 합쳤고 서버에는 그대로 남아 있습니다.</p>';
 
     host.innerHTML = h;
     $('mergeMsg').textContent = '반 ' + classes.length + '개 · 점 ' + all.length + '개를 묶었습니다.';
   }
-
-  //  반별 색 산점도 + 반별 추세선(연하게) + 전체 추세선(굵게)
-  function mergeChartSVG(classes, allFit, xLab, xUnit, yLab, yUnit){
-    const W = 680, H = 340, P = { l: 58, r: 14, t: 16, b: 50 };
-    const xs = [], ys = [];
-    classes.forEach(function(c){ c.pts.forEach(function(p){ xs.push(p[0]); ys.push(p[1]); }); });
-    if (!xs.length) return '<div class="empty">아직 자료가 없습니다.</div>';
-    let x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-    let y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-    if (x0 === x1){ x0 -= .5; x1 += .5; }
-    if (y0 === y1){ y0 -= 1;  y1 += 1;  }
-    const padX = (x1 - x0) * .06, padY = (y1 - y0) * .10;
-    x0 -= padX; x1 += padX; y0 -= padY; y1 += padY;
-    const px = v => P.l + (v - x0) / (x1 - x0) * (W - P.l - P.r);
-    const py = v => H - P.b - (v - y0) / (y1 - y0) * (H - P.t - P.b);
-    const fx = v => fmtNum(v, Math.abs(x1 - x0) < 5 ? 2 : 0);
-    const fy = v => fmtNum(v, Math.abs(y1 - y0) < 5 ? 2 : 0);
-    //  추세선을 그림 안쪽으로만 자릅니다
-    function seg(fit){
-      if (!fit || !fit.ok) return null;
-      const a = fit.slope, b = fit.intercept;
-      let xa = x0, xb = x1;
-      if (Math.abs(a) > 1e-12){
-        const c0 = (y0 - b) / a, c1 = (y1 - b) / a;
-        xa = Math.max(xa, Math.min(c0, c1));
-        xb = Math.min(xb, Math.max(c0, c1));
-      }
-      if (!(xb > xa)) return null;
-      return [px(xa), py(a * xa + b), px(xb), py(a * xb + b)];
-    }
-
-    let s = '<svg viewBox="0 0 ' + W + ' ' + H + '" width="100%" role="img" ' +
-            'aria-label="여러 반을 묶은 산점도" style="min-width:320px">';
-    for (let i = 0; i <= 4; i++){
-      const v = y0 + (y1 - y0) * i / 4, y = py(v);
-      s += '<line x1="' + P.l + '" y1="' + y.toFixed(1) + '" x2="' + (W - P.r) + '" y2="' + y.toFixed(1) + '" stroke="var(--line)"/>';
-      s += '<text x="' + (P.l - 6) + '" y="' + (y + 4).toFixed(1) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' +
-           esc(fy(v)) + '</text>';
-    }
-    for (let i = 0; i <= 4; i++){
-      const v = x0 + (x1 - x0) * i / 4, x = px(v);
-      s += '<text x="' + x.toFixed(1) + '" y="' + (H - P.b + 16) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' +
-           esc(fx(v)) + '</text>';
-    }
-    s += '<line x1="' + P.l + '" y1="' + (H - P.b) + '" x2="' + (W - P.r) + '" y2="' + (H - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
-    s += '<text x="' + ((P.l + W - P.r) / 2) + '" y="' + (H - 8) + '" text-anchor="middle" font-size="11.5" fill="var(--muted)">' +
-         esc(xLab + (xUnit ? (' (' + xUnit + ')') : '')) + '</text>';
-    s += '<text transform="translate(14,' + ((P.t + H - P.b) / 2) + ') rotate(-90)" text-anchor="middle" font-size="11.5" fill="var(--muted)">' +
-         esc(yLab + (yUnit ? (' (' + yUnit + ')') : '')) + '</text>';
-
-    classes.forEach(function(c){                 // 점 — 지금 보는 반은 크게, 테두리를 둘러 눈에 띄게
-      c.pts.forEach(function(p){
-        s += '<circle cx="' + px(p[0]).toFixed(1) + '" cy="' + py(p[1]).toFixed(1) + '" r="' + (c.now ? 4.6 : 3.1) +
-             '" fill="' + c.col + '" opacity="' + (c.now ? '.95' : '.6') + '"' +
-             (c.now ? ' stroke="var(--ink)" stroke-width="1.4"' : '') + '/>';
-      });
+  function mergeLegendNote(rel, cats){
+    if (cats) return '가로축이 이름이라 점을 선으로 잇거나 기울기를 내지 않고, 자리마다 평균을 굵은 가로 막대로 그렸습니다.';
+    if (rel)  return '이 실험은 곡선 관계라 직선 대신 ' + esc(rel.text) + ' 로 맞춘 곡선을 그리고, 기울기도 ' + esc(rel.xLab) + ' 기준으로 냈습니다.';
+    return '굵은 선 = 전체 추세선, 연한 점선 = 묶음별 추세선입니다.';
+  }
+  //  반별·모둠별 표 — 직선이면 기울기·절편·R², 곡선 관계면 바꾼 축의 기울기, 이름 가로축이면 평균
+  function mergeTable(rows, all, allFit, o){
+    const mean = function(pts){ if (!pts.length) return null; let t = 0; pts.forEach(function(p){ t += p[1]; }); return t / pts.length; };
+    let h = '<div class="mtblwrap"><table class="mtbl"><thead><tr><th>' + esc(o.nameHead) + '</th>' + (o.groupsCol ? '<th>모둠</th>' : '') + '<th>점</th>';
+    if (o.cats) h += '<th>평균' + (o.yUnit ? (' (' + esc(o.yUnit) + ')') : '') + '</th>';
+    else h += '<th>기울기' + (o.rel ? (' · ' + esc(o.rel.xLab) + ' 기준') : '') + (o.su ? (' (' + esc(o.su) + ')') : '') + '</th>' +
+              '<th>절편' + ((!o.rel && o.yUnit) ? (' (' + esc(o.yUnit) + ')') : '') + '</th><th>R²</th>';
+    h += '</tr></thead><tbody>';
+    const cells = function(pts, fit){
+      if (o.cats) return '<td>' + esc(fmtNum(mean(pts), 3)) + '</td>';
+      return '<td>' + esc(fmtNum(fit.slope, 3)) + '</td><td>' + esc(fmtNum(fit.intercept, 3)) + '</td><td>' + esc(fmtNum(fit.r2, 3)) + '</td>';
+    };
+    rows.forEach(function(c){
+      h += '<tr><td><span class="dot" style="background:' + c.col + '"></span>' + esc(c.name) +
+           (c.tag ? ' <span class="muted">· ' + esc(c.tag) + '</span>' : '') +
+           (c.now ? ' <span class="pill">지금 보는 반</span>' : '') +
+           (c.demo ? ' <span class="pill sun">예시 자료</span>' : '') + '</td>' +
+           (o.groupsCol ? '<td>' + c.groups + '</td>' : '') + '<td>' + c.pts.length + '</td>' + cells(c.pts, c.fit) + '</tr>';
     });
-    classes.forEach(function(c){                 // 반별 추세선 — 연하게
-      const g = seg(c.fit);
-      if (!g) return;
-      s += '<line x1="' + g[0].toFixed(1) + '" y1="' + g[1].toFixed(1) + '" x2="' + g[2].toFixed(1) + '" y2="' + g[3].toFixed(1) +
-           '" stroke="' + c.col + '" stroke-width="' + (c.now ? 2.4 : 1.6) + '" opacity="' + (c.now ? '.85' : '.5') + '"/>';
-    });
-    const ga = seg(allFit);                      // 전체 추세선 — 굵게
-    if (ga) s += '<line x1="' + ga[0].toFixed(1) + '" y1="' + ga[1].toFixed(1) + '" x2="' + ga[2].toFixed(1) + '" y2="' + ga[3].toFixed(1) +
-                 '" stroke="var(--ink)" stroke-width="3.4" opacity=".78" stroke-linecap="round"/>';
-    s += '</svg>';
-
-    let lg = '<div style="display:flex;flex-wrap:wrap;gap:10px;margin-top:4px;font-size:12px;color:var(--muted)">';
-    classes.forEach(function(c){
-      lg += '<span style="display:inline-flex;align-items:center;gap:4px"><i style="width:10px;height:10px;border-radius:3px;background:' +
-            c.col + ';display:inline-block"></i>' + esc(c.name) + (c.now ? ' (지금 보는 반)' : '') + '</span>';
-    });
-    lg += '<span style="display:inline-flex;align-items:center;gap:4px">' +
-          '<i style="width:16px;height:0;border-top:3px solid var(--ink);display:inline-block"></i>전체 추세선</span>';
-    return s + lg + '</div>';
+    h += '<tr class="sumrow"><td>' + esc(o.sumName) + '</td>' + (o.groupsCol ? '<td>—</td>' : '') + '<td>' + all.length + '</td>' + cells(all, allFit) + '</tr>';
+    return h + '</tbody></table></div>';
   }
 
-  $('btnMergeGo').addEventListener('click', function(){ runMerge(this); });
-  $('selMergeSeries').addEventListener('change', function(){ $('mergeOut').innerHTML = ''; $('mergeMsg').textContent = ''; });
+  //  반별(모둠별) 색 산점도 + 묶음별 추세선(연하게) + 전체 추세선(굵게) — DashKit.multiChart 로 그립니다.
+  //  곡선 관계를 기대하는 실험(rel)은 직선 대신 바꾼 축에서 맞춘 곡선을, 가로축이 이름(cats)이면 선 없이 자리별 평균을 그립니다.
+  function mergeChartSVG(classes, allFit, xLab, xUnit, yLab, yUnit, o){
+    o = o || {};
+    if (!(window.DashKit && typeof DashKit.multiChart === 'function')) return '<div class="empty">그래프 엔진(dashkit.js)을 불러오지 못했습니다.</div>';
+    const sets = classes.map(function(c){
+      return { label: c.name + (c.now ? ' (지금 보는 반)' : '') + (c.tag ? ' · ' + c.tag : ''), color: c.col, pts: c.pts,
+               thick: !!c.now, faint: false,
+               fit: (!o.rel && !o.cats && c.fit && c.fit.ok) ? c.fit : null,
+               curve: (o.rel && !o.cats && c.fit && c.fit.ok) ? c.fit : null };
+    });
+    return DashKit.multiChart(sets, {
+      xLabel: xLab, xUnit: xUnit, yLabel: yLab, yUnit: yUnit, w: 680, h: 340, cats: o.cats || null, mineWord: '',
+      allFit: (!o.rel && allFit && allFit.ok) ? allFit : null,
+      allCurve: (o.rel && allFit && allFit.ok) ? allFit : null,
+      allLabel: o.rel ? ('전체 추세 곡선 (' + o.relText + ')') : '전체 추세선',
+      meanLabel: '굵은 가로 막대 = ' + (xLab || '자리') + '마다 평균'
+    });
+  }
+  //  이 실험이 곡선 관계를 기대하는가 — 분석 레시피의 fit(xt·yt)을 봅니다(DashKit.relOf).
+  function relFor(expId, si, xLab, yLab){
+    const e = (window.LAB && expId) ? LAB.byId(expId) : null;
+    const rel = (e && window.DashKit && DashKit.relOf) ? DashKit.relOf(e, si) : null;
+    if (!rel) return null;
+    rel.text = DashKit.TF[rel.yt].lab(yLab) + ' ∝ ' + DashKit.TF[rel.xt].lab(xLab);
+    rel.xLab = DashKit.TF[rel.xt].lab(xLab); rel.yLab = DashKit.TF[rel.yt].lab(yLab);
+    return rel;
+  }
+  //  묶음 하나의 맞춤 — 곡선 관계면 바꾼 축에서(기울기 단위도 바꾼 축 기준), 아니면 그대로.
+  function fitFor(pts, rel){
+    if (!rel) return fitOf(pts);
+    const c = DashKit.curveFit(pts, rel);
+    return c ? { slope: c.slope, intercept: c.intercept, r2: c.r2, n: c.n, xt: c.xt, yt: c.yt, ok: true }
+             : { slope: null, intercept: null, r2: null, ok: false };
+  }
+  function relSlopeUnit(rel, yUnit, xUnit){
+    if (!rel) return slopeUnitOf(yUnit, xUnit);
+    return slopeUnitOf(DashKit.TF[rel.yt].unit(yUnit || ''), DashKit.TF[rel.xt].unit(xUnit || ''));
+  }
+  //  가로축이 이름(자리·조건)인가 — 막대그래프이면서 가로축 단위가 없거나, 숫자로 못 읽는 가로축 값이 있으면
+  function catsFor(sp, rowLists){
+    let cat = !!(sp && sp.chart === 'bar' && !(sp.x && sp.x.unit));
+    const out = [];
+    (rowLists || []).forEach(function(rows){
+      (rows || []).forEach(function(r, k){
+        const raw = Array.isArray(r) ? r[0] : (r && typeof r === 'object' ? r.x : '');
+        const t = String(raw == null ? '' : raw).trim();
+        if (t && !isFinite(Hub.cellAt(r, 0))) cat = true;
+        const key = t || String(k + 1);
+        if (out.indexOf(key) < 0) out.push(key);
+      });
+    });
+    if (!cat) return null;
+    if (out.every(function(c){ return isFinite(Number(c)); })) out.sort(function(a, b){ return Number(a) - Number(b); });
+    return out;
+  }
+  //  모둠 한 곳의 점 — 이름 가로축이면 [칸 번호, y]
+  function catPoints(rows, si, cats){
+    const out = [];
+    (rows || []).forEach(function(r, k){
+      const y = Hub.cellAt(r, si + 1);
+      if (!isFinite(y)) return;
+      const raw = Array.isArray(r) ? r[0] : (r && typeof r === 'object' ? r.x : '');
+      const t = String(raw == null ? '' : raw).trim() || String(k + 1);
+      const i = cats.indexOf(t);
+      if (i >= 0) out.push([i, y]);
+    });
+    return out;
+  }
 
   // ── 보관 기한 ─────────────────────────────────────────────────
   function fmtDate(v){
@@ -4147,7 +4479,7 @@
         ? day + ' 로 기한이 지났습니다. 학생은 참여코드로 들어올 수 없습니다. 연장하면 다시 열립니다.'
         : day + ' 까지 보관됩니다(D-' + left + '). 더 쓰시려면 연장해 주세요. 기한이 지나면 자료가 함께 지워집니다.';
     }
-    $('delHint').textContent = '삭제하려면 아래 칸에 수업 제목 “' + ((lesson && lesson.title) || '') + '” 을 그대로 입력하세요.';
+    $('delHint').textContent = '삭제하려면 아래 칸에 수업 제목 ' + josa('“' + ((lesson && lesson.title) || '') + '”', '을', '를') + ' 그대로 입력하세요.';
   }
 
   function doExtend(btn){
@@ -4627,6 +4959,51 @@
     return '﻿' + lines.join('\r\n') + '\r\n';   // 맨 앞 BOM — 엑셀에서 한글이 깨지지 않게
   }
 
+  // ── 가명으로 바꾸기 — AI 에 붙여넣기 전에 학생 이름이 그대로 나가지 않게 ─────
+  //  학생 이름·모둠원 이름을 「학생 1」「학생 2」… 로 바꿉니다(명단 차례). 답 글 속에 이름이 적혀 있어도 함께 바꿉니다.
+  //  가명표(가명 ↔ 이름)는 따로 내려받아 이 기기에만 둡니다.
+  let pseudoMap = { dash: null, wk: null };
+  function pseudoNames(list, extra){
+    const names = [];
+    const add = function(n){ n = String(n == null ? '' : n).trim(); if (n.length >= 2 && names.indexOf(n) < 0) names.push(n); };
+    list.forEach(function(r){ if (r && r.kind !== 'group') add(r.name); });
+    list.forEach(function(r){ (r && Array.isArray(r.members) ? r.members : []).forEach(add); });
+    (extra || []).forEach(add);
+    const map = {};
+    names.forEach(function(n, i){ map[n] = '학생 ' + (i + 1); });
+    return { names: names, map: map };
+  }
+  function pseudoApply(list, P){
+    list.forEach(function(r){
+      if (!r) return;
+      if (r.kind !== 'group' && P.map[String(r.name || '').trim()]) r.name = P.map[String(r.name).trim()];
+      if (Array.isArray(r.members)) r.members = r.members.map(function(m){ return P.map[String(m || '').trim()] || m; });
+    });
+  }
+  function pseudoText(text, P){
+    //  긴 이름부터 바꿔야 「김민수」 안의 「민수」가 먼저 바뀌지 않습니다.
+    return P.names.slice().sort(function(a, b){ return b.length - a.length; }).reduce(function(t, n){
+      return t.split(n).join(P.map[n]);
+    }, text);
+  }
+  function pseudoCsv(P, title){
+    const lines = [['가명', '이름'].map(csvCell).join(',')];
+    P.names.forEach(function(n){ lines.push([P.map[n], n].map(csvCell).join(',')); });
+    return '\ufeff' + lines.join('\r\n') + '\r\n';
+  }
+  function quizNames(b){
+    return ((b && b.quiz) || []).map(function(q){ return q && q.student_name; }).filter(Boolean);
+  }
+  function saveMapFile(which){
+    const P = pseudoMap[which];
+    if (!P || !P.names.length) return;
+    const t = (which === 'wk' ? (wkBoard && wkBoard.lesson) : lesson) || {};
+    downloadFile('가명표_' + safeName(t.title || '수업') + (t.class_label ? '_' + safeName(t.class_label) : '') + '_' + todayStr() + '.csv',
+                 pseudoCsv(P), 'text/csv');
+  }
+  $('btnExpMap').addEventListener('click', function(){ saveMapFile('dash'); });
+  $('btnWkExpMap').addEventListener('click', function(){ saveMapFile('wk'); });
+
   function runExport(kind, btn){
     if (typeof Hub.exportStudents !== 'function'){
       expMsg('이 화면에서는 내보낼 수 없습니다. hub.js 를 최신 것으로 바꿔 주세요.', true);
@@ -4653,12 +5030,19 @@
         expMsg('내보낼 기록이 없습니다. 모둠이 들어온 뒤에 다시 눌러 주세요.', true);
         return;
       }
+      const pseudo = $('expPseudo').checked;
+      const P = pseudo ? pseudoNames(list, quizNames(b)) : null;
+      if (P) pseudoApply(list, P);
+      pseudoMap.dash = P;
+      $('btnExpMap').classList.toggle('hidden', !(P && P.names.length));
       const stem = '생기부자료_' + safeName((lesson && lesson.title) || '수업') +
-                   (lesson && lesson.class_label ? ('_' + safeName(lesson.class_label)) : '') + '_' + todayStr();
-      let ok = false;
-      if (kind === 'csv') ok = downloadFile(stem + '.csv', buildCsv(list), 'text/csv');
-      else                ok = downloadFile(stem + '.md',  buildMarkdown(list), 'text/markdown');
-      expMsg(ok ? (list.length + '건을 내려받았습니다.' + (kind === 'csv' ? '' : ' 파일을 열어 그대로 Claude 에 붙여넣으세요.'))
+                   (lesson && lesson.class_label ? ('_' + safeName(lesson.class_label)) : '') + '_' + todayStr() + (P ? '_가명' : '');
+      let text = (kind === 'csv') ? buildCsv(list) : buildMarkdown(list);
+      if (P) text = pseudoText(text, P);
+      const ok = downloadFile(stem + (kind === 'csv' ? '.csv' : '.md'), text, kind === 'csv' ? 'text/csv' : 'text/markdown');
+      expMsg(ok ? (list.length + '건을 내려받았습니다.' +
+                   (P ? ' 이름을 가명으로 바꿨습니다 — [가명표 내려받기] 로 짝을 받아 이 기기에만 두세요.'
+                      : ' 학생 이름이 그대로 들어 있습니다. 허용된 AI 서비스에만 붙여 넣으세요.'))
                 : '내려받지 못했습니다. 브라우저의 다운로드 차단을 확인해 주세요.', !ok);
     }, function(){
       expMsg('자료를 받아 오지 못했습니다. 인터넷 연결을 확인해 주세요.', true);
@@ -4686,6 +5070,28 @@
     if (t && !keep) setTimeout(function(){ if (el.textContent === t) el.textContent = ''; }, 6000);
   }
   function packNewMsg(t, keep){  flashMsg('packNewMsg',  t, keep); }
+  function packLoadMsg(t){ flashMsg('packLoadMsg', t, true); }
+  //  모둠마다 다른 값 — lesson.form.assign 과 똑같은 모양 {label, unit, groups:[…], x}
+  function normAssign(a){
+    if (!a || typeof a !== 'object' || !Array.isArray(a.groups)) return null;
+    const groups = a.groups.slice(0, 20).map(function(v){ return String(v == null ? '' : v).trim().slice(0, 120); });
+    if (!groups.some(function(v){ return !!v; })) return null;
+    return { label: String(a.label == null ? '맡을 값' : a.label).slice(0, 40), unit: String(a.unit == null ? '' : a.unit).slice(0, 20),
+             groups: groups, x: !!a.x };
+  }
+  //  불러온 꾸러미가 들고 온 것 가운데 이 화면에 칸이 없는 것 — 내려받을 때 그대로 다시 담깁니다.
+  function paintPackCarry(){
+    const bits = [];
+    if (packQuiz.length) bits.push('개념 확인 ' + packQuiz.length + '문항(정답·해설 포함)');
+    if (packRub.length)  bits.push('평가 기준표 ' + packRub.length + '항목');
+    if (packAiTpl)       bits.push('AI 프롬프트 틀');
+    if (packDash)        bits.push('대시보드 구성');
+    const el = $('packCarry');
+    if (!el) return;
+    el.textContent = bits.length ? ('불러온 꾸러미의 ' + bits.join(' · ') + '도 그대로 다시 담깁니다.' +
+                                    (packQuiz.length ? ' 정답이 든 파일이니 시험지처럼 다루어 주세요.' : '')) : '';
+    el.classList.toggle('hidden', !bits.length);
+  }
   function packDashMsg(t, keep){ flashMsg('packDashMsg', t, keep); }
   function wkExpMsg(t, keep){    flashMsg('wkExpMsg',    t, keep); }
   function wkMsg(t){ $('wkMsg').textContent = t || ''; }
@@ -4719,7 +5125,11 @@
       aiTemplate: (o.aiTemplate && typeof o.aiTemplate === 'object') ? o.aiTemplate : null,
       //  대시보드 구성도 함께 담습니다 — 간편 모드에서도 같은 짜임으로 볼 수 있게 합니다.
       dash: (o.dash && typeof o.dash === 'object' && !Array.isArray(o.dash)) ? o.dash : null,
-      features: { lab: f.lab !== false, ai: f.ai !== false, readLater: f.readLater === true, groupPin: f.groupPin === true }
+      //  모둠마다 다른 값 — 대시보드의 lesson.form.assign 과 같은 모양 그대로 담습니다(없으면 null).
+      assign: normAssign(o.assign),
+      //  탭 설정 — 빠진 값은 수업 만들기 화면의 처음 값과 같게 채웁니다
+      //  (실험실·AI 켜짐 · 결과 해설은 공유 단계부터 · 모둠 비밀번호 끔).
+      features: { lab: f.lab !== false, ai: f.ai !== false, readLater: f.readLater !== false, groupPin: f.groupPin === true }
     };
   }
   //  수업 만들기 화면에 지금 들어 있는 그대로
@@ -4739,6 +5149,7 @@
       rubric: packRub,
       aiTemplate: packAiTpl,
       dash: packDash,
+      assign: assignFormValue(),
       features: { lab: !!$('inFeatLab').checked, ai: !!$('inFeatAi').checked, readLater: !!$('inFeatRead').checked, groupPin: !!$('inGroupPin').checked }
     });
   }
@@ -4760,7 +5171,9 @@
       rubric: formRubric(),
       aiTemplate: form.aiTemplate,
       dash: form.dash,
-      features: formFeatures()
+      assign: form.assign,
+      //  예전 수업은 readLater 가 비어 있으면 가리지 않았습니다 — 꾸러미에는 그 뜻 그대로 적어 둡니다.
+      features: Object.assign({}, formFeatures(), { readLater: readOn(), groupPin: groupPinOn() })
     });
   }
   function packFileName(p){
@@ -4800,13 +5213,16 @@
         alert('수업 꾸러미 파일이 아닙니다.\n교사 화면에서 [수업 꾸러미 내려받기] 로 만든 .json 파일을 골라 주세요.');
         return;
       }
+      if (!$('scNew').classList.contains('hidden') && newEdited() &&
+          !confirm('고쳐 둔 내용이 있습니다. 꾸러미를 불러오면 이 화면이 꾸러미 내용으로 바뀝니다. 불러올까요?')) return;
       applyPackToNew(packOf({
         made: raw.made, title: raw.title, expId: raw.expId || raw.exp_id, vendor: raw.vendor,
         classLabel: raw.classLabel || raw.class_label, teacherName: raw.teacherName || raw.teacher_name,
         school: raw.school, groupCount: raw.groupCount || raw.group_count,
         steps: raw.steps, prep: raw.prep, dataSpec: raw.dataSpec || raw.data_spec,
         questions: raw.questions, quiz: raw.quiz, rubric: raw.rubric,
-        aiTemplate: raw.aiTemplate, dash: raw.dash, features: raw.features
+        aiTemplate: raw.aiTemplate, dash: raw.dash, features: raw.features,
+        assign: raw.assign
       }));
     }, function(){
       alert('파일을 읽지 못했습니다.');
@@ -4814,13 +5230,15 @@
   });
 
   function applyPackToNew(p){
-    show('new');
+    //  앞 수업의 제목·거르개·편집 흔적을 지운 깨끗한 화면에 꾸러미를 얹습니다.
+    if ($('scNew').classList.contains('hidden')) startNew('pack');
     packSpec  = p.dataSpec;
     packQuiz  = p.quiz.slice();
     packRub   = normRubric(p.rubric);
     packAiTpl = p.aiTemplate;
     packDash  = p.dash;
     packExpId = p.expId;
+    packAsg   = p.assign;
     if (VENDORS.length && p.vendor && vendorInfo(p.vendor)){
       $('fVendor').value = p.vendor;
       Hub.saveLocal(VENDOR_KEY, p.vendor);
@@ -4831,11 +5249,12 @@
     paintProcNew();                       // 실험을 못 찾으면 절차 상자는 비워집니다
     $('inTitle').value     = p.title || (picked ? picked.title : '');
     $('inClass').value     = p.classLabel;
-    $('inTeacher').value   = p.teacherName;
+    $('inTeacher').value   = p.teacherName || teacherDefault();
     $('inGroups').value    = p.groupCount;
+    groupsOk();
     $('inFeatLab').checked = p.features.lab !== false;
     $('inFeatAi').checked  = p.features.ai  !== false;
-    $('inFeatRead').checked = p.features.readLater === true;
+    $('inFeatRead').checked = p.features.readLater !== false;
     $('inGroupPin').checked = p.features.groupPin === true;
     $('newErr').textContent = '';
     vendorMsg('');
@@ -4848,12 +5267,36 @@
       $('procNew').classList.remove('hidden');
       $('procNewSub').textContent = '꾸러미가 들고 온 절차입니다. 고쳐서 이 수업에 담을 수 있습니다.';
       seNew.set(p.steps); peNew.set(p.prep);
+      regrowSoon($('procNew'));
     }
+    //  모둠마다 다른 값 — 상자를 다시 그린 뒤 꾸러미의 값을 얹습니다.
+    paintAssignNew();
+    const asgOn = applyPackAssign(p.assign);
+    clearNewEdits();
+    renumberSteps();
+    paintPackCarry();
     const note = [];
-    if (p.expId && !picked) note.push('실험 도감에서 「' + p.expId + '」 를 찾지 못했습니다');
+    if (p.expId && !picked) note.push('실험 도감에서 「' + p.expId + '」 실험을 찾지 못했습니다');
+    if (asgOn)              note.push('모둠마다 다른 값 ' + p.assign.groups.filter(Boolean).length + '모둠분');
     if (p.quiz.length)      note.push('개념 확인 ' + p.quiz.length + '문항은 수업을 만든 뒤 [개념 확인 배포] 를 누르면 나갑니다');
-    packNewMsg('꾸러미를 불러왔습니다.' + (note.length ? (' — ' + note.join(' · ')) : ''), true);
-    $('inTitle').scrollIntoView({ behavior: 'smooth', block: 'center' });
+    packLoadMsg('꾸러미를 불러왔습니다 — ' + (p.title || '제목 없음') + (note.length ? (' · ' + note.join(' · ')) : ''));
+    //  결과 글이 화면 밖에 있지 않게 그 자리로 옮겨 갑니다.
+    $('packLoadMsg').scrollIntoView({ behavior: 'smooth', block: 'center' });
+  }
+  //  꾸러미의 assign → 「모둠마다 다른 값」 칸. 상자가 없는 실험이면 packAsg 로 그대로 들고 있다가 다시 담습니다.
+  function applyPackAssign(asg){
+    if (!asg || $('assignNew').classList.contains('hidden')) return false;
+    asgGenVals = null;
+    fillAssignList();
+    const cells = $('assignNewList').querySelectorAll('[data-asg]');
+    Array.prototype.forEach.call(cells, function(el, i){
+      el.value = asg.groups[i] !== undefined ? asg.groups[i] : '';
+    });
+    $('inAssignOn').checked = true;
+    asgKeep = true;
+    packAsg = null;                        // 이제 칸에 들어 있으므로 칸의 값을 씁니다
+    regrowSoon($('assignNew'));
+    return true;
   }
 
   // ── ② 제출된 작업 파일 합치기 ──────────────────────────────────
@@ -4910,12 +5353,53 @@
     return isFinite(t) ? t : 0;
   }
 
-  //  올린 파일 목록 그리기 + 같은 모둠 중복 고르기 → 합친 결과 그리기
+  //  작업 파일이 어느 실험 것인가
+  function workExpId(w){ return String((w && w.pack && (w.pack.expId || w.pack.exp_id)) || '').trim(); }
+  function expTitleOf(id){ const e = (window.LAB && id) ? LAB.byId(id) : null; return (e && e.title) || id || '실험 없음'; }
+  //  예시 자료로 한 파일인가 — 학생 화면·손으로 탐구가 남기는 표시를 두루 봅니다(실측이 아닌 값을 평가에 섞지 않게).
+  function workDemo(w){
+    if (!w) return false;
+    if (w.demo === true || w.usedDemo === true || w.source === 'demo' || w.dataSource === 'demo') return true;
+    if (w.inquiry && w.inquiry.demo === true) return true;
+    if (w.group && w.group.demo === true) return true;
+    return /예시\s*(자료|데이터)/.test(String(w.note || ''));
+  }
+  //  모둠이 맡은 값·조건 — 작업 파일의 group.assigned(손으로 탐구) → 없으면 꾸러미의 assign 에서 모둠 번호로 찾습니다.
+  function workAssigned(w){
+    const g = (w && w.group) || {};
+    let a = g.assigned, unit = '';
+    if (a === undefined || a === null || a === ''){
+      const pa = w && w.pack && w.pack.assign;
+      const no = Number(g.no) || 0;
+      if (pa && Array.isArray(pa.groups) && pa.groups.length && no >= 1){
+        a = pa.groups[(no - 1) % pa.groups.length]; unit = pa.unit || '';
+      }
+    }
+    if (a && typeof a === 'object' && !Array.isArray(a)){
+      unit = a.unit || unit;
+      a = (a.values !== undefined) ? a.values : (a.value !== undefined ? a.value : (a.vals !== undefined ? a.vals : (a.text || a.label || '')));
+    }
+    if (Array.isArray(a)) a = a.filter(function(x){ return x !== null && x !== undefined && String(x).trim() !== ''; }).join(' · ');
+    const t = String(a == null ? '' : a).trim();
+    if (!t) return '';
+    const out = t + (unit && t.indexOf(unit) < 0 ? ' ' + unit : '');
+    return out.length > 40 ? out.slice(0, 39) + '…' : out;
+  }
+
+  //  올린 파일 목록 그리기 + 다른 실험 걸러 내기 + 같은 모둠 중복 고르기 → 합친 결과 그리기
   function paintWork(){
-    wkFiles.forEach(function(f){ f.dup = false; f.dupOf = ''; });
-    const best = {};
+    wkFiles.forEach(function(f){ f.dup = false; f.dupOf = ''; f.other = ''; });
+    //  처음 올린 파일의 실험을 기준으로 삼고, 다른 실험의 파일은 합치지 않습니다(섞이면 그래프·평가가 틀어집니다).
+    let baseExp = '';
+    wkFiles.forEach(function(f){ if (f.ok && !baseExp) baseExp = workExpId(f.work); });
     wkFiles.forEach(function(f){
       if (!f.ok) return;
+      const id = workExpId(f.work);
+      if (baseExp && id && id !== baseExp) f.other = id;
+    });
+    const best = {};
+    wkFiles.forEach(function(f){
+      if (!f.ok || f.other) return;
       const k = workKey(f.work);
       if (!best[k]){ best[k] = f; return; }
       //  같은 모둠 파일이 둘이면 saved 가 나중인 것을 씁니다.
@@ -4935,15 +5419,23 @@
         return '<div class="frow bad"><span class="fn">' + esc(f.name) + '</span>' +
                '<span class="fm">건너뜀 — ' + esc(f.why) + '</span></div>';
       }
+      if (f.other){
+        return '<div class="frow bad"><span class="fn">' + esc(f.name) + '</span>' +
+               '<span class="fm">합치지 않음 — 다른 실험(「' + esc(expTitleOf(f.other)) + '」) 파일입니다. ' +
+               '지금은 「' + esc(expTitleOf(baseExp)) + '」 파일만 합칩니다.</span></div>';
+      }
       if (f.dup){
         return '<div class="frow bad"><span class="fn">' + esc(f.name) + '</span>' +
-               '<span class="fm">같은 모둠 파일이 더 나중 것으로 들어와 뺐습니다 (' + esc(f.dupOf) + ' 을 씁니다)</span></div>';
+               '<span class="fm">같은 모둠 파일이 더 나중 것으로 들어와 뺐습니다 (' + esc(josa(f.dupOf, '을', '를')) + ' 씁니다)</span></div>';
       }
       const g = f.work.group || {}, p = f.work.pack || {};
       const mem = Array.isArray(g.members) ? g.members.filter(Boolean) : [];
       const when = fmtWhen(f.work.saved);
-      return '<div class="frow"><span class="fn">' +
+      const asg = workAssigned(f.work);
+      return '<div class="frow' + (workDemo(f.work) ? ' bad' : '') + '"><span class="fn">' +
              esc(g.name || ((Number(g.no) || 0) + '모둠')) +
+             (asg ? (' <span class="pill sky">' + esc(asg) + '</span>') : '') +
+             (workDemo(f.work) ? ' <span class="pill sun">예시 자료 · 실측 아님</span>' : '') +
              (mem.length ? (' <span class="fm">· ' + esc(mem.join(', ')) + '</span>') : '') + '</span>' +
              '<span class="fm">' + esc(p.classLabel || '학급 없음') +
              (when ? (' · 저장 ' + esc(when)) : '') +
@@ -4952,10 +5444,14 @@
 
     const bad = wkFiles.filter(function(f){ return !f.ok; }).length;
     const dup = wkFiles.filter(function(f){ return f.ok && f.dup; }).length;
+    const oth = wkFiles.filter(function(f){ return f.ok && f.other; }).length;
+    const dem = used.filter(function(f){ return workDemo(f.work); }).length;
     wkMsg(used.length
-      ? ('모둠 ' + used.length + '개를 합쳤습니다.' +
+      ? ('모둠 ' + used.length + '개를 합쳤습니다' + (baseExp ? ' (「' + expTitleOf(baseExp) + '」)' : '') + '.' +
+         (oth ? (' 다른 실험 파일 ' + oth + '건은 합치지 않았습니다.') : '') +
          (dup ? (' 같은 모둠 중복 ' + dup + '건은 나중 것만 썼습니다.') : '') +
-         (bad ? (' 형식이 아닌 파일 ' + bad + '건은 건너뛰었습니다.') : ''))
+         (bad ? (' 형식이 아닌 파일 ' + bad + '건은 건너뛰었습니다.') : '') +
+         (dem ? (' 예시 자료로 한 모둠 ' + dem + '곳이 있습니다(실측 아님 — 노란 표시).') : ''))
       : (wkFiles.length ? '읽을 수 있는 작업 파일이 없습니다.' : '아직 올린 파일이 없습니다.'));
 
     if (!used.length){
@@ -4967,6 +5463,7 @@
       return;
     }
     wkBoard = buildWorkBoard(used.map(function(f){ return f.work; }), used);
+    syncWkGroupCount();
     $('wkAnalysis').classList.remove('hidden');
     fillWkSeries();
     paintWkChart();
@@ -4986,7 +5483,7 @@
     const sig = qSig(fromPack) + '|' + ((wkBoard && wkBoard.lesson && wkBoard.lesson.title) || '');
     if (wkRubLoadedFor === sig) return;
     wkRubLoadedFor = sig;
-    wkRubric = fromPack.length ? fromPack : normRubric(RUBRIC_DEF);
+    wkRubric = fromPack.length ? fromPack : normRubric(rubricDefault('wk'));
     rubWk.set(wkRubric);
     $('wkRubErr').textContent = '';
   }
@@ -5009,7 +5506,9 @@
       class_label: p.classLabel || '',
       teacher_name: p.teacherName || '',
       school     : p.school || '',
-      group_count: Number(p.groupCount) || works.length,
+      //  파일에 적힌 groupCount(꾸러미 기본값 7)는 믿지 않습니다 — 실제로 들어온 가장 큰 모둠 번호를 씁니다.
+      //  선생님이 「이 반의 모둠 수」 칸에 적으면 그것을 씁니다(syncWkGroupCount).
+      group_count: Math.max(works.length, Math.max.apply(null, works.map(function(w, i){ return Number(w.group && w.group.no) || (i + 1); }))),
       created_at : p.made || works[0].saved || '',
       data_spec  : spec,
       quiz       : quizItemsOf(p.quiz),
@@ -5021,8 +5520,13 @@
               rubric: normRubric(p.rubric),
               //  꾸러미가 대시보드 구성을 들고 왔으면 합치기 화면의 대시보드가 그것으로 시작합니다.
               dash: (p.dash && typeof p.dash === 'object' && !Array.isArray(p.dash)) ? p.dash : null,
+              //  꾸러미의 모둠마다 다른 값 — 대시보드 그래프가 모둠 옆에 맡은 조건을 붙일 때 씁니다.
+              assign: normAssign(p.assign),
               aiTemplate: p.aiTemplate || null }
     };
+    //  간편 모드 기준표 — 손으로 탐구한 파일이면 센서 문구가 없는 기준표로 시작합니다.
+    L.handMode = works.some(function(w){ return w.mode === 'inquiry'; }) ||
+                 !!(e && window.LAB && LAB.kindOf && LAB.kindOf(e) === 'hand');
     const groups = [], data = [], reports = [], quiz = [], feedback = [];
     works.forEach(function(w, i){
       const g   = w.group || {};
@@ -5032,7 +5536,8 @@
       groups.push({ id: gid, group_no: no, group_name: g.name || (no + '모둠'),
                     members: (Array.isArray(g.members) ? g.members : [])
                                .map(function(x){ return String(x == null ? '' : x).trim(); })
-                               .filter(Boolean) });
+                               .filter(Boolean),
+                    assigned: workAssigned(w), demo: workDemo(w) });
       data.push({ group_id: gid,
                   rows: Array.isArray(w.rows) ? w.rows : [],
                   note: String(w.note || ''),
@@ -5072,18 +5577,27 @@
     return (s && Array.isArray(s.series) && s.series.length) ? s
          : { x:{label:'회차',unit:''}, series:[{label:'측정값',unit:''}], rows:8, chart:'line' };
   }
+  //  볼 항목 고르개 — 계산 열(× ÷)은 「계산 열」이라 적고, 처음에는 계산 열이 아닌 첫 항목을 고릅니다.
+  function fillSeriesSelect(sel, series, cur){
+    const calc = function(s){ return !!(window.DashKit && DashKit.isCalc && DashKit.isCalc(s)); };
+    sel.innerHTML = series.map(function(s, i){
+      return '<option value="' + i + '">' + esc(s.label || ('계열 ' + (i + 1))) +
+             (s.unit ? (' (' + esc(s.unit) + ')') : '') + (calc(s) ? ' · 계산 열' : '') + '</option>';
+    }).join('');
+    if (cur !== '' && cur !== undefined && cur !== null && Number(cur) < series.length) sel.value = String(cur);
+    else {
+      for (let i = 0; i < series.length; i++) if (!calc(series[i])){ sel.value = String(i); break; }
+    }
+  }
   function fillWkSeries(){
     const series = wkSpec().series;
     const cur = $('selWkSeries').value;
-    $('selWkSeries').innerHTML = series.map(function(s, i){
-      return '<option value="' + i + '">' + esc(s.label || ('계열 ' + (i + 1))) +
-             (s.unit ? (' (' + esc(s.unit) + ')') : '') + '</option>';
-    }).join('');
-    if (cur !== '' && Number(cur) < series.length) $('selWkSeries').value = cur;
+    fillSeriesSelect($('selWkSeries'), series, cur);
     $('wkSeriesWrap').style.display = (series.length > 1) ? 'flex' : 'none';
   }
 
   //  반 전체 산점도 — '여러 반 묶어보기' 의 그림·회귀를 그대로 씁니다(반 자리에 모둠을 넣습니다).
+  //  모둠마다 맡은 값·조건이 있으면 범례에 「2모둠 · 사포」처럼 붙이고, 예시 자료로 한 모둠은 따로 표시합니다.
   function paintWkChart(){
     const host = $('wkChart');
     //  이 실험을 반 전체로 합치면 무엇이 좋고 어디를 봐야 하는지 (실험 도감의 pool)
@@ -5094,58 +5608,76 @@
     const xLab = (sp.x && sp.x.label) ? sp.x.label : '가로축';
     const xUnit= (sp.x && sp.x.unit)  ? sp.x.unit  : '';
     const yLab = se.label || '측정값', yUnit = se.unit || '';
-    const su   = slopeUnitOf(yUnit, xUnit);
+    const cats = catsFor(sp, wkBoard.data.map(function(d){ return d.rows; }));
+    const rel  = cats ? null : relFor(wkBoard.lesson.exp_id, si, xLab, yLab);
+    const su   = relSlopeUnit(rel, yUnit, xUnit);
 
-    const gname = {}, gno = {};
-    wkBoard.groups.forEach(function(g){ gname[g.id] = g.group_name; gno[g.id] = g.group_no; });
+    const gOf = {};
+    wkBoard.groups.forEach(function(g){ gOf[g.id] = g; });
 
     const cols = [];
     wkBoard.data.forEach(function(d){
-      const pts = mergePoints(d.rows, si);
-      cols.push({ name: gname[d.group_id] || '모둠', col: groupColor(gno[d.group_id]),
-                  now: false, pts: pts, groups: pts.length ? 1 : 0, fit: fitOf(pts) });
+      const g = gOf[d.group_id] || {};
+      const pts = cats ? catPoints(d.rows, si, cats) : mergePoints(d.rows, si);
+      cols.push({ name: g.group_name || '모둠', tag: g.assigned || '', demo: !!g.demo,
+                  col: groupColor(g.group_no), now: false, pts: pts, groups: pts.length ? 1 : 0,
+                  fit: cats ? { ok: false } : fitFor(pts, rel) });
     });
     let all = [];
     cols.forEach(function(c){ all = all.concat(c.pts); });
-    const allFit = fitOf(all);
+    const allFit = cats ? { ok: false } : fitFor(all, rel);
 
     if (!all.length){
       host.innerHTML = '<div class="empty">합친 파일에 숫자로 읽을 수 있는 측정값이 없습니다.</div>';
       $('wkChartMsg').textContent = '';
       return;
     }
-    let h = '<div class="chartbox">' + mergeChartSVG(cols, allFit, xLab, xUnit, yLab, yUnit) + '</div>';
-    h += '<div class="mtblwrap"><table class="mtbl"><thead><tr>' +
-         '<th>모둠</th><th>점</th><th>기울기' + (su ? (' (' + esc(su) + ')') : '') + '</th>' +
-         '<th>절편' + (yUnit ? (' (' + esc(yUnit) + ')') : '') + '</th><th>R²</th></tr></thead><tbody>';
-    cols.forEach(function(c){
-      h += '<tr><td><span class="dot" style="background:' + c.col + '"></span>' + esc(c.name) + '</td>' +
-           '<td>' + c.pts.length + '</td>' +
-           '<td>' + esc(fmtNum(c.fit.slope, 3)) + '</td>' +
-           '<td>' + esc(fmtNum(c.fit.intercept, 3)) + '</td>' +
-           '<td>' + esc(fmtNum(c.fit.r2, 3)) + '</td></tr>';
-    });
-    h += '<tr class="sumrow"><td>반 전체</td><td>' + all.length + '</td>' +
-         '<td>' + esc(fmtNum(allFit.slope, 3)) + '</td>' +
-         '<td>' + esc(fmtNum(allFit.intercept, 3)) + '</td>' +
-         '<td>' + esc(fmtNum(allFit.r2, 3)) + '</td></tr></tbody></table></div>';
+    const chartCols = cols.map(function(c){ return Object.assign({}, c, { tag: [c.tag, c.demo ? '예시 자료' : ''].filter(Boolean).join(' · ') }); });
+    let h = '<div class="chartbox">' + mergeChartSVG(chartCols, allFit, xLab, xUnit, yLab, yUnit, { rel: rel, relText: rel && rel.text, cats: cats }) + '</div>';
+    h += mergeTable(cols, all, allFit, { rel: rel, su: su, yUnit: yUnit, cats: cats, nameHead: '모둠', groupsCol: false, sumName: '반 전체' });
+    h += '<p class="muted" style="margin-top:6px">' + mergeLegendNote(rel, cats) + '</p>';
     host.innerHTML = h;
-    $('wkChartMsg').textContent = '모둠 ' + cols.length + '개 · 점 ' + all.length + '개';
+    const nDemo = cols.filter(function(c){ return c.demo; }).length;
+    $('wkChartMsg').textContent = '모둠 ' + cols.length + '개 · 점 ' + all.length + '개' +
+      (nDemo ? ' · 예시 자료 모둠 ' + nDemo + '곳 포함(실측 아님)' : '');
   }
+
+  //  「이 반의 모둠 수」 — 처음에는 들어온 가장 큰 모둠 번호, 선생님이 고치면 그 값으로 미제출을 셉니다.
+  let wkGroupCountSet = 0;          // 선생님이 적은 값 (0 이면 자동)
+  function syncWkGroupCount(){
+    if (!wkBoard) return;
+    const auto = Math.max(wkBoard.groups.length, Math.max.apply(null, wkBoard.groups.map(function(g){ return Number(g.group_no) || 0; })));
+    const first = wkFiles.filter(function(f){ return f.ok && !f.other; })[0];
+    const packN = first ? (Number(first.work.pack && first.work.pack.groupCount) || 0) : 0;
+    wkBoard.lesson.group_count = wkGroupCountSet || auto;
+    $('wkGroupCount').value = String(wkBoard.lesson.group_count);
+    $('wkGroupCountNote').textContent = wkGroupCountSet
+      ? '선생님이 정한 모둠 수로 미제출을 셉니다.'
+      : ('들어온 가장 큰 모둠 번호(' + auto + ')로 셌습니다' +
+         (packN && packN !== auto ? ' — 꾸러미에는 ' + packN + '모둠으로 적혀 있습니다' : '') + '. 반의 모둠 수가 다르면 고쳐 주세요.');
+  }
+  $('wkGroupCount').addEventListener('change', function(){
+    const n = Math.round(Number(this.value));
+    if (!(n >= 1 && n <= 20)){ $('wkGroupCountNote').textContent = '모둠 수는 1부터 20까지 적어 주세요.'; return; }
+    wkGroupCountSet = n;
+    if (wkBoard){ syncWkGroupCount(); paintWkRoster(); }
+  });
 
   //  제출 / 미제출
   function paintWkRoster(){
-    const want = Math.max(wkBoard.groups.length, Number(wkBoard.lesson.group_count) || 0);
+    const want = Math.max(Number(wkBoard.lesson.group_count) || 0, 1);
     const byNo = {}, dOf = {}, rOf = {};
     wkBoard.groups.forEach(function(g){ if (!byNo[g.group_no]) byNo[g.group_no] = g; });
     wkBoard.data.forEach(function(d){ dOf[d.group_id] = d; });
     wkBoard.reports.forEach(function(r){ rOf[r.group_id] = r; });
+    const maxNo = Math.max.apply(null, [want].concat(Object.keys(byNo).map(Number)));
 
     const miss = [];
     let h = '<ul class="list">';
-    for (let n = 1; n <= want; n++){
+    for (let n = 1; n <= maxNo; n++){
       const g = byNo[n];
       if (!g){
+        if (n > want) continue;
         miss.push(n);
         h += '<li><b>' + n + '모둠</b><span class="m" style="color:var(--bad);font-weight:800">아직 내지 않았습니다</span></li>';
         continue;
@@ -5157,7 +5689,10 @@
         if (hiddenAnswerKey(k)) return;
         if (String(ans[k] == null ? '' : ans[k]).trim()) nAns++;
       });
-      h += '<li><b>' + esc(g.group_name) + '</b><span class="m">' +
+      h += '<li><b>' + esc(g.group_name) + '</b>' +
+           (g.assigned ? ' <span class="pill sky">맡은 것 · ' + esc(g.assigned) + '</span>' : '') +
+           (g.demo ? ' <span class="pill sun">예시 자료 · 실측 아님</span>' : '') +
+           '<span class="m">' +
            ((g.members || []).length ? ('모둠원 ' + esc(g.members.join(', '))) : '모둠원 이름 없음') +
            ' · 측정 ' + ((d.rows || []).length) + '줄 · 답한 문항 ' + nAns + '개' +
            ((d.predict || []).length ? ' · 예상 그림 있음' : '') +
@@ -5234,10 +5769,15 @@
         if (!r.eval || typeof r.eval !== 'object') r.eval = evalOfGroup(b, r.groupId);
       });
       if (list.length){
+        const P = $('wkExpPseudo').checked ? pseudoNames(list, quizNames(b)) : null;
+        if (P) pseudoApply(list, P);
+        pseudoMap.wk = P;
+        $('btnWkExpMap').classList.toggle('hidden', !(P && P.names.length));
         const stem = '생기부자료_' + safeName(b.lesson.title || '수업') +
-                     (b.lesson.class_label ? ('_' + safeName(b.lesson.class_label)) : '') + '_' + todayStr();
+                     (b.lesson.class_label ? ('_' + safeName(b.lesson.class_label)) : '') + '_' + todayStr() + (P ? '_가명' : '');
         name = stem + (kind === 'csv' ? '.csv' : '.md');
         text = (kind === 'csv') ? buildCsv(list) : buildMarkdown(list);
+        if (P) text = pseudoText(text, P);
       }
     } catch (e){
       list = [];
@@ -5247,7 +5787,8 @@
     }
     if (!list.length){ wkExpMsg('내보낼 기록이 없습니다.', true); return; }
     const ok = downloadFile(name, text, kind === 'csv' ? 'text/csv' : 'text/markdown');
-    wkExpMsg(ok ? (list.length + '건을 내려받았습니다.' + (kind === 'csv' ? '' : ' 파일을 열어 그대로 Claude 에 붙여넣으세요.'))
+    wkExpMsg(ok ? (list.length + '건을 내려받았습니다.' + (pseudoMap.wk ? ' 이름을 가명으로 바꿨습니다 — [가명표 내려받기] 로 짝을 받아 두세요.'
+                                                                  : ' 학생 이름이 그대로 들어 있습니다. 허용된 AI 서비스에만 붙여 넣으세요.'))
                 : '내려받지 못했습니다. 브라우저의 다운로드 차단을 확인해 주세요.', !ok);
   }
 
@@ -5257,22 +5798,25 @@
   }
 
   // ── 단추와 파일 끌어다 놓기 ────────────────────────────────────
-  $('btnPackNew').addEventListener('click',  function(){ $('btnNew').click(); });
+  $('btnPackNew').addEventListener('click',  function(){ startNew('pack'); });
   $('btnPackLoad').addEventListener('click', function(){ openPackPicker(); });
   $('btnWorkOpen').addEventListener('click', function(){ openWork(); });
-  $('btnPackSaveNew').addEventListener('click', function(){ savePack(packFromNewScreen(), packNewMsg); });
+  $('btnPackSaveNew').addEventListener('click', function(){
+    if (!groupsOk()){ packNewMsg('모둠 수는 1부터 20까지 적어 주세요.', true); return; }
+    savePack(packFromNewScreen(), packNewMsg);
+  });
   $('btnPackOpenNew').addEventListener('click', function(){ openPackPicker(); });
   $('btnPackSaveDash').addEventListener('click', function(){
     if (!lesson){ packDashMsg('수업을 먼저 열어 주세요.', true); return; }
     savePack(packFromDash(), packDashMsg);
   });
-  $('btnWorkFromDash').addEventListener('click', function(){ openWork(); });
   $('btnWkBack').addEventListener('click', function(){
-    if (lesson && adminCode) show('dash'); else { renderRecent(); show('home'); }
+    if (!leaveOk()) return;
+    renderRecent(); show('home');
   });
   $('btnWkClear').addEventListener('click', function(){
     if (gradeUI.wk.dirty && !confirm('저장하지 않은 채점이 있습니다. 파일을 모두 지울까요?')) return;
-    wkFiles = []; wkBoard = null; wkFileByGid = {};
+    wkFiles = []; wkBoard = null; wkFileByGid = {}; wkGroupCountSet = 0;
     gradeUI.wk.sel = ''; gradeUI.wk.dirty = false; gradeUI.wk.sig = '';
     distState.wk.qi = 0; distState.wk.open = -1; distSig.wk = '';
     if (distBigOpen && distBigWhich === 'wk') closeDistBig();
@@ -5707,6 +6251,18 @@
     { name:'결론 도출', max:5, desc:'우리가 잰 값에 기대어 결론을 쓰고, 예상과 달랐던 곳은 까닭을 따져 보았다.' },
     { name:'협력·태도', max:5, desc:'모둠에서 맡은 일을 해내고, 다른 모둠의 발표를 귀담아듣고 물음을 보탰다.' }
   ];
+  //  손으로 탐구(센서 없이 자·저울·초시계로 잰 수업)용 — 측정 항목에 센서 말이 없습니다.
+  const RUBRIC_HAND = RUBRIC_DEF.map(function(r){
+    return r.name === '측정 수행'
+      ? { name:'측정 수행', max:5, desc:'자·저울·초시계 같은 도구를 바르게 읽고, 같은 방법으로 여러 번 재어 믿을 만한 값을 얻었다.' }
+      : Object.assign({}, r);
+  });
+  //  지금 화면에 맞는 기본 기준표 — 합치기 화면은 손으로 탐구 파일이면, 대시보드는 센서 없는 실험이면 손으로 탐구용
+  function rubricDefault(which){
+    if (which === 'wk') return (wkBoard && wkBoard.lesson && wkBoard.lesson.handMode) ? RUBRIC_HAND : RUBRIC_DEF;
+    const e = dashExp();
+    return (e && window.LAB && LAB.kindOf && LAB.kindOf(e) !== 'sensor') ? RUBRIC_HAND : RUBRIC_DEF;
+  }
 
   function rubNum(v, def){
     let n = Number(v);
@@ -5744,7 +6300,7 @@
       fillConfirm: '지금 기준표를 지우고 기본 기준표를 불러올까요?',
       emptyText  : '아직 항목이 없습니다. [기본 기준표 불러오기] 를 눌러 불러온 뒤 고쳐 쓰는 편이 빠릅니다.',
       placeholder: '이 항목을 무엇으로 볼지 한두 줄로 적어 주세요.',
-      suggest: function(){ return RUBRIC_DEF; },
+      suggest: function(){ return rubricDefault(o.which); },
       norm   : normRubric,
       textOf : function(x){ return x.desc; },
       setText: function(x, v){ x.desc = v; },
@@ -5784,14 +6340,14 @@
 
   let rubDirty = false, rubSyncedSig = null;
   const rubDash = makeRubEditor({
-    boxId: 'dRubBox',
+    boxId: 'dRubBox', which: 'dash',
     onChange: function(){ rubDirty = true; $('rubErr').textContent = ''; }
   });
   //  간편 모드(합치기 화면)의 기준표는 이 화면에만 있습니다 — 서버에 보내지 않습니다.
   let wkRubric = normRubric(RUBRIC_DEF);
   let wkRubLoadedFor = '';
   const rubWk = makeRubEditor({
-    boxId: 'wkRubBox',
+    boxId: 'wkRubBox', which: 'wk',
     onChange: function(){ $('wkRubErr').textContent = ''; }
   });
 
@@ -5981,7 +6537,7 @@
     if (!rub.length){
       return '<div class="gbody"><div class="empty">평가 기준표가 아직 없습니다.<br>' +
              '위 <b>평가 기준표</b> 에서 항목을 정하면 여기에 점수 칸이 생깁니다.</div>' +
-             '<div class="toolrow"><button class="btn btn-sm btn-solid tap" type="button" data-gdef="1">기본 기준표로 시작하기</button></div></div>';
+             '<div class="toolrow"><button class="btn btn-sm btn-solid tap" type="button" data-gdef="1">기본 기준표 불러오기</button></div></div>';
     }
     const gs = gradeGroups(which);
     if (!gs.length) return '<div class="gbody"><div class="empty">아직 들어온 모둠이 없습니다.</div></div>';
@@ -6143,10 +6699,10 @@
     const def = body.querySelector('[data-gdef]');
     if (def) def.addEventListener('click', function(){
       if (which === 'wk'){
-        rubWk.set(RUBRIC_DEF);
+        rubWk.set(rubricDefault('wk'));
         $('wkRubBox').scrollIntoView({ behavior:'smooth', block:'center' });
       } else {
-        rubDash.set(RUBRIC_DEF);
+        rubDash.set(rubricDefault('dash'));
         rubDirty = true;
         $('dRubBox').scrollIntoView({ behavior:'smooth', block:'center' });
         rubMsg('기본 기준표를 불러왔습니다. 고친 뒤 [기준표 저장] 을 눌러 주세요.');
@@ -6374,7 +6930,7 @@
     const html = buildGradedWork(f);
     if (!html){ gradeErr('wk', '파일을 다시 만들지 못했습니다.'); return; }
     const ok = downloadFile(evalFileName(f), html, 'text/html');
-    gradeMsg('wk', ok ? (evalFileName(f) + ' 을 내려받았습니다. 이 파일을 학생에게 돌려주세요.')
+    gradeMsg('wk', ok ? (josa(evalFileName(f), '을', '를') + ' 내려받았습니다. 이 파일을 학생에게 돌려주세요.')
                       : '내려받지 못했습니다. 브라우저의 다운로드 차단을 확인해 주세요.', !ok);
   }
   $('btnWkEvalAll').addEventListener('click', function(){
@@ -6634,8 +7190,7 @@
     distBigWhich = which;
     distBigOpen = true;
     paintDistBig();
-    $('distBig').classList.remove('hidden');
-    $('btnDistBigClose').focus();
+    trapOpen($('distBig'), $('btnDistBigClose'));
   }
   function paintDistBig(){
     const b = gradeBoardOf(distBigWhich);
@@ -6644,8 +7199,9 @@
     $('distBigBody').innerHTML = distBigHTML(distBigWhich);
   }
   function closeDistBig(){
+    if (!distBigOpen){ $('distBig').classList.add('hidden'); return; }
     distBigOpen = false;
-    $('distBig').classList.add('hidden');
+    trapClose($('distBig'));
   }
   function distBigStep(delta){
     const items = distItems(distBigWhich);
@@ -6728,8 +7284,8 @@
   //     편집기에 담긴 구성이 마지막으로 맞춘 것과 다르면 '고치는 중' 으로 봅니다.
   //     (dashkit 은 onChange 를 주지 않으므로 dirty 플래그 대신 구성을 견줍니다.)
   //   · teacher.html 의 chartSVG 는 이 화면 안(IIFE)에만 있어 window 에 나가지 않습니다.
-  //     그래서 대시보드 그래프는 dashkit 의 폴백 그림쟁이가 그립니다 — 눈금·색·범례 규칙이
-  //     맞춰져 있어 학생 화면에서 만든 것과 같은 모양이 나옵니다.
+  //     대시보드 그래프는 dashkit 의 DashKit.chartSVG 가 그리고, 모둠 카드의 그래프도 같은 것을 씁니다
+  //     (둘째 축 · 계산 열 빼기 · 1·2·5 눈금 · 곡선 관계 — 학생 화면과 같은 약속).
   // ══════════════════════════════════════════════════════════════
   let dkDash = null, dkDashSig = '', dkDashDataSig = '', dkDashGid = '';
   let dkWk   = null, dkWkGid = '', dkWkLayout = null, dkWkLoadedFor = '';
@@ -6935,6 +7491,12 @@
 
 
   // ── 시작 ───────────────────────────────────────────────────────
+  //  꼬리말 — 앱 이름과 config.js 의 이름(있을 때만)
+  (function(){
+    const C = window.MBL_CONFIG || {};
+    const who = [C.TEACHER, C.SCHOOL].filter(function(x){ return x && String(x).trim(); }).join(' · ');
+    if ($('creditWho')) $('creditWho').textContent = who ? ' · ' + who : '';
+  })();
   checkSetup(false);
   initVendorPicker();
   renderRecent();

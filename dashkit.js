@@ -194,7 +194,7 @@
 
   var THEMES = {
     light: { key: 'light', name: '밝게',
-             bg: '#F4FBF6', paper: '#FFFFFF', cream: '#FFFDF6', ink: '#254753', muted: '#6E8A96',
+             bg: '#F4FBF6', paper: '#FFFFFF', cream: '#FFFDF6', ink: '#254753', muted: '#56707C',
              line: '#E4EFF1', line2: '#D3E6EA', head: '#14867C', soft: '#F3FAFB', base: '15px',
              shadow: '0 8px 22px rgba(37,71,83,.07)' },
     dark:  { key: 'dark', name: '진하게',
@@ -273,7 +273,7 @@
       R + ' .dk-steps{display:grid;gap:.5em}',
       R + ' .dk-step{display:flex;gap:.6em;background:' + T.soft + ';border:1px solid ' + T.line + ';' +
         'border-radius:.7em;padding:.55em .7em;font-size:.85em;line-height:1.6}',
-      R + ' .dk-step i{flex:0 0 1.5em;height:1.5em;border-radius:50%;background:' + ACC.mint + ';color:#fff;' +
+      R + ' .dk-step i{flex:0 0 1.5em;height:1.5em;border-radius:50%;background:' + ACC.mintD + ';color:#fff;' +
         'font-style:normal;font-weight:800;font-size:.8em;display:flex;align-items:center;justify-content:center}',
       // 문답
       R + ' .dk-q{border:1px solid ' + T.line2 + ';border-radius:.7em;padding:.6em .75em;margin:.45em 0;background:' + T.cream + '}',
@@ -388,6 +388,9 @@
       }
       if (!got) return;                       // 값이 하나도 없는 줄은 버립니다
       if (!isFinite(a[0])) a[0] = null;
+      //  가로축 이름(자리·조건 따위)을 함께 들고 갑니다 — 이름 가로축 그래프가 씁니다.
+      var raw = Array.isArray(r) ? r[0] : ((r && typeof r === 'object') ? r.x : '');
+      a.lab = (raw === null || raw === undefined) ? '' : String(raw).trim();
       out.push(a);
     });
     return out;
@@ -450,6 +453,13 @@
     //  간편 모드에서 작업 파일로 이어받은 별점도 같은 자리에 놓습니다
     if (!fbIn.length && Array.isArray(ctx.feedbackIn)) fbIn = ctx.feedbackIn;
 
+    //  모둠마다 다른 조건을 맡긴 수업이면(form.assign 이 가로축 값이 아니면) 모둠 이름 옆에 그 조건을 붙입니다.
+    var asg = (lesson.form && lesson.form.assign && typeof lesson.form.assign === 'object') ? lesson.form.assign : null;
+    var asgCond = !!(asg && Array.isArray(asg.groups) && asg.groups.length && !asg.x);
+    function condOf(no) {
+      if (!asgCond || !(no >= 1)) return '';
+      return String(asg.groups[(no - 1) % asg.groups.length] == null ? '' : asg.groups[(no - 1) % asg.groups.length]).trim();
+    }
     //  자료가 있는 모둠들 (반 전체 블록이 씁니다)
     var withRows = [];
     for (k = 0; k < groups.length; k++) {
@@ -460,6 +470,8 @@
         id: String(groups[k].id),
         no: Number(groups[k].group_no) || (k + 1),
         name: groups[k].group_name || ((Number(groups[k].group_no) || (k + 1)) + '모둠'),
+        //  모둠이 맡은 조건 — 합친 작업 파일이 들고 온 것(assigned)이 먼저, 없으면 수업의 assign(조건일 때만)
+        cond: (groups[k].assigned ? String(groups[k].assigned) : '') || condOf(Number(groups[k].group_no) || (k + 1)),
         rows: rr, note: (d && d.note) || '',
         //  ctx.noMine — 교사 대시보드처럼 「우리 모둠」이 없는 화면에서는 어느 모둠도 굵게 하지 않습니다.
         mine: !ctx.noMine && String(groups[k].id) === gid,
@@ -467,8 +479,15 @@
       });
     }
 
+    //  가로축이 이름인가(자리·조건) — 막대그래프인데 가로축 단위가 없거나, 숫자로 못 읽는 가로축 값이 있으면
+    var catX = (spec.chart === 'bar' && !(spec.x && spec.x.unit));
+    if (!catX) {
+      withRows.concat([{ rows: rows }]).forEach(function (G) {
+        G.rows.forEach(function (r) { if (r[0] === null && r.lab) catX = true; });
+      });
+    }
     var C = {
-      board: b, lesson: lesson, exp: exp, spec: spec, series: series,
+      board: b, lesson: lesson, exp: exp, spec: spec, series: series, catX: catX, assign: asg, assignCond: asgCond,
       xLabel: (spec.x && spec.x.label) || '회차',
       xUnit : (spec.x && spec.x.unit)  || '',
       groups: groups, dataAll: dataAll, reports: reports, feedback: feedback, quizAll: quizAll,
@@ -508,8 +527,14 @@
   }
 
   // ─────────────────────────────────────────────────────────────────
-  //  4. 그래프 — index.html 의 chartSVG 가 있으면 그것을, 없으면 여기 폴백을
-  //     (두 길의 결과가 같도록 눈금 4칸 · 색 순서 · 점선 예상 · 범례 규칙을 맞췄습니다)
+  //  4. 그래프 — index.html 의 chartSVG 가 있으면 그것을, 없으면 여기 것을
+  //     교사 화면·발표 화면도 여기 것(DashKit.chartSVG · DashKit.multiChart)을 그대로 씁니다.
+  //   그래프 약속 (학생 화면과 같습니다)
+  //    · 단위가 다른 계열은 오른쪽 둘째 축에 그립니다(축은 둘까지). 축 제목에는 단위를 붙입니다.
+  //    · 계산 열(이름에 × · ÷ 가 있거나 calc:true)은 기본으로 그리지 않습니다(opt.showCalc 로 켭니다).
+  //    · 눈금은 1·2·5 간격으로 끊고, 값이 모두 0 이상이면 음수 눈금을 만들지 않습니다.
+  //    · 분석 레시피가 곡선 관계(1/x · √x · x² · log)를 기대하는 실험은 직선 추세선 대신
+  //      바꾼 축에서 맞춘 곡선을 그립니다(예: 보일 법칙 sm-05 — 압력과 1/부피가 비례).
   // ─────────────────────────────────────────────────────────────────
   function chart(sp, rows, opt) {
     opt = opt || {};
@@ -518,259 +543,514 @@
       try {
         var out = w.chartSVG(sp, rows, opt);
         if (out) return out;
-      } catch (e) { /* 폴백으로 내려갑니다 */ }
+      } catch (e) { /* 아래 것으로 내려갑니다 */ }
     }
-    return chartFallback(sp, rows, opt);
+    return chartSVG(sp, rows, opt);
   }
 
-  function chartFallback(sp, rows, opt) {
+  //  계산 열인가 — 표에서 곱하거나 나눠 만든 열(압력 × 부피 따위)
+  function isCalc(s) { return !!(s && (s.calc === true || /[×÷]/.test(String(s.label || '')))); }
+  //  1 · 2 · 5 × 10ⁿ 가운데 r 보다 크거나 같은 가장 작은 값
+  function niceNum(r) {
+    if (!(r > 0) || !isFinite(r)) return 1;
+    var p = Math.pow(10, Math.floor(Math.log(r) / Math.LN10)), m = r / p;
+    return (m <= 1.0000001 ? 1 : m <= 2.0000001 ? 2 : m <= 5.0000001 ? 5 : 10) * p;
+  }
+  function dpOf(step) {
+    var dp = 0;
+    while (dp < 8 && Math.abs(Math.round(step * Math.pow(10, dp)) - step * Math.pow(10, dp)) > 1e-6) dp++;
+    return dp;
+  }
+  //  niceScale(lo, hi, {n, zero}) → {lo, hi, step, ticks, dp}
+  //   값이 모두 0 이상이면 아래 끝이 0 밑으로 내려가지 않습니다. zero 면 0 을 꼭 넣습니다(막대그래프).
+  function niceScale(lo, hi, o) {
+    o = o || {};
+    var n = o.n || 5;
+    if (!isFinite(lo) || !isFinite(hi)) { lo = 0; hi = 1; }
+    if (lo > hi) { var t = lo; lo = hi; hi = t; }
+    var nonNeg = lo >= 0;
+    if (o.zero) { if (lo > 0) lo = 0; if (hi < 0) hi = 0; }
+    if (hi === lo) { var d = Math.abs(lo) * 0.1 || 1; lo -= d; hi += d; }
+    var step = niceNum((hi - lo) / n);
+    var a = Math.floor(lo / step + 1e-9) * step, b = Math.ceil(hi / step - 1e-9) * step;
+    if (b - a < step) b = a + step;
+    if (nonNeg && a < 0) a = 0;
+    var ticks = [];
+    for (var v = a, k = 0; v <= b + step * 1e-6 && k < 40; v += step, k++) ticks.push(Number(v.toPrecision(12)));
+    return { lo: a, hi: b, step: step, ticks: ticks, dp: dpOf(step) };
+  }
+  function tickTxt(v, sc) {
+    if (Math.abs(v) < sc.step * 1e-9) v = 0;
+    var a = Math.abs(v);
+    if (a !== 0 && (a >= 1e6 || a < 1e-3)) return sciNum(v);
+    return String(Number(v.toFixed(sc.dp)));
+  }
+  function rawX(r) {
+    if (Array.isArray(r)) return r[0];
+    if (r && typeof r === 'object') return r.x;
+    return '';
+  }
+  //  어느 계열을 어느 축에 — 계산 열은 빼고, 단위가 다르면 오른쪽 축(둘째)으로, 셋째 단위부터는 뺍니다.
+  function axisPlan(series, opt) {
     opt = opt || {};
-    var Wd = opt.w || 560, Hg = opt.h || 300;
-    var P = { l: 52, r: 16, t: 18, b: 44 };
-    var series = (sp && sp.series) || [];
-    var kind   = (sp && sp.chart) || 'line';
-    var xLab   = (sp && sp.x && sp.x.label) || 'x';
-    var xUnit  = (sp && sp.x && sp.x.unit) || '';
-
-    var pts = [];
-    (rows || []).forEach(function (r) {
-      var x  = cellAt(r, 0);
-      var ys = series.map(function (_, i) { var v = cellAt(r, i + 1); return isFinite(v) ? v : null; });
-      if (ys.every(function (v) { return v === null; })) return;
-      pts.push({ x: isFinite(x) ? x : null, raw: Array.isArray(r) ? r[0] : x, ys: ys });
+    var vis = [], hidden = [], dropped = [], units = [];
+    var anyPlain = (series || []).some(function (s) { return !isCalc(s); });
+    (series || []).forEach(function (s, i) {
+      if (!opt.showCalc && anyPlain && isCalc(s)) { hidden.push(s); return; }
+      var u = String((s && s.unit) || '').trim();
+      var k = units.indexOf(u);
+      if (k < 0) {
+        if (units.length >= 2) { dropped.push(s); return; }
+        units.push(u); k = units.length - 1;
+      }
+      vis.push({ i: i, s: s, ax: k });
     });
-    var preP = [];
-    if (Array.isArray(opt.predict)) {
-      opt.predict.forEach(function (r) {
-        var x  = cellAt(r, 0);
+    return { vis: vis, hidden: hidden, dropped: dropped, units: units };
+  }
+  function axisTitle(list, unit) {
+    var names = list.map(function (v) { return v.s.label || ('계열 ' + (v.i + 1)); });
+    var t = names.length > 2 ? (names[0] + ' 등') : names.join(' · ');
+    if (t.length > 26) t = t.slice(0, 25) + '…';
+    return t + (unit ? ' (' + unit + ')' : '');
+  }
+  function lgItem(color, text, shape, F) {
+    var sz = Math.round(F * 0.85);
+    var mark = shape === 'dash'  ? 'width:' + (sz * 2) + 'px;height:0;border-top:' + Math.max(2, F / 5) + 'px dashed ' + color + ';border-radius:0'
+             : shape === 'solid' ? 'width:' + (sz * 2) + 'px;height:0;border-top:' + Math.max(2, F / 4) + 'px solid ' + color + ';border-radius:0'
+             : 'width:' + sz + 'px;height:' + sz + 'px;background:' + color + ';border-radius:' + (shape === 'sq' ? '2px' : '50%');
+    return '<span style="display:inline-flex;align-items:center;gap:.35em"><i style="display:inline-block;' + mark + '"></i>' + text + '</span>';
+  }
+  function lgBox(F, inner) {
+    return '<div class="dk-lg" style="display:flex;flex-wrap:wrap;gap:.4em 1em;margin-top:.35em;font-size:' + Math.min(F + 1, 24) +
+           'px;line-height:1.45;color:var(--ink)">' + inner + '</div>';
+  }
+  function svgOpen(Wd, Hg, label, F) {
+    return '<svg viewBox="0 0 ' + Wd + ' ' + Hg + '" width="100%" role="img" aria-label="' + esc(label) +
+           '" style="min-width:280px;font-family:inherit">';
+  }
+  function svgT(x, y, s, F, o) {        // 글자 하나
+    o = o || {};
+    return '<text x="' + x.toFixed(1) + '" y="' + y.toFixed(1) + '" text-anchor="' + (o.a || 'middle') + '" font-size="' + (o.size || F) +
+           '" fill="' + (o.fill || 'var(--muted)') + '"' + (o.w ? ' font-weight="' + o.w + '"' : '') +
+           (o.tf ? ' transform="' + o.tf + '"' : '') + '>' + esc(s) + '</text>';
+  }
+
+  //  chartSVG(sp, rows, opt) — 모둠 하나의 그래프
+  //   opt: w · h · font(글자 크기, 전자칠판은 크게) · predict([{x,s0…}] 예상 · 점선) · asPredict(rows 가 곧 예상)
+  //        mark({x, predicted, actual, text, si}) · gap(false 면 가장 큰 차이 표시를 끕니다) · showCalc · colors
+  function chartSVG(sp, rows, opt) {
+    opt = opt || {};
+    var F = Number(opt.font) || 11, k = F / 11;
+    var Wd = opt.w || 560, Hg = opt.h || 300;
+    var series = (sp && Array.isArray(sp.series) && sp.series.length) ? sp.series : DEF_SPEC.series;
+    var kind = (sp && sp.chart) || 'line';
+    var xLab = (sp && sp.x && sp.x.label) || '';
+    var xUnit = (sp && sp.x && sp.x.unit) || '';
+    var cols = opt.colors || SERIES_HEX;
+    var plan = axisPlan(series, opt);
+    var two = plan.units.length > 1;
+
+    function ptsOf(list) {
+      var out = [];
+      (Array.isArray(list) ? list : []).forEach(function (r) {
+        var x = cellAt(r, 0);
         var ys = series.map(function (_, i) { var v = cellAt(r, i + 1); return isFinite(v) ? v : null; });
-        if (ys.every(function (v) { return v === null; })) return;
-        preP.push({ x: isFinite(x) ? x : null, ys: ys });
+        if (plan.vis.every(function (v) { return ys[v.i] === null; })) return;
+        out.push({ x: isFinite(x) ? x : null, raw: rawX(r), ys: ys });
+      });
+      return out;
+    }
+    var pts = ptsOf(rows), preP = opt.asPredict ? [] : ptsOf(opt.predict);
+    if (!pts.length && !preP.length) return '<div class="dk-empty empty">아직 자료가 없습니다.</div>';
+
+    var base = pts.length ? pts : preP;
+    var numericX = kind !== 'bar' && base.every(function (p) { return p.x !== null; });
+    var P = { l: Math.round(62 * k), r: Math.round((two ? 62 : 18) * k), t: Math.round(14 * k), b: Math.round(50 * k) };
+
+    //  가로축
+    var xs, x0, x1, xsc = null;
+    if (numericX) {
+      xs = [];
+      pts.concat(preP).forEach(function (p) { if (p.x !== null) xs.push(p.x); });
+      xsc = niceScale(Math.min.apply(null, xs), Math.max.apply(null, xs), { n: 6 });
+      x0 = xsc.lo; x1 = xsc.hi;
+    } else {
+      x0 = -0.5; x1 = Math.max(base.length, 1) - 0.5;
+    }
+    //  세로축 — 축마다 따로
+    var ysc = plan.units.map(function (_, ax) {
+      var vals = [];
+      pts.concat(preP).forEach(function (p) {
+        plan.vis.forEach(function (v) { if (v.ax === ax && p.ys[v.i] !== null) vals.push(p.ys[v.i]); });
+      });
+      if (!vals.length) vals = [0, 1];
+      return niceScale(Math.min.apply(null, vals), Math.max.apply(null, vals), { zero: kind === 'bar' });
+    });
+    var px = function (v) { return P.l + (v - x0) / (x1 - x0) * (Wd - P.l - P.r); };
+    var pyA = function (ax, v) { var s = ysc[ax] || ysc[0]; return Hg - P.b - (v - s.lo) / (s.hi - s.lo) * (Hg - P.t - P.b); };
+
+    var s = svgOpen(Wd, Hg, (xLab || '측정') + ' 그래프', F);
+    //  눈금 · 격자 (왼쪽 축 눈금에 격자를 맞춥니다)
+    ysc[0].ticks.forEach(function (v) {
+      var gy = pyA(0, v);
+      s += '<line x1="' + P.l + '" y1="' + gy.toFixed(1) + '" x2="' + (Wd - P.r) + '" y2="' + gy.toFixed(1) + '" stroke="var(--line)" stroke-width="1"/>';
+      s += svgT(P.l - 6 * k, gy + F * 0.35, tickTxt(v, ysc[0]), F, { a: 'end' });
+    });
+    if (two) {
+      s += '<line x1="' + (Wd - P.r) + '" y1="' + P.t + '" x2="' + (Wd - P.r) + '" y2="' + (Hg - P.b) + '" stroke="var(--line-2)" stroke-width="1.2"/>';
+      ysc[1].ticks.forEach(function (v) {
+        var gy = pyA(1, v);
+        s += '<line x1="' + (Wd - P.r) + '" y1="' + gy.toFixed(1) + '" x2="' + (Wd - P.r + 4 * k) + '" y2="' + gy.toFixed(1) + '" stroke="var(--line-2)"/>';
+        s += svgT(Wd - P.r + 7 * k, gy + F * 0.35, tickTxt(v, ysc[1]), F, { a: 'start' });
       });
     }
-    if (!pts.length && !preP.length) return '<div class="dk-empty">아직 자료가 없습니다.</div>';
-
-    var numericX = pts.length > 0 && pts.every(function (p) { return p.x !== null; }) && kind !== 'bar';
-    var xs = numericX ? pts.map(function (p) { return p.x; }) : pts.map(function (_, i) { return i; });
-    if (numericX) preP.forEach(function (p) { if (p.x !== null) xs.push(p.x); });
-    if (!xs.length) preP.forEach(function (_, i) { xs.push(i); });
-
-    var allY = [];
-    pts.forEach(function (p) { p.ys.forEach(function (v) { if (v !== null) allY.push(v); }); });
-    preP.forEach(function (p) { p.ys.forEach(function (v) { if (v !== null) allY.push(v); }); });
-    var y0 = Math.min.apply(null, allY), y1 = Math.max.apply(null, allY);
-    if (y0 === y1) { y0 -= 1; y1 += 1; }
-    var pad = (y1 - y0) * 0.12; y0 -= pad; y1 += pad;
-    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-    if (x0 === x1) { x0 -= 0.5; x1 += 0.5; }
-    var px = function (v) { return P.l + (v - x0) / (x1 - x0) * (Wd - P.l - P.r); };
-    var py = function (v) { return Hg - P.b - (v - y0) / (y1 - y0) * (Hg - P.t - P.b); };
-
-    var s = '<svg viewBox="0 0 ' + Wd + ' ' + Hg + '" width="100%" role="img" aria-label="' +
-            esc(xLab) + ' 그래프" style="min-width:280px">';
-    var i;
-    for (i = 0; i <= 4; i++) {
-      var vy = y0 + (y1 - y0) * i / 4, gy = py(vy);
-      s += '<line x1="' + P.l + '" y1="' + gy.toFixed(1) + '" x2="' + (Wd - P.r) + '" y2="' + gy.toFixed(1) +
-           '" stroke="var(--line)" stroke-width="1"/>';
-      s += '<text x="' + (P.l - 8) + '" y="' + (gy + 4).toFixed(1) + '" text-anchor="end" font-size="11" fill="var(--muted)">' +
-           esc(vy.toFixed(Math.abs(y1 - y0) < 5 ? 1 : 0)) + '</text>';
+    s += '<line x1="' + P.l + '" y1="' + (Hg - P.b) + '" x2="' + (Wd - P.r) + '" y2="' + (Hg - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    s += '<line x1="' + P.l + '" y1="' + P.t + '" x2="' + P.l + '" y2="' + (Hg - P.b) + '" stroke="var(--line-2)" stroke-width="1.2"/>';
+    var xty = Hg - P.b + F + 5 * k;
+    if (numericX) {
+      xsc.ticks.forEach(function (v) { s += svgT(px(v), xty, tickTxt(v, xsc), F); });
+    } else {
+      var every = Math.max(1, Math.ceil(base.length / Math.max(4, Math.floor((Wd - P.l - P.r) / (F * 5)))));
+      base.forEach(function (p, i) {
+        if (i % every) return;
+        var lb = (p.raw === '' || p.raw === undefined || p.raw === null) ? (i + 1) : String(p.raw);
+        if (String(lb).length > 10) lb = String(lb).slice(0, 9) + '…';
+        s += svgT(px(i), xty, lb, F);
+      });
     }
-    s += '<line x1="' + P.l + '" y1="' + (Hg - P.b) + '" x2="' + (Wd - P.r) + '" y2="' + (Hg - P.b) +
-         '" stroke="var(--line-2)" stroke-width="1.5"/>';
-    pts.forEach(function (p, k) {
-      var X  = px(numericX ? p.x : k);
-      var lb = (p.raw === '' || p.raw === undefined || p.raw === null) ? (k + 1) : p.raw;
-      if (pts.length <= 12 || k % Math.ceil(pts.length / 10) === 0) {
-        s += '<text x="' + X.toFixed(1) + '" y="' + (Hg - P.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' +
-             esc(lb) + '</text>';
-      }
-    });
-    if (!pts.length) {                                    // 값은 아직 없고 예상만 그려 둔 때
-      for (i = 0; i <= 4; i++) {
-        var vx0 = x0 + (x1 - x0) * i / 4;
-        s += '<text x="' + px(vx0).toFixed(1) + '" y="' + (Hg - P.b + 17) + '" text-anchor="middle" font-size="11" fill="var(--muted)">' +
-             esc(fmtNum(vx0)) + '</text>';
-      }
+    //  축 제목 — 단위를 붙입니다
+    s += svgT((P.l + Wd - P.r) / 2, Hg - 6 * k, xLab + (xUnit ? ' (' + xUnit + ')' : ''), F + 0.5, { fill: 'var(--ink)', w: 700 });
+    var midY = (P.t + Hg - P.b) / 2;
+    var leftList = plan.vis.filter(function (v) { return v.ax === 0; });
+    s += svgT(F * 1.05, midY, axisTitle(leftList, plan.units[0]), F + 0.5, { fill: 'var(--ink)', w: 700, tf: 'rotate(-90 ' + (F * 1.05).toFixed(1) + ' ' + midY.toFixed(1) + ')' });
+    if (two) {
+      var rx = Wd - F * 0.75;
+      s += svgT(rx, midY, axisTitle(plan.vis.filter(function (v) { return v.ax === 1; }), plan.units[1]) + ' · 오른쪽 축', F + 0.5,
+             { fill: 'var(--ink)', w: 700, tf: 'rotate(90 ' + rx.toFixed(1) + ' ' + midY.toFixed(1) + ')' });
     }
-    s += '<text x="' + (Wd - P.r) + '" y="' + (Hg - 8) + '" text-anchor="end" font-size="11.5" fill="var(--muted)">' +
-         esc(xLab + (xUnit ? ' (' + xUnit + ')' : '')) + '</text>';
 
-    function preX(p, k) {
+    function xAt(p, i, list) {
       if (numericX && p.x !== null) return px(p.x);
-      var span = Math.max(pts.length, preP.length) - 1;
-      return px(preP.length > 1 ? (k * span / (preP.length - 1)) : 0);
+      if (list === preP && pts.length && preP.length > 1) return px(i * (pts.length - 1) / (preP.length - 1));
+      return px(i);
     }
-    if (preP.length) {                                     // 예상 — 점선으로 뒤에 깔립니다
-      series.forEach(function (se, si) {
-        var col = SERIES_HEX[si % SERIES_HEX.length], d = '', pen = false;
-        preP.forEach(function (p, k) {
-          if (p.ys[si] === null) { pen = false; return; }
-          d += (pen ? 'L' : 'M') + preX(p, k).toFixed(1) + ' ' + py(p.ys[si]).toFixed(1) + ' ';
+    //  예상 — 점선으로 뒤에 깔립니다
+    if (preP.length) {
+      plan.vis.forEach(function (v) {
+        var col = cols[v.i % cols.length], d = '', pen = false;
+        preP.forEach(function (p, i) {
+          if (p.ys[v.i] === null) { pen = false; return; }
+          d += (pen ? 'L' : 'M') + xAt(p, i, preP).toFixed(1) + ' ' + pyA(v.ax, p.ys[v.i]).toFixed(1) + ' ';
           pen = true;
         });
-        if (d) {
-          s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.2" opacity=".62" ' +
-               'stroke-dasharray="8 6" stroke-linejoin="round" stroke-linecap="round"/>';
-        }
+        if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + (2.2 * k).toFixed(1) + '" opacity=".62" ' +
+                    'stroke-dasharray="' + (8 * k).toFixed(0) + ' ' + (6 * k).toFixed(0) + '" stroke-linejoin="round" stroke-linecap="round"/>';
       });
     }
-    series.forEach(function (se, si) {                     // 계열
-      var col  = SERIES_HEX[si % SERIES_HEX.length];
-      var list = pts.map(function (p, k) {
-        return { X: px(numericX ? p.x : k), Y: p.ys[si] === null ? null : py(p.ys[si]) };
-      });
+    //  계열
+    var nv = plan.vis.length;
+    plan.vis.forEach(function (v, vi) {
+      var col = cols[v.i % cols.length];
+      var list = pts.map(function (p, i) { return { X: xAt(p, i, pts), Y: p.ys[v.i] === null ? null : pyA(v.ax, p.ys[v.i]) }; });
       if (kind === 'bar') {
-        var bw = Math.max(4, (Wd - P.l - P.r) / Math.max(pts.length, 1) / (series.length + 1));
+        var bw = Math.max(3, (Wd - P.l - P.r) / Math.max(pts.length, 1) / (nv + 1));
+        var y0p = pyA(v.ax, Math.max(ysc[v.ax].lo, Math.min(0, ysc[v.ax].hi)));
         list.forEach(function (pt) {
           if (pt.Y === null) return;
-          var bx = pt.X - (series.length * bw) / 2 + si * bw;
-          s += '<rect x="' + bx.toFixed(1) + '" y="' + pt.Y.toFixed(1) + '" width="' + bw.toFixed(1) +
-               '" height="' + Math.max(0, (Hg - P.b - pt.Y)).toFixed(1) + '" fill="' + col + '" opacity=".85" rx="2"/>';
+          var bx = pt.X - (nv * bw) / 2 + vi * bw;
+          s += '<rect x="' + bx.toFixed(1) + '" y="' + Math.min(pt.Y, y0p).toFixed(1) + '" width="' + bw.toFixed(1) +
+               '" height="' + Math.abs(y0p - pt.Y).toFixed(1) + '" fill="' + col + '" opacity=".88" rx="2"/>';
         });
-      } else {
-        if (kind !== 'scatter') {
-          var d = '', pen = false;
-          list.forEach(function (pt) {
-            if (pt.Y === null) { pen = false; return; }
-            d += (pen ? 'L' : 'M') + pt.X.toFixed(1) + ' ' + pt.Y.toFixed(1) + ' ';
-            pen = true;
-          });
-          if (d) {
-            s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="2.4" ' +
-                 'stroke-linejoin="round" stroke-linecap="round"/>';
-          }
-        }
-        list.forEach(function (pt) {
-          if (pt.Y === null) return;
-          s += '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="3.4" fill="' + col + '"/>';
-        });
+        return;
       }
+      if (kind !== 'scatter') {
+        var d = '', pen = false;
+        list.forEach(function (pt) {
+          if (pt.Y === null) { pen = false; return; }
+          d += (pen ? 'L' : 'M') + pt.X.toFixed(1) + ' ' + pt.Y.toFixed(1) + ' ';
+          pen = true;
+        });
+        if (d) s += '<path d="' + d + '" fill="none" stroke="' + col + '" stroke-width="' + (2.4 * k).toFixed(1) + '"' +
+                    (opt.asPredict ? ' stroke-dasharray="' + (8 * k).toFixed(0) + ' ' + (6 * k).toFixed(0) + '"' : '') +
+                    ' stroke-linejoin="round" stroke-linecap="round"/>';
+      }
+      list.forEach(function (pt) {
+        if (pt.Y === null) return;
+        if (v.ax === 1) {                    // 오른쪽 축 계열은 네모 점으로 — 색만으로 가리지 않게
+          var r2 = 3.6 * k;
+          s += '<rect x="' + (pt.X - r2).toFixed(1) + '" y="' + (pt.Y - r2).toFixed(1) + '" width="' + (2 * r2).toFixed(1) +
+               '" height="' + (2 * r2).toFixed(1) + '" fill="' + col + '"/>';
+        } else {
+          s += '<circle cx="' + pt.X.toFixed(1) + '" cy="' + pt.Y.toFixed(1) + '" r="' + (3.4 * k).toFixed(1) + '" fill="' + col + '"/>';
+        }
+      });
     });
 
-    //  예상과 가장 많이 달랐던 지점 — 세로 점선으로 이어 표시합니다.
-    if (preP.length && pts.length && numericX) {
+    //  예상과 가장 많이 달랐던 곳 — 세로 점선으로 잇습니다
+    var mk = opt.mark || null;
+    if (!mk && opt.gap !== false && preP.length && pts.length && numericX) {
       var best = null;
-      series.forEach(function (se, si) {
-        var g = predictGap(rows, opt.predict, si);
+      plan.vis.forEach(function (v) {
+        var g = predictGap(rows, opt.predict, v.i);
         if (!g || g.maxDiff === null || !isFinite(g.maxDiff)) return;
-        if (!best || g.maxDiff > best.maxDiff) best = g;
+        if (!best || g.maxDiff > best.maxDiff) best = { maxDiff: g.maxDiff, x: g.atX, actual: g.actual, predicted: g.predicted, si: v.i };
       });
-      if (best && isFinite(best.atX)) {
-        var GX = px(best.atX), Ya = py(best.actual), Yp = py(best.predicted);
-        s += '<line x1="' + GX.toFixed(1) + '" y1="' + Math.min(Ya, Yp).toFixed(1) + '" x2="' + GX.toFixed(1) +
-             '" y2="' + Math.max(Ya, Yp).toFixed(1) + '" stroke="var(--ink)" stroke-width="1.6" stroke-dasharray="3 3"/>';
-        s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Yp.toFixed(1) + '" r="5" fill="none" stroke="var(--ink)" stroke-width="1.8"/>';
-        s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Ya.toFixed(1) + '" r="5" fill="var(--ink)"/>';
-        s += '<text x="' + Math.min(Wd - P.r, GX + 8).toFixed(1) + '" y="' + (Math.min(Ya, Yp) - 7).toFixed(1) +
-             '" text-anchor="' + (GX > Wd * 0.7 ? 'end' : 'start') +
-             '" font-size="11.5" font-weight="700" fill="var(--ink)">가장 큰 차이 ' + esc(fmtNum(best.maxDiff)) + '</text>';
+      if (best && isFinite(best.x)) mk = { x: best.x, actual: best.actual, predicted: best.predicted, si: best.si, text: '가장 큰 차이 ' + fmtNum(best.maxDiff) };
+    }
+    if (mk && isFinite(Number(mk.predicted)) && isFinite(Number(mk.actual))) {
+      var mv = null;
+      plan.vis.forEach(function (v) { if (v.i === (Number(mk.si) || 0)) mv = v; });
+      var ax = mv ? mv.ax : 0;
+      var GX;
+      if (numericX && isFinite(Number(mk.x))) GX = px(Number(mk.x));
+      else GX = px(Math.max(0, Math.min(base.length - 1, Math.round(Number(mk.x) || 0))));
+      var Ya = pyA(ax, Number(mk.actual)), Yp = pyA(ax, Number(mk.predicted));
+      var mc = opt.markColor || 'var(--ink)';
+      s += '<line x1="' + GX.toFixed(1) + '" y1="' + Math.min(Ya, Yp).toFixed(1) + '" x2="' + GX.toFixed(1) + '" y2="' + Math.max(Ya, Yp).toFixed(1) +
+           '" stroke="' + mc + '" stroke-width="' + (1.8 * k).toFixed(1) + '" stroke-dasharray="' + (3 * k).toFixed(0) + ' ' + (3 * k).toFixed(0) + '"/>';
+      s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Yp.toFixed(1) + '" r="' + (5 * k).toFixed(1) + '" fill="#fff" stroke="' + mc + '" stroke-width="' + (1.8 * k).toFixed(1) + '"/>';
+      s += '<circle cx="' + GX.toFixed(1) + '" cy="' + Ya.toFixed(1) + '" r="' + (5 * k).toFixed(1) + '" fill="' + mc + '"/>';
+      if (mk.text) {
+        var right = GX > Wd * 0.62;
+        s += '<text x="' + (right ? GX - 9 * k : GX + 9 * k).toFixed(1) + '" y="' + ((Ya + Yp) / 2 + F * 0.35).toFixed(1) +
+             '" text-anchor="' + (right ? 'end' : 'start') + '" font-size="' + (F + 1) + '" font-weight="800" fill="' + mc +
+             '" stroke="#fff" stroke-width="' + (4 * k).toFixed(1) + '" paint-order="stroke">' + esc(mk.text) + '</text>';
       }
     }
     s += '</svg>';
 
-    var lg = '<div class="dk-lg">';
-    series.forEach(function (se, si) {
-      lg += '<span><i style="background:' + SERIES_HEX[si % SERIES_HEX.length] + '"></i>' +
-            esc(se.label || ('계열' + (si + 1))) + (se.unit ? ' (' + esc(se.unit) + ')' : '') + '</span>';
+    var lg = '';
+    plan.vis.forEach(function (v) {
+      lg += lgItem(cols[v.i % cols.length], esc(v.s.label || ('계열 ' + (v.i + 1))) + (v.s.unit ? ' (' + esc(v.s.unit) + ')' : '') +
+                   (two && v.ax === 1 ? ' · 오른쪽 축' : ''), v.ax === 1 ? 'sq' : 'dot', F);
     });
-    if (preP.length) {
-      lg += '<span><i style="width:1.4em;height:0;border-top:2.4px dashed var(--muted);border-radius:0"></i>점선 = 우리가 그린 예상</span>';
+    if (preP.length || opt.asPredict) lg += lgItem('var(--muted)', '점선 = 예상', 'dash', F);
+    if (preP.length && pts.length) lg += kind === 'line' ? lgItem('var(--muted)', '실선 = 실제 측정', 'solid', F)
+                                                         : lgItem('var(--muted)', (kind === 'bar' ? '막대' : '점') + ' = 실제 측정', kind === 'bar' ? 'sq' : 'dot', F);
+    if (plan.hidden.length) {
+      lg += '<span style="color:var(--muted)">계산 열(' + esc(plan.hidden.map(function (x) { return x.label; }).join(' · ')) + ')은 그래프에서 뺐습니다</span>';
     }
-    return s + lg + '</div>';
+    if (plan.dropped.length) {
+      lg += '<span style="color:var(--muted)">단위가 다른 ' + esc(plan.dropped.map(function (x) { return x.label; }).join(' · ')) + '은(는) 축이 모자라 뺐습니다</span>';
+    }
+    return s + lgBox(F, lg);
   }
 
-  //  여러 묶음을 한 그림에 — 모둠 겹친 그래프 · 변환 그래프가 씁니다.
-  //  sets: [{label, color, pts:[[x,y]…], fit, line, thick, faint}]
+  // ── 곡선 관계 — 분석 레시피의 fit(xt·yt) 을 그대로 씁니다 ──────────
+  var TF_INV = {
+    none: function (v) { return v; },
+    inv : function (v) { return v !== 0 ? 1 / v : NaN; },
+    sq  : function (v) { return v >= 0 ? Math.sqrt(v) : NaN; },
+    sqrt: function (v) { return v >= 0 ? v * v : NaN; },
+    log : function (v) { return Math.pow(10, v); },
+    inv2: function (v) { return v > 0 ? 1 / Math.sqrt(v) : NaN; }
+  };
+  //  relOf(exp, si) → {xt, yt} | null — 이 실험이 가로축 x 와 계열 si 사이에 곡선 관계를 기대하면
+  function relOf(exp, si) {
+    if (!exp) return null;
+    var L = LABDB(), A = null;
+    try { A = (L && typeof L.analysisOf === 'function') ? L.analysisOf(exp) : exp.analysis; } catch (e) { A = exp.analysis; }
+    var steps = (A && Array.isArray(A.steps)) ? A.steps : [];
+    for (var i = 0; i < steps.length; i++) {
+      var st = steps[i];
+      if (!st || st.kind !== 'fit' || String(st.x) !== 'x' || String(st.y) !== 's' + (Number(si) || 0)) continue;
+      var xt = TF_INV[st.xt] ? st.xt : 'none', yt = TF_INV[st.yt] ? st.yt : 'none';
+      if (xt === 'none' && yt === 'none') return null;
+      return { xt: xt, yt: yt };
+    }
+    return null;
+  }
+  //  바꾼 축에서 맞춘 직선 → {xt, yt, slope, intercept, r2, n}
+  function curveFit(pts, rel) {
+    if (!rel) return null;
+    var tx = TF[rel.xt] || TF.none, ty = TF[rel.yt] || TF.none, list = [];
+    (pts || []).forEach(function (p) {
+      if (!isFinite(p[0]) || !isFinite(p[1]) || !tx.ok(p[0]) || !ty.ok(p[1])) return;
+      var X = tx.f(p[0]), Y = ty.f(p[1]);
+      if (isFinite(X) && isFinite(Y)) list.push([X, Y]);
+    });
+    var st = stats(list, 0);
+    if (st.slope === null || !isFinite(st.slope)) return null;
+    return { xt: rel.xt, yt: rel.yt, slope: st.slope, intercept: st.intercept, r2: st.r2, n: st.n };
+  }
+  function curveAt(c, x) {
+    var tx = TF[c.xt] || TF.none;
+    if (!tx.ok(x)) return NaN;
+    return (TF_INV[c.yt] || TF_INV.none)(c.slope * tx.f(x) + c.intercept);
+  }
+  //  기울기 한 벌 — 곡선 관계면 바꾼 축에서, 아니면 그대로. {slope, r2, n, xLab, yLab, unit, rel}
+  function slopeOf(rows, si, rel, xl, xu, yl, yu) {
+    var o = { slope: null, r2: null, n: 0, rel: rel || null,
+              xLab: xl, yLab: yl, unit: slopeUnit(yu, xu) };
+    if (rel) {
+      var pts = [];
+      (rows || []).forEach(function (r) { var x = cellAt(r, 0), y = cellAt(r, si + 1); if (isFinite(x) && isFinite(y)) pts.push([x, y]); });
+      var c = curveFit(pts, rel);
+      o.xLab = TF[rel.xt].lab(xl); o.yLab = TF[rel.yt].lab(yl);
+      o.unit = slopeUnit(TF[rel.yt].unit(yu || ''), TF[rel.xt].unit(xu || ''));
+      if (c) { o.slope = c.slope; o.r2 = c.r2; o.n = c.n; }
+      return o;
+    }
+    var st = stats(rows, si);
+    o.slope = st.slope; o.r2 = st.r2; o.n = st.n;
+    return o;
+  }
+
+  //  multiChart(sets, opt) — 여러 묶음을 한 그림에 (모둠 겹친 그래프 · 변환 그래프 · 여러 반 묶어보기)
+  //   sets: [{label, color, pts:[[x,y]…], fit, curve, line, thick, faint, right, big}]
+  //   opt : w · h · font · xLabel · xUnit · yLabel · yUnit · y2Label · y2Unit
+  //         cats([이름…] 이면 가로축이 이름 — 선으로 잇지 않고 자리별 평균을 굵은 가로 막대로)
+  //         allFit(직선) · allCurve(곡선) · allLabel · mineWord
   function multiChart(sets, opt) {
     opt = opt || {};
-    var Wd = opt.w || 660, Hg = opt.h || 330, P = { l: 58, r: 16, t: 16, b: 50 };
-    var xs = [], ys = [];
-    (sets || []).forEach(function (S) { (S.pts || []).forEach(function (p) { xs.push(p[0]); ys.push(p[1]); }); });
-    if (!xs.length) return '<div class="dk-empty">그릴 점이 없습니다.</div>';
-    var x0 = Math.min.apply(null, xs), x1 = Math.max.apply(null, xs);
-    var y0 = Math.min.apply(null, ys), y1 = Math.max.apply(null, ys);
-    if (x0 === x1) { x0 -= 0.5; x1 += 0.5; }
-    if (y0 === y1) { y0 -= 1;   y1 += 1;   }
-    var padX = (x1 - x0) * 0.06, padY = (y1 - y0) * 0.10;
-    x0 -= padX; x1 += padX; y0 -= padY; y1 += padY;
+    sets = sets || [];
+    var F = Number(opt.font) || 11, k = F / 11;
+    var Wd = opt.w || 660, Hg = opt.h || 330;
+    var cats = Array.isArray(opt.cats) && opt.cats.length ? opt.cats : null;
+    var two = sets.some(function (S) { return S.right && (S.pts || []).length; });
+    var P = { l: Math.round(64 * k), r: Math.round((two ? 64 : 18) * k), t: Math.round(14 * k), b: Math.round(52 * k) };
+    var xs = [], yL = [], yR = [];
+    sets.forEach(function (S) {
+      (S.pts || []).forEach(function (p) { xs.push(p[0]); (S.right ? yR : yL).push(p[1]); });
+    });
+    if (!xs.length) return '<div class="dk-empty empty">그릴 점이 없습니다.</div>';
+    if (!yL.length) yL = yR.slice();
+    var x0, x1, xsc = null;
+    if (cats) { x0 = -0.5; x1 = cats.length - 0.5; }
+    else {
+      xsc = niceScale(Math.min.apply(null, xs), Math.max.apply(null, xs), { n: 6 });
+      x0 = xsc.lo; x1 = xsc.hi;
+    }
+    var sL = niceScale(Math.min.apply(null, yL), Math.max.apply(null, yL), { n: 5 });
+    var sR = yR.length ? niceScale(Math.min.apply(null, yR), Math.max.apply(null, yR), { n: 5 }) : null;
     var px = function (v) { return P.l + (v - x0) / (x1 - x0) * (Wd - P.l - P.r); };
-    var py = function (v) { return Hg - P.b - (v - y0) / (y1 - y0) * (Hg - P.t - P.b); };
-    var fx = function (v) { return fmtNum(v, Math.abs(x1 - x0) < 5 ? 2 : 0); };
-    var fy = function (v) { return fmtNum(v, Math.abs(y1 - y0) < 5 ? 2 : 0); };
+    var py = function (v, right) { var s = (right && sR) ? sR : sL; return Hg - P.b - (v - s.lo) / (s.hi - s.lo) * (Hg - P.t - P.b); };
 
-    function seg(fit) {                    // 추세선을 그림 안쪽으로만 자릅니다
+    function seg(fit, right) {                    // 직선 추세선을 그림 안쪽으로만 자릅니다
       if (!fit || fit.slope === null || !isFinite(fit.slope)) return null;
+      var sc = (right && sR) ? sR : sL;
       var a = fit.slope, b = fit.intercept, xa = x0, xb = x1;
       if (Math.abs(a) > 1e-12) {
-        var c0 = (y0 - b) / a, c1 = (y1 - b) / a;
+        var c0 = (sc.lo - b) / a, c1 = (sc.hi - b) / a;
         xa = Math.max(xa, Math.min(c0, c1));
         xb = Math.min(xb, Math.max(c0, c1));
-      }
+      } else if (b < sc.lo || b > sc.hi) return null;
       if (!(xb > xa)) return null;
-      return [px(xa), py(a * xa + b), px(xb), py(a * xb + b)];
+      return 'M' + px(xa).toFixed(1) + ' ' + py(a * xa + b, right).toFixed(1) + ' L' + px(xb).toFixed(1) + ' ' + py(a * xb + b, right).toFixed(1);
     }
+    function curvePath(c, right, lo, hi) {         // 곡선 — 잘게 나눠 잇고, 그림 밖은 끊습니다
+      if (!c) return '';
+      var sc = (right && sR) ? sR : sL, d = '', pen = false;
+      var a = (lo === undefined) ? x0 : lo, b = (hi === undefined) ? x1 : hi;
+      for (var i = 0; i <= 80; i++) {
+        var x = a + (b - a) * i / 80, y = curveAt(c, x);
+        if (!isFinite(y) || y < sc.lo || y > sc.hi) { pen = false; continue; }
+        d += (pen ? 'L' : 'M') + px(x).toFixed(1) + ' ' + py(y, right).toFixed(1) + ' ';
+        pen = true;
+      }
+      return d;
+    }
+    function trend(S) { return S.curve ? curvePath(S.curve, S.right) : (S.fit ? seg(S.fit, S.right) : null); }
 
-    var s = '<svg viewBox="0 0 ' + Wd + ' ' + Hg + '" width="100%" role="img" aria-label="' +
-            esc((opt.xLabel || 'x') + ' 대 ' + (opt.yLabel || 'y') + ' 그래프') + '" style="min-width:280px">';
-    var i;
-    for (i = 0; i <= 4; i++) {
-      var vy = y0 + (y1 - y0) * i / 4, gy = py(vy);
+    var s = svgOpen(Wd, Hg, (opt.xLabel || 'x') + ' 대 ' + (opt.yLabel || 'y') + ' 그래프', F);
+    sL.ticks.forEach(function (v) {
+      var gy = py(v);
       s += '<line x1="' + P.l + '" y1="' + gy.toFixed(1) + '" x2="' + (Wd - P.r) + '" y2="' + gy.toFixed(1) + '" stroke="var(--line)"/>';
-      s += '<text x="' + (P.l - 6) + '" y="' + (gy + 4).toFixed(1) + '" text-anchor="end" font-size="10.5" fill="var(--muted)">' +
-           esc(fy(vy)) + '</text>';
+      s += svgT(P.l - 6 * k, gy + F * 0.35, tickTxt(v, sL), F, { a: 'end' });
+    });
+    if (sR) {
+      s += '<line x1="' + (Wd - P.r) + '" y1="' + P.t + '" x2="' + (Wd - P.r) + '" y2="' + (Hg - P.b) + '" stroke="var(--line-2)" stroke-width="1.2"/>';
+      sR.ticks.forEach(function (v) {
+        var gy = py(v, true);
+        s += '<line x1="' + (Wd - P.r) + '" y1="' + gy.toFixed(1) + '" x2="' + (Wd - P.r + 4 * k) + '" y2="' + gy.toFixed(1) + '" stroke="var(--line-2)"/>';
+        s += svgT(Wd - P.r + 7 * k, gy + F * 0.35, tickTxt(v, sR), F, { a: 'start' });
+      });
     }
-    for (i = 0; i <= 4; i++) {
-      var vx = x0 + (x1 - x0) * i / 4;
-      s += '<text x="' + px(vx).toFixed(1) + '" y="' + (Hg - P.b + 16) + '" text-anchor="middle" font-size="10.5" fill="var(--muted)">' +
-           esc(fx(vx)) + '</text>';
+    var xty = Hg - P.b + F + 5 * k;
+    if (cats) {
+      var every = Math.max(1, Math.ceil(cats.length / Math.max(3, Math.floor((Wd - P.l - P.r) / (F * 6)))));
+      cats.forEach(function (c, i) {
+        if (i % every) return;
+        var lb = String(c); if (lb.length > 9) lb = lb.slice(0, 8) + '…';
+        s += svgT(px(i), xty, lb, F);
+      });
+    } else {
+      xsc.ticks.forEach(function (v) { s += svgT(px(v), xty, tickTxt(v, xsc), F); });
     }
-    s += '<line x1="' + P.l + '" y1="' + (Hg - P.b) + '" x2="' + (Wd - P.r) + '" y2="' + (Hg - P.b) +
-         '" stroke="var(--line-2)" stroke-width="1.5"/>';
-    s += '<text x="' + ((P.l + Wd - P.r) / 2) + '" y="' + (Hg - 8) + '" text-anchor="middle" font-size="11.5" fill="var(--muted)">' +
-         esc((opt.xLabel || '') + (opt.xUnit ? ' (' + opt.xUnit + ')' : '')) + '</text>';
-    s += '<text transform="translate(14,' + ((P.t + Hg - P.b) / 2) + ') rotate(-90)" text-anchor="middle" font-size="11.5" fill="var(--muted)">' +
-         esc((opt.yLabel || '') + (opt.yUnit ? ' (' + opt.yUnit + ')' : '')) + '</text>';
+    s += '<line x1="' + P.l + '" y1="' + (Hg - P.b) + '" x2="' + (Wd - P.r) + '" y2="' + (Hg - P.b) + '" stroke="var(--line-2)" stroke-width="1.5"/>';
+    s += '<line x1="' + P.l + '" y1="' + P.t + '" x2="' + P.l + '" y2="' + (Hg - P.b) + '" stroke="var(--line-2)" stroke-width="1.2"/>';
+    s += svgT((P.l + Wd - P.r) / 2, Hg - 6 * k, (opt.xLabel || '') + (opt.xUnit ? ' (' + opt.xUnit + ')' : ''), F + 0.5, { fill: 'var(--ink)', w: 700 });
+    var midY = (P.t + Hg - P.b) / 2;
+    s += svgT(F * 1.05, midY, (opt.yLabel || '') + (opt.yUnit ? ' (' + opt.yUnit + ')' : ''), F + 0.5,
+           { fill: 'var(--ink)', w: 700, tf: 'rotate(-90 ' + (F * 1.05).toFixed(1) + ' ' + midY.toFixed(1) + ')' });
+    if (sR) {
+      var rx = Wd - F * 0.75;
+      s += svgT(rx, midY, (opt.y2Label || '') + (opt.y2Unit ? ' (' + opt.y2Unit + ')' : '') + ' · 오른쪽 축', F + 0.5,
+             { fill: 'var(--ink)', w: 700, tf: 'rotate(90 ' + rx.toFixed(1) + ' ' + midY.toFixed(1) + ')' });
+    }
 
-    (sets || []).forEach(function (S) {          // 선 (이어 그리기를 원한 묶음만)
+    if (!cats) sets.forEach(function (S) {          // 선 (이어 그리기를 원한 묶음만 · 이름 가로축은 잇지 않습니다)
       if (!S.line || (S.pts || []).length < 2) return;
       var d = '', pen = false;
       S.pts.slice().sort(function (a, b) { return a[0] - b[0]; }).forEach(function (p) {
-        d += (pen ? 'L' : 'M') + px(p[0]).toFixed(1) + ' ' + py(p[1]).toFixed(1) + ' ';
+        d += (pen ? 'L' : 'M') + px(p[0]).toFixed(1) + ' ' + py(p[1], S.right).toFixed(1) + ' ';
         pen = true;
       });
-      s += '<path d="' + d + '" fill="none" stroke="' + S.color + '" stroke-width="' + (S.thick ? 3 : 2.2) +
-           '" opacity="' + (S.faint ? '.45' : '.9') + '" stroke-linejoin="round" stroke-linecap="round"/>';
+      s += '<path d="' + d + '" fill="none" stroke="' + S.color + '" stroke-width="' + ((S.thick ? 3 : 2.2) * k).toFixed(1) +
+           '" opacity="' + (S.faint ? '.45' : '.9') + '" stroke-linejoin="round" stroke-linecap="round"' +
+           (S.right ? ' stroke-dasharray="' + (6 * k).toFixed(0) + ' ' + (4 * k).toFixed(0) + '"' : '') + '/>';
     });
-    (sets || []).forEach(function (S) {          // 점
+    //  이름 가로축 — 한 자리에 여러 모둠 점이 겹치지 않게 조금씩 비켜 찍습니다
+    var nSet = sets.length;
+    sets.forEach(function (S, si) {               // 점
+      var off = cats ? ((si - (nSet - 1) / 2) * Math.min(0.5 / Math.max(nSet, 1), 0.09)) : 0;
       (S.pts || []).forEach(function (p) {
-        s += '<circle cx="' + px(p[0]).toFixed(1) + '" cy="' + py(p[1]).toFixed(1) + '" r="' + (S.thick ? 4.4 : 3.1) +
-             '" fill="' + S.color + '" opacity="' + (S.faint ? '.45' : '.9') + '"' +
-             (S.thick ? ' stroke="var(--ink)" stroke-width="1.2"' : '') + '/>';
+        var X = px(p[0] + off), Y = py(p[1], S.right), r = (S.big ? 6.5 : (S.thick ? 4.4 : 3.2)) * k;
+        if (S.right) {
+          s += '<rect x="' + (X - r).toFixed(1) + '" y="' + (Y - r).toFixed(1) + '" width="' + (2 * r).toFixed(1) + '" height="' + (2 * r).toFixed(1) +
+               '" fill="' + S.color + '" opacity="' + (S.faint ? '.5' : '.92') + '"/>';
+        } else {
+          s += '<circle cx="' + X.toFixed(1) + '" cy="' + Y.toFixed(1) + '" r="' + r.toFixed(1) +
+               '" fill="' + S.color + '" opacity="' + (S.faint ? '.5' : '.92') + '"' +
+               ((S.thick || S.big) ? ' stroke="#fff" stroke-width="' + (1.4 * k).toFixed(1) + '"' : '') + '/>';
+        }
       });
     });
-    (sets || []).forEach(function (S) {          // 묶음별 추세선
-      if (!S.fit) return;
-      var g = seg(S.fit);
-      if (!g) return;
-      s += '<line x1="' + g[0].toFixed(1) + '" y1="' + g[1].toFixed(1) + '" x2="' + g[2].toFixed(1) + '" y2="' + g[3].toFixed(1) +
-           '" stroke="' + S.color + '" stroke-width="' + (S.thick ? 2.6 : 1.6) + '" opacity="' + (S.thick ? '.9' : '.55') + '"/>';
+    if (!cats) sets.forEach(function (S) {        // 묶음별 추세선 · 곡선
+      var d = trend(S);
+      if (!d) return;
+      s += '<path d="' + d + '" fill="none" stroke="' + S.color + '" stroke-width="' + ((S.thick ? 2.6 : 1.6) * k).toFixed(1) +
+           '" opacity="' + (S.thick ? '.9' : '.55') + '"' + (S.thick ? '' : ' stroke-dasharray="' + (7 * k).toFixed(0) + ' ' + (5 * k).toFixed(0) + '"') + '/>';
     });
-    if (opt.allFit) {                            // 반 전체 추세선 — 굵게
-      var ga = seg(opt.allFit);
-      if (ga) {
-        s += '<line x1="' + ga[0].toFixed(1) + '" y1="' + ga[1].toFixed(1) + '" x2="' + ga[2].toFixed(1) +
-             '" y2="' + ga[3].toFixed(1) + '" stroke="var(--ink)" stroke-width="3.4" opacity=".75" stroke-linecap="round"/>';
-      }
+    var allD = '';
+    if (!cats && opt.allCurve) allD = curvePath(opt.allCurve, false);
+    else if (!cats && opt.allFit) allD = seg(opt.allFit, false) || '';
+    if (allD) {
+      s += '<path d="' + allD + '" fill="none" stroke="var(--ink)" stroke-width="' + (3.4 * k).toFixed(1) + '" opacity=".75" stroke-linecap="round" stroke-linejoin="round"/>';
+    }
+    var means = [];
+    if (cats) {                                   // 자리(조건)별 평균 — 굵은 가로 막대
+      cats.forEach(function (c, i) {
+        var sum = 0, n = 0;
+        sets.forEach(function (S) { (S.pts || []).forEach(function (p) { if (p[0] === i && !S.right) { sum += p[1]; n++; } }); });
+        if (!n) return;
+        var m = sum / n, X = px(i), Y = py(m), hw = Math.min(24 * k, (px(1) - px(0)) * 0.36);
+        means.push(m);
+        s += '<line x1="' + (X - hw).toFixed(1) + '" y1="' + Y.toFixed(1) + '" x2="' + (X + hw).toFixed(1) + '" y2="' + Y.toFixed(1) +
+             '" stroke="var(--ink)" stroke-width="' + (3.2 * k).toFixed(1) + '" stroke-linecap="round" opacity=".8"/>';
+      });
     }
     s += '</svg>';
 
-    var lg = '<div class="dk-lg">';
-    (sets || []).forEach(function (S) {
-      lg += '<span><i style="background:' + S.color + '"></i>' + esc(S.label) + (S.thick ? ' (우리 모둠)' : '') + '</span>';
+    var lg = '';
+    sets.forEach(function (S) {
+      if (!S.label) return;
+      lg += lgItem(S.color, esc(S.label) + (S.thick && opt.mineWord !== '' ? ' (' + esc(opt.mineWord || '우리 모둠') + ')' : '') +
+                   (S.right && sR ? ' · 오른쪽 축' : ''), S.right ? 'sq' : 'dot', F);
     });
-    if (opt.allFit) lg += '<span><i style="width:1.3em;height:0;border-top:3px solid var(--ink);border-radius:0"></i>반 전체 추세선</span>';
-    return s + lg + '</div>';
+    if (allD) lg += lgItem('var(--ink)', esc(opt.allLabel || (opt.allCurve ? '반 전체 추세 곡선' : '반 전체 추세선')), 'solid', F);
+    if (means.length) lg += lgItem('var(--ink)', esc(opt.meanLabel || '굵은 가로 막대 = 자리마다 평균'), 'solid', F);
+    return s + lgBox(F, lg);
   }
 
   // ─────────────────────────────────────────────────────────────────
@@ -865,6 +1145,20 @@
   function empty(msg) { return '<div class="dk-empty">' + esc(msg || '아직 자료가 없습니다.') + '</div>'; }
   function seriesLabel(C, i) { return (C.series[i] || {}).label || ('계열 ' + (i + 1)); }
   function seriesUnit(C, i)  { return (C.series[i] || {}).unit || ''; }
+  //  블록이 볼 계열 — 따로 고르지 않았으면 계산 열이 아닌 첫 계열
+  function defaultSi(C, cfg) {
+    if (cfg && cfg.si !== undefined && cfg.si !== null && cfg.si !== '') return Math.max(0, Math.min(C.series.length - 1, Number(cfg.si) || 0));
+    for (var i = 0; i < C.series.length; i++) if (!isCalc(C.series[i])) return i;
+    return 0;
+  }
+  //  이름 가로축의 칸 — 적힌 이름(없으면 줄 번호)
+  function catKey(r, k) { return (r.lab !== undefined && r.lab !== '') ? r.lab : String(k + 1); }
+  function catList(C) {
+    var out = [];
+    C.withRows.forEach(function (G) { G.rows.forEach(function (r, k) { var c = catKey(r, k); if (out.indexOf(c) < 0) out.push(c); }); });
+    if (out.every(function (c) { return isFinite(Number(c)); })) out.sort(function (a, b) { return Number(a) - Number(b); });
+    return out;
+  }
 
   //  선·산점도·막대 — 같은 자리를 씁니다
   function chartBody(C, kind, cfg) {
@@ -933,20 +1227,23 @@
 
     fit: function (C) {
       if (!C.rows.length) return empty('측정값이 두 줄 이상이면 기울기를 낼 수 있습니다.');
-      var any = false, h = '<div class="dk-vals">';
+      if (C.catX) return empty('가로축이 이름(자리·조건)이라 기울기를 내지 않습니다. 막대그래프로 견주어 보세요.');
+      var any = false, curved = false, h = '<div class="dk-vals">';
       C.series.forEach(function (s, i) {
-        var st = stats(C.rows, i);
-        if (st.slope === null) return;
-        any = true;
-        h += '<div class="dk-v"><b>' + esc(seriesLabel(C, i)) + ' 기울기</b>' +
-             '<em style="color:' + SERIES_HEX[i % SERIES_HEX.length] + '">' + esc(sciNum(st.slope)) + '</em>' +
-             '<span>' + esc(slopeUnit(seriesUnit(C, i), C.xUnit)) + '</span>' +
-             '<div style="font-size:.75em;margin-top:.3em;opacity:.85">R² = ' + esc(fmtR2(st.r2)) + ' · 점 ' + st.n + '개</div></div>';
+        if (isCalc(s) && C.series.some(function (x) { return !isCalc(x); })) return;   // 계산 열은 기울기를 내지 않습니다
+        var o = slopeOf(C.rows, i, relOf(C.exp, i), C.xLabel, C.xUnit, seriesLabel(C, i), seriesUnit(C, i));
+        if (o.slope === null) return;
+        any = true; if (o.rel) curved = true;
+        h += '<div class="dk-v"><b>' + esc(o.rel ? (o.yLab + ' ↔ ' + o.xLab + ' 기울기') : (seriesLabel(C, i) + ' 기울기')) + '</b>' +
+             '<em style="color:' + SERIES_HEX[i % SERIES_HEX.length] + '">' + esc(sciNum(o.slope)) + '</em>' +
+             '<span>' + esc(o.unit) + '</span>' +
+             '<div style="font-size:.75em;margin-top:.3em;opacity:.85">R² = ' + esc(fmtR2(o.r2)) + ' · 점 ' + o.n + '개</div></div>';
       });
       h += '</div>';
       if (!any) return empty('기울기를 내려면 값이 두 줄 이상이고 가로축 값이 서로 달라야 합니다.');
       h += '<p class="dk-sub">기울기는 "가로축이 1 늘 때 세로축이 얼마나 변하는가" 입니다. ' +
-           'R² 이 1 에 가까울수록 점들이 직선에 잘 놓여 있습니다.</p>';
+           'R² 이 1 에 가까울수록 점들이 직선에 잘 놓여 있습니다.' +
+           (curved ? ' 이 실험은 곡선 관계라 바꾼 축(예: 1/부피)에서 기울기를 냈습니다.' : '') + '</p>';
       return h;
     },
 
@@ -980,37 +1277,49 @@
     tfOne: function (C, L) {
       var xk = L.xk || 'x', xt = TF[L.xt] ? L.xt : 'none';
       var yt = TF[L.yt] ? L.yt : 'none';
+      //  고른 세로축이 없으면 측정 계열을 모두 — 계산 열(× · ÷)은 기본으로 뺍니다.
+      var plainS = [];
+      C.series.forEach(function (s, i) { if (!isCalc(s)) plainS.push('s' + i); });
       var yks = (Array.isArray(L.ys) && L.ys.length) ? L.ys
-              : (L.yk ? [L.yk] : C.series.map(function (_, i) { return 's' + i; }));
+              : (L.yk ? [L.yk] : (plainS.length ? plainS : C.series.map(function (_, i) { return 's' + i; })));
       var derived = Array.isArray(L.derived) ? L.derived : [];
 
       var cols = colList(C, derived);
       var xc = colOf(cols, xk) || cols[0];
-      var sets = [], notes = [];
+      var sets = [], notes = [], units = [];
       yks.forEach(function (yk, n) {
         var yc = colOf(cols, yk);
         if (!yc) return;
+        //  단위가 다르면 오른쪽 축으로 — 축은 둘까지입니다.
+        var yu = TF[yt].unit(yc.unit || '');
+        var ax = units.indexOf(yu);
+        if (ax < 0) {
+          if (units.length >= 2) { notes.push(colName(yc) + ' 은(는) 단위가 달라 축이 모자라 뺐습니다.'); return; }
+          units.push(yu); ax = units.length - 1;
+        }
         var P = tfPoints(C.rows, derived, xc.k, xt, yk, yt);
         if (!P.pts.length) { notes.push(colName(yc) + ' 은 변환한 뒤 남는 점이 없습니다.'); return; }
         var list = P.pts.map(function (p) { return [p.x, p.y]; });
         sets.push({
           label: TF[yt].lab(colName(yc)), color: SERIES_HEX[n % SERIES_HEX.length],
           pts: list, fit: (L.trend === false) ? null : stats(list, 0),
-          line: (L.kind === 'line'), thick: false
+          line: (L.kind === 'line'), thick: false, right: ax === 1, unit: yu
         });
         if (P.skipped) notes.push(colName(yc) + ' 에서 ' + P.skipped + '개 점을 건너뛰었습니다.');
       });
       if (!sets.length) return empty('고른 축과 변환으로는 그릴 점이 없습니다. 데이터 실험실에서 축을 바꿔 보세요.');
 
       var xLab = TF[xt].lab(colName(xc)), xUnit = TF[xt].unit(xc.unit || '');
-      var yc0 = colOf(cols, yks[0]) || { label: '', unit: '' };
-      var yLab = TF[yt].lab(colName(yc0)), yUnit = TF[yt].unit(yc0.unit || '');
+      var leftS = sets.filter(function (S) { return !S.right; }), rightS = sets.filter(function (S) { return S.right; });
+      var nmOf = function (list) { return list.length > 2 ? (list[0].label + ' 등') : list.map(function (S) { return S.label; }).join(' · '); };
+      var yLab = nmOf(leftS), yUnit = units[0] || '';
       var h = '<div class="dk-chart">' +
-              multiChart(sets, { xLabel: xLab, xUnit: xUnit, yLabel: yLab, yUnit: yUnit, w: 660, h: 330 }) + '</div>';
+              multiChart(sets, { xLabel: xLab, xUnit: xUnit, yLabel: yLab, yUnit: yUnit,
+                                 y2Label: nmOf(rightS), y2Unit: units[1] || '', w: 660, h: 330 }) + '</div>';
       h += '<div class="dk-tw" style="margin-top:.5em"><table class="dk-t"><thead><tr><th>세로축</th><th>점</th><th>기울기</th><th>R²</th></tr></thead><tbody>';
       sets.forEach(function (S) {
         h += '<tr><td class="dk-l"><b style="color:' + S.color + '">' + esc(S.label) + '</b></td><td>' + S.pts.length + '</td>' +
-             '<td>' + esc(S.fit ? sciNum(S.fit.slope) : '—') + ' ' + esc(slopeUnit(yUnit, xUnit)) + '</td>' +
+             '<td>' + esc(S.fit ? sciNum(S.fit.slope) : '—') + ' ' + esc(slopeUnit(S.unit, xUnit)) + '</td>' +
              '<td>' + esc(S.fit ? fmtR2(S.fit.r2) : '—') + '</td></tr>';
       });
       h += '</tbody></table></div>';
@@ -1021,8 +1330,28 @@
 
     classLines: function (C, cfg) {
       if (!C.withRows.length) return empty('아직 자료를 올린 모둠이 없습니다.');
-      var si = Math.max(0, Math.min(C.series.length - 1, Number((cfg && cfg.si) || 0)));
+      var si = defaultSi(C, cfg);
       var sets = [], allPts = [];
+      var nm = function (G) { return G.name + (G.cond ? ' · ' + G.cond : ''); };
+      if (C.catX) {
+        //  가로축이 이름(자리·조건)이면 선으로 잇지 않습니다 — 이름 사이의 기울기는 뜻이 없습니다.
+        var cats = catList(C);
+        C.withRows.forEach(function (G) {
+          var pts = [];
+          G.rows.forEach(function (r, k) {
+            var y = r[si + 1];
+            if (y === null || y === undefined || !isFinite(y)) return;
+            pts.push([cats.indexOf(catKey(r, k)), y]);
+          });
+          if (pts.length) sets.push({ label: nm(G), color: G.color, pts: pts, line: false, thick: G.mine });
+        });
+        if (!sets.length) return empty('이 계열에는 아직 값이 없습니다.');
+        return '<div class="dk-chart">' + multiChart(sets, {
+          xLabel: C.xLabel, xUnit: C.xUnit, yLabel: seriesLabel(C, si), yUnit: seriesUnit(C, si),
+          cats: cats, meanLabel: '굵은 가로 막대 = ' + (C.xLabel || '자리') + '마다 반 평균', w: 680, h: 340
+        }) + '</div><p class="dk-sub">모둠 ' + sets.length + '곳의 값을 ' + esc(C.xLabel || '가로축') +
+          '마다 모았습니다. 가로축이 이름이라 점을 선으로 잇지 않았습니다. 같은 자리인데 값이 크게 다르면 그때 무엇이 달랐는지 물어보세요.</p>';
+      }
       C.withRows.forEach(function (G) {
         var pts = [];
         G.rows.forEach(function (r, k) {
@@ -1034,32 +1363,40 @@
         if (!pts.length) return;
         allPts = allPts.concat(pts);
         //  산점 실험(scatter)은 점을 선으로 이으면 오해를 줍니다 — cfg.line: false 로 끕니다.
-        sets.push({ label: G.name, color: G.color, pts: pts, line: !(cfg && cfg.line === false), thick: G.mine, fit: null });
+        sets.push({ label: nm(G), color: G.color, pts: pts, line: !(cfg && cfg.line === false), thick: G.mine, fit: null });
       });
       if (!sets.length) return empty('이 계열에는 아직 값이 없습니다.');
-      var allFit = stats(allPts, 0);
+      //  곡선 관계를 기대하는 실험(보일 법칙 따위)은 직선 대신 바꾼 축에서 맞춘 곡선을 그립니다.
+      var rel = relOf(C.exp, si);
+      var curve = rel ? curveFit(allPts, rel) : null;
+      var allFit = rel ? null : stats(allPts, 0);
       var h = '<div class="dk-chart">' + multiChart(sets, {
         xLabel: C.xLabel, xUnit: C.xUnit, yLabel: seriesLabel(C, si), yUnit: seriesUnit(C, si),
-        allFit: (allFit.slope === null ? null : allFit), w: 680, h: 340
+        allFit: (allFit && allFit.slope !== null) ? allFit : null, allCurve: curve,
+        allLabel: curve ? ('반 전체 추세 곡선 (' + TF[rel.yt].lab(seriesLabel(C, si)) + ' ∝ ' + TF[rel.xt].lab(C.xLabel) + ')') : '',
+        w: 680, h: 340
       }) + '</div>';
-      h += '<p class="dk-sub">모둠 ' + sets.length + '곳을 겹쳐 그렸습니다 · 계열 = ' + esc(seriesLabel(C, si)) +
-           '. 모양이 다른 모둠이 있다면 무엇이 달랐는지 물어보세요.</p>';
+      h += '<p class="dk-sub">모둠 ' + sets.length + '곳을 겹쳐 그렸습니다 · 세로축 = ' + esc(seriesLabel(C, si)) + '. ' +
+           (curve ? '이 실험은 곡선 관계라 직선 추세선 대신 ' + esc(TF[rel.xt].lab(C.xLabel)) + ' 로 바꿔 맞춘 곡선을 그렸습니다. ' : '') +
+           '모양이 다른 모둠이 있다면 무엇이 달랐는지 물어보세요.</p>';
       return h;
     },
 
     rank: function (C, cfg) {
       if (!C.withRows.length) return empty('아직 자료를 올린 모둠이 없습니다.');
-      var si = Math.max(0, Math.min(C.series.length - 1, Number((cfg && cfg.si) || 0)));
+      if (C.catX) return empty('가로축이 이름(자리·조건)이라 기울기를 견주지 않습니다. 「모둠 그래프 겹쳐 보기」로 자리마다 값을 견주어 보세요.');
+      var si = defaultSi(C, cfg), rel = relOf(C.exp, si), o0 = null;
       var list = [];
       C.withRows.forEach(function (G) {
-        var st = stats(G.rows, si);
-        if (st.slope === null) return;
-        list.push({ name: G.name, mine: G.mine, color: G.color, slope: st.slope, r2: st.r2, n: st.n });
+        var o = slopeOf(G.rows, si, rel, C.xLabel, C.xUnit, seriesLabel(C, si), seriesUnit(C, si));
+        o0 = o;
+        if (o.slope === null) return;
+        list.push({ name: G.name + (G.cond ? ' · ' + G.cond : ''), mine: G.mine, color: G.color, slope: o.slope, r2: o.r2, n: o.n });
       });
       if (!list.length) return empty('기울기를 낼 수 있는 모둠이 아직 없습니다(값 두 줄 이상 · 가로축이 서로 달라야 합니다).');
       list.sort(function (a, b) { return b.slope - a.slope; });
       var mx = Math.max.apply(null, list.map(function (x) { return Math.abs(x.slope); })) || 1;
-      var u = slopeUnit(seriesUnit(C, si), C.xUnit);
+      var u = o0.unit;
       var h = '<div class="dk-bars">';
       list.forEach(function (x, i) {
         h += '<div class="dk-bar' + (x.mine ? ' dk-me' : '') + '">' +
@@ -1067,20 +1404,23 @@
              '<div class="dk-tr"><i style="width:' + (Math.abs(x.slope) / mx * 100).toFixed(1) + '%;background:' + x.color + '"></i></div>' +
              '<div class="dk-sc">' + esc(sciNum(x.slope)) + ' ' + esc(u) + ' · R²' + esc(fmtR2(x.r2)) + '</div></div>';
       });
-      h += '</div><p class="dk-sub">계열 = ' + esc(seriesLabel(C, si)) + ' 의 최소제곱 기울기 순입니다. ' +
+      h += '</div><p class="dk-sub">' + (rel ? '곡선 관계라 ' + esc(o0.yLab) + ' ↔ ' + esc(o0.xLab) + ' 로 바꿔 낸 기울기 순입니다. '
+                                             : '세로축 = ' + esc(seriesLabel(C, si)) + ' 의 기울기 순입니다. ') +
            '막대 길이는 기울기의 크기(부호는 숫자로 보세요).</p>';
       return h;
     },
 
     mypos: function (C, cfg) {
       if (!C.gid) return empty('우리 모둠을 고르면 위치를 보여 줍니다.');
-      var si = Math.max(0, Math.min(C.series.length - 1, Number((cfg && cfg.si) || 0)));
+      if (C.catX) return empty('가로축이 이름(자리·조건)이라 기울기로 줄 세우지 않습니다.');
+      var si = defaultSi(C, cfg), rel = relOf(C.exp, si), u = '';
       var vals = [], mine = null;
       C.withRows.forEach(function (G) {
-        var st = stats(G.rows, si);
-        if (st.slope === null) return;
-        vals.push(st.slope);
-        if (G.mine) mine = st.slope;
+        var o = slopeOf(G.rows, si, rel, C.xLabel, C.xUnit, seriesLabel(C, si), seriesUnit(C, si));
+        u = o.unit;
+        if (o.slope === null) return;
+        vals.push(o.slope);
+        if (G.mine) mine = o.slope;
       });
       if (!vals.length) return empty('반 전체 기울기를 아직 낼 수 없습니다.');
       if (mine === null) return empty('우리 모둠의 기울기를 아직 낼 수 없습니다. 값을 두 줄 이상 적어 보세요.');
@@ -1089,7 +1429,6 @@
       var mean = vals.reduce(function (a, b) { return a + b; }, 0) / vals.length;
       var lo = Math.min.apply(null, vals), hi = Math.max.apply(null, vals);
       var pos = (hi === lo) ? 50 : ((mine - lo) / (hi - lo) * 100);
-      var u = slopeUnit(seriesUnit(C, si), C.xUnit);
       var h = '<div class="dk-vals">' +
         '<div class="dk-v"><b>우리 모둠 기울기</b><em style="color:' + ACC.mintD + '">' + esc(sciNum(mine)) + '</em><span>' + esc(u) + '</span></div>' +
         '<div class="dk-v"><b>반 전체 순위</b><em>' + rank + '</em><span>/ ' + vals.length + '모둠</span></div>' +
@@ -1101,7 +1440,7 @@
            'width:1.1em;height:1.1em;border-radius:50%;background:' + ACC.mintD + ';border:.18em solid #fff;' +
            'box-shadow:0 2px 6px rgba(0,0,0,.25)"></div></div>' +
            '<p class="dk-sub">왼쪽 끝 ' + esc(sciNum(lo)) + ' · 오른쪽 끝 ' + esc(sciNum(hi)) +
-           ' (계열 = ' + esc(seriesLabel(C, si)) + ')</p>';
+           ' (세로축 = ' + esc(seriesLabel(C, si)) + (rel ? ' · 곡선 관계라 바꾼 축에서 낸 기울기' : '') + ')</p>';
       return h;
     },
 
@@ -1478,7 +1817,8 @@
     if (C.members.length) bits.push(esc(C.members.join(' · ')));
     if (C.teacher) bits.push(esc(C.teacher) + ' 선생님');
     var line2 = [];
-    if (C.exp && C.exp.id) line2.push('실험 ' + esc(C.exp.id));
+    //  실험 번호(sm-05 따위)는 안쪽 이름이라 보여 주지 않습니다 — 제목이 따로 다르면 실험 이름을 적습니다.
+    if (C.exp && C.exp.title && C.exp.title !== (L.title || C.title)) line2.push('실험 ' + esc(C.exp.title));
     line2.push('만든 때 ' + esc(stamp(when)));
     if (C.rows.length) line2.push('측정 ' + C.rows.length + '줄');
     return '<header class="dk-head"><h1>' + esc(L.title || C.title || '실험 대시보드') + '</h1>' +
@@ -1503,7 +1843,7 @@
       inner += '</div>';
     }
     if (opt.foot !== false) {
-      inner += '<div class="dk-foot">MBL 센서 수업허브 · 이 대시보드는 우리 반이 실제로 모은 자료로 만들었습니다.' +
+      inner += '<div class="dk-foot">MBL 수업허브 · 이 대시보드는 우리 반이 실제로 모은 자료로 만들었습니다.' +
                (C.school ? ' · ' + esc(C.school) : '') + '</div>';
     }
     return '<div class="dk-root dk-t-' + esc(T.key) + '" style="' + themeVars(T) + '">' + inner + '</div>';
@@ -1623,18 +1963,19 @@
       '.dkui button{font:inherit;cursor:pointer;border-radius:10px;border:1.5px solid var(--line-2,#D3E6EA);' +
         'background:var(--paper,#fff);color:var(--ink,#254753);padding:8px 12px;font-size:14px;font-weight:700;min-height:40px}',
       '.dkui button:hover{border-color:var(--mint,#20B2A6)}',
-      '.dkui button.on{background:var(--mint,#20B2A6);border-color:var(--mint,#20B2A6);color:#fff}',
+      '.dkui button.on{background:var(--mint-d,#14867C);border-color:var(--mint-d,#14867C);color:#fff}',
       '.dkui button[disabled]{opacity:.45;cursor:not-allowed}',
-      '.dkui .dkui-go{background:var(--coral,#FF8C6B);border-color:var(--coral,#FF8C6B);color:#fff;font-size:15px;padding:8px 18px}',
-      '.dkui .dkui-go:hover{border-color:var(--coral,#FF8C6B);filter:brightness(1.05)}',
+      //  흰 글자가 읽히게 진한 산호색(4.5:1 이상)을 씁니다.
+      '.dkui .dkui-go{background:#B8441F;border-color:#B8441F;color:#fff;font-size:15px;padding:8px 18px}',
+      '.dkui .dkui-go:hover{border-color:#9C3816;background:#9C3816}',
       '.dkui .dkui-tools{position:sticky;top:var(--dk-sticky,0px);z-index:5;display:flex;flex-wrap:wrap;gap:8px;align-items:center;' +
         'background:var(--paper,#fff);border:1.5px solid var(--line,#E4EFF1);border-radius:14px;padding:8px 10px;box-shadow:0 6px 16px rgba(37,71,83,.06)}',
       '.dkui .dkui-grow{flex:1 1 auto}',
-      '.dkui .dkui-lab{font-size:12.5px;font-weight:800;color:var(--muted,#6E8A96)}',
+      '.dkui .dkui-lab{font-size:12.5px;font-weight:800;color:var(--muted,#56707C)}',
       '.dkui .dkui-seg{display:inline-flex;border:1.5px solid var(--line-2,#D3E6EA);border-radius:10px;overflow:hidden}',
       '.dkui .dkui-seg button{border:0;border-radius:0;min-height:36px;padding:6px 10px;font-size:13px}',
       '.dkui .dkui-status{font-size:12.5px;color:var(--mint-d,#14867C);font-weight:700}',
-      '.dkui .dkui-hint{font-size:13px;color:var(--muted,#6E8A96);margin:8px 2px}',
+      '.dkui .dkui-hint{font-size:13px;color:var(--muted,#56707C);margin:8px 2px}',
       '.dkui .dkui-hint b{color:var(--ink,#254753)}',
       '.dkui details.dkui-more{position:relative}',
       '.dkui details.dkui-more>summary{list-style:none;cursor:pointer;border:1.5px solid var(--line-2,#D3E6EA);border-radius:10px;' +
@@ -1650,7 +1991,7 @@
       '.dkui .dkui-tpl{display:flex;flex-direction:column;align-items:stretch;gap:6px;text-align:left;padding:10px;border-radius:14px}',
       '.dkui .dkui-tpl:hover{box-shadow:0 8px 20px rgba(32,178,166,.18)}',
       '.dkui .dkui-tpl b{font-size:15px}',
-      '.dkui .dkui-tpl small{font-size:12px;color:var(--muted,#6E8A96);font-weight:600;line-height:1.5}',
+      '.dkui .dkui-tpl small{font-size:12px;color:var(--muted,#56707C);font-weight:600;line-height:1.5}',
       '.dkui .dkui-tag{align-self:flex-start;font-size:11px;font-weight:800;color:#fff;background:var(--coral,#FF8C6B);border-radius:999px;padding:2px 8px}',
       '.dkui .dkui-ready{font-size:11.5px;color:var(--mint-d,#14867C);font-weight:800}',
       '.dkui .dkui-thumb{display:grid;grid-template-columns:repeat(12,1fr);gap:3px;padding:6px;background:#EEF7F6;border-radius:10px;' +
@@ -1670,12 +2011,12 @@
         'background:#fff;border:1.5px solid #D3E6EA;border-radius:12px;padding:4px;box-shadow:0 8px 20px rgba(0,0,0,.14);font-size:13px}',
       '.dkui .dkui-float button{min-height:34px;padding:4px 9px;font-size:13px;border-radius:8px}',
       '.dkui .dkui-float .dkui-del{color:#C2410C}',
-      '.dkui .dkui-addtile{grid-column:span 12;border:2px dashed var(--line-2,#D3E6EA);background:transparent;color:var(--muted,#6E8A96);' +
+      '.dkui .dkui-addtile{grid-column:span 12;border:2px dashed var(--line-2,#D3E6EA);background:transparent;color:var(--muted,#56707C);' +
         'font-size:15px;padding:18px;border-radius:14px}',
       '.dkui .dkui-addtile:hover{color:var(--mint-d,#14867C);border-color:var(--mint,#20B2A6)}',
       '.dkui textarea.dkui-tx{display:block;width:100%;margin-top:.6em;font:inherit;font-size:15px;border:2px solid var(--mint,#20B2A6);' +
         'border-radius:10px;padding:8px 10px;resize:vertical;min-height:3.4em;background:#fff;color:#254753}',
-      '.dkui .dkui-msg{font-size:13px;color:var(--muted,#6E8A96);margin:8px 2px 0;min-height:1.2em}',
+      '.dkui .dkui-msg{font-size:13px;color:var(--muted,#56707C);margin:8px 2px 0;min-height:1.2em}',
       // ＋ 칸 더하기 창
       '.dkui .dkui-modal{position:fixed;inset:0;z-index:60;background:rgba(20,40,48,.45);display:flex;align-items:flex-end;justify-content:center;padding:12px}',
       '.dkui .dkui-modal[hidden]{display:none}',
@@ -1687,10 +2028,10 @@
       '.dkui .dkui-card{display:flex;flex-direction:column;align-items:flex-start;gap:4px;text-align:left;padding:12px;border-radius:14px;min-height:108px}',
       '.dkui .dkui-card i{font-style:normal;font-size:26px;line-height:1}',
       '.dkui .dkui-card b{font-size:14.5px}',
-      '.dkui .dkui-card small{font-size:12px;color:var(--muted,#6E8A96);font-weight:600;line-height:1.45}',
+      '.dkui .dkui-card small{font-size:12px;color:var(--muted,#56707C);font-weight:600;line-height:1.45}',
       '.dkui .dkui-card.off{opacity:.55}',
       '.dkui .dkui-card.off small{color:#C2410C}',
-      '.dkui .dkui-offtoggle{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--muted,#6E8A96);font-weight:700}',
+      '.dkui .dkui-offtoggle{display:flex;gap:6px;align-items:center;margin-top:10px;font-size:13px;color:var(--muted,#56707C);font-weight:700}',
       // ▶ 발표하기(전체 화면) — 편집 도구가 없는 깨끗한 화면
       '.dkui-show{position:fixed;inset:0;z-index:9999;background:#F4FBF6;overflow:auto;padding:16px}',
       '.dkui-show .dkui-x{position:fixed;top:12px;right:14px;z-index:2;font:inherit;font-weight:800;border:0;border-radius:999px;' +
@@ -1734,7 +2075,7 @@
         '<button type="button" data-dk="gallery">🧩 틀 고르기</button>' +
         '<button type="button" data-dk="pick">＋ 칸 더하기</button>' +
         '<button type="button" data-dk="undo" title="방금 고친 것을 되돌립니다">↶ 되돌리기</button>' +
-        '<span class="dkui-lab">색</span><span class="dkui-seg" data-dk="themes"></span>' +
+        '<span class="dkui-lab">화면</span><span class="dkui-seg" data-dk="themes"></span>' +
         '<span class="dkui-grow"></span>' +
         '<span class="dkui-status" data-dk="status"></span>' +
         (auto ? '' : '<button type="button" data-dk="keep">💾 이 구성 저장</button>') +
@@ -1877,7 +2218,7 @@
                  esc(can.ok ? b.desc : can.why) + '</small></button>';
       });
       box.innerHTML = '<div class="dkui-sheet" role="dialog" aria-label="칸 더하기">' +
-        '<div class="dkui-sheethead"><b>＋ 칸 더하기' + (sel !== -1 ? ' <span style="font-size:13px;font-weight:600;color:#6E8A96">· ' +
+        '<div class="dkui-sheethead"><b>＋ 칸 더하기' + (sel !== -1 ? ' <span style="font-size:13px;font-weight:600;color:#56707C">· ' +
           (sel === -2 ? '제목 바로 아래에' : '고른 칸 바로 뒤에') + ' 들어갑니다</span>' : '') +
         '</b><button type="button" data-dk="pickClose">닫기</button></div>' + tabs +
         '<div class="dkui-cards">' + (cards || '<p class="dkui-msg">이 묶음에는 지금 쓸 수 있는 칸이 없습니다.</p>') + '</div>' +
@@ -2163,6 +2504,15 @@
     emptyLayout: emptyLayout,
     normLayout: normLayout,
     describe: describe,
+    //  그래프 — 교사 화면·발표 화면이 같은 약속(둘째 축·계산 열 빼기·1·2·5 눈금·곡선 관계)으로 그립니다.
+    chartSVG: chartSVG,
+    multiChart: multiChart,
+    niceScale: niceScale,
+    isCalc: isCalc,
+    relOf: relOf,
+    curveFit: curveFit,
+    slopeOf: slopeOf,
+    slopeUnit: slopeUnit,
     //  검증·재사용을 위해 열어 두는 순수 함수들
     _prep: prep, _chart: chart, _esc: esc
   };
