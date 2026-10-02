@@ -344,7 +344,7 @@
   };
   var FIG_GRAPH = {
     'sm-02': 'freeze', 'ez-06': 'freeze',
-    'sm-06': 'photoV', 'sm-07': 'photoV',
+    'sm-06': 'photoV',
     'ez-12': 'radeq',  'sm-09': 'inv2'
   };
   var GRAPH_CAP = {
