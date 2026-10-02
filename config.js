@@ -36,7 +36,10 @@ window.MBL_CONFIG = {
   // ② 공개용 키 (Settings → API → Project API keys → anon / public)
   SUPABASE_ANON_KEY: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InZidnRubW5vZGVvb2NiYmphdWFwIiwicm9sZSI6ImFub24iLCJpYXQiOjE3Nzk0OTQ0OTYsImV4cCI6MjA5NTA3MDQ5Nn0.dvuRrt3qw2Tya_QwGbcXrmGPdfDgI4xmgyH8UjU73Nc',
 
-  // ③ 화면 안내에 쓰이는 이름 (없어도 동작합니다)
+  // ③ 화면에 나오는 학교·교사 이름 (선택 — 비워 두면 일반 문구가 나옵니다)
+  //    교사 화면 안내, 그리고 앱 소개(about.html) · 사용 설명서(manual.html) · 연수 예시(demo/)의
+  //    맨 위 머리와 꼬리말에 「○○중학교 홍길동 선생님」처럼 그대로 나옵니다.
+  //    다른 학교에 배포할 때는 이 두 값도 우리 학교·내 이름으로 바꾸세요.
   SCHOOL : '해누리중학교',
   TEACHER: '조승재'
 };

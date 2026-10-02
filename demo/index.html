@@ -3,43 +3,120 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-<title>연수 시연용 예시 파일</title>
+<title>연수 시연용 예시 파일 · MBL 수업허브</title>
+<meta name="robots" content="noindex, nofollow" />
+<meta name="description" content="MBL 수업허브 연수 시연용 예시 — 보일 법칙 학생 작업 파일 4개와 수합 시트 CSV." />
 <link rel="icon" href="../assets/favicon.svg" type="image/svg+xml">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
+<link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
+<script src="../config.js"></script>
 <style>
-body{font-family:-apple-system,system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:#254753;line-height:1.7;background:#F4FBF6;padding:28px 16px}
-.wrap{max-width:760px;margin:0 auto}
-h1{font-size:24px}h2{font-size:18px;margin:22px 0 8px;color:#14867C}
-.card{background:#fff;border:1px solid #E4EFF1;border-radius:16px;padding:18px 20px;margin:14px 0;box-shadow:0 8px 22px rgba(37,71,83,.07)}
-a{color:#14867C;font-weight:700}
-ol{margin:6px 0 0 20px}li{margin-bottom:6px}
-.muted{color:#6E8A96;font-size:14px}
-code{background:#F3FAFB;border:1px solid #D3E6EA;border-radius:6px;padding:1px 6px;font-size:13px}
+  :root{
+    --sky-1:#D4EDFB; --sky-2:#EAF8F0; --paper:#FFFFFF;
+    --ink:#254753; --muted:#6E8A96; --mint:#20B2A6; --mint-d:#14867C;
+    --line:#E4EFF1; --line-2:#D3E6EA; --shadow:0 10px 28px rgba(37,71,83,.09);
+    --display:'Jua',sans-serif;
+    --sans:'Pretendard Variable',Pretendard,-apple-system,system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;
+    --wrap:1120px;
+  }
+  *{box-sizing:border-box}
+  body{margin:0;font-family:var(--sans);color:var(--ink);line-height:1.7;-webkit-font-smoothing:antialiased;
+    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed;min-height:100vh}
+  a{color:var(--mint-d);font-weight:700}
+
+  /* ── 공통 상단바 (학생 화면 · 손으로 탐구 · 교사 화면 · 사용 설명서 · 앱 소개) ── */
+  .sitebar{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);border-bottom:1px solid var(--line)}
+  .sitebar .row{display:flex;align-items:center;gap:6px 18px;min-height:60px;max-width:var(--wrap);margin:0 auto;padding:8px 16px}
+  .sitebar .brand{display:flex;flex-direction:column;line-height:1.2;font-family:var(--display);font-size:19px;color:var(--ink);white-space:nowrap;text-decoration:none;font-weight:400}
+  .sitebar .brand small{font-family:var(--sans);font-size:12px;color:var(--muted)}
+  .sitebar .brand small:empty{display:none}
+  .sitenav{display:flex;gap:2px;margin-left:auto;overflow-x:auto;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+  .sitenav::-webkit-scrollbar{display:none}
+  .sitenav a{flex-shrink:0;white-space:nowrap;font-size:14px;font-weight:700;color:var(--muted);padding:8px 12px;border-radius:999px;text-decoration:none}
+  .sitenav a:hover{color:var(--mint-d);background:rgba(32,178,166,.08)}
+  .sitenav a[aria-current]{color:var(--mint-d);background:rgba(32,178,166,.14)}
+  @media(max-width:760px){
+    .sitebar .row{flex-wrap:wrap;min-height:0;padding:6px 12px 2px;gap:0}
+    .sitebar .brand{font-size:17px;flex-direction:row;align-items:baseline;gap:8px}
+    .sitebar .brand small{font-size:11.5px;overflow:hidden;text-overflow:ellipsis}
+    .sitenav{width:calc(100% + 24px);margin:2px -12px 0;padding:0 8px 4px}
+    .sitenav a{font-size:13px;padding:6px 8px}
+  }
+  [id]{scroll-margin-top:88px}
+  /* ── 공통 꼬리말 ── */
+  .sitefoot{margin:2.5rem 0 0;padding:16px 16px 20px;text-align:center;font-size:12.5px;line-height:1.7;color:#7A8A92;border-top:1px solid rgba(128,128,128,.25)}
+  .sitefoot p{margin:0}
+  .sitefoot a{color:var(--mint-d);font-weight:700;text-decoration:none}
+  .sitefoot a:hover{text-decoration:underline}
+  @media print{.sitebar,.totop{display:none !important}}
+
+  main{max-width:780px;margin:0 auto;padding:28px 16px 8px}
+  h1{font-family:var(--display);font-weight:400;font-size:clamp(26px,4vw,34px);line-height:1.2;margin:6px 0 10px}
+  h2{font-family:var(--display);font-weight:400;font-size:20px;margin:0 0 8px;color:var(--mint-d)}
+  .card{background:var(--paper);border:1px solid var(--line);border-radius:16px;padding:18px 20px;margin:14px 0;box-shadow:var(--shadow)}
+  .card p{margin:8px 0}
+  ol{margin:6px 0 0;padding-left:22px}
+  li{margin-bottom:8px}
+  ul.files{list-style:none;padding:0;margin:8px 0 0}
+  ul.files li{display:flex;flex-wrap:wrap;align-items:center;gap:4px 10px;padding:10px 0;border-top:1px solid var(--line);margin:0}
+  ul.files li:first-child{border-top:none}
+  .acts{margin-left:auto;display:flex;gap:6px}
+  .acts a{font-size:13px;padding:6px 12px;border:1.5px solid var(--line-2);border-radius:999px;text-decoration:none;background:#fff}
+  .acts a:hover{border-color:var(--mint)}
+  .muted{color:var(--muted);font-size:14px}
+  .note{border-left:4px solid #FFC130;background:#FFFBEE;border-radius:10px;padding:10px 14px;font-size:14px;margin:10px 0}
+  code{background:#F3FAFB;border:1px solid var(--line-2);border-radius:6px;padding:1px 6px;font-size:13px;overflow-wrap:anywhere}
+  @media print{body{background:#fff}.card{box-shadow:none}}
 </style>
 </head>
 <body>
-<div class="wrap">
+<header class="sitebar">
+  <div class="row">
+    <a class="brand" href="../index.html" aria-label="MBL 수업허브 학생 화면으로">MBL 수업허브<small data-mbl-who="{who}"></small></a>
+    <nav class="sitenav" aria-label="MBL 수업허브 페이지">
+      <a href="../index.html">학생 화면</a>
+      <a href="../inquiry.html">손으로 탐구</a>
+      <a href="../teacher.html">교사 화면</a>
+      <a href="../manual.html">사용 설명서</a>
+      <a href="../about.html">앱 소개</a>
+    </nav>
+  </div>
+</header>
+
+<main>
 <h1>연수 시연용 예시 파일</h1>
-<p class="muted">코드 없이(간편 모드) 실험한 뒤, 선생님이 걷어서 반 전체를 합쳐 보는 흐름을 그대로 보여 드리기 위한 파일들입니다.
-값은 보일의 법칙(60 mL 주사기, 30 mL에서 마개 잠금) 예시이며, 모둠마다 <b>부피 눈금을 어긋나게 나눠 맡아 5점씩 잰</b> 상황입니다 — 합치면 12~60 mL가 거의 빈틈없이 채워지며 반비례 곡선이 완성됩니다. 압력 × 부피는 29.6~30.5로 일정합니다.</p>
+<p class="muted">코드 없이(간편 모드) 실험한 뒤 선생님이 걷어서 반 전체를 합쳐 보는 흐름을 그대로 보여 드리기 위한 파일들입니다.</p>
 
 <div class="card">
-<h2>① 학생 작업 파일 4개 — 「제출된 보고서 합치기」에 끌어다 놓기</h2>
-<ol>
-<li><a href="작업파일_2학년3반_1모둠_주사기압력.html" download>1모둠 (12·22·32·42·52 mL)</a></li>
-<li><a href="작업파일_2학년3반_2모둠_주사기압력.html" download>2모둠 (14·24·34·44·54 mL)</a></li>
-<li><a href="작업파일_2학년3반_3모둠_주사기압력.html" download>3모둠 (17·27·37·47·57 mL)</a></li>
-<li><a href="작업파일_2학년3반_4모둠_주사기압력.html" download>4모둠 (19·29·39·49·60 mL)</a></li>
-</ol>
-<p class="muted">교사용 화면 → <b>파일로 하는 수업</b> → <b>제출된 보고서 합치기</b>에 네 파일을 한꺼번에 끌어다 놓으면
-모둠별 표·그래프·보고서가 정리되고, 대시보드의 <b>모둠 겹친 그래프</b> 블록으로 하나의 그래프가 됩니다.</p>
+<h2>이 값은 어떤 실험인가요</h2>
+<p>보일 법칙 — <b>손으로 재기 예시</b>입니다. 60 mL 주사기를 <b>30 mL 에서 막고</b> 밀대를 당기고 눌러 압력을 쟀습니다. 모둠마다 부피 눈금을 어긋나게 나눠 맡아 5점씩 잰 상황이라, 합치면 12~60 mL 가 거의 빈틈없이 채워지며 반비례 곡선이 완성됩니다. 압력 × 부피는 29.6~30.5 atm·mL 로 일정합니다(막은 부피 30 mL × 1기압).</p>
+<div class="note">센서로 하는 원래 절차(실험 도감 sm-05)는 <b>60 mL 에서 막고</b> 누르기만 합니다. 그때는 압력 × 부피가 약 60 atm·mL 가 됩니다. 시연 값과 다르다고 틀린 것이 아닙니다.</div>
 </div>
 
 <div class="card">
-<h2>② 수합 시트 CSV — 「데이터 붙여넣고 분석하기」에 붙여넣기</h2>
-<p><a href="수합시트_주사기압력_모둠열.csv" download>수합시트_주사기압력_모둠열.csv</a></p>
-<p class="muted">첫 열이 모둠 이름입니다. 엑셀에서 열어 전체 복사한 뒤 학생용 화면 →
-<b>데이터 붙여넣고 분석하기</b>에 붙여넣으면 “첫 열이 모둠 이름으로 보입니다 — 갈라 담을까요?”가 뜨고,
-<b>모둠별 기울기 비교와 반 전체 그래프</b>까지 한 번에 나옵니다.</p>
+<h2>① 학생 작업 파일 4개 — 「제출된 보고서 합치기」에 끌어다 놓기</h2>
+<p class="muted"><b>보기</b>는 새 탭에서 학생이 낸 보고서 그대로 열고, <b>내려받기</b>는 파일로 저장합니다(합치기에 쓸 때).</p>
+<ul class="files">
+  <li><b>1모둠</b> <span class="muted">(12·22·32·42·52 mL)</span>
+    <span class="acts"><a href="작업파일_2학년3반_1모둠_주사기압력.html" target="_blank" rel="noopener">보기</a><a href="작업파일_2학년3반_1모둠_주사기압력.html" download>내려받기</a></span></li>
+  <li><b>2모둠</b> <span class="muted">(14·24·34·44·54 mL)</span>
+    <span class="acts"><a href="작업파일_2학년3반_2모둠_주사기압력.html" target="_blank" rel="noopener">보기</a><a href="작업파일_2학년3반_2모둠_주사기압력.html" download>내려받기</a></span></li>
+  <li><b>3모둠</b> <span class="muted">(17·27·37·47·57 mL)</span>
+    <span class="acts"><a href="작업파일_2학년3반_3모둠_주사기압력.html" target="_blank" rel="noopener">보기</a><a href="작업파일_2학년3반_3모둠_주사기압력.html" download>내려받기</a></span></li>
+  <li><b>4모둠</b> <span class="muted">(19·29·39·49·60 mL)</span>
+    <span class="acts"><a href="작업파일_2학년3반_4모둠_주사기압력.html" target="_blank" rel="noopener">보기</a><a href="작업파일_2학년3반_4모둠_주사기압력.html" download>내려받기</a></span></li>
+</ul>
+<p>교사 화면 → <b>제출된 보고서 합치기</b>에 네 파일을 한꺼번에 끌어다 놓으면 모둠별 표·그래프·보고서가 정리되고, <b>반 전체 그래프</b>와 대시보드의 <b>모둠 겹친 그래프</b> 블록으로 하나의 그래프가 됩니다.</p>
+<div class="note"><b>「5·6·7모둠 미제출」이 함께 나옵니다.</b> 이 파일들은 모둠 수 7로 만든 수업 꾸러미에서 나왔기 때문입니다. 네 모둠만 낸 반을 보여 주는 것이니, 시연할 때 <b>제출 현황</b>이 이렇게 미제출을 짚어 준다고 함께 소개하세요.</div>
+</div>
+
+<div class="card">
+<h2>② 수합 시트 CSV — 붙여넣어 분석하기</h2>
+<ul class="files">
+  <li><b>수합시트_주사기압력_모둠열.csv</b>
+    <span class="acts"><a href="수합시트_주사기압력_모둠열.csv" target="_blank" rel="noopener">보기</a><a href="수합시트_주사기압력_모둠열.csv" download>내려받기</a></span></li>
+</ul>
+<p>첫 열이 모둠 이름이고, 열 이름에 단위가 붙어 있습니다 — <code>기체의 부피(mL)</code> · <code>압력(atm)</code> · <code>압력 × 부피(atm·mL)</code>. 엑셀에서 열어 전체 복사한 뒤 학생 화면 → <b>데이터 붙여넣고 분석하기</b>에 붙여넣으면 “첫 열이 모둠 이름으로 보입니다 — 갈라 담을까요?”가 뜨고, <b>모둠별 기울기 비교와 반 전체 그래프</b>까지 한 번에 나옵니다. 교사 화면의 <b>[붙여넣기로 하기]</b> 에 넣어도 같습니다.</p>
 </div>
 
 <div class="card">
@@ -47,12 +124,28 @@ code{background:#F3FAFB;border:1px solid #D3E6EA;border-radius:6px;padding:1px 6
 <ol>
 <li>학생 화면에서 간편 모드로 실험 하나를 잠깐 보여 주고, <b>[지금까지 한 것 내려받기]</b>로 작업 파일이 생기는 것을 보여 줍니다.</li>
 <li>“이 파일을 네 모둠에게서 걷었다고 하겠습니다” 하고 위 ①의 네 파일을 교사 화면에 끌어다 놓습니다.</li>
-<li>모둠별로는 다섯 점짜리 조각이지만, <b>합치는 순간 12~60 mL 반비례 곡선이 빈틈없이 완성</b>되는 것을 보여 줍니다.</li>
+<li>모둠별로는 다섯 점짜리 조각이지만, <b>합치는 순간 12~60 mL 반비례 곡선이 빈틈없이 완성</b>되는 것을 보여 줍니다. 가로축을 1/부피로 바꾸면 한 직선이 됩니다.</li>
 <li>구글 시트로 걷는 반이라면 ②의 CSV 방식이 같은 자리라고 안내합니다.</li>
 </ol>
+<p class="muted">자세한 흐름은 사용 설명서의 <a href="../manual.html#simple">간편 모드로 한 차시</a>와 <a href="../manual.html#assign">모둠마다 다른 값 재기</a>를 보세요.</p>
 </div>
+</main>
 
-<p class="muted">MBL 수업허브 · <a href="../index.html">학생용</a> · <a href="../teacher.html">교사용</a></p>
-</div>
+<footer id="app-credit" class="sitefoot">
+  <p><b>MBL 수업허브</b><span data-mbl-who=" · {who}"></span> · 학교 과학 수업을 위해 만든 비상업 도구입니다.</p>
+  <p>다른 학교에서도 자유롭게 쓰고 고쳐 쓰셔도 됩니다. 쓰실 때는 출처(MBL 수업허브)를 밝혀 주세요 · <a href="../manual.html#sources">만든 사람 · 출처와 저작권</a></p>
+</footer>
+
+<script>
+/* config.js 의 SCHOOL · TEACHER 를 화면에 씁니다. 비어 있으면 일반 문구 그대로 둡니다. */
+(function(){
+  var c = window.MBL_CONFIG || {};
+  var s = String(c.SCHOOL || '').trim(), t = String(c.TEACHER || '').trim();
+  var who = [s, t ? t + ' 선생님' : ''].filter(Boolean).join(' ');
+  if (!who) return;
+  var els = document.querySelectorAll('[data-mbl-who]');
+  for (var i = 0; i < els.length; i++) els[i].textContent = els[i].getAttribute('data-mbl-who').replace('{who}', who);
+})();
+</script>
 </body>
 </html>
