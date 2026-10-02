@@ -3,3 +3,6 @@
 lab-part-*.js
 vendor-steps-*.js
 .claude/
+
+# 교과서 PDF — 저작권 자료라 저장소에 올리지 않습니다(로컬 작업 전용)
+_textbooks/
