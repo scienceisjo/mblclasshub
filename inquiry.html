@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>손으로 탐구 — MBL 수업허브</title>
 <link rel="icon" href="./assets/favicon.svg" type="image/svg+xml">
-<meta name="description" content="센서 없이 교실 도구로 재고, 표를 채우고, 값을 바꾸고, 그래프를 손으로 그려 해석하는 학생용 탐구 노트" />
+<meta name="description" content="센서 없이 교실 도구로 재고, 표를 채우고, 값을 바꾸고, 그래프를 손으로 그려 해석하는 학생용 탐구 노트 — 참여코드로 들어오면 모둠 값이 반 전체 그래프에 모입니다" />
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.min.css" />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <!--
@@ -15,25 +15,34 @@
     수업허브(index.html)는 센서 프로그램이 잰 값을 붙여넣으면 앱이 표·변환·그래프·판정을 해 줍니다.
     이 화면은 반대입니다. 센서 세트가 없는 과학실에서 학생이
       ① 변인을 정하고  ② 온도계·자·저울 같은 도구로 직접 재어 표를 채우고  ③ 파생열과 축 변환을 손으로 계산하고
-      ④ 축 범위를 정해 점을 직접 찍고 추세선을 직접 그은 뒤  ⑤ 앱의 계산과 견주어 해석합니다.
+      ④ 축 범위를 정해 점을 직접 찍고 추세선을 직접 그은 뒤  ⑤ 반 전체 그래프에서 다른 모둠과 견주고  ⑥ 앱의 계산과 견주어 해석합니다.
     앱은 '정답을 보여 주는 것'이 아니라 '학생이 한 것을 확인해 주는 것'만 합니다.
 
+  ▣ 두 가지 길
+    · 수업에 참여하기(참여코드) — index.html 과 같은 수업·모둠·보드(Hub.getLesson · joinGroup · saveData · watch)를 씁니다.
+      표를 확인할 때마다 우리 모둠 값이 서버에 올라가, 교사 대시보드(teacher.html)에는 센서 모둠과 똑같이 보이고
+      학생은 ⑥ 반 전체 그래프에서 다른 모둠의 점을 한 장에 겹쳐 봅니다.
+    · 혼자 진행(코드 없이) — 이 기기에만 남고 작업 파일(.html)로 냅니다. 다른 모둠의 작업 파일을 불러와 겹쳐 볼 수 있습니다.
+
   ▣ 재료(모두 기존 것)
-    · lab-data.js       실험 76건 — 센서 50 · 센서 없이 26(제목·dataSpec·분석 규칙·보고서 질문)
+    · lab-data.js       실험 76건 — 센서 50 · 센서 없이 26(제목·dataSpec·분석 규칙·보고서 질문·pool.assign 나눔값)
     · lab-engine.js     붙여넣기 분석과 같은 계산(runAnalysis · labPoints · labFit · rawVal · LAB_TF …)
     · hand-data.js      실험마다 「센서 없이 재는 법」(도구·절차·반복·한계). 없으면 '자료 받기' 로만 진행합니다.
     · demo-data.js      손으로 못 재는 실험(이산화 탄소 농도 등)에 '자료 받기' 로 넣는 예시 표
-    · hub.js            숫자 읽기(Hub.num)·최소제곱(Hub.stats)
+    · hub.js            숫자 읽기(Hub.num)·최소제곱(Hub.stats)·수업 참여·맡은 값(Hub.assign*)
 
   ▣ 산출물
     작업 파일(.html) — index.html 의 작업 파일과 같은 <script id="mbl-work"> 기록을 품으므로
     교사 화면의 [학생이 낸 작업 파일 모아 합치기] 에 그대로 올라갑니다(mode:'inquiry').
+    rows 는 index.html 이 서버에 저장하는 모양 그대로([가로축, 계열1, 계열2 …], 계산 열까지 채움)입니다.
 -->
-<script src="./hub.js?v=202609301448"></script>
-<script src="./lab-data.js?v=202609301448"></script>
-<script src="./lab-engine.js?v=202609301448"></script>
-<script src="./demo-data.js?v=202609301448"></script>
-<script src="./hand-data.js?v=202609301448"></script>
+<script src="./lib/supabase-2.117.2.js"></script>
+<script src="./config.js?v=202610020902"></script>
+<script src="./hub.js?v=202610020902"></script>
+<script src="./lab-data.js?v=202610020902"></script>
+<script src="./lab-engine.js?v=202610020902"></script>
+<script src="./demo-data.js?v=202610020902"></script>
+<script src="./hand-data.js?v=202610020902"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0; --paper:#FFFFFF; --cream:#FFFDF6;
@@ -41,23 +50,29 @@
     --sun:#FFC130; --coral:#FF8C6B; --sky:#54B4E8; --line:#E4EFF1; --line-2:#D3E6EA;
     --shadow:0 10px 28px rgba(37,71,83,.09); --shadow-lg:0 18px 44px rgba(37,71,83,.14);
     --ok:#37B58C; --warn:#E8873C; --bad:#E05A5A;
+    --g1:#20B2A6; --g2:#54B4E8; --g3:#FFC130; --g4:#FF8C6B; --g5:#8B7FD4; --g6:#4FB477; --g7:#E88FB5;
     --display:'Jua',sans-serif;
     --sans:'Pretendard Variable',Pretendard,-apple-system,system-ui,sans-serif;
     --wrap:1120px; --r:18px;
   }
   *{box-sizing:border-box;margin:0;padding:0}
+  html{overflow-x:hidden}
   body{font-family:var(--sans);color:var(--ink);line-height:1.65;-webkit-font-smoothing:antialiased;
-    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed;min-height:100vh}
+    background:linear-gradient(180deg,var(--sky-1) 0%,var(--sky-2) 55%,#F4FBF6 100%);background-attachment:fixed;min-height:100vh;overflow-x:hidden}
   a{color:inherit;text-decoration:none}
   .wrap{max-width:var(--wrap);margin:0 auto;padding:0 16px}
   .hidden{display:none !important}
   :focus-visible{outline:3px solid var(--mint);outline-offset:2px;border-radius:8px}
-  .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
-  .top .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:62px;padding:8px 0}
+  .top{position:sticky;top:0;z-index:50;background:rgba(255,255,255,.92);backdrop-filter:blur(10px);border-bottom:1px solid var(--line)}
+  .top .row{display:flex;align-items:center;justify-content:space-between;gap:10px;min-height:56px;padding-top:8px;padding-bottom:4px}
   .brand{display:flex;flex-direction:column;line-height:1.2;min-width:0}
   .brand b{font-family:var(--display);font-size:19px;font-weight:400}
   .brand span{font-size:12.5px;color:var(--muted);overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
   .topright{display:flex;align-items:center;gap:8px;flex-shrink:0}
+  .topnav{display:flex;gap:4px;flex-wrap:wrap;align-items:center;padding-bottom:8px}
+  .topnav a{font-size:13px;font-weight:700;color:var(--muted);padding:4px 10px;border-radius:999px;white-space:nowrap}
+  .topnav a:hover{background:rgba(32,178,166,.1);color:var(--mint-d)}
+  .topnav a.on{background:rgba(32,178,166,.14);color:var(--mint-d)}
   .box{background:var(--paper);border:1px solid var(--line);border-radius:var(--r);box-shadow:var(--shadow);padding:22px;margin:16px 0}
   .box h2{font-family:var(--display);font-size:22px;font-weight:400;margin-bottom:6px}
   .box h3{font-family:var(--display);font-size:18px;font-weight:400;margin:18px 0 8px}
@@ -77,7 +92,7 @@
   .btn-warn{border-color:var(--coral);color:#C9542F}
   .lnk{background:none;border:0;padding:4px 6px;margin:0 -6px;border-radius:9px;font-family:var(--sans);font-size:13.5px;font-weight:700;color:var(--mint-d);cursor:pointer}
   .lnk:hover{background:rgba(32,178,166,.1)}
-  input[type=text],input[type=number],select,textarea{font-family:var(--sans);font-size:15px;color:var(--ink);border:1.5px solid var(--line-2);
+  input[type=text],input[type=number],input[type=password],select,textarea{font-family:var(--sans);font-size:15px;color:var(--ink);border:1.5px solid var(--line-2);
     border-radius:12px;padding:9px 11px;background:#fff;width:100%}
   input:focus,select:focus,textarea:focus{border-color:var(--mint);outline:none}
   textarea{min-height:84px;resize:vertical;line-height:1.6}
@@ -86,24 +101,42 @@
   .msg{font-size:14px;font-weight:700;min-height:20px;margin-top:8px}
   .msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)} .msg.warn{color:var(--warn)}
   .note{border-left:4px solid var(--mint);background:var(--cream);border-radius:0 12px 12px 0;padding:11px 14px;margin:10px 0;font-size:14.5px}
-  .note.sun{border-color:var(--sun)} .note.coral{border-color:var(--coral)}
+  .note.sun{border-color:var(--sun)} .note.coral{border-color:var(--coral)} .note.sky{border-color:var(--sky)}
   .err{color:var(--bad);font-size:14px;font-weight:700;margin-top:8px;min-height:20px}
 
   /* 걸음 안내 */
-  .steps{display:grid;grid-template-columns:repeat(6,1fr);gap:6px;margin:16px 0 4px}
+  .steps{display:grid;grid-template-columns:repeat(7,1fr);gap:6px;margin:16px 0 4px}
   .step{border:1.5px solid var(--line);background:#fff;border-radius:14px;padding:9px 8px;text-align:left;cursor:pointer;font-family:var(--sans);
     color:var(--ink);transition:.16s;min-width:0}
   .step small{display:block;font-size:11.5px;color:var(--muted);font-weight:700}
-  .step b{display:block;font-size:14.5px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .step b{display:block;font-size:14px;line-height:1.3;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .step.on{border-color:var(--mint);box-shadow:var(--shadow);background:var(--cream)}
   .step.done small{color:var(--ok)}
-  .step.done b::after{content:' ✓';color:var(--ok)}
+  .step.done small::after{content:' ✓';color:var(--ok)}
   .step:disabled{opacity:.45;cursor:not-allowed}
-  @media (max-width:760px){ .steps{grid-template-columns:repeat(3,1fr)} }
+  @media (max-width:900px){ .steps{grid-template-columns:repeat(4,1fr)} .step b{white-space:normal;font-size:13px;word-break:keep-all} }
+
+  /* 수업 참여 */
+  .joinrow{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:10px}
+  .joinrow input{max-width:190px;font-size:20px;font-weight:800;letter-spacing:3px;text-transform:uppercase;text-align:center}
+  .gsel{display:grid;grid-template-columns:repeat(auto-fill,minmax(92px,1fr));gap:8px;margin:10px 0}
+  .gbtn{border:2px solid var(--line-2);background:#fff;border-radius:14px;padding:10px 6px;font-family:var(--sans);font-size:16px;font-weight:800;color:var(--ink);cursor:pointer}
+  .gbtn small{display:block;font-size:11.5px;font-weight:600;color:var(--muted)}
+  .gbtn.on{border-color:var(--mint-d);background:var(--cream);box-shadow:var(--shadow)}
+  .lessonbar{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;background:#fff;border:2px solid var(--sky);border-radius:14px;padding:9px 14px;margin:10px 0 0;font-size:14px}
+  .lessonbar b{color:#2A7FB0}
+  .lessonbar .msg{margin:0}
+  .saved{display:flex;flex-direction:column;gap:6px;margin-top:8px}
+  .saved>div{display:flex;gap:8px 12px;flex-wrap:wrap;align-items:center;border:1px solid var(--line);border-radius:12px;padding:8px 12px;background:#fff;font-size:14px}
+  .saved>div span{flex:1 1 220px;min-width:0}
+  .asg{border:2px solid var(--sun);background:#FFFBEF;border-radius:14px;padding:12px 14px;margin:10px 0}
+  .asg .v{font-size:20px;font-weight:800;color:#8A5F00;word-break:keep-all}
+  .asg .muted{display:block;margin-top:4px}
+  table.dt td input.assigned{background:#FFF6D8;border-color:#F0C850}
 
   /* 실험 고르기 */
   .filters{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:10px 0}
-  .filters select,.filters input{width:auto;min-width:130px}
+  .filters select,.filters input[type=text]{width:auto;min-width:130px;flex:0 1 auto}
   .chk{display:inline-flex;align-items:center;gap:6px;font-size:14px;font-weight:700;cursor:pointer}
   .chk input{width:18px;height:18px;accent-color:var(--mint)}
   .cards{display:grid;grid-template-columns:repeat(auto-fill,minmax(230px,1fr));gap:10px;margin-top:8px}
@@ -122,10 +155,11 @@
   ol.proc li{margin:6px 0}
 
   /* 표 */
-  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#fff}
+  .tblwrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px;background:#fff;max-width:100%}
   table.dt{border-collapse:collapse;width:100%;font-size:14.5px}
-  table.dt th,table.dt td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:center;white-space:nowrap}
-  table.dt th{background:var(--cream);font-weight:800;font-size:13.5px;line-height:1.35}
+  table.dt th,table.dt td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:center}
+  table.dt td{white-space:nowrap}
+  table.dt th{background:var(--cream);font-weight:800;font-size:13.5px;line-height:1.35;min-width:84px;max-width:170px;word-break:keep-all}
   table.dt th small{display:block;font-weight:600;color:var(--muted);font-size:11.5px}
   table.dt td input{width:92px;text-align:center;padding:7px 6px;font-size:15px;border-radius:9px}
   table.dt td input.avg{background:#FFFBEF;border-color:#F0DFA6}
@@ -134,11 +168,15 @@
   table.dt td input.bad{border-color:var(--bad);background:#FFF3F3}
   table.dt td .ans{display:block;font-size:11.5px;color:var(--muted);margin-top:2px}
   table.dt td.rowno{color:var(--muted);font-size:12.5px}
+  dl.hows{display:grid;grid-template-columns:minmax(90px,max-content) 1fr;gap:4px 12px;font-size:13.5px;margin:8px 0 0}
+  dl.hows dt{font-weight:800;color:var(--mint-d)}
+  dl.hows dd{color:#4C6B78}
+  @media (max-width:560px){ dl.hows{grid-template-columns:1fr} dl.hows dd{margin-bottom:6px} table.dt td input{width:78px} }
   .scoreline{display:flex;gap:14px;flex-wrap:wrap;font-size:14.5px;margin-top:8px}
   .scoreline b{color:var(--mint-d)}
 
   /* 변인 */
-  .vq{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+  .vq{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px}
   .vq>div{border:1px solid var(--line);border-radius:14px;padding:12px 14px;background:var(--cream)}
   .vq b{display:block;margin-bottom:6px;font-size:15px}
 
@@ -147,44 +185,74 @@
   .fcard{border:1.5px solid var(--line);border-radius:14px;background:#fff;padding:12px 14px}
   .fcard b{display:block;font-size:15px;margin-bottom:4px}
   .fcard .formula{font-size:16px;font-weight:800;color:var(--mint-d)}
+  .fcard.look .formula{font-size:14px;font-weight:700}
 
   /* 그래프 */
-  .axes{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px}
+  .axes{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:10px}
   .rng{display:grid;grid-template-columns:auto 1fr 1fr 1fr;gap:6px 8px;align-items:center;font-size:14px}
-  .rng input{width:100%;padding:7px 8px}
-  .rng .lb{font-weight:800;color:var(--muted);font-size:13px}
-  .gwrap{border:1px solid var(--line);border-radius:14px;background:#fff;padding:8px;margin-top:10px;overflow-x:auto}
-  .gwrap svg{display:block;width:100%;max-width:760px;height:auto;margin:0 auto;touch-action:none;user-select:none}
+  .rng input{width:100%;padding:7px 8px;min-width:0}
+  .rng .lb{font-weight:800;color:var(--muted);font-size:13px;min-width:0;word-break:keep-all}
+  .gwrap{border:1px solid var(--line);border-radius:14px;background:#fff;padding:8px;margin-top:10px}
+  .gwrap svg{display:block;width:100%;max-width:760px;height:auto;margin:0 auto;touch-action:none;user-select:none;-webkit-user-select:none}
+  #csvg{touch-action:auto}
   .gtools{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}
   .gtools .btn.on{border-color:var(--mint);background:var(--cream)}
-  .gaxis text{font-family:var(--sans);font-size:12px;fill:var(--muted)}
-  .gaxis .lab{font-size:13px;font-weight:700;fill:var(--ink)}
+  .gaxis text{font-family:var(--sans);fill:var(--muted)}
+  .gaxis .lab{font-size:1.08em;font-weight:700;fill:var(--ink)}
   .ptS{fill:var(--mint);stroke:#fff;stroke-width:2;cursor:grab}
   .ptS.hit{fill:var(--ok)} .ptS.miss{fill:var(--bad)}
   .ptE{fill:none;stroke:var(--coral);stroke-width:2}
   .lnS{stroke:var(--sky);stroke-width:3;stroke-linecap:round}
   .lnE{stroke:var(--mint-d);stroke-width:2.5;stroke-dasharray:7 6}
-  .hdl{fill:#fff;stroke:var(--sky);stroke-width:3;cursor:grab}
-  .legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:6px}
+  .hdl{fill:var(--sky);stroke:#fff;stroke-width:2;cursor:grab}
+  .legend{display:flex;gap:6px 14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:6px}
   .legend i{display:inline-block;width:14px;height:14px;border-radius:50%;vertical-align:-2px;margin-right:4px}
+  .legend i.dia{border-radius:2px;transform:rotate(45deg) scale(.8)}
+  .legend .me{color:var(--ink);font-weight:800}
+
+  /* 반 전체 */
+  .covbar{font-size:15px;margin:2px 0 10px}
+  .covchips{display:flex;flex-wrap:wrap;gap:8px}
+  .covchip{display:inline-flex;flex-direction:column;align-items:center;gap:2px;min-width:64px;padding:7px 12px;border-radius:14px;
+           border:2px dashed var(--line-2);background:#fff;color:var(--muted);font-weight:800;font-size:15px;line-height:1.2}
+  .covchip small{font-weight:600;font-size:11.5px}
+  .covchip.done{border-style:solid;border-color:var(--mint);background:#E7F7F4;color:var(--ink)}
+  .covchip.mine{box-shadow:0 0 0 3px var(--sun)}
+  @media (max-width:560px){ .covchips{gap:6px} .covchip{min-width:0;padding:5px 9px;font-size:13.5px} }
+  .gload{display:flex;flex-direction:column;gap:4px;margin-top:8px;font-size:13.5px}
 
   /* 해석 */
-  .cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:10px;margin-top:8px}
+  .cmp{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:10px;margin-top:8px}
   .cmp>div{border:1px solid var(--line);border-radius:12px;padding:10px 12px;background:var(--cream)}
   .cmp>div>b{display:block;margin-bottom:4px;color:var(--mint-d)}
   .verdict{border:2px solid var(--mint);background:var(--cream);border-radius:14px;padding:14px 16px;font-size:16.5px;line-height:1.7;margin:12px 0}
-  .board{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:8px}
+  .board{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:8px;margin-top:8px}
   .board>div{border:1.5px solid var(--line);border-radius:12px;padding:10px 12px;background:#fff}
   .board small{display:block;font-size:12px;color:var(--muted);font-weight:700}
   .board b{font-size:18px}
   .board .o{color:var(--ok)} .board .x{color:var(--muted)}
 
-  .foot{color:var(--muted);font-size:12.5px;text-align:center;margin:26px 0 30px;line-height:1.7}
+  /* 비밀번호 묻기 */
+  .dlg{position:fixed;inset:0;background:rgba(37,71,83,.35);display:flex;align-items:center;justify-content:center;z-index:100;padding:16px}
+  .dlg>div{background:#fff;border-radius:18px;box-shadow:var(--shadow-lg);padding:20px;max-width:360px;width:100%}
+  .dlg input{font-size:22px;letter-spacing:8px;text-align:center;font-weight:800}
+
+  .foot{color:var(--muted);font-size:12.5px;text-align:center;margin:26px 0 30px;line-height:1.7;padding:0 16px}
+  @media (max-width:560px){
+    .box{padding:16px 14px}
+    .box h2{font-size:20px}
+    .brand b{font-size:17px}
+    .topnav{gap:0;flex-wrap:nowrap;overflow-x:auto;scrollbar-width:none}
+    .topnav::-webkit-scrollbar{display:none}
+    .topnav a{padding:4px 6px;font-size:12px}
+    #btnSaveTop{padding:6px 10px}
+  }
   @media print{
-    .top,.steps,.btn,.gtools,.lnk,.filters,.noprint{display:none !important}
+    .top,.steps,.btn,.gtools,.lnk,.filters,.noprint,.lessonbar,#joinBox,#savedBox,#pickBox{display:none !important}
     body{background:#fff}
     .box{box-shadow:none;border-color:#ccc;break-inside:avoid}
-    section.hidden{display:block !important}
+    section.hidden:not(.locked){display:block !important}
+    section.locked{display:none !important}
   }
 </style>
 </head>
@@ -197,10 +265,16 @@
       <span id="topSub">센서 없이 — 재고 · 바꾸고 · 그리고 · 해석하기</span>
     </div>
     <div class="topright">
-      <button id="btnSaveTop" class="btn btn-sm btn-solid hidden" type="button">작업 파일 내려받기</button>
-      <a class="btn btn-sm" href="./index.html">수업허브로</a>
+      <button id="btnSaveTop" class="btn btn-sm btn-solid hidden" type="button">작업 파일</button>
     </div>
   </div>
+  <nav class="wrap topnav" aria-label="화면 바로가기">
+    <a href="./index.html">학생 화면</a>
+    <a href="./inquiry.html" class="on" aria-current="page">손으로 탐구</a>
+    <a href="./teacher.html">교사 화면</a>
+    <a href="./manual.html">사용 설명서</a>
+    <a href="./about.html">앱 소개</a>
+  </nav>
 </header>
 
 <main class="wrap">
@@ -210,23 +284,64 @@
     <button class="step" data-step="2" type="button" disabled><small>③</small><b>재기 · 표 채우기</b></button>
     <button class="step" data-step="3" type="button" disabled><small>④</small><b>값 바꾸기</b></button>
     <button class="step" data-step="4" type="button" disabled><small>⑤</small><b>그래프 그리기</b></button>
-    <button class="step" data-step="5" type="button" disabled><small>⑥</small><b>해석 · 제출</b></button>
+    <button class="step" data-step="5" type="button" disabled><small>⑥</small><b>반 전체 그래프</b></button>
+    <button class="step" data-step="6" type="button" disabled><small>⑦</small><b>해석 · 제출</b></button>
+  </div>
+
+  <!-- 수업 참여 중 — 모든 걸음 위에 붙어 있습니다 -->
+  <div id="lessonBar" class="lessonbar hidden">
+    <span>📡 <b>수업 참여 중</b> · <span id="lbWho"></span></span>
+    <button id="btnSend" class="btn btn-sm btn-solid" type="button">우리 모둠 값 보내기</button>
+    <span id="lbMsg" class="msg muted"></span>
+    <button id="btnLeaveLesson" class="lnk" type="button" style="margin-left:auto">수업에서 나가기</button>
   </div>
 
   <!-- ① 실험 고르기 -->
   <section id="s0">
-    <div class="box">
+    <div id="savedBox" class="box hidden">
+      <span class="pill sun">이 기기에 남은 탐구</span>
+      <p id="savedLead" class="lead" style="margin-top:8px">하던 탐구를 이어서 할 수 있습니다. 여러 모둠이 이 기기를 함께 쓰면 모둠마다 따로 남습니다.</p>
+      <div id="savedList" class="saved"></div>
+      <div class="improw"><button id="btnFresh" class="btn btn-sm hidden" type="button">새로 시작하기</button></div>
+    </div>
+
+    <div id="joinBox" class="box">
+      <span class="pill sky">수업에 참여하기</span>
+      <h2 style="margin-top:8px">선생님이 참여코드를 알려 주었나요?</h2>
+      <p class="lead">참여코드로 들어오면 우리 모둠이 잰 값이 <b>반 전체 그래프</b>에 바로 모이고, 선생님 화면에도 센서 모둠과 똑같이 보입니다. 코드가 없으면 아래에서 실험을 골라 진행하고 작업 파일로 냅니다.</p>
+      <div class="joinrow">
+        <input id="inCode" type="text" maxlength="6" autocomplete="off" placeholder="참여코드" aria-label="참여코드 6자리" />
+        <button id="btnJoin" class="btn btn-solid" type="button">들어가기</button>
+        <span id="joinMsg" class="msg"></span>
+      </div>
+      <div id="pickBox" class="hidden">
+        <h3 id="gTitle"></h3>
+        <p id="gSub" class="muted"></p>
+        <div id="gsel" class="gsel"></div>
+        <div class="who">
+          <div><label class="fl" for="inGName">모둠 이름(선택)</label><input id="inGName" type="text" maxlength="30" placeholder="예) 3모둠 열정파" /></div>
+          <div><label class="fl" for="inGMem">모둠원 이름(쉼표로)</label><input id="inGMem" type="text" maxlength="80" placeholder="예) 김하늘, 이바다" /></div>
+        </div>
+        <div id="pinRow" class="hidden"><label class="fl" for="inPin">모둠 비밀번호 4자리 — 선생님께 받았습니다</label><input id="inPin" type="password" inputmode="numeric" maxlength="4" autocomplete="off" style="max-width:160px;letter-spacing:6px;text-align:center;font-weight:800" /></div>
+        <div class="improw">
+          <button id="btnEnter" class="btn btn-solid" type="button" disabled>모둠을 고르세요</button>
+          <button id="btnJoinBack" class="lnk" type="button">코드 다시 넣기</button>
+          <span id="groupMsg" class="msg"></span>
+        </div>
+      </div>
+    </div>
+
+    <div id="chooseBox" class="box">
       <span class="pill">센서 없이 하는 탐구</span>
       <h2 style="margin-top:8px">어떤 실험을 할까요?</h2>
       <p class="lead">센서 프로그램이 대신 해 주던 일 — 재기·표 채우기·값 바꾸기·그래프 그리기 — 를 <b>여러분이 직접</b> 합니다. 앱은 여러분이 한 것을 확인만 해 줍니다.</p>
       <div class="filters">
         <select id="fGrade" aria-label="학년"><option value="">모든 학년</option><option value="1">중1</option><option value="2">중2</option><option value="3">중3</option></select>
         <input id="fSearch" type="text" placeholder="제목·단원으로 찾기" aria-label="실험 찾기" />
-        <label class="chk" for="fHand"><input id="fHand" type="checkbox" checked /> 손으로 잴 수 있는 실험만</label>
+        <label class="chk" for="fHand"><input id="fHand" type="checkbox" /> <span id="fHandLab">손으로 잴 수 있는 실험만</span></label>
         <span id="fCount" class="pill"></span>
       </div>
       <div id="expCards" class="cards"></div>
-      <div id="askBar" class="note sun hidden">하던 탐구가 이 기기에 남아 있습니다. <button id="btnResume" class="lnk" type="button">이어서 하기</button> · <button id="btnFresh" class="lnk" type="button">새로 시작</button></div>
     </div>
 
     <div id="expDetail" class="box hidden">
@@ -235,11 +350,14 @@
       <p id="dWhy" class="lead"></p>
       <div id="dHand"></div>
       <h3>누가 하나요?</h3>
+      <p id="whoLock" class="muted hidden">반·모둠은 수업에 들어올 때 정했습니다.</p>
       <div class="who">
         <div><label class="fl" for="wCls">반</label><input id="wCls" type="text" placeholder="예) 2학년 3반" maxlength="20" /></div>
-        <div><label class="fl" for="wNo">모둠 번호</label><input id="wNo" type="number" min="1" max="20" placeholder="예) 3" /></div>
-        <div><label class="fl" for="wName">모둠 이름 · 이름(선택)</label><input id="wName" type="text" placeholder="예) 3모둠 열정파" maxlength="30" /></div>
+        <div><label class="fl" for="wNo">모둠 번호</label><input id="wNo" type="number" min="1" max="20" inputmode="numeric" placeholder="예) 3" /></div>
+        <div><label class="fl" for="wName">모둠 이름(선택)</label><input id="wName" type="text" placeholder="예) 3모둠 열정파" maxlength="30" /></div>
+        <div><label class="fl" for="wMem">모둠원 이름(쉼표로)</label><input id="wMem" type="text" placeholder="예) 김하늘, 이바다" maxlength="80" /></div>
       </div>
+      <div id="dAssign"></div>
       <div class="improw">
         <button id="btnStart" class="btn btn-solid" type="button" style="min-height:48px">이 실험으로 시작하기</button>
         <span id="startMsg" class="msg"></span>
@@ -266,7 +384,9 @@
     <div class="box">
       <span class="pill">③ 재기 · 표 채우기</span>
       <h2 style="margin-top:8px">도구로 재어 표에 적습니다</h2>
+      <div id="rawAssign"></div>
       <div id="howBox"></div>
+      <div id="srvLoad"></div>
       <div class="improw">
         <span class="fl" style="margin:0">같은 조건에서 되풀이</span>
         <select id="repSel" style="width:auto"><option value="1">1번</option><option value="2">2번</option><option value="3">3번 (평균 내기)</option></select>
@@ -275,6 +395,7 @@
         <button id="btnDemoFill" class="btn btn-sm hidden" type="button">자료 받기 (예시 값)</button>
       </div>
       <p id="repNote" class="muted" style="margin-top:6px"></p>
+      <div id="demoNote"></div>
       <div class="tblwrap" style="margin-top:10px"><table id="rawTbl" class="dt"></table></div>
       <div class="improw">
         <button id="btnRawCheck" class="btn btn-solid" type="button">평균 확인 · 다음으로</button>
@@ -295,7 +416,7 @@
         <button id="btnTfCheck" class="btn btn-solid" type="button">확인</button>
         <span id="tfMsg" class="msg"></span>
       </div>
-      <p class="muted" style="margin-top:6px">3 % 안이면 맞은 것으로 봅니다. 두 번 틀린 칸은 답을 작게 보여 줍니다 — 그 값을 다시 적으세요.</p>
+      <p class="muted" style="margin-top:6px">3 % 안이면 맞은 것으로 봅니다(반올림해 적었으면 그 자릿수로 반올림한 값과 견줍니다). 두 번 틀린 칸은 답을 작게 보여 줍니다 — 그 값을 다시 적으세요.</p>
     </div>
   </section>
 
@@ -344,6 +465,7 @@
         <div class="legend">
           <span><i style="background:var(--mint)"></i>내가 찍은 점</span>
           <span><i style="background:var(--sky)"></i>내가 그은 선</span>
+          <span><i class="dia" style="background:var(--sky)"></i>선 손잡이(끌어서 돌리기)</span>
           <span><i style="background:#fff;border:2px solid var(--coral)"></i>앱이 계산한 점</span>
           <span><i style="background:var(--mint-d)"></i>앱의 최소제곱 직선(점선)</span>
         </div>
@@ -354,24 +476,64 @@
           <span id="gMsg" class="msg"></span>
         </div>
         <div id="gReport"></div>
+        <div class="improw"><button id="btnGNext" class="btn btn-solid hidden" type="button">다음 — 반 전체 그래프 보기</button></div>
       </div>
     </div>
   </section>
 
-  <!-- ⑥ 해석 · 제출 -->
+  <!-- ⑥ 반 전체 그래프 -->
   <section id="s5" class="hidden">
     <div class="box">
-      <span class="pill">⑥ 해석</span>
+      <span class="pill">⑥ 반 전체 그래프</span>
+      <h2 style="margin-top:8px">다른 모둠은 어떻게 나왔을까요?</h2>
+      <p class="lead" id="cLead"></p>
+      <div class="axes" style="margin-top:6px">
+        <div><label class="fl" for="cX">가로축</label><select id="cX"></select></div>
+        <div><label class="fl" for="cY">세로축</label><select id="cY"></select></div>
+      </div>
+      <div class="gwrap"><svg id="csvg" viewBox="0 0 760 460" role="img" aria-label="반 전체 모둠의 점을 겹친 그래프"></svg></div>
+      <div id="cLegend" class="legend"></div>
+      <p id="cNote" class="muted" style="margin-top:6px"></p>
+      <div id="cCover" style="margin-top:12px"></div>
+      <div id="cLive" class="improw hidden noprint">
+        <button id="btnCRefresh" class="btn btn-sm" type="button">지금 새로 받기</button>
+        <span id="cStamp" class="muted"></span>
+      </div>
+      <div id="cOff" class="hidden">
+        <div class="note sky"><b>참여코드 없이 진행 중입니다.</b> 이 기기에는 우리 모둠 값만 있습니다. 선생님은 모둠마다 낸 작업 파일을 교사 화면 <b>[학생이 낸 작업 파일 모아 합치기]</b> 에 올려 반 전체 그래프를 만듭니다.
+          지금 다른 모둠의 작업 파일(.html)을 받았다면 아래에서 불러와 이 그래프에 겹쳐 볼 수 있습니다.</div>
+        <div class="improw noprint">
+          <label class="btn btn-sm" for="cFiles" style="cursor:pointer">다른 모둠 작업 파일 불러오기</label>
+          <input id="cFiles" type="file" accept=".html,.htm,text/html" multiple class="hidden" />
+          <button id="btnCClear" class="lnk hidden" type="button">불러온 파일 비우기</button>
+          <span id="cFileMsg" class="msg"></span>
+        </div>
+        <div id="cLoaded" class="gload"></div>
+      </div>
+      <h3>보고 생각하기</h3>
+      <p class="muted">우리 모둠의 점(크고 진한 점)이 다른 모둠의 점과 같은 흐름 위에 있나요? 혼자 동떨어진 점이 있다면 어느 모둠의 어떤 값이고, 왜 그랬을까요? 해석 걸음에서 결론과 오차의 원인을 적을 때 이 그래프를 근거로 쓰세요.</p>
+      <div class="improw"><button id="btnClassNext" class="btn btn-solid" type="button">다음 — 해석하기</button></div>
+    </div>
+  </section>
+
+  <!-- ⑦ 해석 · 제출 -->
+  <section id="s6" class="hidden">
+    <div class="box">
+      <span class="pill">⑦ 해석</span>
       <h2 style="margin-top:8px">그래서 무엇을 말할 수 있나요?</h2>
-      <label class="fl" for="iRel">두 양의 관계는?</label>
+      <label class="fl" for="iRel">두 양의 관계는? (내가 그린 그래프의 가로축과 세로축)</label>
       <select id="iRel">
         <option value="">— 고르세요 —</option>
         <option value="prop">정비례한다 (원점을 지나는 직선)</option>
         <option value="inc">한쪽이 커지면 다른 쪽도 커진다 (직선이지만 원점은 아님)</option>
+        <option value="curveUp">휘어지며 커진다 (곡선을 그리며 늘어남)</option>
         <option value="inv">반비례한다 (곱이 일정)</option>
         <option value="inv2">거리²에 반비례한다</option>
+        <option value="dec">한쪽이 커지면 다른 쪽은 작아진다 (직선)</option>
+        <option value="curveDown">휘어지며 작아진다 (곡선을 그리며 줄어듦)</option>
+        <option value="peak">어느 값에서 가장 크다 (봉우리)</option>
+        <option value="valley">어느 값에서 가장 작다 (골짜기)</option>
         <option value="flat">한동안 일정하게 멈춰 있는 구간이 있다</option>
-        <option value="dec">한쪽이 커지면 다른 쪽은 작아진다</option>
         <option value="none">뚜렷한 관계가 없다</option>
       </select>
       <div id="slopeQ" class="hidden">
@@ -380,7 +542,7 @@
       </div>
       <label class="fl" for="iConc">결론 한 문장 — 표와 그래프의 값을 들어서</label>
       <textarea id="iConc" placeholder="예) 부피가 5 mL 에서 19 mL 로 커지는 동안 압력은 … 로 줄었다. 곱은 거의 일정했다."></textarea>
-      <label class="fl" for="iErr">앱의 값과 내 값이 다른 곳이 있다면, 왜 그럴까요? 오차의 원인</label>
+      <label class="fl" for="iErr">앱의 값과 내 값, 다른 모둠의 값이 다른 곳이 있다면 왜 그럴까요? 오차의 원인</label>
       <textarea id="iErr" placeholder="예) 눈금을 읽을 때 …, 온도계가 …"></textarea>
       <div id="extraQ"></div>
       <div class="improw">
@@ -399,18 +561,36 @@
         <button id="btnPrint" class="btn" type="button">인쇄</button>
         <span id="saveMsg" class="msg"></span>
       </div>
-      <p class="muted" style="margin-top:6px">선생님은 이 파일들을 교사 화면 <b>[학생이 낸 작업 파일 모아 합치기]</b> 에 올려 반 전체를 봅니다.</p>
+      <p class="muted" style="margin-top:6px" id="submitNote">선생님은 이 파일들을 교사 화면 <b>[학생이 낸 작업 파일 모아 합치기]</b> 에 올려 반 전체를 봅니다.</p>
     </div>
   </section>
 </main>
 
-<p class="foot" id="app-credit">© 2026 조승재(과학이조선생) · MBL 센서 수업허브 — 손으로 탐구 (이 줄은 화면에만 있고 학생 파일에는 들어가지 않습니다)<br>실험 자료의 출처는 <a href="./manual.html#sources" style="color:var(--mint-d);font-weight:700">사용 설명서</a>에 있습니다.</p>
+<div id="pinDlg" class="dlg hidden" role="dialog" aria-modal="true" aria-labelledby="pinDlgT">
+  <div>
+    <h3 id="pinDlgT" style="font-family:var(--display);font-weight:400;font-size:19px">모둠 비밀번호</h3>
+    <p id="pinDlgSub" class="muted" style="margin:4px 0 10px">선생님께 받은 우리 모둠 비밀번호 4자리를 넣어 주세요.</p>
+    <input id="pinDlgIn" type="password" inputmode="numeric" maxlength="4" autocomplete="off" />
+    <p id="pinDlgErr" class="err"></p>
+    <div class="improw"><button id="pinDlgOk" class="btn btn-solid" type="button">확인</button><button id="pinDlgNo" class="btn" type="button">취소</button></div>
+  </div>
+</div>
+
+<p class="foot" id="app-credit"></p>
 
 <script>
 (function(){
   'use strict';
   const $ = id => document.getElementById(id);
   const esc = s => String(s == null ? '' : s).replace(/[&<>"']/g, c => ({ '&':'&amp;', '<':'&lt;', '>':'&gt;', '"':'&quot;', "'":'&#39;' }[c]));
+  const HUB = (typeof Hub !== 'undefined') ? Hub : null;
+
+  // ── 바닥글 — 학교·선생님 이름은 config.js(window.MBL_CONFIG)에서 읽습니다 ──
+  (function credit(){
+    const C = window.MBL_CONFIG || {};
+    const who = [String(C.SCHOOL || '').trim(), String(C.TEACHER || '').trim()].filter(Boolean).join(' ');
+    $('app-credit').innerHTML = '© 2026 ' + (who ? esc(who) + ' · ' : '') + 'MBL 수업허브 — 손으로 탐구<br>실험 자료의 출처는 <a href="./manual.html#sources" style="color:var(--mint-d);font-weight:700">사용 설명서</a>에 있습니다.';
+  })();
 
   // ── 계산 엔진 — index.html 과 같은 것을 씁니다 ─────────────────
   const E = window.LabEngine || null;
@@ -419,15 +599,22 @@
     document.querySelector('main').innerHTML = '<div class="box"><h2>자료를 읽지 못했습니다</h2><p class="lead">lab-data.js · lab-engine.js 가 같은 폴더에 있어야 합니다.</p></div>';
     return;
   }
-  const num = v => (typeof Hub !== 'undefined' && Hub.num) ? Hub.num(v) : Number(v);
+  const num = v => (HUB && HUB.num) ? HUB.num(v) : Number(v);
   const TF = E.LAB_TF;
   function labNum(v){ return E.labNum ? E.labNum(v) : (isFinite(v) ? String(Math.round(v * 1000) / 1000) : '—'); }
   function fmtR2(v){ return E.fmtR2 ? E.fmtR2(v) : (isFinite(v) ? v.toFixed(3) : '—'); }
-  //  값 견주기 — 붙여넣기 분석의 '내 생각과 견주기' 와 같은 3 % 규칙입니다.
-  function close(a, b){
+  //  값 견주기 — 정답의 3 % 안이면 맞습니다(값이 아주 작아도 바닥 허용폭을 두지 않습니다: 0.004 에 '0' 은 틀림).
+  //  반올림해 적은 값은 적은 자릿수로 정답을 반올림한 값과 같으면 맞습니다 — 다만 유효숫자가 두 자리 이상일 때만.
+  function close(a, b, s){
     if (!isFinite(a) || !isFinite(b)) return false;
-    const t = Math.max(Math.abs(b) * 0.03, 0.005);
-    return Math.abs(a - b) <= t;
+    if (Math.abs(a - b) <= Math.max(Math.abs(b) * 0.03, 1e-9)) return true;
+    const m = /^[+\-]?(\d*)(?:\.(\d*))?$/.exec(String(s == null ? '' : s).trim());
+    if (!m || !(m[1] + (m[2] || ''))) return false;
+    const dec = (m[2] || '').length;
+    const sig = (m[1] + (m[2] || '')).replace(/^0+/, '').length;
+    if (sig < 2) return false;
+    const p = Math.pow(10, dec);
+    return Math.abs(Math.round(b * p) / p - a) <= 1e-9 * Math.max(1, Math.abs(a));
   }
   function fmtCell(v){
     if (!isFinite(v)) return '—';
@@ -435,24 +622,81 @@
     const d = a >= 100 ? 1 : a >= 10 ? 2 : a >= 1 ? 3 : 4;
     return String(Number(v.toFixed(d)));
   }
+  function hash(s){ let h = 5381; s = String(s); for (let i = 0; i < s.length; i++) h = ((h * 33) ^ s.charCodeAt(i)) >>> 0; return h; }
+  function hhmm(t){ const d = new Date(t || Date.now()); return ('0' + d.getHours()).slice(-2) + ':' + ('0' + d.getMinutes()).slice(-2); }
+  const timeLike = label => /시간|시점|회차|연도|날짜|시기/.test(String(label || ''));
 
-  // ── 상태 ──────────────────────────────────────────────────────
-  const KEY = 'mbl_inquiry_v1';
+  // ── 상태 · 이 기기에 남기기 ────────────────────────────────────
+  //  공용 PC 에서 여러 모둠이 번갈아 써도 서로 덮어쓰지 않게, 탐구 하나마다 열쇠(wid)를 따로 두고 목록으로 모읍니다.
+  const LIST_KEY = 'mbl_inquiry_list', WORK_PRE = 'mbl_inquiry_w_', OLD_KEY = 'mbl_inquiry_v1';
+  const newWid = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
   let S = fresh();
   function fresh(){
-    return { expId:'', who:{ cls:'', no:'', name:'' }, step:0,
+    return { wid: newWid(), expId:'', who:{ cls:'', no:'', name:'', mem:'' }, started:false, step:0,
              vars:{ ctl:'', dep:'', ctrl:'' }, varsOk:false,
-             reps:1, raw:[], rawOk:false, demo:false,
+             reps:1, raw:[], rawOk:false, demo:'', demoSnap:null, asgFilled:false,
              tf:{}, tfTries:{}, tfOk:false,
              g:{ xk:'', yk:'', axOk:false, rx:[null,null,null], ry:[null,null,null], ready:false,
-                 pts:[], mode:'point', line:'none', h:null, ptScore:null, lnScore:null, overlay:false },
+                 pts:[], mode:'point', line:'none', h:null, ptScore:null, lnScore:null, overlay:false, done:false },
+             c:{ xk:'', yk:'' }, classSeen:false, others:[],
              it:{ rel:'', slope:'', conc:'', err:'', extra:{} }, judged:null,
-             saved:'' };
+             lesson:null, saved:'', sent:'', at:0 };
   }
-  function save(){ try { localStorage.setItem(KEY, JSON.stringify(S)); } catch (e) {} }
-  function load(){ try { const j = JSON.parse(localStorage.getItem(KEY) || 'null'); return (j && j.expId) ? j : null; } catch (e) { return null; } }
+  //  예전 저장본·다른 기기 저장본을 지금 모양으로 맞춥니다(빠진 칸은 새 값으로).
+  function normState(o){
+    const f = fresh();
+    if (!o || typeof o !== 'object') return null;
+    const s = Object.assign(f, o);
+    s.who = Object.assign(fresh().who, o.who || {});
+    s.vars = Object.assign(fresh().vars, o.vars || {});
+    s.g = Object.assign(fresh().g, o.g || {});
+    s.c = Object.assign(fresh().c, o.c || {});
+    s.it = Object.assign(fresh().it, o.it || {});
+    if (!s.it.extra || typeof s.it.extra !== 'object') s.it.extra = {};
+    if (s.demo === true) s.demo = 'all';
+    if (s.demo === false) s.demo = '';
+    if (!Array.isArray(s.others)) s.others = [];
+    if (o.g && o.g.done === undefined){ const p = o.g.ptScore; s.g.done = !!(p && p.total && p.hit === p.total && !p.extra); }
+    return s;
+  }
+  function lsGet(k, fb){ try { const v = JSON.parse(localStorage.getItem(k) || 'null'); return v == null ? fb : v; } catch (e) { return fb; } }
+  function lsSet(k, v){ try { localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } }
+  function lsDel(k){ try { localStorage.removeItem(k); } catch (e) {} }
+  function listWorks(){ const l = lsGet(LIST_KEY, []); return Array.isArray(l) ? l.filter(x => x && x.wid) : []; }
+  function loadWork(wid){ return normState(lsGet(WORK_PRE + wid, null)); }
+  function dropWork(wid){ lsDel(WORK_PRE + wid); lsSet(LIST_KEY, listWorks().filter(x => x.wid !== wid)); }
+  function save(){
+    if (!S.started) return;                     // 실험을 고르기만 한 것은 남기지 않습니다
+    S.at = Date.now();
+    lsSet(WORK_PRE + S.wid, S);
+    const l = listWorks().filter(x => x.wid !== S.wid);
+    l.unshift({ wid:S.wid, expId:S.expId, title: exp ? exp.title : '', cls:S.who.cls, no:S.who.no, name:S.who.name,
+                code: S.lesson ? S.lesson.code : '', step:S.step, at:S.at });
+    while (l.length > 20){ const o = l.pop(); lsDel(WORK_PRE + o.wid); }
+    lsSet(LIST_KEY, l);
+  }
+  //  예전 한 칸짜리 저장본(mbl_inquiry_v1)은 목록으로 옮깁니다 — 그때는 ⑥이 해석이었습니다.
+  (function migrate(){
+    const o = lsGet(OLD_KEY, null);
+    if (o && o.expId){
+      const w = normState(o); w.wid = newWid(); w.started = true;
+      if (o.step >= 5) w.step = 6;
+      lsSet(WORK_PRE + w.wid, w);
+      const e = LAB.byId(w.expId);
+      lsSet(LIST_KEY, [{ wid:w.wid, expId:w.expId, title: e ? e.title : '', cls:w.who.cls, no:w.who.no, name:w.who.name, code:'', step:w.step, at: Date.now() }].concat(listWorks()));
+    }
+    lsDel(OLD_KEY);
+  })();
+  //  아직 내려받거나 보내지 않은 것이 있는가 — 떠날 때 묻습니다.
+  function contentSig(){ return JSON.stringify(Object.assign({}, S, { step:0, at:0, saved:'', sent:'', classSeen:false, c:null })); }
+  let cleanSig = contentSig();
+  window.addEventListener('beforeunload', ev => {
+    if (!S.started || contentSig() === cleanSig) return;
+    ev.preventDefault(); ev.returnValue = '';
+  });
 
   let exp = null, hand = null, res = null;      // 고른 실험 · 손으로 재는 법 · 앱의 분석 결과(평균 표 기준)
+  let lesson = null, board = null, boardAt = 0, unwatch = null;   // 수업 참여 — index.html 과 같은 서버 수업
   function spec(){ return (exp && exp.dataSpec) || { x:{}, series:[], rows:5 }; }
   function handOf(e){
     const h = e ? HAND[e.id] : null;
@@ -462,37 +706,148 @@
   }
   //  가로축이 글자(색종이 색·용액 이름)인 실험 — 점 찍기는 되지만 축 범위는 없습니다.
   function xIsText(){ const sp = spec(); return !(sp.x && sp.x.unit) && (S.raw || []).some(r => r.x !== '' && !isFinite(num(r.x))); }
-  //  '계산 열' — 재는 것이 아니라 다른 열로 만드는 열(라벨에 × ÷ / 가 있음). 재기 표에서 빼고 바꾸기 표로 보냅니다.
-  function isCalcSeries(s){ return /[×÷/]/.test(String((s && s.label) || '')); }
+  //  '계산 열' — 재는 것이 아니라 다른 열로 만들거나 표에서 찾아 적는 열. 재기 표에서 빼고 바꾸기 표로 보냅니다.
+  //  lab-data.js 의 dataSpec.series[].calc === true 를 먼저 보고(수업이 예전에 만든 data_spec 이라 표시가 없으면 같은 이름의 원래 계열을 봅니다),
+  //  표시가 없으면 라벨에 × ÷ / 가 있는지로 어림합니다.
+  function isCalcSeries(s){
+    if (!s) return false;
+    if (s.calc === true) return true;
+    if (s.calc === false) return false;
+    const base = exp ? LAB.byId(exp.id) : null;
+    const same = base && base.dataSpec && (base.dataSpec.series || []).find(t => String(t.label).replace(/\s/g, '') === String(s.label).replace(/\s/g, ''));
+    if (same && same.calc === true) return true;
+    //  표시가 아직 없는 예전 자료 — 아래 식 모음에 있는 열, 손 자료가 「표에서 찾는다」고 적은 열도 계산 열입니다.
+    const lab = String(s.label || '').trim();
+    if (exp && CALC_F[exp.id] && CALC_F[exp.id][lab]) return true;
+    const hc = ((hand && hand.cols) || []).find(c => String(c.col || '').replace(/\s/g, '') === lab.replace(/\s/g, ''));
+    if (hc && /^표에서/.test(String(hc.how || '').trim())) return true;
+    return /[×÷/]/.test(lab);
+  }
+  //  계산 열의 식 — lab-data.js 는 이 화면에서 고치지 않으므로, 손 자료(hand-data.js)의 「계산한다」 설명을 식으로 옮겨 둔 것만 여기 둡니다.
+  const CALC_F = {
+    'hd-20': {
+      '표면적': r => { const a = num(r[0]); return isFinite(a) ? 6 * a * a : NaN; },
+      '부피': r => { const a = num(r[0]); return isFinite(a) ? a * a * a : NaN; },
+      '색이 든 부분의 부피': r => { const a = num(r[0]), d = num(r[1]); if (!isFinite(a) || !isFinite(d)) return NaN; const k = Math.max(0, a - 2 * d / 10); return a * a * a - k * k * k; }
+    }
+  };
+  //  수업에서는 선생님이 수업에 담아 둔 data_spec 으로 표를 만듭니다 — 그래야 서버에 올린 줄이 교사 화면의 열과 맞습니다.
+  function lessonExp(l){
+    const base = l && LAB.byId(l.exp_id);
+    if (!base) return null;
+    const ds = l.data_spec;
+    return (ds && Array.isArray(ds.series) && ds.series.length) ? Object.assign({}, base, { dataSpec: ds }) : base;
+  }
 
   // ── 걸음 다루기 ───────────────────────────────────────────────
-  function unlock(n){ Array.prototype.forEach.call(document.querySelectorAll('#stepNav .step'), b => { if (Number(b.dataset.step) <= n) b.disabled = false; }); }
-  function markDone(n, on){ const b = document.querySelector('#stepNav .step[data-step="' + n + '"]'); if (b) b.classList.toggle('done', !!on); }
+  //  걸음은 앞 걸음을 마쳐야 열립니다. 앞 걸음을 고치면 뒤 걸음은 다시 잠깁니다(syncNav 가 상태에서 매번 다시 셈합니다).
+  const NSTEP = 7;
+  function canGo(n){
+    const ok = [true, S.started, S.started && S.varsOk];
+    ok[3] = ok[2] && S.rawOk; ok[4] = ok[3] && S.tfOk; ok[5] = ok[4] && S.g.done; ok[6] = ok[5];
+    return !!ok[n];
+  }
+  function isDone(n){ return !![S.started, S.varsOk, S.rawOk, S.tfOk, S.g.done, S.classSeen, S.judged][n]; }
+  function syncNav(){
+    Array.prototype.forEach.call(document.querySelectorAll('#stepNav .step'), b => {
+      const n = Number(b.dataset.step);
+      b.disabled = !canGo(n);
+      b.classList.toggle('done', isDone(n) && canGo(n));
+      $('s' + n).classList.toggle('locked', !canGo(n));
+    });
+    $('btnSaveTop').classList.toggle('hidden', !S.started);
+    $('btnGNext').classList.toggle('hidden', !S.g.done);
+    if (S.lesson) paintLessonBar();
+  }
   function go(n){
+    if (!canGo(n)){ for (n = Math.min(n, NSTEP - 1); n > 0 && !canGo(n); n--); }
     S.step = n;
-    for (let i = 0; i < 6; i++){ $('s' + i).classList.toggle('hidden', i !== n); }
+    for (let i = 0; i < NSTEP; i++){ $('s' + i).classList.toggle('hidden', i !== n); }
     Array.prototype.forEach.call(document.querySelectorAll('#stepNav .step'), b => b.classList.toggle('on', Number(b.dataset.step) === n));
+    if (n === 0) paintStart();
     if (n === 1) paintVars();
     if (n === 2) paintRaw();
     if (n === 3) paintTf();
     if (n === 4) paintGraphStep();
-    if (n === 5) paintInterp();
-    $('btnSaveTop').classList.toggle('hidden', n < 2);
+    if (n === 5) enterClass();
+    if (n === 6) paintInterp();
+    syncNav();
     window.scrollTo(0, 0);
     save();
   }
   Array.prototype.forEach.call(document.querySelectorAll('#stepNav .step'), b => b.addEventListener('click', () => go(Number(b.dataset.step))));
+  function paintTopSub(){
+    $('topSub').textContent = exp && S.started ? exp.title + ' — ' + (S.who.cls ? S.who.cls + ' ' : '') + S.who.no + '모둠' + (S.lesson ? ' · 수업 참여 중' : '')
+                                               : '센서 없이 — 재고 · 바꾸고 · 그리고 · 해석하기';
+  }
+  //  앞 걸음을 고치면 그 뒤에서 한 일은 다시 확인해야 합니다.
+  function rawChanged(){
+    S.rawOk = false; S.tfOk = false; res = null;
+    invalidateGraph();
+    syncNav();
+  }
+  function tfChanged(){ S.tfOk = false; res = null; invalidateGraph(); syncNav(); }
+  function invalidateGraph(){
+    S.g.done = false; S.g.ptScore = null; S.g.lnScore = null; S.judged = null;
+    S.g.pts.forEach(p => { delete p.hit; });
+  }
+
+  // ── 모둠마다 맡을 값 ─────────────────────────────────────────
+  //  수업에 들어왔으면 선생님이 정한 lesson.form.assign, 아니면 실험의 권장값 lab-data pool.assign(sets · per)을 씁니다.
+  //  읽는 규칙(목록 · 가로축 값인가 · 몫의 모양)은 index.html · teacher.html 과 같은 hub.js 의 Hub.assign* 입니다.
+  function asgNum(v){ const t = String(v == null ? '' : v).replace(/[^0-9+\-.eE]/g, ''); return t === '' ? NaN : Number(t); }
+  function asgBase(label){ const t = String(label || '값'); return t.indexOf('맡을 ') === 0 ? t.slice(3) : t; }
+  function assignSrc(){
+    if (S.lesson){
+      const a = lesson && lesson.form && lesson.form.assign;
+      return (a && Array.isArray(a.groups) && a.groups.length) ? { a, from:'lesson' } : null;
+    }
+    const p = exp && exp.pool && exp.pool.assign;
+    if (!(p && Array.isArray(p.sets) && p.sets.length)) return null;
+    const xu = String((spec().x || {}).unit || '').trim(), au = String(p.unit || '').trim();
+    return { a: { label: p.label, unit: p.unit || '', groups: p.sets, x: !!au && au === xu, per: p.per, how: p.how || '' }, from:'lab' };
+  }
+  function assignNow(no){
+    const src = assignSrc();
+    if (!src) return null;
+    const a = src.a, n = Number(no != null ? no : S.who.no) || 0;
+    if (n < 1) return { a, from: src.from, raw:'', list:[], isX:false, n:0 };
+    const raw = String(a.groups[(n - 1) % a.groups.length] || '').trim();
+    const list = HUB && HUB.assignList ? HUB.assignList(raw) : raw.split(/\s*[·,]\s*/).filter(Boolean);
+    const isX = !!(HUB && HUB.assignIsX && HUB.assignIsX(a, spec())) && list.length > 0 && list.every(v => isFinite(asgNum(v)));
+    return { a, from: src.from, raw, list, isX, n };
+  }
+  function assignHTML(A){
+    if (!A || !A.raw) return '';
+    const a = A.a;
+    const shape = (HUB && HUB.assignShape) ? HUB.assignShape(a) : { allSame:false, multi:false };
+    const many = A.list.length > 1;
+    let say;
+    if (a.groups.length <= 1) say = A.isX ? '우리 모둠이 이 값을 모두 잽니다.' : '우리 모둠은 이 조건으로 잽니다.';
+    else if (A.isX && shape.allSame) say = '모든 모둠이 이 값을 모두 잽니다. 합치면 같은 값에서 모둠끼리 결과가 같게 나오는지 견줄 수 있습니다.';
+    else if (A.isX) say = '모둠마다 맡은 값이 다릅니다. 순서에 나온 값을 모두 재지 말고 <b>우리 몫만</b> 재세요.';
+    else if (shape.allSame) say = '모든 모둠이 같은 조건으로 잽니다. 합치면 같은 조건에서 모둠끼리 결과가 같게 나오는지 견줄 수 있습니다.';
+    else if (many) say = '우리 모둠은 이 조건들을 차례로 모두 잽니다. 합치면 조건에 따른 차이가 한 화면에 드러납니다.';
+    else say = '우리 모둠은 이 조건으로 잽니다. 다른 모둠은 다른 조건으로 재어, 합치면 조건에 따른 차이가 한 화면에 드러납니다.';
+    const per = Number(a.per) >= 1 ? ' (모둠마다 ' + Math.round(Number(a.per)) + '개)' : '';
+    const unit = a.unit && A.isX ? ' ' + a.unit : (a.unit && !/[가-힣]/.test(A.raw) ? ' ' + a.unit : '');
+    return '<div class="asg">📌 <b>' + A.n + '모둠이 맡을 ' + esc(asgBase(a.label)) + '</b>' + esc(per) + '<div class="v">' + esc(A.raw + unit) + '</div>' +
+      '<span class="muted">' + say + (A.isX && S.step === 2 ? ' 표의 첫 칸에 미리 적어 두었습니다(실제로 맞춘 값이 조금 다르면 고쳐 적으세요).' : '') +
+      (A.from === 'lab' ? ' 실험 자료의 권장 나눔입니다 — 선생님이 다르게 정해 주었다면 그 값을 따르세요.' : ' 선생님이 수업을 열 때 정한 몫입니다.') +
+      ' 반 전체를 합치면 그래프 한 장이 완성됩니다(⑥ 반 전체 그래프).</span></div>';
+  }
 
   // ── ① 실험 고르기 ─────────────────────────────────────────────
   function paintCards(){
     const g = $('fGrade').value, q = $('fSearch').value.trim().toLowerCase(), onlyHand = $('fHand').checked;
-    const list = LAB.experiments.filter(e => {
+    const base = LAB.experiments.filter(e => {
       if (g && String(e.grade) !== g) return false;
-      if (onlyHand && !handOf(e).ok) return false;
       if (q && !(e.title + ' ' + e.unit).toLowerCase().includes(q)) return false;
       return true;
     });
+    const list = onlyHand ? base.filter(e => handOf(e).ok) : base;
     $('fCount').textContent = list.length + '건';
+    $('fHandLab').textContent = '손으로 잴 수 있는 실험만 (' + base.filter(e => handOf(e).ok).length + '건)';
     $('expCards').innerHTML = list.map(e => {
       const h = handOf(e);
       return '<button class="card' + (S.expId === e.id ? ' on' : '') + '" type="button" data-id="' + esc(e.id) + '">' +
@@ -503,22 +858,52 @@
   }
   ['fGrade', 'fSearch', 'fHand'].forEach(id => $(id).addEventListener('input', paintCards));
 
+  //  첫 화면 — 수업 중이면 참여·고르기 상자를 접고, 아니면 이 기기에 남은 탐구 목록을 보여 줍니다.
+  function paintStart(){
+    $('joinBox').classList.toggle('hidden', !!S.lesson);
+    $('chooseBox').classList.toggle('hidden', !!S.lesson);
+    paintSaved();
+  }
+  function paintSaved(only){
+    const l = listWorks().filter(x => x.wid !== S.wid && (!only || x.expId === only));
+    const show = l.length && !S.lesson && (!S.started || only);
+    $('savedBox').classList.toggle('hidden', !show);
+    $('btnFresh').classList.toggle('hidden', !only);
+    $('savedLead').textContent = only ? '이 실험으로 하던 탐구가 이 기기에 있습니다. 이어서 할까요, 새로 시작할까요?'
+                                      : '하던 탐구를 이어서 할 수 있습니다. 여러 모둠이 이 기기를 함께 쓰면 모둠마다 따로 남습니다.';
+    if (!show){ $('savedList').innerHTML = ''; return; }
+    $('savedList').innerHTML = l.map(x => {
+      const d = new Date(x.at || 0);
+      return '<div><span><b>' + esc(x.title || x.expId) + '</b><br><span class="muted">' + esc([x.cls, x.no ? x.no + '모둠' : '', x.name && x.name !== x.no + '모둠' ? x.name : '', x.code ? '참여코드 ' + x.code : '코드 없이'].filter(Boolean).join(' · ')) +
+        ' · ' + (d.getMonth() + 1) + '/' + d.getDate() + ' ' + hhmm(x.at) + '</span></span>' +
+        '<button class="btn btn-sm btn-solid" type="button" data-resume="' + esc(x.wid) + '">이어서 하기</button>' +
+        '<button class="lnk" type="button" data-drop="' + esc(x.wid) + '">지우기</button></div>';
+    }).join('');
+    Array.prototype.forEach.call($('savedList').querySelectorAll('[data-resume]'), b => b.addEventListener('click', () => resume(b.dataset.resume)));
+    Array.prototype.forEach.call($('savedList').querySelectorAll('[data-drop]'), b => b.addEventListener('click', () => {
+      if (!confirm('이 기기에 남은 이 탐구를 지울까요? 작업 파일로 내려받지 않았다면 되돌릴 수 없습니다.')) return;
+      dropWork(b.dataset.drop); paintSaved(only);
+    }));
+  }
+
   function pick(id){
     const e = LAB.byId(id);
-    if (!e) return;
-    if (S.expId && S.expId !== id && S.raw.some(r => r.x !== '' || r.s.some(a => a.some(v => v !== '')))){
-      if (!confirm('실험을 바꾸면 지금까지 적은 표와 그래프가 지워집니다. 바꿀까요?')) return;
-      const who = S.who; S = fresh(); S.who = who;
+    if (!e || S.lesson) return;                  // 수업에서는 선생님이 고른 실험만 합니다
+    if (S.started && S.expId !== id){
+      if (!confirm('실험을 바꿀까요? 지금 하던 탐구는 이 기기에 그대로 남아, 첫 화면 목록에서 이어서 할 수 있습니다.')) return;
+      save();
+      const who = S.who; S = fresh(); S.who = who; cleanSig = contentSig();
+      syncNav();
     }
     S.expId = id; exp = e; hand = handOf(e); res = null;
     paintCards();
     paintDetail();
-    save();
+    paintTopSub();
   }
   function paintDetail(){
     const d = $('expDetail');
     d.classList.remove('hidden');
-    $('dPill').textContent = '중' + exp.grade + ' · ' + exp.unit;
+    $('dPill').textContent = '중' + exp.grade + ' · ' + exp.unit + (S.lesson ? ' · 수업: ' + (S.lesson.title || '참여코드 ' + S.lesson.code) : '');
     $('dTitle').textContent = exp.title;
     $('dWhy').textContent = exp.why || '';
     let h = '';
@@ -528,81 +913,166 @@
       h += '<h3>순서</h3><ol class="proc">' + (hand.steps || []).map(s => '<li>' + esc(s) + '</li>').join('') + '</ol>';
       if (hand.safety) h += '<div class="note coral"><b>안전</b> ' + esc(hand.safety) + '</div>';
       if (hand.tips) h += '<p class="muted" style="margin-top:8px"><b>요령</b> ' + esc(hand.tips) + '</p>';
-      if (hand.limit) h += '<p class="muted"><b>센서판과 다른 점</b> ' + esc(hand.limit) + '</p>';
+      //  센서 실험을 손으로 바꿔 하는 경우에만 '센서판과 다른 점' 입니다. 처음부터 손·자료로 하는 실험은 그 방법의 한계입니다.
+      if (hand.limit) h += '<p class="muted"><b>' + ((exp.kind === 'hand' || exp.kind === 'data') ? '이 방법의 한계' : '센서판과 다른 점') + '</b> ' + esc(hand.limit) + '</p>';
     } else {
       h += '<div class="note sun"><b>' + (exp.kind === 'data' ? '공공 자료를 받아 분석하는 탐구입니다' : '이 실험은 손으로 재기 어렵습니다') + '</b><br>' + esc(hand.why || '') +
            '<br>대신 — ' + esc(hand.alt || '예시 자료를 받아 변환·그래프·해석만 직접 합니다.') + '</div>';
-      if (!demoOf(exp.id)) h += '<p class="err">이 실험은 예시 자료도 없어 이 화면에서는 진행할 수 없습니다.</p>';
+      if (!demoOf(exp.id) && !S.lesson) h += '<p class="err">이 실험은 예시 자료도 없어 이 화면에서는 진행할 수 없습니다.</p>';
     }
     $('dHand').innerHTML = h;
-    $('wCls').value = S.who.cls; $('wNo').value = S.who.no; $('wName').value = S.who.name;
+    $('wCls').value = S.who.cls; $('wNo').value = S.who.no; $('wName').value = S.who.name; $('wMem').value = S.who.mem || '';
+    const lock = !!S.lesson;
+    ['wCls', 'wNo', 'wName'].forEach(id => { $(id).disabled = lock; });
+    $('whoLock').classList.toggle('hidden', !lock);
+    $('btnStart').textContent = S.started ? '이어서 하기' : '이 실험으로 시작하기';
+    paintDetailAssign();
     d.scrollIntoView({ behavior:'smooth', block:'start' });
   }
+  //  모둠 번호를 적으면 그 모둠이 맡을 값을 바로 보여 줍니다(코드 없이 진행할 때도 「맡을 값」이 보이게).
+  function paintDetailAssign(){
+    const no = S.lesson ? S.lesson.groupNo : $('wNo').value.trim();
+    const A = assignNow(no || 0);
+    if (!A){ $('dAssign').innerHTML = ''; return; }
+    $('dAssign').innerHTML = A.raw ? assignHTML(A)
+      : '<p class="muted" style="margin-top:8px">📌 이 실험은 모둠마다 ' + esc(asgBase(A.a.label)) + '을(를) 나눠 맡습니다. 모둠 번호를 적으면 우리 모둠 몫이 보입니다.</p>';
+  }
+  $('wNo').addEventListener('input', paintDetailAssign);
   function demoOf(id){ const D = window.__LAB_DEMO; const t = D && D[id]; return (typeof t === 'string' && t.trim()) ? t.trim() : ''; }
 
   $('btnStart').addEventListener('click', () => {
     if (!exp) return;
-    S.who = { cls: $('wCls').value.trim(), no: $('wNo').value.trim(), name: $('wName').value.trim() };
-    if (!S.who.no){ $('startMsg').className = 'msg bad'; $('startMsg').textContent = '모둠 번호를 적어 주세요.'; $('wNo').focus(); return; }
-    if (!hand.ok && !demoOf(exp.id)){ $('startMsg').className = 'msg bad'; $('startMsg').textContent = '이 실험은 진행할 자료가 없습니다.'; return; }
-    S.reps = hand.ok ? Math.max(1, Math.min(3, Number(hand.repeat) || 1)) : 1;
-    if (!S.raw.length) initRaw(spec().rows || 5);
-    unlock(2); markDone(0, true);
-    $('topSub').textContent = exp.title + ' — ' + (S.who.cls ? S.who.cls + ' ' : '') + S.who.no + '모둠';
-    go(1);
+    const mem = $('wMem').value.trim();
+    if (!S.lesson) S.who = { cls: $('wCls').value.trim(), no: $('wNo').value.trim(), name: $('wName').value.trim(), mem };
+    else S.who.mem = mem;
+    if (!S.who.no || !(Number(S.who.no) >= 1)){ $('startMsg').className = 'msg bad'; $('startMsg').textContent = '모둠 번호를 적어 주세요.'; $('wNo').focus(); return; }
+    if (!hand.ok && !demoOf(exp.id) && !S.lesson){ $('startMsg').className = 'msg bad'; $('startMsg').textContent = '이 실험은 진행할 자료가 없습니다.'; return; }
+    $('startMsg').textContent = '';
+    if (!S.started){
+      S.reps = hand.ok ? Math.max(1, Math.min(3, Number(hand.repeat) || 1)) : 1;
+      if (!S.raw.length) initRaw(spec().rows || 5);
+      S.started = true;
+    }
+    paintTopSub();
+    go(S.varsOk ? Math.max(1, S.step) : 1);
   });
 
   // ── ② 변인 ────────────────────────────────────────────────────
+  //  보기 = 이 실험의 열 + 헷갈리게 하는 보기(같은 단원·학년의 다른 실험에서 쓰는 양, 이 실험의 도구 이름).
+  //  순서는 실험마다 고정해 섞습니다(가로축이 늘 첫 보기면 고민 없이 고르게 됩니다).
   function colChoices(){
     const sp = spec();
-    const list = [(sp.x && sp.x.label) || '가로축'].concat((sp.series || []).map(s => s.label));
-    //  헷갈리게 하는 보기 두 개 — 실험에 없는 양
-    const distract = ['실험한 날의 날씨', '실험한 사람의 키', '비커의 색깔', '측정한 요일'];
-    return list.concat(distract.slice(0, 2));
+    const real = [(sp.x && sp.x.label) || '가로축'].concat((sp.series || []).map(s => s.label));
+    const key = t => String(t || '').replace(/\s/g, '');
+    const seen = new Set(real.map(key));
+    const near = [], far = [];
+    LAB.experiments.forEach(e => {
+      if (e.id === exp.id || !e.dataSpec) return;
+      const same = e.unit === exp.unit, close2 = same || e.grade === exp.grade;
+      if (!close2) return;
+      [(e.dataSpec.x || {}).label].concat((e.dataSpec.series || []).map(s => s.label)).forEach(l => {
+        if (!l || seen.has(key(l)) || /[×÷/()~①-⑨]/.test(l) || l.length > 14 || timeLike(l)) return;
+        seen.add(key(l)); (same ? near : far).push(l);
+      });
+    });
+    const seed = hash(exp.id);
+    const pickN = (arr, n) => arr.map((v, i) => ({ v, k: hash(seed + ':' + v + i) })).sort((a, b) => a.k - b.k).slice(0, n).map(o => o.v);
+    let dis = pickN(near, 2);
+    dis = dis.concat(pickN(far, 3 - dis.length));
+    const tool = (hand.tools || []).map(t => String(t).replace(/\(.*?\)/g, '').trim()).find(t => t && t.length <= 12 && !seen.has(key(t)));
+    if (tool) dis.push(tool);
+    ['실험한 날의 날씨', '실험한 사람의 키'].forEach(t => { if (dis.length < 3) dis.push(t); });
+    return real.concat(dis).map((v, i) => ({ v, k: hash(seed + '#' + v) })).sort((a, b) => a.k - b.k).map(o => o.v);
   }
   function paintVars(){
-    const sp = spec();
     const ch = colChoices();
     const opt = v => ch.map(c => '<option value="' + esc(c) + '"' + (v === c ? ' selected' : '') + '>' + esc(c) + '</option>').join('');
     $('varBox').innerHTML =
       '<div><b>조작 변인 — 내가 일부러 바꾸는 것</b><select id="vCtl"><option value="">— 고르세요 —</option>' + opt(S.vars.ctl) + '</select></div>' +
       '<div><b>종속 변인 — 그에 따라 달라지는지 재는 것</b><select id="vDep"><option value="">— 고르세요 —</option>' + opt(S.vars.dep) + '</select></div>' +
-      '<div><b>통제 변인 — 같게 유지해야 하는 것(한 가지 이상)</b><input id="vCtrl" type="text" value="' + esc(S.vars.ctrl) + '" placeholder="예) 기체의 온도, 주사기 크기" /></div>';
-    const xl = (sp.x && sp.x.label) || '';
+      '<div><b>통제 변인 — 같게 유지해야 하는 것(한 가지 이상)</b><input id="vCtrl" type="text" value="' + esc(S.vars.ctrl) + '" placeholder="예) 물의 양, 온도계를 넣는 깊이" /></div>';
     $('varMsg').textContent = '';
+  }
+  //  통제 변인 — 아무 글자나 두 자 적으면 통과하던 것을, 조건을 나타내는 말이 들어 있는지로 봅니다.
+  //  (실험에서 흔히 같게 두는 것들의 낱말, 또는 이 실험의 순서·도구 글에 나오는 말)
+  const CTRL_KW = ['온도','양','질량','부피','크기','종류','시간','거리','높이','농도','길이','재료','같은','같게','모양','두께','색','위치','전압','전류','세기',
+                   '속력','빛','물','용액','장소','방법','도구','개수','넓이','면적','압력','습도','바람','처음','깊이','각도','무게','기구','용기','컵','비커','시험관',
+                   '주사기','저울','온도계','추','종이','공기','조건','환경','속도','횟수','간격','방향','사람','손','눈','기준','눈금','교실'];
+  const CTRL_JUNK = ['실험', '모름', '없음', '몰라', '모르겠', '같은것', '아무거나'];
+  function ctrlOk(t, ctl, dep){
+    const s = String(t || '').trim();
+    if (!/[가-힣A-Za-z]{2,}/.test(s.replace(/\s/g, ''))) return false;
+    const n = x => String(x || '').replace(/\s/g, '');
+    const parts = s.split(/[,，·、/]|그리고|및/).map(n).filter(p => p.length >= 2);
+    const pool = n([hand.measure, (hand.steps || []).join(' '), (hand.tools || []).join(' '), exp.title, exp.why, (exp.steps || []).join(' ')].join(' '));
+    return parts.some(p => p !== n(ctl) && p !== n(dep) && !CTRL_JUNK.some(j => p === j || p.indexOf(j) === 0 && p.length <= j.length + 2) && (CTRL_KW.some(k => p.includes(k)) || pool.includes(p.slice(0, Math.min(p.length, 3)))));
   }
   $('btnVarCheck').addEventListener('click', () => {
     const sp = spec();
     S.vars = { ctl: $('vCtl').value, dep: $('vDep').value, ctrl: $('vCtrl').value.trim() };
     const xl = (sp.x && sp.x.label) || '';
+    const real = [xl].concat((sp.series || []).map(s => s.label));
     const measured = (sp.series || []).filter(s => !isCalcSeries(s)).map(s => s.label);
     const timeX = /시간|시점|회차/.test(xl);
     const msgs = [];
     if (!S.vars.ctl || !S.vars.dep){ msgs.push('둘 다 골라 주세요.'); }
     else {
-      //  시간에 따라 재는 실험은 '시간'이 조작 변인이 아니라 그저 흐르는 것입니다 — 그때는 계열 이름이 답이 아니라 '조건'이 답이라서 느슨하게 봅니다.
-      if (!timeX && S.vars.ctl !== xl) msgs.push('조작 변인 — 표의 가로축을 다시 보세요. 내가 정해서 바꾸는 값이 무엇인가요?');
+      //  시간에 따라 재는 실험은 '시간'이 조작 변인이 아니라 그저 흐르는 것입니다 — 그때는 표의 열 가운데 무엇이든 받되, 표에 없는 양은 받지 않습니다.
+      if (!real.includes(S.vars.ctl)) msgs.push('조작 변인 — 그 양은 이 실험의 표에 없습니다. 표의 열 가운데 내가 정해서 바꾸는 값을 고르세요.');
+      else if (!timeX && S.vars.ctl !== xl) msgs.push('조작 변인 — 표의 가로축을 다시 보세요. 내가 정해서 바꾸는 값이 무엇인가요?');
       if (measured.length && !measured.includes(S.vars.dep)) msgs.push('종속 변인 — 도구로 재는 값이 무엇인가요?');
       if (S.vars.ctl === S.vars.dep) msgs.push('조작 변인과 종속 변인이 같을 수는 없습니다.');
     }
-    if (S.vars.ctrl.length < 2) msgs.push('통제 변인을 한 가지 이상 적어 주세요.');
+    if (!ctrlOk(S.vars.ctrl, S.vars.ctl, S.vars.dep)) msgs.push('통제 변인 — 실험하는 동안 같게 두어야 하는 조건(예: 물의 양, 재는 위치)을 적어 주세요. 조작 변인·종속 변인과는 달라야 합니다.');
     S.varsOk = !msgs.length;
     $('varMsg').className = 'msg ' + (S.varsOk ? 'ok' : 'bad');
     $('varMsg').textContent = S.varsOk ? '좋습니다. 이제 재러 갑니다.' : msgs[0];
-    markDone(1, S.varsOk);
-    save();
-    if (S.varsOk){ unlock(2); setTimeout(() => go(2), 500); }
+    syncNav(); save();
+    if (S.varsOk) setTimeout(() => go(2), 500);
   });
 
   // ── ③ 재기 ────────────────────────────────────────────────────
   function measCols(){ return (spec().series || []).map((s, i) => ({ s, i })).filter(o => !isCalcSeries(o.s)); }
-  function initRaw(n){
-    const m = measCols().length;
-    S.raw = [];
-    for (let r = 0; r < n; r++) S.raw.push({ x:'', s: Array.from({ length: m }, () => ['', '', '']), avg: Array.from({ length: m }, () => '') });
+  function emptyRow(){ const m = measCols().length; return { x:'', s: Array.from({ length: m }, () => ['', '', '']), avg: Array.from({ length: m }, () => '') }; }
+  function initRaw(n){ S.raw = []; for (let r = 0; r < n; r++) S.raw.push(emptyRow()); }
+  function rowHasData(row){ return !!row && (String(row.x).trim() !== '' || row.s.some(a => a.some(v => String(v).trim() !== ''))); }
+  //  맡은 값이 가로축 값이면 표의 가로축 칸에 한 번만 미리 적어 둡니다. 이미 무엇이 적혀 있으면 건드리지 않습니다.
+  function prefillAssign(){
+    if (S.asgFilled) return;
+    const A = assignNow();
+    if (!A || !A.isX) return;
+    S.asgFilled = true;
+    if (S.raw.some(r => String(r.x).trim() !== '')) return;
+    const vals = A.list.map(asgNum).filter(isFinite);
+    while (S.raw.length < vals.length) S.raw.push(emptyRow());
+    vals.forEach((v, r) => { S.raw[r].x = String(v); S.raw[r].asg = true; });
+    save();
+  }
+  //  예시 값 — 자료 받기로 넣은 값이 측정 칸에 얼마나 남았는가('all' 모두 · 'part' 일부 · '' 없음). 가로축(정해 둔 조건)은 세지 않습니다.
+  function demoState(){
+    const snap = S.demoSnap;
+    if (!snap) return '';
+    let filled = 0, same = 0;
+    S.raw.forEach((row, r) => {
+      const o = snap[r];
+      row.s.forEach((a, j) => a.forEach((v, k) => {
+        if (String(v).trim() === '') return;
+        filled++;
+        const w = o && o.s && o.s[j] ? o.s[j][k] : undefined;
+        if (w !== undefined && String(w).trim() === String(v).trim()) same++;
+      }));
+    });
+    if (!same){ S.demoSnap = null; return ''; }       // 예시 값이 하나도 남지 않았으면 직접 잰 값입니다
+    return same === filled ? 'all' : 'part';
+  }
+  function paintDemoNote(){
+    $('demoNote').innerHTML = S.demo === 'all' ? '<div class="note sun"><b>지금 표는 예시 값입니다</b> — 실제로 잰 값이 아닙니다. 작업 파일과 선생님 화면에도 「예시 자료」로 표시됩니다. 직접 잰 값으로 바꿔 적으면 표시가 사라집니다.</div>'
+      : S.demo === 'part' ? '<div class="note sun"><b>예시 값이 일부 남아 있습니다</b> — 작업 파일과 선생님 화면에 「일부 예시 값」으로 표시됩니다.</div>' : '';
   }
   function paintRaw(){
     const sp = spec(), mc = measCols();
+    prefillAssign();
+    $('rawAssign').innerHTML = assignHTML(assignNow());
     const howMap = {};
     (hand.cols || []).forEach(c => { howMap[String(c.col || '').replace(/\s/g, '')] = c.how; });
     const how = label => howMap[String(label || '').replace(/\s/g, '')] || '';
@@ -613,26 +1083,33 @@
     } else {
       h += '<div class="note sun">' + (exp.kind === 'data'
         ? '공공 자료를 받아 쓰는 탐구입니다. <b>[자료 받기]</b> 로 예시 자료를 넣거나, 원자료에서 옮긴 값을 표에 직접 적습니다. '
-        : '이 실험은 손으로 재기 어려워 <b>[자료 받기]</b> 로 예시 값을 넣습니다. ') + '그다음 걸음(값 바꾸기·그래프·해석)은 직접 합니다.</div>';
+        : demoOf(exp.id) ? '이 실험은 손으로 재기 어려워 <b>[자료 받기]</b> 로 예시 값을 넣습니다. ' : '선생님이 알려 준 값이나 다른 도구로 잰 값을 표에 직접 적습니다. ') + '그다음 걸음(값 바꾸기·그래프·해석)은 직접 합니다.</div>';
     }
+    //  열마다 재는 법 — 머리칸에 길게 넣으면 휴대폰에서 표가 옆으로 끝없이 늘어나므로 표 위에 따로 둡니다.
+    const hows = [{ label: sp.x.label }].concat(mc.map(o => ({ label: o.s.label }))).filter(o => how(o.label));
+    if (hows.length) h += '<dl class="hows">' + hows.map(o => '<dt>' + esc(o.label) + '</dt><dd>' + esc(how(o.label)) + '</dd>').join('') + '</dl>';
     $('howBox').innerHTML = h;
+    paintSrvLoad();
     $('repSel').value = String(S.reps);
-    $('repNote').textContent = S.reps > 1 ? '되풀이한 값의 평균은 여러분이 계산해서 노란 칸에 적습니다. 앱이 맞는지 확인해 줍니다.' : '한 번만 잽니다. 시간에 따라 변하는 값은 되풀이할 수 없으니 두 사람이 같은 순간에 읽어 확인하세요.';
+    $('repNote').textContent = S.reps > 1 ? '되풀이한 값의 평균은 여러분이 계산해서 노란 칸에 적습니다. 앱이 맞는지 확인해 줍니다.'
+      : timeLike(sp.x.label) ? '한 번만 잽니다. 시간에 따라 변하는 값은 되풀이할 수 없으니 두 사람이 같은 순간에 읽어 확인하세요.'
+      : '한 번만 잽니다. 값이 튀어 보이는 줄이 있으면 그 줄만 다시 재거나, 되풀이를 늘려 평균을 내세요.';
     $('btnDemoFill').classList.toggle('hidden', !demoOf(exp.id));
+    paintDemoNote();
 
-    let th = '<tr><th></th><th>' + esc(sp.x.label || '가로축') + (sp.x.unit ? '<small>' + esc(sp.x.unit) + '</small>' : '') + (how(sp.x.label) ? '<small>' + esc(how(sp.x.label)) + '</small>' : '') + '</th>';
+    let th = '<tr><th></th><th>' + esc(sp.x.label || '가로축') + (sp.x.unit ? '<small>' + esc(sp.x.unit) + '</small>' : '') + '</th>';
     mc.forEach(o => {
       if (S.reps > 1){
-        for (let k = 0; k < S.reps; k++) th += '<th>' + esc(o.s.label) + ' ' + (k + 1) + '회' + (o.s.unit ? '<small>' + esc(o.s.unit) + '</small>' : '') + (k === 0 && how(o.s.label) ? '<small>' + esc(how(o.s.label)) + '</small>' : '') + '</th>';
+        for (let k = 0; k < S.reps; k++) th += '<th>' + esc(o.s.label) + ' ' + (k + 1) + '회' + (o.s.unit ? '<small>' + esc(o.s.unit) + '</small>' : '') + '</th>';
         th += '<th>' + esc(o.s.label) + '<small>평균 — 내가 계산</small></th>';
       } else {
-        th += '<th>' + esc(o.s.label) + (o.s.unit ? '<small>' + esc(o.s.unit) + '</small>' : '') + (how(o.s.label) ? '<small>' + esc(how(o.s.label)) + '</small>' : '') + '</th>';
+        th += '<th>' + esc(o.s.label) + (o.s.unit ? '<small>' + esc(o.s.unit) + '</small>' : '') + '</th>';
       }
     });
     th += '</tr>';
     let tb = '';
     S.raw.forEach((row, r) => {
-      tb += '<tr><td class="rowno">' + (r + 1) + '</td><td><input type="text" inputmode="decimal" data-r="' + r + '" data-k="x" value="' + esc(row.x) + '" /></td>';
+      tb += '<tr><td class="rowno">' + (r + 1) + '</td><td><input type="text" inputmode="decimal" data-r="' + r + '" data-k="x" value="' + esc(row.x) + '"' + (row.asg ? ' class="assigned" title="우리 모둠이 맡은 값입니다. 실제로 맞춘 값이 조금 다르면 고쳐 적으세요."' : '') + ' aria-label="' + (r + 1) + '번째 줄 ' + esc(sp.x.label || '가로축') + '" /></td>';
       mc.forEach((o, j) => {
         if (S.reps > 1){
           for (let k = 0; k < S.reps; k++) tb += '<td><input type="text" inputmode="decimal" data-r="' + r + '" data-k="s" data-j="' + j + '" data-rep="' + k + '" value="' + esc(row.s[j][k]) + '" /></td>';
@@ -647,35 +1124,63 @@
     Array.prototype.forEach.call($('rawTbl').querySelectorAll('input'), el => {
       el.addEventListener('input', () => {
         const r = Number(el.dataset.r), k = el.dataset.k, j = Number(el.dataset.j);
-        if (k === 'x') S.raw[r].x = el.value;
+        if (k === 'x'){ S.raw[r].x = el.value; delete S.raw[r].asg; el.classList.remove('assigned'); }
         else if (k === 's') S.raw[r].s[j][Number(el.dataset.rep)] = el.value;
         else S.raw[r].avg[j] = el.value;
         el.classList.remove('ok', 'bad');
-        S.rawOk = false; res = null; save();
+        if (S.demoSnap){ const before = S.demo; S.demo = demoState(); if (before !== S.demo) paintDemoNote(); }
+        const was = S.rawOk;
+        rawChanged(); save();
+        if (was){ $('rawMsg').className = 'msg warn'; $('rawMsg').textContent = '표를 고쳤습니다 — [평균 확인 · 다음으로]를 다시 눌러 주세요. 뒤 걸음은 그때 다시 열립니다.'; }
       });
     });
   }
-  $('repSel').addEventListener('change', () => { S.reps = Number($('repSel').value) || 1; save(); paintRaw(); });
-  $('btnRowAdd').addEventListener('click', () => { if (S.raw.length >= 20) return; const m = measCols().length; S.raw.push({ x:'', s: Array.from({ length: m }, () => ['', '', '']), avg: Array.from({ length: m }, () => '') }); paintRaw(); save(); });
-  $('btnRowDel').addEventListener('click', () => { if (S.raw.length <= 3) return; S.raw.pop(); paintRaw(); save(); });
+  $('repSel').addEventListener('change', () => { S.reps = Number($('repSel').value) || 1; rawChanged(); $('rawMsg').textContent = ''; save(); paintRaw(); });
+  $('btnRowAdd').addEventListener('click', () => { if (S.raw.length >= 20) return; S.raw.push(emptyRow()); rawChanged(); paintRaw(); save(); });
+  $('btnRowDel').addEventListener('click', () => {
+    if (S.raw.length <= 3) return;
+    if (rowHasData(S.raw[S.raw.length - 1]) && !confirm('마지막 줄(' + S.raw.length + '번)에 적은 값이 있습니다. 지울까요?')) return;
+    S.raw.pop(); rawChanged(); paintRaw(); save();
+  });
   $('btnDemoFill').addEventListener('click', () => {
     const t = demoOf(exp.id); if (!t) return;
+    if (S.raw.some(r => r.s.some(a => a.some(v => String(v).trim() !== ''))) && !confirm('지금 표에 적은 값을 예시 값으로 바꿉니다. 바꿀까요?')) return;
     const lines = t.split(/\r?\n/).filter(l => l.trim());
     const head = lines[0].split(','), body = lines.slice(1).map(l => l.split(','));
     const sp = spec(), mc = measCols();
     const norm = s => String(s || '').replace(/\s/g, '').replace(/\(.*?\)/g, '');
     const colOf = label => { const n = norm(label); let i = head.findIndex(hh => norm(hh) === n); if (i < 0) i = head.findIndex(hh => norm(hh).includes(n) || n.includes(norm(hh))); return i; };
-    S.reps = 1; S.demo = true;
+    S.reps = 1;
     S.raw = body.map(cells => ({
       x: cells[Math.max(0, colOf(sp.x.label))] || cells[0] || '',
       s: mc.map(o => { const i = colOf(o.s.label); return [i >= 0 ? (cells[i] || '') : '', '', '']; }),
       avg: mc.map(() => '')
     }));
-    paintRaw(); save();
-    $('rawMsg').className = 'msg ok'; $('rawMsg').textContent = '예시 값을 넣었습니다. 실제로 잰 값이 아닙니다 — 그다음부터는 직접 하세요.';
+    S.demoSnap = JSON.parse(JSON.stringify(S.raw)); S.demo = 'all'; S.asgFilled = true;
+    rawChanged(); paintRaw(); save();
+    $('rawMsg').className = 'msg warn'; $('rawMsg').textContent = '예시 값을 넣었습니다. 실제로 잰 값이 아닙니다 — 그다음부터는 직접 하세요.';
   });
-  //  표 → 분석에 넣는 줄(0열 = 가로축, 이어서 측정 계열 평균). 계산 열(× ÷)은 학생이 바꾸기 걸음에서 채우므로 null 로 둡니다.
-  function rowsAvg(){
+  //  수업 중이고 표가 비었는데 서버에 우리 모둠 값이 있으면(다른 기기·센서 화면에서 저장) 불러올 수 있게 합니다.
+  function myServerRows(){
+    if (!S.lesson || !board) return null;
+    const d = (board.data || []).find(x => String(x.group_id) === String(S.lesson.groupId));
+    return (d && Array.isArray(d.rows) && d.rows.length) ? d.rows : null;
+  }
+  function paintSrvLoad(){
+    const rows = myServerRows();
+    const empty = !S.raw.some(r => r.s.some(a => a.some(v => String(v).trim() !== '')));
+    $('srvLoad').innerHTML = (rows && empty) ? '<div class="note sky">서버에 우리 모둠이 저장해 둔 값 ' + rows.length + '줄이 있습니다. <button id="btnSrvLoad" class="lnk" type="button">그 값으로 표 채우기</button></div>' : '';
+    if ($('btnSrvLoad')) $('btnSrvLoad').addEventListener('click', () => {
+      const mc = measCols();
+      S.reps = 1;
+      S.raw = rows.slice(0, 20).map(r => ({ x: r[0] == null ? '' : String(r[0]), s: mc.map(o => [r[o.i + 1] == null ? '' : String(r[o.i + 1]), '', '']), avg: mc.map(() => '') }));
+      while (S.raw.length < 3) S.raw.push(emptyRow());
+      S.asgFilled = true; S.demo = ''; S.demoSnap = null;
+      rawChanged(); paintRaw(); save();
+    });
+  }
+  //  표 → 분석에 넣는 줄(0열 = 가로축, 이어서 계열 — 측정 계열은 평균). 계산 열은 여기서는 null 이고 fullRows 가 채웁니다.
+  function baseRows(){
     const sp = spec(), mc = measCols();
     const out = [];
     S.raw.forEach(row => {
@@ -696,11 +1201,26 @@
     });
     return out;
   }
+  //  계산 열까지 채운 줄 — 서버에 올리는 줄·작업 파일의 rows·앱의 분석이 모두 이것을 씁니다(index.html 이 계산 열을 채워 저장하는 것과 같게).
+  //  앱이 셈할 수 있는 열은 앱의 값, 표에서 찾아 적는 열(포화 수증기량 따위)은 학생이 ④에 적은 값입니다.
+  function fullRows(){
+    const cd = calcDefs();
+    return baseRows().map((row, r) => {
+      const out = row.slice();
+      cd.forEach(c => {
+        let v = c.ans ? c.ans(row) : NaN;
+        if (!isFinite(v)){ const t = S.tf[r + ':' + c.key]; v = (t === undefined || String(t).trim() === '') ? NaN : num(t); }
+        out[c.i + 1] = isFinite(v) ? Number(v.toPrecision(6)) : null;
+      });
+      return out;
+    });
+  }
+  function getRes(){ if (!res) res = E.runAnalysis(exp, fullRows()); return res; }
   $('btnRawCheck').addEventListener('click', () => {
     const mc = measCols();
-    let filled = 0, bad = 0, avgBad = 0, need = 0;
+    let filled = 0, bad = 0, avgBad = 0;
     S.raw.forEach((row, r) => {
-      const xs = row.x.trim();
+      const xs = String(row.x).trim();
       const anyS = row.s.some(a => a.some(v => v !== ''));
       if (!xs && !anyS) return;
       filled++;
@@ -710,12 +1230,10 @@
         if (o.s.optional && row.s[j].slice(0, Math.max(1, S.reps)).every(v => String(v).trim() === '')) return;
         if (S.reps > 1){
           const vals = row.s[j].slice(0, S.reps).map(num).filter(isFinite);
-          need++;
           const el = $('rawTbl').querySelector('input[data-k="avg"][data-r="' + r + '"][data-j="' + j + '"]');
           if (vals.length < S.reps){ bad++; return; }
           const mean = vals.reduce((a, b) => a + b, 0) / vals.length;
-          const mine = num(row.avg[j]);
-          const ok = close(mine, mean);
+          const ok = close(num(row.avg[j]), mean, row.avg[j]);
           if (el){ el.classList.toggle('ok', ok); el.classList.toggle('bad', !ok); }
           if (!ok) avgBad++;
         } else if (row.s[j][0] === '' || !isFinite(num(row.s[j][0]))) bad++;
@@ -723,39 +1241,55 @@
     });
     const m = $('rawMsg');
     if (filled < 3){ m.className = 'msg bad'; m.textContent = '값이 있는 줄이 3개 이상이어야 그래프를 그릴 수 있습니다.'; return; }
-    if (bad){ m.className = 'msg bad'; m.textContent = '비었거나 숫자가 아닌 칸이 ' + bad + '개 있습니다.'; return; }
+    if (bad){ m.className = 'msg bad'; m.textContent = '비었거나 숫자가 아닌 칸이 ' + bad + '개 있습니다.' + (S.raw.some(r => r.asg) ? ' 맡은 값을 다 재지 못했다면 그 줄의 가로축 칸을 지우세요.' : ''); return; }
     if (avgBad){ m.className = 'msg bad'; m.textContent = '평균이 맞지 않는 칸이 ' + avgBad + '개 있습니다(빨간 칸). 되풀이한 값을 더해 횟수로 나누세요.'; return; }
-    S.rawOk = true; res = E.runAnalysis(exp, rowsAvg());
-    markDone(2, true); unlock(3);
-    m.className = 'msg ok'; m.textContent = '표가 다 찼습니다' + (S.reps > 1 ? ' — 평균도 모두 맞습니다' : '') + '. 이제 값을 바꿉니다.';
+    S.rawOk = true; res = null;
+    syncNav();
+    m.className = 'msg ok'; m.textContent = '표가 다 찼습니다' + (S.reps > 1 ? ' — 평균도 모두 맞습니다' : '') + '. 이제 값을 바꿉니다.' + (S.lesson ? ' 우리 모둠 값을 반 전체 그래프로 보냅니다.' : '');
     save();
+    if (S.lesson) sendRows();
     setTimeout(() => go(3), 600);
   });
 
   // ── ④ 바꾸기 ──────────────────────────────────────────────────
-  //  바꾸기 표의 열: (a) 라벨에 × ÷ 가 든 계산 계열  (b) 분석의 derive 열  (c) 마지막 fit 의 변환축(1/부피 등)
-  function tfCols(){
-    if (!res) res = E.runAnalysis(exp, rowsAvg());
-    const sp = spec(), cols = [];
-    const ds = res.ds || [];
+  //  바꾸기 표의 열: (a) 계산 열(calc:true · 라벨에 × ÷)  (b) 분석의 derive 열  (c) 마지막 fit 의 변환축(1/부피 등)
+  //  계산 열의 정답: 같은 인자로 만드는 derive → 위의 작은 식 모음(CALC_F) → 없으면(표에서 찾아 적는 값) 확인하지 않고 받습니다.
+  let dsCache = null, dsFor = null;
+  function defsDs(){ if (dsFor !== exp){ dsFor = exp; dsCache = E.runAnalysis(exp, []).ds; } return dsCache; }
+  function calcDefs(){
+    const sp = spec(), ds = defsDs(), out = [];
+    const howMap = {};
+    (hand.cols || []).forEach(c => { howMap[String(c.col || '').replace(/\s/g, '')] = c.how; });
     const b2f = d => E.anColName(sp, ds, d.a) + ' ' + d.op + ' ' + E.anColName(sp, ds, d.b);
     (sp.series || []).forEach((s, i) => {
       if (!isCalcSeries(s)) return;
       //  같은 인자로 만드는 derive 를 찾아 정답으로 씁니다(예: '압력 × 부피' ↔ derive '기체의 부피 × 압력').
       //  이름은 '부피' 와 '기체의 부피' 처럼 한쪽이 다른 쪽을 품으면 같은 것으로 봅니다.
-      const parts = String(s.label).split(/[×÷/]/).map(t => t.trim().replace(/\s/g, '')).filter(Boolean);
-      const same = (a, b) => a === b || a.includes(b) || b.includes(a);
-      const d = ds.find(dd => { const a = E.anColName(sp, ds, dd.a).replace(/\s/g, ''), b = E.anColName(sp, ds, dd.b).replace(/\s/g, '');
-                                return parts.some(p => same(p, a)) && parts.some(p => same(p, b)); });
-      cols.push({ key:'s' + i, name: s.label, unit: s.unit || '', formula: d ? b2f(d) : s.label, ans: d ? (row => E.rawVal(row, d.id, ds)) : null, kind:'calc', dId: d ? d.id : '' });
+      let d = null;
+      if (/[×÷/]/.test(String(s.label))){
+        const parts = String(s.label).split(/[×÷/]/).map(t => t.trim().replace(/\s/g, '')).filter(Boolean);
+        const same = (a, b) => a === b || a.includes(b) || b.includes(a);
+        d = ds.find(dd => { const a = E.anColName(sp, ds, dd.a).replace(/\s/g, ''), b = E.anColName(sp, ds, dd.b).replace(/\s/g, '');
+                            return parts.some(p => same(p, a)) && parts.some(p => same(p, b)); }) || null;
+      }
+      const f = (CALC_F[exp.id] || {})[String(s.label).trim()];
+      const how = howMap[String(s.label).replace(/\s/g, '')] || '';
+      out.push({ i, key:'s' + i, name: s.label, unit: s.unit || '', formula: d ? b2f(d) : (how || s.label),
+                 ans: d ? (row => E.rawVal(row, d.id, ds)) : (f || null), dId: d ? d.id : '', look: !d && !f });
     });
-    (res.blocks || []).forEach(b => {
+    return out;
+  }
+  function tfCols(){
+    const r = getRes(), cols = [];
+    const ds = r.ds || [];
+    calcDefs().forEach(c => cols.push(Object.assign({ kind:'calc' }, c)));
+    (r.blocks || []).forEach(b => {
       if (b.kind !== 'derive') return;
-      //  계산 계열이 이미 같은 derive 를 쓰면 두 번 묻지 않습니다.
+      //  계산 열이 이미 같은 derive 를 쓰면 두 번 묻지 않습니다.
       if (cols.some(c => c.kind === 'calc' && c.dId === b.d.id)) return;
       cols.push({ key: b.d.id, name: b.d.name, unit: b.d.unit || '', formula: b.formula, ans: (row => E.rawVal(row, b.d.id, ds)), kind:'derive', dId: b.d.id });
     });
-    const mf = res.mainFit;
+    const mf = r.mainFit;
     if (mf && mf.xt && mf.xt !== 'none' && TF[mf.xt]){
       const t = TF[mf.xt];
       const name = t.lab(mf.xName), unit = t.unit(mf.xUnit);
@@ -765,17 +1299,19 @@
     return cols;
   }
   function paintTf(){
-    const cols = tfCols(), rows = rowsAvg(), sp = spec();
+    const cols = tfCols(), rows = fullRows(), sp = spec();
     if (!cols.length){
       $('tfLead').textContent = '이 실험은 새로 만들 열이 없습니다. 평균까지 냈으면 충분합니다 — 바로 그래프로 갑니다.';
       $('fCards').innerHTML = ''; $('tfTbl').innerHTML = '';
-      S.tfOk = true; markDone(3, true); unlock(4);
+      S.tfOk = true; syncNav();
       $('tfMsg').className = 'msg ok'; $('tfMsg').textContent = '바꿀 열이 없습니다. [⑤ 그래프 그리기]로 가세요.';
       return;
     }
-    $('tfLead').textContent = '표의 값으로 아래 열을 줄마다 계산해 적습니다. 왜 이렇게 바꾸는지는 그래프를 그려 보면 알게 됩니다.';
-    $('fCards').innerHTML = cols.map(c => '<div class="fcard"><b>' + esc(c.name) + (c.unit ? ' (' + esc(c.unit) + ')' : '') + '</b><div class="formula">' + esc(c.formula) + '</div>' +
-      (c.kind === 'tf' ? '<p class="muted" style="margin-top:4px">그래프가 곡선이면 가로축을 이렇게 바꿔 직선으로 펴 봅니다.</p>' : '') + '</div>').join('');
+    $('tfLead').textContent = '표의 값으로 아래 열을 줄마다 계산하거나 찾아 적습니다. 왜 이렇게 바꾸는지는 그래프를 그려 보면 알게 됩니다.';
+    $('fCards').innerHTML = cols.map(c => '<div class="fcard' + (c.look ? ' look' : '') + '"><b>' + esc(c.name) + (c.unit ? ' (' + esc(c.unit) + ')' : '') + '</b><div class="formula">' + esc(c.formula) + '</div>' +
+      (c.kind === 'tf' ? '<p class="muted" style="margin-top:4px">그래프가 곡선이면 가로축을 이렇게 바꿔 직선으로 펴 봅니다.</p>' : '') +
+      (c.look ? '<p class="muted" style="margin-top:4px">표나 자료에서 찾아 적는 값이라 앱이 맞는지 확인하지 않습니다. 찾은 값을 그대로 적으세요.</p>' : '') + '</div>').join('');
+    const hasLook = cols.some(c => c.look);
     let th = '<tr><th></th><th>' + esc(sp.x.label) + '</th>' + cols.map(c => '<th>' + esc(c.name) + (c.unit ? '<small>' + esc(c.unit) + '</small>' : '') + '</th>').join('') + '</tr>';
     let tb = '';
     rows.forEach((row, r) => {
@@ -785,34 +1321,42 @@
         const v = (S.tf[k] === undefined) ? '' : S.tf[k];
         const tries = S.tfTries[k] || 0;
         const truth = c.ans ? c.ans(row) : NaN;
-        if (c.ans && !isFinite(truth) && (S.tf[k] === undefined || String(S.tf[k]).trim() === '')){ tb += '<td class="muted" style="text-align:center">—</td>'; return; }
-        tb += '<td><input type="text" inputmode="decimal" class="calc" data-k="' + esc(k) + '" value="' + esc(v) + '" />' +
+        //  찾아 적는 열이 있으면 그 값으로 셈해지는 열도 미리 칸을 엽니다(값을 적는 동안 표를 다시 그리면 커서가 사라집니다).
+        if (c.ans && !isFinite(truth) && !(hasLook && c.kind === 'derive') && (S.tf[k] === undefined || String(S.tf[k]).trim() === '')){ tb += '<td class="muted" style="text-align:center">—</td>'; return; }
+        tb += '<td><input type="text" inputmode="decimal" class="calc" data-k="' + esc(k) + '"' + (c.look ? ' data-look="1"' : '') + ' value="' + esc(v) + '" />' +
               ((tries >= 2 && isFinite(truth)) ? '<span class="ans">답 ' + esc(fmtCell(truth)) + '</span>' : '') + '</td>';
       });
       tb += '</tr>';
     });
     $('tfTbl').innerHTML = th + tb;
     Array.prototype.forEach.call($('tfTbl').querySelectorAll('input'), el => {
-      el.addEventListener('input', () => { S.tf[el.dataset.k] = el.value; el.classList.remove('ok', 'bad'); S.tfOk = false; save(); });
+      el.addEventListener('input', () => { S.tf[el.dataset.k] = el.value; el.classList.remove('ok', 'bad'); tfChanged(); save(); });
     });
     $('tfMsg').textContent = '';
   }
   $('btnTfCheck').addEventListener('click', () => {
-    const cols = tfCols(), rows = rowsAvg();
+    const cols = tfCols(), rows = fullRows();
     if (!cols.length){ go(4); return; }
-    let wrong = 0, empty = 0, unknown = 0;
+    let wrong = 0, empty = 0;
     const wrongKeys = [];
     rows.forEach((row, r) => {
       cols.forEach(c => {
         const k = r + ':' + c.key;
         const el = $('tfTbl').querySelector('input[data-k="' + k + '"]');
-        const mine = num(S.tf[k]);
-        const blank = (S.tf[k] === undefined || String(S.tf[k]).trim() === '');
+        const raw = S.tf[k];
+        const mine = num(raw);
+        const blank = (raw === undefined || String(raw).trim() === '');
+        if (c.look){                                   // 찾아 적는 열 — 비었거나 숫자가 아닌지만 봅니다
+          if (blank){ empty++; return; }
+          if (!isFinite(mine)){ wrong++; if (el) el.classList.add('bad'); }
+          else if (el) el.classList.remove('bad');
+          return;
+        }
         const truth = c.ans ? c.ans(row) : NaN;
         //  정답을 낼 수 없는 칸(비워 둔 칸에서 나온 칸·0 으로 나누기 등)은 비워 둬도 되고, 적었으면 그대로 둡니다.
-        if (!isFinite(truth)){ if (!blank) unknown++; return; }
+        if (!isFinite(truth)) return;
         if (blank){ empty++; return; }
-        const ok = close(mine, truth);
+        const ok = close(mine, truth, raw);
         if (el){ el.classList.toggle('ok', ok); el.classList.toggle('bad', !ok); }
         if (!ok){ wrong++; wrongKeys.push(k); S.tfTries[k] = (S.tfTries[k] || 0) + 1; }
       });
@@ -831,36 +1375,53 @@
       m.textContent = '맞지 않는 칸이 ' + wrong + '개 있습니다(빨간 칸). 식을 다시 보고 계산하세요.' + (reveal ? ' 두 번 틀린 칸은 답을 작게 보여 줍니다.' : '');
       return;
     }
-    S.tfOk = true; markDone(3, true); unlock(4);
+    S.tfOk = true; res = null; syncNav();
     m.className = 'msg ok'; m.textContent = '모두 맞습니다. 이제 그래프를 그립니다.';
     save();
+    if (S.lesson && calcDefs().length) sendRows();     // 계산 열까지 채운 줄을 다시 올립니다
     setTimeout(() => go(4), 600);
   });
 
   // ── ⑤ 그래프 ──────────────────────────────────────────────────
   //  축으로 고를 수 있는 열: 가로축·측정 계열·계산 계열·derive·변환축. 값은 학생이 적은 것(맞았으니 앱의 값과 같습니다)이 아니라
   //  앱의 계산값을 씁니다 — 학생이 적은 반올림 값과 어긋나 점 확인이 억울해지지 않게.
+  //  한 줄에서 그 열의 값 — 우리 모둠 줄에도, 서버·작업 파일에서 받은 다른 모둠 줄에도 같은 규칙을 씁니다.
+  function colVal(row, key, text){
+    const r = getRes(), ds = r.ds || [];
+    if (key === 'x'){ const v = row[0]; if (text) return (v === null || v === undefined) ? '' : String(v); return (v === null || v === undefined || v === '') ? NaN : num(v); }
+    if (key.charAt(0) === 's'){ const v = row[Number(key.slice(1)) + 1]; return (v === null || v === undefined || v === '') ? NaN : num(v); }
+    if (key.charAt(0) === 'd') return E.rawVal(row, key, ds);
+    if (key === 'tx'){
+      const mf = r.mainFit; const t = mf && TF[mf.xt];
+      if (!t) return NaN;
+      const v = E.rawVal(row, mf.x, ds);
+      return t.ok(v) ? t.f(v, mf.P ? mf.P.minX : 0) : NaN;
+    }
+    return NaN;
+  }
   function axisCols(){
-    const sp = spec(), rows = rowsAvg(), cols = [];
+    const sp = spec(), rows = fullRows(), cols = [];
     const xt = xIsText();
-    //  빈 칸(null)은 0 이 아니라 '값 없음'(NaN)입니다 — isFinite(null) 이 참이라 그대로 두면 0 에 점이 찍힙니다.
-    const nn = v => (v === null || v === undefined || v === '') ? NaN : v;
-    cols.push({ key:'x', name: sp.x.label || '가로축', unit: sp.x.unit || '', text: xt, vals: rows.map(r => xt ? r[0] : nn(r[0])) });
+    cols.push({ key:'x', name: sp.x.label || '가로축', unit: sp.x.unit || '', text: xt, vals: rows.map(r => colVal(r, 'x', xt)) });
     (sp.series || []).forEach((s, i) => {
       if (isCalcSeries(s)) return;
-      cols.push({ key:'s' + i, name: s.label, unit: s.unit || '', vals: rows.map(r => nn(r[i + 1])) });
+      cols.push({ key:'s' + i, name: s.label, unit: s.unit || '', vals: rows.map(r => colVal(r, 's' + i)) });
     });
-    tfCols().forEach(c => { cols.push({ key: c.key, name: c.name, unit: c.unit, vals: rows.map(r => c.ans ? c.ans(r) : NaN), tf: c.tf }); });
+    tfCols().forEach(c => { cols.push({ key: c.key, name: c.name, unit: c.unit, vals: rows.map(r => colVal(r, c.key)), tf: c.tf }); });
     return cols;
   }
-  //  앱이 기대하는 축 — 마지막 fit 이 있으면 그 축(변환 뒤), 없으면 가로축 vs 첫 측정 계열.
   //  앱이 기대하는 축 — 분석 규칙의 회귀(fit)마다 한 짝씩. 회귀가 여럿이면(전류 세 계열처럼) 어느 짝이든 맞다고 봅니다.
   //  변환축(1/부피 등)은 마지막 회귀에만 'tx' 열이 있으므로 그것만 'tx' 로 적습니다.
   function expectAxes(){
-    if (!res) res = E.runAnalysis(exp, rowsAvg());
-    const fits = (res.blocks || []).filter(b => b.kind === 'fit');
-    if (!fits.length) return [{ x:'x', y:'s0', fit:null }];
-    return fits.map(f => ({ x: (f === res.mainFit && f.xt && f.xt !== 'none') ? 'tx' : f.x, y: f.y, fit: f }));
+    const r = getRes();
+    const fits = (r.blocks || []).filter(b => b.kind === 'fit');
+    if (!fits.length){
+      const pl = (r.blocks || []).find(b => b.kind === 'plot');
+      const A = LAB.analysisOf ? LAB.analysisOf(exp) : exp.analysis;
+      const st = pl && ((A && A.steps) || []).find(s => s.kind === 'plot');
+      return [{ x: st ? st.x : 'x', y: st ? st.y : (measCols()[0] ? 's' + measCols()[0].i : 's0'), fit:null }];
+    }
+    return fits.map(f => ({ x: (f === r.mainFit && f.xt && f.xt !== 'none') ? 'tx' : f.x, y: f.y, fit: f }));
   }
   function paintGraphStep(){
     const cols = axisCols();
@@ -869,8 +1430,9 @@
     $('rangeBox').classList.toggle('hidden', !S.g.axOk);
     $('plotBox').classList.toggle('hidden', !S.g.ready);
     if (S.g.axOk) paintRange();
-    if (S.g.ready) drawGraph();
+    if (S.g.ready){ drawGraph(); paintGReport(); }
     $('axMsg').textContent = S.g.axOk ? '축이 맞습니다.' : ''; $('axMsg').className = 'msg ok';
+    $('gMsg').textContent = S.g.done ? '점을 모두 제자리에 찍었습니다.' : ''; $('gMsg').className = 'msg ok';
   }
   $('btnAxCheck').addEventListener('click', () => {
     const wants = expectAxes();
@@ -884,13 +1446,17 @@
     //  가로축을 변환 전 원래 열로 골라도 '틀림'은 아닙니다 — 곡선을 먼저 보는 것도 배움입니다. 다만 직선으로 펴려면 변환축이라고 알려 줍니다.
     const rawX = !okX && wants.some(w => w.y === S.g.yk && w.fit && w.x === 'tx' && S.g.xk === w.fit.x);
     if (!okY){ m.className = 'msg bad'; m.textContent = '세로축 — 이 실험이 알아보려는 값(종속 변인)은 무엇인가요?'; S.g.axOk = false; save(); return; }
-    //  가로축을 원래 가로축(시간·회차)으로 두는 것도 그래프로는 맞습니다 — 다만 이 실험이 보려는 관계는 다른 축이라고 알려 줍니다.
-    const timeX = !okX && !rawX && S.g.xk === 'x';
-    if (!okX && !rawX && !timeX){ m.className = 'msg bad'; m.textContent = '가로축 — 내가 바꾼 값(조작 변인), 또는 그것을 바꾼 열을 두세요.'; S.g.axOk = false; save(); return; }
-    S.g.axOk = true; S.g.ready = false; S.g.pts = []; S.g.h = null; S.g.ptScore = null; S.g.lnScore = null; S.g.overlay = false;
+    //  가로축을 표의 원래 가로축으로 두는 것도 그래프로는 맞습니다 — 다만 이 실험이 보려는 관계는 다른 축이라고 알려 줍니다.
+    const plainX = !okX && !rawX && S.g.xk === 'x';
+    if (!okX && !rawX && !plainX){ m.className = 'msg bad'; m.textContent = '가로축 — 내가 바꾼 값(조작 변인), 또는 그것을 바꾼 열을 두세요.'; S.g.axOk = false; save(); return; }
+    S.g.axOk = true; S.g.ready = false; S.g.pts = []; S.g.h = null; S.g.ptScore = null; S.g.lnScore = null; S.g.overlay = false; S.g.done = false; S.judged = null;
+    syncNav();
     m.className = 'msg ok';
-    m.textContent = rawX ? '됩니다 — 이대로 그리면 곡선이 나옵니다. 직선으로 펴려면 가로축을 「' + esc(colByKey(want.x).name) + '」 로 바꿔 한 번 더 그려 보세요.'
-                : timeX ? '됩니다 — 흐름을 보는 그래프입니다. 두 양의 관계를 보려면 가로축을 「' + esc(colByKey(want.x).name) + '」 로 바꿔 한 번 더 그려 보세요.'
+    const wantName = colByKey(want.x).name;
+    m.textContent = rawX ? '됩니다 — 이대로 그리면 곡선이 나옵니다. 직선으로 펴려면 가로축을 「' + wantName + '」 로 바꿔 한 번 더 그려 보세요.'
+                : plainX ? (timeLike(colByKey('x').name)
+                    ? '됩니다 — 시간에 따른 흐름을 보는 그래프입니다. 두 양의 관계를 보려면 가로축을 「' + wantName + '」 로 바꿔 한 번 더 그려 보세요.'
+                    : '됩니다 — 이 그래프도 그릴 수 있습니다. 다만 앱이 보려는 관계는 가로축이 「' + wantName + '」 인 그래프입니다. 그것도 한 번 그려 보세요.')
                 : '축이 맞습니다. 범위와 눈금을 정하세요.';
     $('rangeBox').classList.remove('hidden'); $('plotBox').classList.add('hidden');
     paintRange(); save();
@@ -907,18 +1473,23 @@
     $('rngMsg').textContent = textX ? '가로축은 글자(이름)라 범위가 없습니다. 세로축만 정하세요.' : '';
     $('rngMsg').className = 'msg';
   }
-  //  '읽기 좋은' 범위 — 학생이 막혔을 때만 보여 줍니다(먼저 정답을 주지 않습니다).
+  //  '읽기 좋은' 범위 — 안내문 그대로 눈금은 1·2·5 의 배수, 5~8칸이 되는 것을 고릅니다.
   function niceRange(vals){
     const v = vals.filter(isFinite); if (!v.length) return null;
     let lo = Math.min.apply(null, v), hi = Math.max.apply(null, v);
     if (lo > 0 && lo < hi * 0.4) lo = 0;                 // 0 에서 시작하면 원점을 지나는지 보입니다
-    if (hi === lo){ hi = lo + 1; }
+    if (hi === lo){ hi = lo + (Math.abs(lo) || 1) * 0.5; lo = lo - (Math.abs(lo) || 1) * 0.5; }
     const span = hi - lo;
-    const raw = span / 5;
-    const p = Math.pow(10, Math.floor(Math.log10(raw)));
-    const step = [1, 2, 2.5, 5, 10].map(m => m * p).find(s => s >= raw) || p * 10;
-    const a = Math.floor(lo / step) * step, b = Math.ceil(hi / step) * step;
-    return [Number(a.toPrecision(6)), Number(b.toPrecision(6)), Number(step.toPrecision(6))];
+    const p0 = Math.pow(10, Math.floor(Math.log10(span / 6)));
+    let best = null;
+    [p0 / 10, p0, p0 * 10].forEach(p => [1, 2, 5].forEach(k => {
+      const s = k * p;
+      const a = Math.floor(lo / s + 1e-9) * s, b = Math.ceil(hi / s - 1e-9) * s;
+      const n = Math.round((b - a) / s);
+      const score = (n >= 5 && n <= 8) ? Math.abs(n - 6) : 10 + Math.abs(n - 6.5);
+      if (!best || score < best.score) best = { a, b, s, score };
+    }));
+    return [Number(best.a.toPrecision(6)), Number(best.b.toPrecision(6)), Number(best.s.toPrecision(6))];
   }
   $('btnRangeHint').addEventListener('click', () => {
     const cx = colByKey(S.g.xk), cy = colByKey(S.g.yk);
@@ -948,17 +1519,30 @@
     if (!why) why = bad(ry, cy.vals, '세로');
     if (why){ m.className = 'msg bad'; m.textContent = why; return; }
     S.g.rx = cx.text ? [0, cx.vals.length + 1, 1] : rx; S.g.ry = ry;
-    S.g.ready = true; S.g.pts = []; S.g.h = null; S.g.ptScore = null; S.g.lnScore = null; S.g.overlay = false;
+    S.g.ready = true; S.g.pts = []; S.g.h = null; S.g.ptScore = null; S.g.lnScore = null; S.g.overlay = false; S.g.done = false; S.judged = null;
+    syncNav();
     $('plotBox').classList.remove('hidden');
     m.className = 'msg ok'; m.textContent = '모눈을 그렸습니다. 점을 찍으세요.';
+    $('gMsg').textContent = ''; $('gReport').innerHTML = '';
     drawGraph(); save();
     $('plotBox').scrollIntoView({ behavior:'smooth', block:'start' });
   });
 
-  // 좌표 변환
-  const G = { W:760, H:460, l:70, r:22, t:18, b:56 };
-  function px(x){ return G.l + (x - S.g.rx[0]) / (S.g.rx[1] - S.g.rx[0]) * (G.W - G.l - G.r); }
-  function py(y){ return G.H - G.b - (y - S.g.ry[0]) / (S.g.ry[1] - S.g.ry[0]) * (G.H - G.t - G.b); }
+  // 좌표 변환 — 휴대폰에서는 세로로 긴 판·큰 글씨·큰 점과 넉넉한 손가락 자리로 그립니다(760 판을 줄이면 글씨가 6px 가 됩니다).
+  const G_WIDE = { W:760, H:460, l:70, r:22, t:18, b:56, fs:12, pr:6.5, hit:12, h:8, every:12 };
+  const G_NARROW = { W:400, H:440, l:52, r:24, t:14, b:58, fs:15, pr:9, hit:22, h:12, every:6 };
+  let G = G_WIDE;
+  function layoutG(){ const n = window.innerWidth < 600 ? G_NARROW : G_WIDE; const ch = n !== G; G = n; return ch; }
+  layoutG();
+  window.addEventListener('resize', () => { if (layoutG()){ if (S.g.ready && S.step === 4) drawGraph(); if (S.step === 5) paintClass(); } });
+  function mapper(L, rx, ry){
+    return {
+      px: x => L.l + (x - rx[0]) / (rx[1] - rx[0]) * (L.W - L.l - L.r),
+      py: y => L.H - L.b - (y - ry[0]) / (ry[1] - ry[0]) * (L.H - L.t - L.b)
+    };
+  }
+  function px(x){ return mapper(G, S.g.rx, S.g.ry).px(x); }
+  function py(y){ return mapper(G, S.g.rx, S.g.ry).py(y); }
   function dx(p){ return S.g.rx[0] + (p - G.l) / (G.W - G.l - G.r) * (S.g.rx[1] - S.g.rx[0]); }
   function dy(p){ return S.g.ry[0] + (G.H - G.b - p) / (G.H - G.t - G.b) * (S.g.ry[1] - S.g.ry[0]); }
   function snap(v, step){ const s = step / 10; return Math.round(v / s) * s; }
@@ -973,31 +1557,36 @@
     return out;
   }
   function fmtTick(v, step){ const d = step < 1 ? Math.min(6, Math.ceil(-Math.log10(step)) + 1) : 0; return String(Number(v.toFixed(d))); }
+  //  모눈과 축 — 학생 그래프와 반 전체 그래프가 같이 씁니다. cats 를 주면 가로축은 글자(이름) 눈금입니다.
+  function gridSVG(L, rx, ry, xLab, yLab, cats){
+    const M = mapper(L, rx, ry);
+    let h = '<rect x="0" y="0" width="' + L.W + '" height="' + L.H + '" fill="#fff"/>';
+    h += '<g class="gaxis" style="font-size:' + L.fs + 'px">';
+    const nx = Math.round((rx[1] - rx[0]) / rx[2]), ny = Math.round((ry[1] - ry[0]) / ry[2]);
+    const evX = Math.max(1, Math.ceil(nx / L.every));
+    for (let i = 0; i <= nx * 2; i++){ const v = rx[0] + i * rx[2] / 2; const X = M.px(v); const major = i % 2 === 0;
+      h += '<line x1="' + X + '" y1="' + L.t + '" x2="' + X + '" y2="' + (L.H - L.b) + '" stroke="' + (major ? '#D3E6EA' : '#EEF5F7') + '" stroke-width="1"/>';
+      if (major && (i / 2) % evX === 0){
+        const lab = cats ? (cats[i / 2 - 1] !== undefined ? String(cats[i / 2 - 1]) : '') : fmtTick(v, rx[2]);
+        if (lab !== '') h += '<text x="' + X + '" y="' + (L.H - L.b + L.fs + 6) + '" text-anchor="middle">' + esc(lab.length > 8 && L === G_NARROW ? lab.slice(0, 7) + '…' : lab) + '</text>';
+      } }
+    for (let i = 0; i <= ny * 2; i++){ const v = ry[0] + i * ry[2] / 2; const Y = M.py(v); const major = i % 2 === 0;
+      h += '<line x1="' + L.l + '" y1="' + Y + '" x2="' + (L.W - L.r) + '" y2="' + Y + '" stroke="' + (major ? '#D3E6EA' : '#EEF5F7') + '" stroke-width="1"/>';
+      if (major) h += '<text x="' + (L.l - 6) + '" y="' + (Y + L.fs / 3) + '" text-anchor="end">' + esc(fmtTick(v, ry[2])) + '</text>'; }
+    h += '<line x1="' + L.l + '" y1="' + L.t + '" x2="' + L.l + '" y2="' + (L.H - L.b) + '" stroke="#254753" stroke-width="1.5"/>';
+    h += '<line x1="' + L.l + '" y1="' + (L.H - L.b) + '" x2="' + (L.W - L.r) + '" y2="' + (L.H - L.b) + '" stroke="#254753" stroke-width="1.5"/>';
+    h += '<text class="lab" x="' + ((L.l + L.W - L.r) / 2) + '" y="' + (L.H - 10) + '" text-anchor="middle">' + esc(xLab) + '</text>';
+    h += '<text class="lab" transform="translate(' + (L.fs + 2) + ' ' + ((L.t + L.H - L.b) / 2) + ') rotate(-90)" text-anchor="middle">' + esc(yLab) + '</text>';
+    return h + '</g>';
+  }
   function drawGraph(){
     const cx = colByKey(S.g.xk), cy = colByKey(S.g.yk);
-    const rx = S.g.rx, ry = S.g.ry;
-    let h = '<rect x="0" y="0" width="' + G.W + '" height="' + G.H + '" fill="#fff"/>';
-    //  모눈 — 눈금마다 선, 그 사이 작은 눈금
-    h += '<g class="gaxis">';
-    const nx = Math.round((rx[1] - rx[0]) / rx[2]), ny = Math.round((ry[1] - ry[0]) / ry[2]);
-    for (let i = 0; i <= nx * 2; i++){ const v = rx[0] + i * rx[2] / 2; const X = px(v); const major = i % 2 === 0;
-      h += '<line x1="' + X + '" y1="' + G.t + '" x2="' + X + '" y2="' + (G.H - G.b) + '" stroke="' + (major ? '#D3E6EA' : '#EEF5F7') + '" stroke-width="1"/>';
-      if (major){
-        const lab = cx.text ? (cx.vals[i / 2 - 1] !== undefined ? String(cx.vals[i / 2 - 1]) : '') : fmtTick(v, rx[2]);
-        if (lab !== '') h += '<text x="' + X + '" y="' + (G.H - G.b + 18) + '" text-anchor="middle">' + esc(lab) + '</text>';
-      } }
-    for (let i = 0; i <= ny * 2; i++){ const v = ry[0] + i * ry[2] / 2; const Y = py(v); const major = i % 2 === 0;
-      h += '<line x1="' + G.l + '" y1="' + Y + '" x2="' + (G.W - G.r) + '" y2="' + Y + '" stroke="' + (major ? '#D3E6EA' : '#EEF5F7') + '" stroke-width="1"/>';
-      if (major) h += '<text x="' + (G.l - 8) + '" y="' + (Y + 4) + '" text-anchor="end">' + esc(fmtTick(v, ry[2])) + '</text>'; }
-    h += '<line x1="' + G.l + '" y1="' + G.t + '" x2="' + G.l + '" y2="' + (G.H - G.b) + '" stroke="#254753" stroke-width="1.5"/>';
-    h += '<line x1="' + G.l + '" y1="' + (G.H - G.b) + '" x2="' + (G.W - G.r) + '" y2="' + (G.H - G.b) + '" stroke="#254753" stroke-width="1.5"/>';
-    h += '<text class="lab" x="' + ((G.l + G.W - G.r) / 2) + '" y="' + (G.H - 12) + '" text-anchor="middle">' + esc(cx.name + (cx.unit ? ' (' + cx.unit + ')' : '')) + '</text>';
-    h += '<text class="lab" transform="translate(16 ' + ((G.t + G.H - G.b) / 2) + ') rotate(-90)" text-anchor="middle">' + esc(cy.name + (cy.unit ? ' (' + cy.unit + ')' : '')) + '</text>';
-    h += '</g>';
+    $('gsvg').setAttribute('viewBox', '0 0 ' + G.W + ' ' + G.H);
+    let h = gridSVG(G, S.g.rx, S.g.ry, cx.name + (cx.unit ? ' (' + cx.unit + ')' : ''), cy.name + (cy.unit ? ' (' + cy.unit + ')' : ''), cx.text ? cx.vals : null);
     //  앱의 점·직선(겹쳐 보기)
     if (S.g.overlay){
       const ep = expectedPts();
-      ep.forEach(p => { h += '<circle class="ptE" cx="' + px(p.x) + '" cy="' + py(p.y) + '" r="7"/>'; });
+      ep.forEach(p => { h += '<circle class="ptE" cx="' + px(p.x) + '" cy="' + py(p.y) + '" r="' + (G.pr + 1) + '"/>'; });
       const f = E.labFit(ep);
       if (f.ok && !cx.text){ const seg = clipLine(f.slope, f.intercept); if (seg) h += '<line class="lnE" x1="' + px(seg[0]) + '" y1="' + py(seg[1]) + '" x2="' + px(seg[2]) + '" y2="' + py(seg[3]) + '"/>'; }
     }
@@ -1010,10 +1599,12 @@
       const a = S.g.h[0], b = S.g.h[1];
       const L = lineOf(); const seg = L ? clipLine(L.a, L.b) : null;
       if (seg) h += '<line class="lnS" x1="' + px(seg[0]) + '" y1="' + py(seg[1]) + '" x2="' + px(seg[2]) + '" y2="' + py(seg[3]) + '"/>';
-      h += '<circle class="hdl" data-h="0" cx="' + px(a.x) + '" cy="' + py(a.y) + '" r="8"/><circle class="hdl" data-h="1" cx="' + px(b.x) + '" cy="' + py(b.y) + '" r="8"/>';
+      //  손잡이는 마름모 — 둥근 점(내 점·앱의 점)과 헷갈리지 않게
+      [a, b].forEach((q, i) => { const X = px(q.x), Y = py(q.y), s = G.h;
+        h += '<rect class="hdl" data-h="' + i + '" x="' + (X - s / 1.4) + '" y="' + (Y - s / 1.4) + '" width="' + (s * 1.41) + '" height="' + (s * 1.41) + '" transform="rotate(45 ' + X + ' ' + Y + ')"/>'; });
     }
     //  학생의 점
-    S.g.pts.forEach((p, i) => { h += '<circle class="ptS' + (p.hit === true ? ' hit' : p.hit === false ? ' miss' : '') + '" data-i="' + i + '" cx="' + px(p.x) + '" cy="' + py(p.y) + '" r="6.5"/>'; });
+    S.g.pts.forEach((p, i) => { h += '<circle class="ptS' + (p.hit === true ? ' hit' : p.hit === false ? ' miss' : '') + '" data-i="' + i + '" cx="' + px(p.x) + '" cy="' + py(p.y) + '" r="' + G.pr + '"/>'; });
     $('gsvg').innerHTML = h;
     $('ptCount').textContent = '찍은 점 ' + S.g.pts.length + '개 / 표의 줄 ' + expectedPts().length + '개';
     ['tPoint', 'tErase'].forEach(id => $(id).classList.toggle('on', (id === 'tPoint') === (S.g.mode === 'point')));
@@ -1043,29 +1634,40 @@
       const X = (ev.clientX - r.left) / r.width * G.W, Y = (ev.clientY - r.top) / r.height * G.H;
       return { X, Y, x: snap(dx(X), S.g.rx[2]), y: snap(dy(Y), S.g.ry[2]) };
     };
-    const inside = p => p.X >= G.l && p.X <= G.W - G.r && p.Y >= G.t && p.Y <= G.H - G.b;
+    //  모눈 가장자리(범위 끝값)에 놓일 점도 손가락으로 찍을 수 있게 조금 넉넉히 받고, 찍은 값은 범위 안으로 붙입니다.
+    const m = () => G.pr + 2;
+    const inside = p => p.X >= G.l - m() && p.X <= G.W - G.r + m() && p.Y >= G.t - m() && p.Y <= G.H - G.b + m();
+    const clampPt = p => ({ x: Math.max(S.g.rx[0], Math.min(S.g.rx[1], p.x)), y: Math.max(S.g.ry[0], Math.min(S.g.ry[1], p.y)) });
     svg.addEventListener('pointerdown', ev => {
       if (!S.g.ready) return;
       const t = ev.target;
       const p = toXY(ev);
       if (t.classList.contains('hdl')){ drag = { kind:'h', i: Number(t.dataset.h) }; svg.setPointerCapture(ev.pointerId); return; }
-      //  점 위를 누르면(또는 점에서 12px 안쪽이면) 새 점을 찍지 않고 그 점을 끕니다 — 살짝 빗나가도 점이 늘어나지 않게.
-      let i = t.classList.contains('ptS') ? Number(t.dataset.i) : -1;
+      //  손잡이 근처를 누르면 손잡이를 잡습니다(손가락은 마름모보다 큽니다).
+      if (S.g.line === 'line' && S.g.h){
+        const k = S.g.h.findIndex(q => Math.hypot(px(q.x) - p.X, py(q.y) - p.Y) < G.hit);
+        if (k >= 0){ drag = { kind:'h', i:k }; svg.setPointerCapture(ev.pointerId); return; }
+      }
+      //  점 위를 누르면(또는 점 가까이면) 새 점을 찍지 않고 그 점을 끕니다 — 살짝 빗나가도 점이 늘어나지 않게.
+      //  다만 눌렀다가 움직이지 않고 떼면 새 점을 찍습니다 — 값이 가까운 점(지진 위치 따위)도 따로 찍을 수 있게.
+      const onDot = t.classList.contains('ptS');
+      let i = onDot ? Number(t.dataset.i) : -1;
       if (i < 0){
-        let bd = 12;
+        let bd = G.hit;
         S.g.pts.forEach((q, k) => { const d = Math.hypot(px(q.x) - p.X, py(q.y) - p.Y); if (d < bd){ bd = d; i = k; } });
       }
       if (i >= 0){
         if (S.g.mode === 'erase'){ S.g.pts.splice(i, 1); afterEdit(); return; }
-        drag = { kind:'p', i }; svg.setPointerCapture(ev.pointerId); return;
+        drag = { kind:'p', i, at: p, moved: false, onDot, inside: inside(p) }; svg.setPointerCapture(ev.pointerId); return;
       }
       if (S.g.mode === 'point' && inside(p)){
-        S.g.pts.push({ x: p.x, y: p.y }); afterEdit();
+        S.g.pts.push(clampPt(p)); afterEdit();
       }
     });
     svg.addEventListener('pointermove', ev => {
       if (!drag) return;
       const p = toXY(ev);
+      if (drag.kind === 'p' && !drag.moved){ if (Math.hypot(p.X - drag.at.X, p.Y - drag.at.Y) < 4) return; drag.moved = true; }
       const x = Math.max(S.g.rx[0], Math.min(S.g.rx[1], p.x)), y = Math.max(S.g.ry[0], Math.min(S.g.ry[1], p.y));
       if (drag.kind === 'p'){ S.g.pts[drag.i] = { x, y }; }
       else { S.g.h[drag.i] = { x, y }; }
@@ -1074,13 +1676,25 @@
     //  점을 끌었으면 점 확인을 새로 해야 하지만, 직선 손잡이를 끈 것은 점 점수를 건드리지 않습니다.
     const up = () => {
       if (!drag) return;
-      const kind = drag.kind; drag = null;
-      if (kind === 'p') afterEdit();
+      const d = drag; drag = null;
+      if (d.kind === 'p'){
+        //  점 위를 톡 누른 것도, 아직 표의 줄 수만큼 찍지 않았으면 겹친 점을 하나 더 찍은 것으로 봅니다(같은 자리의 값이 둘일 때).
+        if (!d.moved && S.g.mode === 'point' && d.inside && (!d.onDot || S.g.pts.length < expectedPts().length)) S.g.pts.push(clampPt(d.at));
+        else if (!d.moved) return;
+        afterEdit();
+      }
       else { S.g.lnScore = null; drawGraph(); save(); }
     };
     svg.addEventListener('pointerup', up); svg.addEventListener('pointercancel', up);
   })();
-  function afterEdit(){ S.g.pts.forEach(p => { delete p.hit; }); S.g.ptScore = null; S.g.lnScore = null; drawGraph(); save(); }
+  function afterEdit(){
+    S.g.pts.forEach(p => { delete p.hit; });
+    const was = S.g.done;
+    S.g.ptScore = null; S.g.lnScore = null; S.g.done = false; S.judged = null;
+    if (was){ syncNav(); $('gMsg').className = 'msg warn'; $('gMsg').textContent = '점을 옮겼습니다 — [점 확인]을 다시 눌러 주세요.'; }
+    $('gReport').innerHTML = '';
+    drawGraph(); save();
+  }
   $('tPoint').addEventListener('click', () => { S.g.mode = 'point'; drawGraph(); });
   $('tErase').addEventListener('click', () => { S.g.mode = 'erase'; drawGraph(); });
   $('tNoLine').addEventListener('click', () => { S.g.line = 'none'; S.g.lnScore = null; drawGraph(); save(); });
@@ -1096,43 +1710,57 @@
   });
   $('btnUndo').addEventListener('click', () => { S.g.pts.pop(); afterEdit(); });
   $('btnOverlay').addEventListener('click', () => { S.g.overlay = !S.g.overlay; drawGraph(); save(); });
+  $('btnGNext').addEventListener('click', () => go(5));
 
-  //  점 확인 — 표의 점마다 가장 가까운 내 점을 짝지어, 축 범위의 2.5 % 안이면 맞은 것으로.
+  //  점 확인 — 표의 점마다 가장 가까운 내 점을 짝지어, 축 범위의 2.5 %(작은 판에서는 점 하나 크기) 안이면 맞은 것으로.
+  //  표의 점을 모두 제자리에 찍어야(빠진 점·남는 점 없이) 다음 걸음이 열립니다.
   $('btnPtCheck').addEventListener('click', () => {
     const ep = expectedPts();
     const xr = S.g.rx[1] - S.g.rx[0], yr = S.g.ry[1] - S.g.ry[0];
+    //  허용폭은 축 범위의 2.5 % — 다만 휴대폰처럼 판이 작으면 점 하나 크기보다 좁아지지 않게 합니다(겹친 점을 옆에 찍어도 맞게).
+    const tx = Math.max(0.025, (G.pr + 2) / (G.W - G.l - G.r)) * xr, ty = Math.max(0.025, (G.pr + 2) / (G.H - G.t - G.b)) * yr;
     const used = new Set();
     let hit = 0;
     S.g.pts.forEach(p => { p.hit = false; });
-    ep.forEach(e => {
-      let best = -1, bd = Infinity;
-      S.g.pts.forEach((p, i) => { if (used.has(i)) return; const d = Math.hypot((p.x - e.x) / xr, (p.y - e.y) / yr); if (d < bd){ bd = d; best = i; } });
-      if (best >= 0 && Math.abs(S.g.pts[best].x - e.x) <= 0.025 * xr && Math.abs(S.g.pts[best].y - e.y) <= 0.025 * yr){ used.add(best); S.g.pts[best].hit = true; hit++; }
-    });
+    //  짝짓기는 가까운 짝부터 — 점이 몰린 곳(지진 위치 따위)에서 앞 점이 뒤 점의 짝을 가로채지 않게.
+    const pairs = [];
+    ep.forEach((e, k) => S.g.pts.forEach((p, i) => {
+      if (Math.abs(p.x - e.x) <= tx && Math.abs(p.y - e.y) <= ty) pairs.push({ k, i, d: Math.hypot((p.x - e.x) / xr, (p.y - e.y) / yr) });
+    }));
+    pairs.sort((a, b) => a.d - b.d);
+    const done = new Set();
+    pairs.forEach(q => { if (done.has(q.k) || used.has(q.i)) return; done.add(q.k); used.add(q.i); S.g.pts[q.i].hit = true; hit++; });
     const extra = S.g.pts.length - used.size;
     S.g.ptScore = { hit, total: ep.length, extra };
     const m = $('gMsg');
-    if (hit === ep.length && !extra){ m.className = 'msg ok'; m.textContent = '점 ' + hit + '개가 모두 제자리에 있습니다.'; markDone(4, true); unlock(5); }
-    else { m.className = 'msg warn'; m.textContent = '제자리에 있는 점 ' + hit + '개 / ' + ep.length + '개' + (extra ? ' · 표에 없는 점 ' + extra + '개(빨강)' : '') + '. 빨간 점을 옮기거나 지우세요.'; if (hit >= Math.max(3, ep.length - 1)){ markDone(4, true); unlock(5); } }
-    drawGraph(); save();
+    if (!ep.length){ m.className = 'msg bad'; m.textContent = '이 두 축으로는 찍을 점이 없습니다. 축을 다시 고르세요.'; S.g.done = false; }
+    else if (!S.g.pts.length){ m.className = 'msg bad'; m.textContent = '아직 찍은 점이 없습니다. 표의 줄마다 점을 하나씩 찍으세요.'; S.g.done = false; }
+    else if (hit === ep.length && !extra){ m.className = 'msg ok'; m.textContent = '점 ' + hit + '개가 모두 제자리에 있습니다. 직선을 긋거나 점을 이어 모양을 본 뒤 다음 걸음으로 가세요.'; S.g.done = true; }
+    else {
+      S.g.done = false;
+      const miss = ep.length - hit;
+      m.className = 'msg warn'; m.textContent = '제자리에 있는 점 ' + hit + '개 / ' + ep.length + '개' + (miss ? ' · 아직 안 찍었거나 벗어난 점 ' + miss + '개' : '') + (extra ? ' · 표에 없는 점 ' + extra + '개(빨강)' : '') + '. 모두 제자리에 찍어야 다음 걸음이 열립니다.';
+    }
+    syncNav(); drawGraph(); save();
   });
-  //  선 확인 — 내가 그은 직선이 자료를 얼마나 따라가는지(직선의 R²)를 앱의 최소제곱 직선과 견줍니다.
+  //  선 확인 — 내가 그은 직선이 자료를 얼마나 따라가는지(직선의 R²)를 앱의 최소제곱 직선과 견줍니다. 걸음을 여는 것은 점 확인입니다.
   $('btnLineCheck').addEventListener('click', () => {
     const ep = expectedPts();
     const cx = colByKey(S.g.xk);
     const m = $('gMsg');
     if (S.g.line === 'none'){ m.className = 'msg warn'; m.textContent = '먼저 [직선 긋기] 또는 [점 잇기]를 고르세요.'; return; }
+    if (S.g.pts.length < 2){ m.className = 'msg warn'; m.textContent = '점을 먼저 찍으세요. 점이 있어야 선이 무엇을 따라가는지 볼 수 있습니다.'; return; }
     if (S.g.line === 'connect'){
       S.g.lnScore = { kind:'connect' };
-      m.className = 'msg ok'; m.textContent = '점을 차례로 이었습니다. 직선이 되는지, 휘는지, 멈춘 구간이 있는지 보세요.';
-      unlock(5); save(); paintGReport(); return;
+      m.className = 'msg ok'; m.textContent = '점을 차례로 이었습니다. 직선이 되는지, 휘는지, 멈춘 구간이나 봉우리가 있는지 보세요.' + (S.g.done ? '' : ' (다음 걸음은 [점 확인]을 통과하면 열립니다)');
+      save(); paintGReport(); return;
     }
     //  회귀가 없는 분석 규칙 — 직선 하나로 나타내는 관계가 아닙니다(경도–위도 지도, 평균만 보는 자료).
     const An = LAB.analysisOf ? LAB.analysisOf(exp) : exp.analysis;
     if (!((An && An.steps) || []).some(st => st.kind === 'fit')){
       S.g.lnScore = null;
       m.className = 'msg warn'; m.textContent = '이 자료는 직선 하나로 나타내는 관계가 아닙니다. 직선을 지우고 점이 모인 모양(분포)을 보거나, 차례가 있는 자료라면 [점 잇기]를 쓰세요.';
-      markDone(4, true); unlock(5); save(); paintGReport(); return;
+      save(); paintGReport(); return;
     }
     const L = lineOf();
     if (!L || cx.text){ m.className = 'msg bad'; m.textContent = cx.text ? '글자 축에는 직선을 긋지 않습니다. [점 잇기]를 쓰세요.' : '직선의 두 손잡이가 같은 자리에 있습니다.'; return; }
@@ -1148,9 +1776,11 @@
     if (r2s >= f.r2 - 0.02 && slopeErr <= 0.1){ word = '잘 그었습니다 — 앱의 최소제곱 직선과 거의 같습니다.'; cls = 'ok'; }
     else if (r2s >= f.r2 - 0.1){ word = '괜찮습니다. 점들 사이를 고르게 지나도록 조금만 더 돌려 보세요.'; cls = 'warn'; }
     else { word = '점들에서 많이 벗어났습니다. 위아래로 점이 비슷하게 남도록 그어 보세요.'; cls = 'warn'; }
-    if (expectRel() === 'flat') word += ' 다만 이 자료는 도중에 멈추거나 꺾이는 구간이 있어, [점 잇기]로 모양을 보면 더 잘 드러납니다.';
+    const er = expectRel().rel;
+    if (['flat', 'peak', 'valley', 'curveUp', 'curveDown'].includes(er)) word += ' 다만 이 자료는 곧은 직선보다 ' + (er === 'flat' ? '도중에 멈추거나 꺾이는 구간이' : er === 'peak' || er === 'valley' ? '봉우리나 골짜기가' : '휘는 모양이') + ' 있어, [점 잇기]로 모양을 보면 더 잘 드러납니다.';
+    if (!S.g.done) word += ' (다음 걸음은 [점 확인]을 통과하면 열립니다)';
     m.className = 'msg ' + cls; m.textContent = word;
-    markDone(4, true); unlock(5); save(); paintGReport();
+    save(); paintGReport();
   });
   function paintGReport(){
     const s = S.g.lnScore, cx = colByKey(S.g.xk), cy = colByKey(S.g.yk);
@@ -1161,37 +1791,235 @@
       '<div><b>기울기의 단위</b>' + esc(E.slopeUnit ? E.slopeUnit(cy.unit || '', cx.unit || '') : ((cy.unit || '') + (cx.unit ? ' / ' + cx.unit : ''))) + '<br><span class="muted">세로축 단위 ÷ 가로축 단위</span></div></div>';
   }
 
-  // ── ⑥ 해석 ────────────────────────────────────────────────────
-  //  앱이 기대하는 관계 — 분석 규칙(변환축·기울기·절편)에서 어림합니다. 학생이 고른 것과 다르면 '다시 생각' 만 합니다.
-  function expectRel(){
-    //  분석 규칙이 관계를 직접 적었으면 그것을 씁니다(두 무리로 나뉘는 자료·해마다 들쭉날쭉한 자료처럼 R² 로는 가를 수 없을 때). '' = 한 가지로 정하지 않음.
-    const A = LAB.analysisOf ? LAB.analysisOf(exp) : exp.analysis;
-    if (A && typeof A.rel === 'string') return A.rel;
-    if (!res) res = E.runAnalysis(exp, rowsAvg());
-    const mf = res.mainFit, v = res.vals;
-    if (mf && mf.xt === 'inv') return 'inv';
-    if (mf && mf.xt === 'inv2') return 'inv2';
-    if (mf && mf.fit && mf.fit.ok){
-      if (isFinite(v.r2) && v.r2 < 0.9) return 'flat';
-      const f = mf.fit;
-      const ep = expectedPts();
-      const yr = Math.max.apply(null, ep.map(p => p.y)) - Math.min.apply(null, ep.map(p => p.y));
-      if (f.slope > 0) return (Math.abs(f.intercept) <= Math.max(0.1 * yr, 1e-9)) ? 'prop' : 'inc';
-      if (f.slope < 0) return 'dec';
+  // ── ⑥ 반 전체 그래프 ─────────────────────────────────────────
+  //  수업 중이면 서버 보드(Hub.watch 가 15초마다 신호를 보고 바뀌면 다시 받음)의 모든 모둠 줄을,
+  //  코드 없이 하면 우리 표 + 불러온 다른 모둠 작업 파일을 한 그래프에 겹칩니다. 우리 모둠 점은 크고 진하게.
+  const GCOL = ['#20B2A6', '#54B4E8', '#FFC130', '#FF8C6B', '#8B7FD4', '#4FB477', '#E88FB5'];
+  const gcol = no => GCOL[((Number(no) || 1) - 1 + 7000) % 7];
+  function classGroups(){
+    const out = [];
+    const me = { mine:true, no: Number(S.who.no) || 0, name: S.who.name || (S.who.no + '모둠'), rows: fullRows(), demo: S.demo };
+    if (S.lesson){
+      const byId = {};
+      ((board && board.data) || []).forEach(d => { byId[String(d.group_id)] = d; });
+      ((board && board.groups) || []).forEach(g => {
+        if (String(g.id) === String(S.lesson.groupId)) return;
+        const d = byId[String(g.id)];
+        const rows = (d && Array.isArray(d.rows)) ? d.rows : [];
+        out.push({ no: Number(g.group_no) || 0, name: g.group_name || (g.group_no + '모둠'), rows, demo: /예시 자료|예시 값/.test(String((d && d.note) || '')) ? 'all' : '' });
+      });
+    } else {
+      (S.others || []).forEach(o => out.push(Object.assign({ mine:false }, o)));
     }
-    return '';
+    out.push(me);
+    return out.sort((a, b) => a.no - b.no);
+  }
+  function classCoverage(groups){
+    if (!HUB || !HUB.assignCoverage) return null;
+    const src = assignSrc();
+    if (!src) return null;
+    if (S.lesson && board){
+      //  우리 모둠 몫은 서버보다 이 기기의 표가 최신입니다.
+      const b = { groups: (board.groups || []).slice(), data: (board.data || []).filter(d => String(d.group_id) !== String(S.lesson.groupId)).concat([{ group_id: S.lesson.groupId, rows: fullRows() }]) };
+      if (!b.groups.some(g => String(g.id) === String(S.lesson.groupId))) b.groups.push({ id: S.lesson.groupId, group_no: S.lesson.groupNo });
+      return HUB.assignCoverage(b, lesson || { form:{ assign: src.a }, data_spec: spec() });
+    }
+    //  코드 없이 — 권장 나눔의 모둠 수만큼 칸을 세우고, 가진 파일만 채웁니다(빈 칸 = 아직 못 본 모둠 몫).
+    const n = Math.max(src.a.groups.length, ...groups.map(g => g.no || 0));
+    const b = { groups: [], data: [] };
+    for (let i = 1; i <= n; i++){
+      b.groups.push({ id:'g' + i, group_no:i });
+      const g = groups.find(x => x.no === i);
+      b.data.push({ group_id:'g' + i, rows: g ? g.rows : [] });
+    }
+    return HUB.assignCoverage(b, { form:{ assign: src.a }, data_spec: spec() });
+  }
+  function coverHTML(cv){
+    if (!cv) return '';
+    const myNo = Number(S.who.no) || 0;
+    let h = '<div class="covbar"><b>반 전체 그래프 ' + cv.total + '칸 가운데 ' + cv.done + '칸을 채웠습니다</b>' + (cv.total && cv.done === cv.total ? ' · 다 채웠습니다 🎉' : '') + '</div><div class="covchips">';
+    cv.items.forEach(it => {
+      const mine = it.groups.indexOf(myNo) >= 0;
+      h += '<span class="covchip' + (it.done ? ' done' : '') + (mine ? ' mine' : '') + '">' + esc(it.label + (cv.unit && cv.isX ? ' ' + cv.unit : '')) +
+           '<small>' + (it.done ? '✓ ' : '') + it.groups.map(n => n + '모둠').join('·') + (mine ? ' · 우리' : '') + '</small></span>';
+    });
+    return h + '</div>';
+  }
+  function enterClass(){
+    S.classSeen = true;
+    $('cLive').classList.toggle('hidden', !S.lesson);
+    $('cOff').classList.toggle('hidden', !!S.lesson);
+    if (S.lesson){
+      //  아직 안 보낸 값이 있으면 먼저 보내고, 보드를 새로 받습니다.
+      if (S.rawOk && S.sent !== sendSig()) sendRows();
+      else if (Date.now() - boardAt > 5000) refreshBoard();
+    }
+    paintClass();
+  }
+  function paintClass(){
+    const cols = axisCols();
+    const want = expectAxes()[0];
+    if (!S.c.xk || !cols.some(c => c.key === S.c.xk)) S.c.xk = S.g.axOk ? S.g.xk : (want.x === 'tx' && want.fit ? want.fit.x : want.x);
+    if (!S.c.yk || !cols.some(c => c.key === S.c.yk)) S.c.yk = S.g.axOk ? S.g.yk : want.y;
+    const opt = sel => cols.map(c => '<option value="' + esc(c.key) + '"' + (sel === c.key ? ' selected' : '') + '>' + esc(c.name) + (c.unit ? ' (' + esc(c.unit) + ')' : '') + '</option>').join('');
+    $('cX').innerHTML = opt(S.c.xk); $('cY').innerHTML = opt(S.c.yk);
+    const cx = cols.find(c => c.key === S.c.xk), cy = cols.find(c => c.key === S.c.yk);
+    const text = S.c.xk === 'x' && !!cx.text;
+    const groups = classGroups();
+    const cats = [];
+    groups.forEach(g => {
+      g.pts = [];
+      (g.rows || []).forEach(r => {
+        let X = colVal(r, S.c.xk, text), Y = colVal(r, S.c.yk);
+        if (text){ if (X === '') return; let k = cats.indexOf(X); if (k < 0){ cats.push(X); k = cats.length - 1; } X = k + 1; }
+        if (isFinite(X) && isFinite(Y)) g.pts.push({ x: X, y: Y });
+      });
+    });
+    const all = [].concat.apply([], groups.map(g => g.pts));
+    const others = groups.filter(g => !g.mine);
+    const withPts = others.filter(g => g.pts.length);
+    const cv = classCoverage(groups);
+    $('cCover').innerHTML = coverHTML(cv);
+    $('cLead').innerHTML = S.lesson
+      ? '같은 수업에 들어온 모둠의 값을 한 그래프에 겹쳤습니다. 다른 모둠이 값을 보내면 저절로 다시 그려집니다.'
+      : '이 기기에 있는 우리 모둠 값' + (others.length ? '과 불러온 작업 파일 ' + others.length + '개' : '') + '를 한 그래프에 겹쳤습니다.';
+    const L = G;
+    $('csvg').setAttribute('viewBox', '0 0 ' + L.W + ' ' + L.H);
+    if (!all.length){
+      $('csvg').innerHTML = '<rect width="' + L.W + '" height="' + L.H + '" fill="#fff"/><text x="' + L.W / 2 + '" y="' + L.H / 2 + '" text-anchor="middle" fill="#6E8A96" style="font-size:' + (L.fs + 2) + 'px">이 두 축으로 그릴 점이 아직 없습니다</text>';
+    } else {
+      const rx = text ? [0, cats.length + 1, 1] : niceRange(all.map(p => p.x));
+      const ry = niceRange(all.map(p => p.y));
+      const M = mapper(L, rx, ry);
+      let h = gridSVG(L, rx, ry, cx.name + (cx.unit ? ' (' + cx.unit + ')' : ''), cy.name + (cy.unit ? ' (' + cy.unit + ')' : ''), text ? cats : null);
+      const lined = spec().chart === 'line' && !text;
+      //  다른 모둠 먼저, 우리 모둠은 맨 위에
+      groups.slice().sort((a, b) => (a.mine ? 1 : 0) - (b.mine ? 1 : 0)).forEach(g => {
+        const c = gcol(g.no), ps = g.pts.slice().sort((a, b) => a.x - b.x);
+        const many = ps.length > 40;
+        if (lined && ps.length > 1) h += '<polyline fill="none" stroke="' + c + '" stroke-width="' + (g.mine ? 3 : 1.8) + '" stroke-opacity="' + (g.mine ? 1 : 0.6) + '" points="' + ps.map(p => M.px(p.x) + ',' + M.py(p.y)).join(' ') + '"/>';
+        ps.forEach(p => {
+          h += g.mine ? '<circle cx="' + M.px(p.x) + '" cy="' + M.py(p.y) + '" r="' + (G.pr + 2) + '" fill="' + c + '" stroke="#254753" stroke-width="2.5"/>'
+                      : '<circle cx="' + M.px(p.x) + '" cy="' + M.py(p.y) + '" r="' + (many ? G.pr * 0.5 : G.pr) + '" fill="' + c + '" fill-opacity="0.7" stroke="#fff" stroke-width="1.5"/>';
+        });
+      });
+      $('csvg').innerHTML = h;
+    }
+    $('cLegend').innerHTML = groups.map(g => '<span class="' + (g.mine ? 'me' : '') + '"><i style="background:' + gcol(g.no) + (g.mine ? ';border:2px solid #254753' : '') + '"></i>' +
+      esc((g.no ? g.no + '모둠' : g.name) + (g.mine ? ' (우리)' : '')) + ' · 점 ' + g.pts.length + '개' + (g.demo ? ' · 예시 자료' : '') + '</span>').join('');
+    $('cNote').textContent = S.lesson
+      ? (withPts.length ? '다른 모둠 ' + withPts.length + '곳의 값이 들어와 있습니다.' : '아직 다른 모둠의 값이 올라오지 않았습니다. 잠시 뒤 저절로 다시 받습니다.') + (others.length > withPts.length ? ' 들어와 있지만 아직 값을 보내지 않은 모둠: ' + others.filter(g => !g.pts.length).map(g => g.no + '모둠').join(', ') + '.' : '')
+      : (others.length ? '' : '다른 모둠의 점은 아직 없습니다. 아래에서 작업 파일을 불러오거나, 선생님이 합친 그래프를 보여 줄 때 견주어 보세요.');
+    $('cStamp').textContent = boardAt ? '마지막으로 받은 때 ' + hhmm(boardAt) + ' · 15초마다 바뀐 것이 있는지 봅니다' : '';
+    $('cLoaded').innerHTML = (S.others || []).map(o => '<span>📄 ' + esc((o.cls ? o.cls + ' ' : '') + o.no + '모둠' + (o.name && o.name !== o.no + '모둠' ? ' ' + o.name : '')) + ' — ' + o.rows.length + '줄' + (o.file ? ' <span class="muted">(' + esc(o.file) + ')</span>' : '') + '</span>').join('');
+    $('btnCClear').classList.toggle('hidden', !(S.others || []).length);
+    syncNav();
+  }
+  $('cX').addEventListener('change', () => { S.c.xk = $('cX').value; paintClass(); save(); });
+  $('cY').addEventListener('change', () => { S.c.yk = $('cY').value; paintClass(); save(); });
+  $('btnCRefresh').addEventListener('click', () => refreshBoard(true));
+  $('btnClassNext').addEventListener('click', () => go(6));
+  //  다른 모둠 작업 파일 읽기 — teacher.html 의 합치기와 같은 방법(<script id="mbl-work"> 안쪽만 JSON 으로)입니다.
+  function readText(f){ return new Promise(resolve => { const fr = new FileReader(); fr.onload = () => resolve(String(fr.result || '')); fr.onerror = () => resolve(''); fr.readAsText(f, 'utf-8'); }); }
+  $('cFiles').addEventListener('change', ev => {
+    const files = Array.prototype.slice.call(ev.target.files || []);
+    Promise.all(files.map(f => readText(f).then(t => ({ f, t })))).then(list => {
+      let ok = 0; const why = [];
+      list.forEach(o => {
+        const m = o.t.match(/<script[^>]*id\s*=\s*["']mbl-work["'][^>]*>([\s\S]*?)<\/script\s*>/i);
+        if (!m){ why.push(o.f.name + ' — 작업 파일이 아닙니다'); return; }
+        let w = null; try { w = JSON.parse(m[1]); } catch (e) {}
+        if (!w || w.kind !== 'mbl-work'){ why.push(o.f.name + ' — 읽을 수 없습니다'); return; }
+        const id = w.pack && w.pack.expId;
+        if (id && id !== exp.id){ const e2 = LAB.byId(id); why.push(o.f.name + ' — 다른 실험(' + (e2 ? e2.title : id) + ')의 파일입니다'); return; }
+        const g = w.group || {}, no = Number(g.no) || 0, cls = String((w.pack && w.pack.classLabel) || '');
+        if (no === Number(S.who.no) && cls === S.who.cls){ why.push(o.f.name + ' — 우리 모둠 파일입니다'); return; }
+        S.others = (S.others || []).filter(x => !(x.no === no && x.cls === cls));
+        const ex = w.inquiry && (w.inquiry.demoKind || (w.inquiry.demo ? 'all' : ''));
+        S.others.push({ no, cls, name: String(g.name || (no + '모둠')), rows: Array.isArray(w.rows) ? w.rows : [], demo: ex || '', file: o.f.name });
+        ok++;
+      });
+      $('cFileMsg').className = 'msg ' + (why.length ? 'warn' : 'ok');
+      $('cFileMsg').textContent = (ok ? ok + '개를 불러왔습니다. ' : '') + why.join(' · ');
+      ev.target.value = '';
+      save(); paintClass();
+    });
+  });
+  $('btnCClear').addEventListener('click', () => { S.others = []; $('cFileMsg').textContent = ''; save(); paintClass(); });
+
+  // ── ⑦ 해석 ────────────────────────────────────────────────────
+  //  분석 규칙이 관계를 적지 않은 실험 가운데 R² 로는 가를 수 없는 것(골짜기·휘는 곡선·멈춘 구간·계열마다 다른 관계).
+  //  lab-data.js 는 이 화면에서 고치지 않으므로 여기 작게 둡니다. 값이 객체면 세로축 열마다 관계가 다릅니다.
+  const REL_MAP = {
+    'hd-05': 'valley',                              // 체온 근처에서 분해 시간이 가장 짧음
+    'hd-04': 'curveUp',                             // 용해도 곡선 — 온도가 오를수록 가파르게 늘어남
+    'hd-16': { s0:'dec', s1:'inc', d0:'inc' },      // 직렬은 줄고 병렬은 늘어남
+    'hd-10': 'peak',                                // 간기가 가장 많음
+    'hd-13': 'flat', 'sm-02': 'flat', 'ez-09': 'flat', 'cb-06': 'flat'   // 녹는점·어는점·끓는점에서 멈춘 구간
+  };
+  const REL_TXT = { prop:'정비례', inc:'함께 커짐(직선, 원점은 아님)', curveUp:'휘어지며 커짐', inv:'반비례', inv2:'거리²에 반비례',
+                    dec:'한쪽이 커지면 다른 쪽은 작아짐', curveDown:'휘어지며 작아짐', peak:'어느 값에서 가장 큼(봉우리)', valley:'어느 값에서 가장 작음(골짜기)',
+                    flat:'멈춘 구간 있음', none:'뚜렷한 관계 없음' };
+  //  비슷한 관계 — 다르다고 하기에는 가까운 짝(직선으로 봐도 되는 곡선 따위)
+  const REL_NEAR = { inc:['curveUp', 'prop'], prop:['inc'], curveUp:['inc'], dec:['curveDown', 'inv'], curveDown:['dec', 'inv'], inv:['curveDown'] };
+  //  학생이 그린 두 축에 맞는 회귀 — 없으면 마지막 회귀(분석 규칙의 기준 축)
+  function fitForAxes(){
+    const r = getRes();
+    const w = expectAxes().find(a => a.fit && a.x === S.g.xk && a.y === S.g.yk) || expectAxes().find(a => a.fit && a.y === S.g.yk);
+    return (w && w.fit) || r.mainFit || null;
+  }
+  //  앱이 기대하는 관계 → { rel, by(어느 두 축으로 보았는지), list(계열마다 다를 때) }
+  function expectRel(){
+    const A = LAB.analysisOf ? LAB.analysisOf(exp) : exp.analysis;
+    const M = REL_MAP[exp.id];
+    const sp = spec();
+    const nameOf = k => { const c = axisCols().find(x => x.key === k); return c ? c.name : k; };
+    if (M && typeof M === 'object'){
+      const k = M[S.g.yk] ? S.g.yk : Object.keys(M)[0];
+      return { rel: M[k], by: '세로축 「' + nameOf(k) + '」 기준', list: Object.keys(M).map(q => nameOf(q) + ': ' + REL_TXT[M[q]]).join(' · ') };
+    }
+    if (typeof M === 'string') return { rel: M, by: '' };
+    //  분석 규칙이 관계를 직접 적었으면 그것을 씁니다(두 무리로 나뉘는 자료·해마다 들쭉날쭉한 자료처럼 R² 로는 가를 수 없을 때). '' = 한 가지로 정하지 않음.
+    if (A && typeof A.rel === 'string') return { rel: A.rel, by: '' };
+    const f = fitForAxes();
+    if (!f || !f.fit || !f.fit.ok) return { rel:'', by:'' };
+    const t = TF[f.xt] || TF.none;
+    const by = '가로축 「' + (f.xt && f.xt !== 'none' ? t.lab(f.xName) : f.xName) + '」 – 세로축 「' + f.yName + '」 로 본 관계';
+    if (f.xt === 'inv') return { rel:'inv', by };
+    if (f.xt === 'inv2') return { rel:'inv2', by };
+    //  같은 회귀의 점과 값만 씁니다(다른 축의 범위와 섞지 않게).
+    const pts = (f.P && f.P.pts) || [];
+    const fit = f.fit;
+    if (isFinite(fit.r2) && fit.r2 < 0.9){
+      //  곧은 직선은 아니지만 한 방향으로만 가면 휘는 관계, 아니면 뚜렷한 관계 없음
+      const ps = pts.slice().sort((a, b) => a.x - b.x);
+      let up = 0, down = 0;
+      for (let i = 1; i < ps.length; i++){ const d = ps[i].y - ps[i - 1].y; if (d > 0) up++; else if (d < 0) down++; }
+      if (ps.length >= 4 && down <= 1 && up >= ps.length - 2) return { rel:'curveUp', by };
+      if (ps.length >= 4 && up <= 1 && down >= ps.length - 2) return { rel:'curveDown', by };
+      return { rel:'none', by };
+    }
+    const ys = pts.map(p => p.y);
+    const yr = ys.length ? Math.max(Math.max.apply(null, ys) - Math.min.apply(null, ys), Math.max.apply(null, ys.map(Math.abs)) * 0.2) : 0;
+    if (fit.slope > 0) return { rel: (Math.abs(fit.intercept) <= Math.max(0.1 * yr, 1e-9)) ? 'prop' : 'inc', by };
+    if (fit.slope < 0) return { rel:'dec', by };
+    return { rel:'none', by };
   }
   function paintInterp(){
     const has = S.g.lnScore && S.g.lnScore.kind === 'line';
     $('slopeQ').classList.toggle('hidden', !has);
     $('iRel').value = S.it.rel; $('iSlope').value = S.it.slope; $('iConc').value = S.it.conc; $('iErr').value = S.it.err;
-    const qs = (exp.questions || []).slice(0, 3);
+    const qs = exp.questions || [];
     $('extraQ').innerHTML = qs.map((q, i) => '<label class="fl" for="xq' + i + '">' + esc(q.q) + '</label>' +
       (q.type === 'short' ? '<input id="xq' + i + '" type="text" data-xq="' + i + '" value="' + esc(S.it.extra[i] || '') + '" />'
                           : '<textarea id="xq' + i + '" data-xq="' + i + '">' + esc(S.it.extra[i] || '') + '</textarea>')).join('');
     Array.prototype.forEach.call($('extraQ').querySelectorAll('[data-xq]'), el => el.addEventListener('input', () => { S.it.extra[el.dataset.xq] = el.value; save(); }));
     ['iRel', 'iSlope', 'iConc', 'iErr'].forEach(id => { $(id).oninput = () => { S.it = { rel: $('iRel').value, slope: $('iSlope').value, conc: $('iConc').value, err: $('iErr').value, extra: S.it.extra }; save(); }; });
+    $('judgeBox').innerHTML = '';
     if (S.judged) paintJudge();
+    $('submitNote').innerHTML = S.lesson
+      ? '수업에 참여 중이라 <b>표의 값은 이미 선생님 화면에 들어가 있습니다.</b> 해석까지 담은 작업 파일은 선생님이 따로 내라고 할 때 내려받아 내세요.'
+      : '선생님은 이 파일들을 교사 화면 <b>[학생이 낸 작업 파일 모아 합치기]</b> 에 올려 반 전체를 봅니다.';
     paintBoard();
   }
   $('btnJudge').addEventListener('click', () => {
@@ -1199,23 +2027,24 @@
     const m = $('jMsg');
     if (!S.it.rel){ m.className = 'msg bad'; m.textContent = '두 양의 관계를 고르세요.'; return; }
     if (S.it.conc.trim().length < 8){ m.className = 'msg bad'; m.textContent = '결론을 한 문장 이상 적어 주세요. 표의 값을 들어서.'; return; }
-    if (!res) res = E.runAnalysis(exp, rowsAvg());
-    const want = expectRel();
-    const verdict = res.verdict ? E.anFill(res.verdict.text, res.vals) : '';
-    S.judged = { want, same: !want || want === S.it.rel, verdict, r2: res.vals.r2, slope: res.vals.slope, intercept: res.vals.intercept, when: new Date().toISOString() };
-    markDone(5, true);
+    const r = getRes();
+    const w = expectRel();
+    const verdict = r.verdict ? E.anFill(r.verdict.text, r.vals) : '';
+    const same = !w.rel || w.rel === S.it.rel;
+    const near = !same && (REL_NEAR[w.rel] || []).includes(S.it.rel);
+    S.judged = { want: w.rel, by: w.by || '', list: w.list || '', same, near, verdict, r2: r.vals.r2, slope: r.vals.slope, intercept: r.vals.intercept, when: new Date().toISOString() };
     m.className = 'msg ok'; m.textContent = '앱의 판정을 열었습니다. 아래에서 견주어 보세요.';
-    paintJudge(); paintBoard(); save();
+    syncNav(); paintJudge(); paintBoard(); save();
   });
-  const REL_TXT = { prop:'정비례', inc:'함께 커짐(원점은 아님)', inv:'반비례', inv2:'거리²에 반비례', flat:'멈춘 구간 있음', dec:'한쪽이 커지면 다른 쪽은 작아짐', none:'관계 없음' };
   function paintJudge(){
     const j = S.judged; if (!j) return;
     let h = '<h3>앱의 판정과 견주기</h3>';
     h += '<div class="cmp"><div><b>내가 고른 관계</b>' + esc(REL_TXT[S.it.rel] || '—') + '</div>' +
          '<div><b>앱이 본 관계</b>' + esc(j.want ? REL_TXT[j.want] : '(이 실험은 관계를 한 가지로 정하지 않습니다)') +
-         (j.want ? '<br><span class="' + (j.same ? 'muted' : 'err') + '">' + (j.same ? '같습니다.' : '다릅니다 — 그래프를 다시 보고, 누가 맞는지 이유를 결론에 적어 보세요.') + '</span>' : '') + '</div></div>';
+         (j.by ? '<br><span class="muted">' + esc(j.by) + '</span>' : '') + (j.list ? '<br><span class="muted">' + esc(j.list) + '</span>' : '') +
+         (j.want ? '<br><span class="' + (j.same || j.near ? 'muted' : 'err') + '">' + (j.same ? '같습니다.' : j.near ? '거의 같습니다 — 직선인지 휘는지, 원점을 지나는지 그래프를 한 번 더 보세요.' : '다릅니다 — 그래프를 다시 보고, 누가 맞는지 이유를 결론에 적어 보세요.') + '</span>' : '') + '</div></div>';
     if (j.verdict) h += '<div class="verdict">' + esc(j.verdict) + '</div><p class="muted">이 문장은 <b>여러분의 표</b>를 보고 앱이 고른 것입니다. 값이 달라지면 다른 문장이 나옵니다.' +
-      (isFinite(j.r2) ? ' 최소제곱 직선의 R² ' + esc(fmtR2(j.r2)) + (isFinite(j.slope) ? ' · 기울기 ' + esc(labNum(j.slope)) : '') : '') + '</p>';
+      (isFinite(j.r2) && j.r2 !== null ? ' 최소제곱 직선의 R² ' + esc(fmtR2(j.r2)) + (isFinite(j.slope) && j.slope !== null ? ' · 기울기 ' + esc(labNum(j.slope)) : '') : '') + '</p>';
     if (exp.read) h += '<div class="note"><b>결과를 이렇게 읽어요</b><br>' + esc(exp.read) + '</div>';
     if ((exp.std || []).length) h += '<p class="muted" style="margin-top:8px"><b>성취기준</b> ' + exp.std.map(c => esc(c) + ' ' + esc(LAB.stdText(c))).join(' · ') + '</p>';
     $('judgeBox').innerHTML = h;
@@ -1223,11 +2052,220 @@
   function paintBoard(){
     const items = [
       ['변인', S.varsOk], ['표 채우기', S.rawOk], ['값 바꾸기', S.tfOk],
-      ['축 고르기', S.g.axOk], ['점 찍기', !!(S.g.ptScore && S.g.ptScore.hit === S.g.ptScore.total)],
-      ['선 긋기', !!S.g.lnScore], ['해석', !!S.judged]
+      ['축 고르기', S.g.axOk], ['점 찍기', S.g.done],
+      ['선 긋기', !!S.g.lnScore], ['반 전체 그래프', S.classSeen], ['해석', !!S.judged]
     ];
     $('board').innerHTML = items.map(it => '<div><small>' + esc(it[0]) + '</small><b class="' + (it[1] ? 'o' : 'x') + '">' + (it[1] ? '했음 ✓' : '아직') + '</b></div>').join('');
   }
+
+  // ── 수업 참여(참여코드) — index.html 과 같은 서버 수업·모둠·보드 ─────────────
+  let joinCode = '', pickedNo = 0, forcePin = false;
+  function serverReady(){ return !!(HUB && HUB.isConfigured && HUB.isConfigured()); }
+  $('inCode').addEventListener('input', function(){ this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '').slice(0, 6); });
+  $('inCode').addEventListener('keydown', e => { if (e.key === 'Enter') $('btnJoin').click(); });
+  $('btnJoin').addEventListener('click', () => {
+    const msg = $('joinMsg');
+    if (!serverReady()){ msg.className = 'msg bad'; msg.textContent = '이 학교의 서버 연결 정보(config.js)가 없어 참여코드로는 들어갈 수 없습니다. 선생님께 알려 주세요.'; return; }
+    const code = HUB.norm($('inCode').value);
+    if (code.length !== 6){ msg.className = 'msg bad'; msg.textContent = '참여코드 6자리를 정확히 입력하세요.'; return; }
+    if (S.started && !S.lesson && contentSig() !== cleanSig && !confirm('지금 하던 탐구는 이 기기에 남겨 두고 수업에 들어갈까요?')) return;
+    msg.className = 'msg'; msg.textContent = '확인하는 중…';
+    $('btnJoin').disabled = true;
+    HUB.getLesson(code).then(l => {
+      if (!l || !LAB.byId(l.exp_id)){ msg.className = 'msg bad'; msg.textContent = '이 수업의 실험' + (l && l.exp_id ? '(' + l.exp_id + ')' : '') + '은 손으로 탐구 화면에서 열 수 없습니다. 학생 화면(index.html)으로 들어가세요.'; return; }
+      joinCode = code; lesson = l; msg.textContent = '';
+      HUB.saveLocal('last_join', code);
+      openPicker();
+    }, err => {
+      msg.className = 'msg bad';
+      msg.textContent = err && err.expired ? '보관 기간이 끝난 수업입니다.' : ((err && err.message) || '수업을 찾지 못했습니다.');
+    }).then(() => { $('btnJoin').disabled = false; });
+  });
+  //  선생님이 「모둠 비밀번호 쓰기」를 끄고 만든 수업이면(form.features.groupPin === false) 모둠만 고르고 들어옵니다.
+  function openEntry(){ const f = lesson && lesson.form && lesson.form.features; return !forcePin && !!(f && typeof f === 'object' && f.groupPin === false); }
+  function hasStoredPin(no){ return !!(HUB && HUB.getPin && joinCode && no && HUB.getPin(joinCode, 'no' + Number(no))); }
+  function enterLabel(){ return pickedNo ? pickedNo + '모둠으로 들어가기' : '모둠을 고르세요'; }
+  function openPicker(){
+    forcePin = false; pickedNo = 0;
+    $('pickBox').classList.remove('hidden');
+    $('gTitle').textContent = lesson.title || '수업';
+    const e = LAB.byId(lesson.exp_id);
+    $('gSub').textContent = [lesson.class_label, e ? e.title : '', lesson.teacher_name ? lesson.teacher_name + ' 선생님' : ''].filter(Boolean).join(' · ') + ' — 우리 모둠을 고르세요.';
+    const n = Math.max(1, Math.min(20, Number(lesson.group_count) || 7));
+    let h = '';
+    for (let i = 1; i <= n; i++) h += '<button class="gbtn" type="button" data-no="' + i + '">' + i + '모둠<small>여기 눌러요</small></button>';
+    $('gsel').innerHTML = h;
+    $('pinRow').classList.add('hidden'); $('inPin').value = '';
+    $('btnEnter').disabled = true; $('btnEnter').textContent = enterLabel(); $('groupMsg').textContent = '';
+    Array.prototype.forEach.call($('gsel').querySelectorAll('.gbtn'), b => b.addEventListener('click', () => {
+      pickedNo = Number(b.dataset.no);
+      Array.prototype.forEach.call($('gsel').querySelectorAll('.gbtn'), x => x.classList.toggle('on', x === b));
+      const nv = $('inGName').value.trim();
+      if (!nv || /^\d+\s*모둠$/.test(nv)) $('inGName').value = pickedNo + '모둠';
+      $('pinRow').classList.toggle('hidden', openEntry() || hasStoredPin(pickedNo));
+      $('btnEnter').disabled = false; $('btnEnter').textContent = enterLabel(); $('groupMsg').textContent = '';
+    }));
+    //  같은 기기에서 이미 들어갔던 모둠이 있으면 골라 둡니다.
+    const cached = HUB.loadLocal('group_' + joinCode, null);
+    if (cached && cached.lesson_id === lesson.id){
+      const b = $('gsel').querySelector('[data-no="' + cached.group_no + '"]');
+      if (b) b.click();
+      $('inGName').value = cached.group_name || '';
+      $('inGMem').value = (cached.members || []).join(', ');
+    }
+    $('pickBox').scrollIntoView({ behavior:'smooth', block:'start' });
+  }
+  $('btnJoinBack').addEventListener('click', () => { $('pickBox').classList.add('hidden'); lesson = null; joinCode = ''; $('inCode').focus(); });
+  $('btnEnter').addEventListener('click', () => {
+    if (!pickedNo) return;
+    const needPin = !openEntry() && !hasStoredPin(pickedNo);
+    const pin = needPin ? $('inPin').value.trim() : '';
+    if (needPin && !/^\d{4}$/.test(pin)){ $('pinRow').classList.remove('hidden'); $('groupMsg').className = 'msg bad'; $('groupMsg').textContent = '비밀번호 4자리를 모두 입력하세요.'; $('inPin').focus(); return; }
+    const members = $('inGMem').value.split(/[,，、]/).map(s => s.trim()).filter(Boolean);
+    //  빈 칸·기본 이름(3모둠)은 보내지 않습니다 — 같은 모둠의 다른 기기가 정해 둔 모둠 이름과 모둠원을 지우지 않게.
+    const nm = $('inGName').value.trim();
+    const nameArg = (nm && nm !== pickedNo + '모둠') ? nm : null;
+    $('btnEnter').disabled = true; $('btnEnter').textContent = '들어가는 중…'; $('groupMsg').textContent = '';
+    HUB.joinGroup(joinCode, pickedNo, nameArg, members.length ? members : null, pin).then(g => enterLesson(g, members), err => {
+      $('groupMsg').className = 'msg bad';
+      if (err && err.pinError){
+        const wasOpen = openEntry();
+        forcePin = true; $('pinRow').classList.remove('hidden'); $('inPin').value = ''; $('inPin').focus();
+        $('groupMsg').textContent = wasOpen ? '이 수업은 지금 모둠 비밀번호가 필요합니다. 선생님께 우리 모둠 비밀번호 4자리를 받아 넣어 주세요.' : '모둠 비밀번호가 맞지 않습니다. 선생님께 다시 확인해 주세요.';
+        return;
+      }
+      $('groupMsg').textContent = err && err.expired ? '보관 기간이 끝난 수업입니다.' : ((err && err.message) || '모둠 입장에 실패했습니다.');
+    }).then(() => { $('btnEnter').disabled = !pickedNo; $('btnEnter').textContent = enterLabel(); });
+  });
+  function enterLesson(g, members){
+    const base = lessonExp(lesson);
+    //  이 기기에 같은 수업·같은 모둠으로 하던 탐구가 있으면 그것을 이어 갑니다.
+    if (S.started) save();
+    const prev = listWorks().find(x => x.code === joinCode && String(x.no) === String(g.group_no) && x.expId === base.id);
+    const w = prev ? loadWork(prev.wid) : null;
+    S = w || fresh();
+    S.lesson = { code: joinCode, lessonId: lesson.id, groupId: g.id, groupNo: Number(g.group_no), groupName: g.group_name || '', title: lesson.title || '' };
+    S.who = { cls: lesson.class_label || S.who.cls || '', no: String(g.group_no), name: g.group_name || (g.group_no + '모둠'),
+              mem: (members && members.length ? members : (g.members || [])).join(', ') || S.who.mem || '' };
+    S.expId = base.id;
+    exp = base; hand = handOf(exp); res = null;
+    cleanSig = contentSig();
+    $('pickBox').classList.add('hidden');
+    attachLesson();
+    paintStart(); paintCards(); paintDetail(); paintTopSub(); syncNav();
+    if (S.started) go(Math.max(1, S.step));
+  }
+  //  수업과 이어 붙이기 — 보드 구독을 열고 막대를 그립니다. 이어 하기로 열었을 때는 캐시된 수업을 먼저 쓰고 서버에서 새로 받습니다.
+  function attachLesson(){
+    if (!S.lesson || !HUB) return;
+    const code = S.lesson.code;
+    joinCode = code;
+    if (!lesson || lesson.id !== S.lesson.lessonId) lesson = HUB.loadLocal('lesson_' + code, null);
+    if (lesson && lessonExp(lesson)) exp = lessonExp(lesson);
+    $('lessonBar').classList.remove('hidden');
+    paintLessonBar();
+    if (unwatch){ unwatch(); unwatch = null; }
+    if (serverReady()){
+      unwatch = HUB.watch(code, onBoard, { role:'student' });
+      HUB.flushOffline(code).then(() => {}, () => {});
+      if (!lesson || lesson.id !== S.lesson.lessonId) HUB.getLesson(code).then(l => { lesson = l; if (S.step === 2) paintRaw(); if (S.step === 0) paintDetailAssign(); }, () => {});
+    }
+  }
+  function stopLesson(){
+    if (unwatch){ unwatch(); unwatch = null; }
+    lesson = null; board = null; boardAt = 0;
+    $('lessonBar').classList.add('hidden');
+  }
+  function onBoard(b){
+    if (!b || !S.lesson) return;
+    board = b; boardAt = Date.now();
+    if (b.lesson && b.lesson.id === S.lesson.lessonId) lesson = Object.assign({}, lesson || {}, b.lesson);
+    paintLessonBar();
+    if (S.step === 5) paintClass();
+    if (S.step === 2 && !$('srvLoad').innerHTML) paintSrvLoad();
+  }
+  function refreshBoard(loud){
+    if (!S.lesson || !HUB) return;
+    if (loud){ $('cStamp').textContent = '받는 중…'; }
+    HUB.getBoard(S.lesson.code).then(onBoard, err => { if (loud) $('cStamp').textContent = (err && err.message) || '받지 못했습니다.'; });
+  }
+  function paintLessonBar(){
+    if (!S.lesson) return;
+    const n = board ? (board.groups || []).length : 0;
+    $('lbWho').textContent = '참여코드 ' + S.lesson.code + ' · ' + S.lesson.groupNo + '모둠' + (n ? ' · 반 전체 ' + n + '모둠 입장' : '');
+    $('btnSend').disabled = !S.rawOk;
+    $('btnSend').title = S.rawOk ? '' : '③ 표를 확인한 뒤에 보낼 수 있습니다.';
+  }
+  function lbMsg(t, cls){ $('lbMsg').className = 'msg ' + (cls || 'muted'); $('lbMsg').textContent = t; }
+  //  서버에 올리는 메모 — 예시 자료면 맨 앞에 크게 밝힙니다(교사 화면에서 실측과 섞여 보이지 않게).
+  function noteText(){
+    const A = assignNow();
+    return (S.demo === 'all' ? '[예시 자료 — 실제로 잰 값 아님] ' : S.demo === 'part' ? '[일부 예시 값 포함 — 실측 아님] ' : '') +
+      '손으로 탐구 — 센서 없이 직접 잰 값' + (S.reps > 1 ? ' (' + S.reps + '번 재어 평균)' : '') +
+      (A && A.raw ? ' · 맡은 ' + asgBase(A.a.label) + ' ' + A.raw + (A.isX && A.a.unit ? ' ' + A.a.unit : '') : '');
+  }
+  function sendSig(){ return JSON.stringify([fullRows(), noteText()]); }
+  //  비밀번호가 틀리면 다시 물어본 뒤 하던 저장을 이어서 합니다(index.html 의 writeWithPin 과 같은 흐름).
+  function askPin(msg){
+    return new Promise((resolve, reject) => {
+      $('pinDlgErr').textContent = msg || '';
+      $('pinDlgIn').value = '';
+      $('pinDlg').classList.remove('hidden');
+      setTimeout(() => $('pinDlgIn').focus(), 30);
+      const done = v => {
+        $('pinDlg').classList.add('hidden');
+        $('pinDlgOk').onclick = null; $('pinDlgNo').onclick = null; $('pinDlgIn').onkeydown = null;
+        if (v) resolve(v); else { const e = new Error('비밀번호를 넣어야 보낼 수 있습니다.'); e.cancelled = true; reject(e); }
+      };
+      $('pinDlgOk').onclick = () => { const v = $('pinDlgIn').value.trim(); if (!/^\d{4}$/.test(v)){ $('pinDlgErr').textContent = '숫자 4자리를 입력하세요.'; return; } done(v); };
+      $('pinDlgNo').onclick = () => done('');
+      $('pinDlgIn').onkeydown = e => { if (e.key === 'Enter') $('pinDlgOk').onclick(); if (e.key === 'Escape') done(''); };
+    });
+  }
+  function writeWithPin(run){
+    const code = S.lesson.code, gid = S.lesson.groupId, no = S.lesson.groupNo;
+    function attempt(pin, msg){
+      return Promise.resolve().then(() => run(pin)).then(r => {
+        if (pin && !(r && r.offline) && HUB.rememberPin){ HUB.rememberPin(code, gid, pin); HUB.rememberPin(code, 'no' + no, pin); }
+        return r;
+      }, err => {
+        if (!err || !err.pinError) throw err;
+        return askPin(msg || '모둠 비밀번호가 바뀌었거나 이 기기에 없습니다.').then(p => attempt(p, '비밀번호가 맞지 않아요. 다시 확인해 주세요.'));
+      });
+    }
+    return attempt('');
+  }
+  let sending = null;
+  function sendRows(){
+    if (!S.lesson || !HUB || !S.rawOk) return Promise.resolve(null);
+    if (sending) return sending;
+    const rows = fullRows(), note = noteText(), sig = sendSig();
+    lbMsg('보내는 중…');
+    sending = writeWithPin(pin => HUB.saveData(S.lesson.code, S.lesson.groupId, rows, note, pin)).then(r => {
+      sending = null;
+      S.sent = sig;
+      if (contentSig() !== cleanSig) cleanSig = contentSig();
+      save();
+      if (r && r.offline) lbMsg('인터넷이 끊겨 이 기기에 임시로 두었습니다. 연결되면 저절로 보냅니다.', 'warn');
+      else lbMsg('우리 모둠 값 ' + rows.length + '줄을 보냈습니다 · ' + hhmm(), 'ok');
+      refreshBoard();
+      return r;
+    }, err => {
+      sending = null;
+      lbMsg(err && err.cancelled ? '비밀번호를 넣어야 보낼 수 있습니다.' : err && err.expired ? '보관 기간이 끝난 수업입니다.' : ((err && err.message) || '보내지 못했습니다.'), 'bad');
+      return null;
+    });
+    return sending;
+  }
+  $('btnSend').addEventListener('click', () => sendRows());
+  $('btnLeaveLesson').addEventListener('click', () => {
+    if (!confirm('이 수업에서 나갈까요? 보낸 값은 서버에 그대로 남고, 하던 탐구는 이 기기에 남아 다시 들어오면 이어집니다.')) return;
+    save(); stopLesson();
+    S = fresh(); exp = null; hand = null; res = null; cleanSig = contentSig();
+    $('expDetail').classList.add('hidden'); $('inCode').value = ''; $('joinMsg').textContent = '';
+    ['wCls', 'wNo', 'wName'].forEach(id => { $(id).disabled = false; });
+    paintCards(); paintTopSub(); syncNav(); go(0);
+  });
 
   // ── 작업 파일 ─────────────────────────────────────────────────
   function workJSON(){
@@ -1237,43 +2275,63 @@
     answers['두 양의 관계'] = REL_TXT[S.it.rel] || '';
     if (S.it.slope) answers['기울기의 뜻'] = S.it.slope;
     answers['결론'] = S.it.conc; answers['오차의 원인'] = S.it.err;
-    (exp.questions || []).slice(0, 3).forEach((q, i) => { if (S.it.extra[i]) answers[q.q] = S.it.extra[i]; });
+    (exp.questions || []).forEach((q, i) => { if (S.it.extra[i]) answers[q.q] = S.it.extra[i]; });
+    const A = assignNow();
+    const members = String(S.who.mem || '').split(/[,，、]/).map(s => s.trim()).filter(Boolean);
+    const L = S.lesson ? (lesson || {}) : null;
+    const pack = { kind:'mbl-pack', v:1, made: new Date().toISOString(), title: (L && L.title) || exp.title, expId: exp.id, vendor:'',
+                   classLabel: S.who.cls, teacherName: (L && L.teacher_name) || '', school: (L && L.school) || '',
+                   steps: hand.ok ? (hand.steps || []) : [], prep: hand.ok ? (hand.tools || []) : [],
+                   dataSpec: sp, questions: exp.questions || [], quiz: [], rubric: [], aiTemplate: null, features: { lab:false, ai:false } };
+    //  모둠 수는 아는 때(수업)만 적습니다 — 모르는 값을 7로 박아 두면 합치기 화면이 빈 모둠을 셉니다.
+    if (L && Number(L.group_count) > 0) pack.groupCount = Number(L.group_count);
+    if (A && A.a) pack.assign = { label: A.a.label || '', unit: A.a.unit || '', groups: A.a.groups.slice(), x: !!A.isX };
+    const ex = S.demo === 'all' ? '[예시 자료로 진행 — 실측 아님] ' : S.demo === 'part' ? '[일부 예시 값 포함 — 실측 아님] ' : '';
     return {
       kind:'mbl-work', v:1, saved: new Date().toISOString(), mode:'inquiry',
-      pack: { kind:'mbl-pack', v:1, made: new Date().toISOString(), title: exp.title, expId: exp.id, vendor:'', classLabel: S.who.cls,
-              teacherName:'', school:'', groupCount:7, steps: hand.ok ? (hand.steps || []) : [], prep: hand.ok ? (hand.tools || []) : [],
-              dataSpec: sp, questions: (exp.questions || []).slice(0, 3), quiz: [], rubric: [], aiTemplate: null, features: { lab:false, ai:false } },
-      group: { no: Number(S.who.no) || 1, name: S.who.name || (S.who.no + '모둠'), members: [] },
-      rows: rowsAvg().map(r => { const c = tfCols(); return r; }),
-      note: (S.demo ? '예시 자료로 진행(실측 아님). ' : '') + '손으로 탐구 — 센서 없이 직접 재고 그린 결과입니다.',
+      pack: pack,
+      group: { no: Number(S.who.no) || 1, name: S.who.name || (S.who.no + '모둠'), members: members,
+               assigned: A ? A.raw : '', assignLabel: A ? asgBase(A.a.label) : '' },
+      rows: fullRows(),
+      note: ex + noteText().replace(/^\[[^\]]*\]\s*/, '') + (S.judged ? '' : ' · 해석까지 마치지 않은 파일'),
       predict: [], answers, quizResult: null, feedback: [],
-      inquiry: { hand: hand.ok, demo: S.demo, reps: S.reps, raw: S.raw, tf: S.tf, tfTries: S.tfTries,
-                 graph: { xk: S.g.xk, yk: S.g.yk, rx: S.g.rx, ry: S.g.ry, pts: S.g.pts, line: S.g.line, h: S.g.h, ptScore: S.g.ptScore, lnScore: S.g.lnScore },
+      inquiry: { hand: hand.ok, demo: !!S.demo, demoKind: S.demo || '', reps: S.reps, raw: S.raw, tf: S.tf, tfTries: S.tfTries,
+                 assign: A ? { label: A.a.label || '', unit: A.a.unit || '', mine: A.raw, list: A.list, isX: A.isX, per: A.a.per || null, from: A.from } : null,
+                 joinCode: S.lesson ? S.lesson.code : '', complete: !!S.judged,
+                 graph: { xk: S.g.xk, yk: S.g.yk, rx: S.g.rx, ry: S.g.ry, pts: S.g.pts, line: S.g.line, h: S.g.h, ptScore: S.g.ptScore, lnScore: S.g.lnScore, done: S.g.done },
                  judged: S.judged }
     };
   }
   const FILE_CSS = ':root{--ink:#254753;--muted:#6E8A96;--cream:#FFFDF6;--line:#E4EFF1;--mint:#20B2A6;--mint-d:#14867C;--sky:#54B4E8;--coral:#FF8C6B;--ok:#37B58C;--bad:#E05A5A}' +
     '*{box-sizing:border-box;margin:0;padding:0}body{font-family:-apple-system,system-ui,"Malgun Gothic","Apple SD Gothic Neo",sans-serif;color:var(--ink);line-height:1.65;background:#F4FBF6;padding:24px 14px}' +
-    '.wrap{max-width:860px;margin:0 auto}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0}' +
+    '.wrap{max-width:860px;margin:0 auto}.card{background:#fff;border:1px solid var(--line);border-radius:16px;padding:20px;margin:14px 0;overflow-x:auto}' +
     'h1{font-size:22px;margin-bottom:6px}h2{font-size:17px;color:var(--mint-d);margin:0 0 10px}.meta{color:var(--muted);font-size:13.5px}' +
+    '.warn{border:2px solid #E8873C;background:#FFF6EC;color:#9A4E12;border-radius:12px;padding:10px 14px;margin-top:10px;font-weight:700}' +
+    '.asg{border:2px solid #FFC130;background:#FFFBEF;border-radius:12px;padding:8px 12px;margin-top:10px}' +
     'table{border-collapse:collapse;width:100%;font-size:14px}th,td{border-bottom:1px solid var(--line);padding:6px 8px;text-align:center}th{background:var(--cream);font-size:13px}' +
     '.q{margin:10px 0}.q b{display:block;font-size:14px;color:var(--muted)}.q p{white-space:pre-wrap;min-height:22px}' +
     '.verdict{border:2px solid var(--mint);background:var(--cream);border-radius:14px;padding:12px 14px;margin:10px 0;font-size:15.5px}' +
-    'svg{display:block;width:100%;height:auto;max-width:760px}.gaxis text{font-size:12px;fill:var(--muted)}.gaxis .lab{font-size:13px;font-weight:700;fill:var(--ink)}' +
+    'svg{display:block;width:100%;height:auto;max-width:760px}.gaxis text{fill:var(--muted)}.gaxis .lab{font-size:1.08em;font-weight:700;fill:var(--ink)}' +
     '.ptS{fill:var(--mint);stroke:#fff;stroke-width:2}.ptS.hit{fill:var(--ok)}.ptS.miss{fill:var(--bad)}.ptE{fill:none;stroke:var(--coral);stroke-width:2}' +
-    '.lnS{stroke:var(--sky);stroke-width:3;stroke-linecap:round}.lnE{stroke:var(--mint-d);stroke-width:2.5;stroke-dasharray:7 6}.hdl{fill:#fff;stroke:var(--sky);stroke-width:3}' +
+    '.lnS{stroke:var(--sky);stroke-width:3;stroke-linecap:round}.lnE{stroke:var(--mint-d);stroke-width:2.5;stroke-dasharray:7 6}.hdl{fill:var(--sky);stroke:#fff;stroke-width:2}' +
     '.foot{color:var(--muted);font-size:12px;text-align:center;margin-top:20px}@media print{body{background:#fff;padding:0}.card{break-inside:avoid}}';
   function buildFile(w){
-    const sp = spec(), mc = measCols(), cols = tfCols(), rows = rowsAvg();
+    const sp = spec(), mc = measCols(), cols = tfCols(), rows = fullRows();
     const d = new Date(w.saved), day = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+    const g = w.group;
     let h = '<div class="wrap"><div class="card"><h1>' + esc(exp.title) + ' — 손으로 탐구</h1><p class="meta">' +
-      (S.who.cls ? esc(S.who.cls) + ' · ' : '') + esc(w.group.name) + ' · ' + day + (S.demo ? ' · <b>예시 자료로 진행</b>' : '') + '</p></div>';
+      (S.who.cls ? esc(S.who.cls) + ' · ' : '') + esc(g.no + '모둠' + (g.name && g.name !== g.no + '모둠' ? ' ' + g.name : '')) + ' · ' + day +
+      (S.lesson ? ' · 참여코드 ' + esc(S.lesson.code) : '') + '</p>' +
+      '<p class="meta">모둠원 · ' + (g.members.length ? esc(g.members.join(', ')) : '이름 없음') + '</p>' +
+      (g.assigned ? '<div class="asg"><b>맡은 ' + esc(g.assignLabel || '값') + '</b> · ' + esc(g.assigned + (w.inquiry.assign && w.inquiry.assign.isX && w.inquiry.assign.unit ? ' ' + w.inquiry.assign.unit : '')) + '</div>' : '') +
+      (S.demo === 'all' ? '<div class="warn">⚠ 예시 자료로 진행했습니다 — 표의 값은 실제로 잰 값이 아닙니다.</div>' : S.demo === 'part' ? '<div class="warn">⚠ 표에 예시 값이 일부 남아 있습니다 — 실제로 잰 값과 섞여 있습니다.</div>' : '') +
+      (S.judged ? '' : '<div class="warn">해석까지 마치지 않은 상태에서 내려받은 파일입니다.</div>') + '</div>';
     h += '<div class="card"><h2>변인</h2><div class="q"><b>조작 변인</b><p>' + esc(S.vars.ctl) + '</p></div><div class="q"><b>종속 변인</b><p>' + esc(S.vars.dep) + '</p></div><div class="q"><b>통제 변인</b><p>' + esc(S.vars.ctrl) + '</p></div></div>';
     //  원자료
-    h += '<div class="card"><h2>잰 값</h2><table><tr><th>' + esc(sp.x.label) + (sp.x.unit ? ' (' + esc(sp.x.unit) + ')' : '') + '</th>';
+    h += '<div class="card"><h2>잰 값' + (S.demo ? ' (예시 값 포함)' : '') + '</h2><table><tr><th>' + esc(sp.x.label) + (sp.x.unit ? ' (' + esc(sp.x.unit) + ')' : '') + '</th>';
     mc.forEach(o => { if (S.reps > 1){ for (let k = 0; k < S.reps; k++) h += '<th>' + esc(o.s.label) + ' ' + (k + 1) + '회</th>'; h += '<th>' + esc(o.s.label) + ' 평균</th>'; } else h += '<th>' + esc(o.s.label) + (o.s.unit ? ' (' + esc(o.s.unit) + ')' : '') + '</th>'; });
     h += '</tr>';
-    S.raw.forEach(row => { if (row.x === '' && !row.s.some(a => a.some(v => v !== ''))) return; h += '<tr><td>' + esc(row.x) + '</td>'; mc.forEach((o, j) => { if (S.reps > 1){ for (let k = 0; k < S.reps; k++) h += '<td>' + esc(row.s[j][k]) + '</td>'; h += '<td>' + esc(row.avg[j]) + '</td>'; } else h += '<td>' + esc(row.s[j][0]) + '</td>'; }); h += '</tr>'; });
+    S.raw.forEach(row => { if (!rowHasData(row)) return; h += '<tr><td>' + esc(row.x) + '</td>'; mc.forEach((o, j) => { if (S.reps > 1){ for (let k = 0; k < S.reps; k++) h += '<td>' + esc(row.s[j][k]) + '</td>'; h += '<td>' + esc(row.avg[j]) + '</td>'; } else h += '<td>' + esc(row.s[j][0]) + '</td>'; }); h += '</tr>'; });
     h += '</table>' + (hand.ok ? '<p class="meta" style="margin-top:8px">재는 법 · ' + esc(hand.measure) + '</p>' : '') + '</div>';
     //  변환
     if (cols.length){
@@ -1284,7 +2342,7 @@
     //  그래프
     if (S.g.ready){
       const keep = S.g.overlay; S.g.overlay = true; drawGraph();
-      h += '<div class="card"><h2>내가 그린 그래프</h2><svg viewBox="0 0 760 460" xmlns="http://www.w3.org/2000/svg">' + $('gsvg').innerHTML + '</svg>' +
+      h += '<div class="card"><h2>내가 그린 그래프</h2><svg viewBox="0 0 ' + G.W + ' ' + G.H + '" xmlns="http://www.w3.org/2000/svg">' + $('gsvg').innerHTML + '</svg>' +
            '<p class="meta">초록/빨강 점 = 내가 찍은 점(제자리/벗어남) · 파란 선 = 내가 그은 선 · 주황 테두리 = 앱이 계산한 점 · 점선 = 앱의 최소제곱 직선</p>';
       if (S.g.ptScore) h += '<p class="meta">제자리에 찍은 점 ' + S.g.ptScore.hit + ' / ' + S.g.ptScore.total + '</p>';
       if (S.g.lnScore && S.g.lnScore.kind === 'line') h += '<p class="meta">내 직선 기울기 ' + esc(labNum(S.g.lnScore.a)) + ' · 절편 ' + esc(labNum(S.g.lnScore.b)) + ' · 자료를 따라가는 정도 ' + esc(fmtR2(S.g.lnScore.r2)) + ' (앱의 최소제곱 R² ' + esc(fmtR2(S.g.lnScore.best)) + ')</p>';
@@ -1296,52 +2354,61 @@
     Object.keys(w.answers).forEach(k => { if (['조작 변인', '종속 변인', '통제 변인'].includes(k)) return; h += '<div class="q"><b>' + esc(k) + '</b><p>' + esc(w.answers[k]) + '</p></div>'; });
     if (S.judged && S.judged.verdict) h += '<div class="verdict">앱의 판정 — ' + esc(S.judged.verdict) + '</div>';
     h += '</div>';
-    h += '<p class="foot">MBL 센서 수업허브 · 손으로 탐구 — 이 파일은 학생이 직접 재고 계산하고 그린 기록입니다. 교사 화면 [작업 파일 모아 합치기]에 올릴 수 있습니다.</p></div>';
+    h += '<p class="foot">MBL 수업허브 · 손으로 탐구 — 이 파일은 학생이 직접 재고 계산하고 그린 기록입니다. 교사 화면 [작업 파일 모아 합치기]에 올릴 수 있습니다.</p></div>';
     return '<!DOCTYPE html>\n<html lang="ko">\n<head>\n<meta charset="UTF-8" />\n<meta name="viewport" content="width=device-width, initial-scale=1.0" />\n' +
-      '<title>' + esc(exp.title + ' — 손으로 탐구 · ' + w.group.name) + '</title>\n<style>\n' + FILE_CSS + '\n</style>\n</head>\n<body>\n' + h +
+      '<title>' + esc(exp.title + ' — 손으로 탐구 · ' + g.no + '모둠') + '</title>\n<style>\n' + FILE_CSS + '\n</style>\n</head>\n<body>\n' + h +
       '\n<script id="mbl-work" type="application/json">' + JSON.stringify(w).replace(/<\//g, '<\\/') + '</' + 'script>\n</body>\n</html>\n';
   }
   function today8(){ const d = new Date(); return '' + d.getFullYear() + ('0' + (d.getMonth() + 1)).slice(-2) + ('0' + d.getDate()).slice(-2); }
   function saveFile(){
     if (!exp || !S.rawOk){ $('saveMsg').className = 'msg bad'; $('saveMsg').textContent = '표를 다 채운 뒤에 내려받을 수 있습니다.'; return; }
+    if (!S.judged && !confirm('아직 해석(⑦)까지 마치지 않았습니다. 지금까지 한 것만 담긴 파일이 내려받아집니다(파일에 「마치지 않음」으로 표시됩니다). 내려받을까요?')) return;
     const w = workJSON();
     const html = buildFile(w);
-    const clean = s => String(s == null ? '' : s).replace(/[\\/:*?"<>|.\s]+/g, '').slice(0, 24);
-    const name = '탐구_' + (clean(S.who.cls) || '반없음') + '_' + (clean(w.group.name) || (w.group.no + '모둠')) + '_' + (clean(exp.title) || '실험') + '_' + today8() + '.html';
+    //  파일 이름 — 실험 id · 반 · 모둠 · 날짜(제목을 자르면 낱말이 중간에서 끊깁니다)
+    const clean = s => String(s == null ? '' : s).replace(/[\\/:*?"<>|.\s]+/g, '');
+    const name = '탐구_' + exp.id + '_' + (clean(S.who.cls) ? clean(S.who.cls) + '_' : '') + w.group.no + '모둠_' + today8() + (S.judged ? '' : '_미완성') + '.html';
     try {
       const url = URL.createObjectURL(new Blob([html], { type:'text/html;charset=utf-8' }));
       const a = document.createElement('a'); a.href = url; a.download = name;
       document.body.appendChild(a); a.click(); document.body.removeChild(a);
       setTimeout(() => URL.revokeObjectURL(url), 1500);
-      S.saved = w.saved; save();
+      S.saved = w.saved; save(); cleanSig = contentSig();
       $('saveMsg').className = 'msg ok'; $('saveMsg').textContent = '내려받았습니다 — ' + name;
     } catch (e){ $('saveMsg').className = 'msg bad'; $('saveMsg').textContent = '파일로 저장하지 못했습니다. 이 화면을 인쇄(Ctrl+P)해도 됩니다.'; }
   }
   $('btnSave').addEventListener('click', saveFile);
-  $('btnSaveTop').addEventListener('click', () => { go(5); saveFile(); });
+  $('btnSaveTop').addEventListener('click', () => { if (canGo(6)) go(6); saveFile(); });
   $('btnPrint').addEventListener('click', () => window.print());
 
   // ── 시작 ──────────────────────────────────────────────────────
+  function resume(wid){
+    const w = loadWork(wid);
+    const e = w && LAB.byId(w.expId);
+    if (!w || !e){ dropWork(wid); paintSaved(); return; }
+    if (S.started) save();
+    stopLesson();
+    S = w; exp = e; hand = handOf(e); res = null;
+    if (S.lesson) attachLesson();
+    cleanSig = contentSig();
+    paintStart(); paintCards(); paintDetail(); paintTopSub(); syncNav();
+    go(Math.max(1, S.step));
+  }
+  $('btnFresh').addEventListener('click', () => { const want = new URLSearchParams(location.search).get('exp'); $('savedBox').classList.add('hidden'); if (want) pick(want); });
   (function init(){
     const sp = new URLSearchParams(location.search);
-    const prev = load();
     //  「센서 없이 재는 법」 자료가 하나도 없으면(파일이 빠졌으면) 거르기를 켜 봐야 빈 목록만 나옵니다.
-    if (!Object.keys(HAND).length) $('fHand').checked = false;
-    paintCards();
-    if (prev && !sp.get('exp')){
-      $('askBar').classList.remove('hidden');
-      $('btnResume').addEventListener('click', () => {
-        S = prev; exp = LAB.byId(S.expId); hand = handOf(exp);
-        if (!exp){ $('askBar').classList.add('hidden'); return; }
-        for (let i = 0; i <= 5; i++){ if (i <= S.step) unlock(i); }
-        markDone(0, true); markDone(1, S.varsOk); markDone(2, S.rawOk); markDone(3, S.tfOk); markDone(4, !!(S.g.ptScore || S.g.lnScore)); markDone(5, !!S.judged);
-        $('topSub').textContent = exp.title + ' — ' + (S.who.cls ? S.who.cls + ' ' : '') + S.who.no + '모둠';
-        paintCards(); paintDetail(); go(Math.max(1, S.step));
-      });
-      $('btnFresh').addEventListener('click', () => { try { localStorage.removeItem(KEY); } catch (e) {} S = fresh(); $('askBar').classList.add('hidden'); });
-    }
+    if (!Object.keys(HAND).length) $('fHand').disabled = true;
+    if (!serverReady()){ $('joinMsg').className = 'msg muted'; $('joinMsg').textContent = '이 학교 서버 연결 정보(config.js)가 없어 지금은 참여코드를 쓸 수 없습니다.'; }
+    paintCards(); syncNav(); paintStart();
+    const code = sp.get('code');
+    if (code && serverReady()){ $('inCode').value = HUB.norm(code).slice(0, 6); }
+    //  ?exp= 로 열었을 때 그 실험으로 하던 탐구가 있으면 덮어쓰지 않고 먼저 묻습니다.
     const want = sp.get('exp');
-    if (want && LAB.byId(want)){ pick(want); }
+    if (want && LAB.byId(want)){
+      if (listWorks().some(x => x.expId === want)) paintSaved(want);
+      else pick(want);
+    }
   })();
 })();
 </script>

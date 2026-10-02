@@ -14,7 +14,7 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 <link href="https://fonts.googleapis.com/css2?family=Jua&display=swap" rel="stylesheet" />
 <!-- 학교·교사 이름(SCHOOL · TEACHER)만 씁니다 — 없어도 설명서는 그대로 열립니다 -->
-<script src="./config.js?v=202609301448"></script>
+<script src="./config.js?v=202610020902"></script>
 <style>
   :root{
     --sky-1:#D4EDFB; --sky-2:#EAF8F0;
@@ -491,7 +491,8 @@
           <span class="phasechip s3">③ 재기 · 표 채우기</span>
           <span class="phasechip s4">④ 값 바꾸기</span>
           <span class="phasechip">⑤ 그래프 그리기</span>
-          <span class="phasechip s2">⑥ 해석 · 제출</span>
+          <span class="phasechip s2">⑥ 반 전체 그래프</span>
+          <span class="phasechip s2">⑦ 해석 · 제출</span>
         </div>
         <p><b>앱이 먼저 답을 보여 주지 않습니다.</b> 학생이 온도계·자·저울·초시계로 잰 값을 표에 적고, 압력×부피 같은 파생값과 1/부피 같은 축 변환을 손으로 계산합니다. 그다음 축 범위를 정해 점을 찍고 추세선을 직접 긋습니다.</p>
         <p>앱은 그 뒤에 <b>학생이 한 것을 확인만</b> 합니다 — 계산이 맞았는지, 그은 선이 최소제곱 직선과 얼마나 가까운지를 견주어 보여 줍니다.</p>
@@ -503,7 +504,7 @@
           <div class="v ez"><span class="tag">참여코드로 수업에 연결</span><p>교사가 실시간 모드로 같은 실험의 수업을 만들고 참여코드를 알려 줍니다. 학생이 손으로 탐구에서 코드를 넣고 모둠을 고르면, <b>손으로 잰 값이 반 수업에 바로 모입니다.</b></p></div>
         </div>
         <p><b>참여코드로 연결하면</b> 교사 대시보드의 모둠 현황과 반 전체 그래프에 손으로 잰 값이 센서 값과 똑같이 나타납니다. 교사가 <a href="#assign" style="color:var(--mint-d);font-weight:700">모둠마다 다른 값 재기</a>를 켠 수업이면, 학생 화면에 <b>우리 모둠이 맡은 값</b>이 함께 보입니다.</p>
-        <p>마지막 단계의 <b>「반 전체 그래프 보기」</b> 에서는 모든 모둠의 점이 한 그래프에 모입니다. 우리 모둠이 그은 선과 반 전체 경향을 나란히 견주는 자리입니다. 이 연결은 <a href="#supabase" style="color:var(--mint-d);font-weight:700">Supabase 설치</a>를 해 둔 학교에서만 됩니다.</p>
+        <p>⑥ <b>「반 전체 그래프 보기」</b> 에서는 모든 모둠의 점이 한 그래프에 모입니다(우리 모둠은 크게 표시, 15초마다 새로 받기). 우리 모둠이 그은 선과 반 전체 경향을 나란히 견주는 자리입니다. 참여코드로 연결하려면 ① 화면의 <b>「수업에 참여하기」</b> 에 코드를 넣고 모둠을 고르면 됩니다(Supabase 설치를 해 둔 학교). 서버 없이 할 때는 이 단계에서 다른 모둠의 작업 파일(.html)을 불러와 겹쳐 볼 수 있습니다.</p>
 
         <h3 style="font-size:20px;margin-top:30px">작업 파일 합치기</h3>
         <p>손으로 탐구에서 내려받은 작업 파일도 간편 모드 작업 파일과 같은 기록을 품고 있습니다. 교사 화면 <b>[제출된 보고서 합치기]</b> 에 함께 끌어다 놓으면 모둠별로 정리되고, 목록에 <b>손으로 탐구(센서 없이)</b> 라고 표시됩니다(<a href="#simple" style="color:var(--mint-d);font-weight:700">A. 간편 모드로 한 차시</a>).</p>
